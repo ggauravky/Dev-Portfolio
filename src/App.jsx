@@ -1,5 +1,8 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
+
+// Import components
+import Navbar from './components/Navbar'
 
 // Import pages
 import Home from './pages/Home'
@@ -13,15 +16,7 @@ function App() {
     return (
         <Router>
             <div className="App">
-                {/* Simple navigation bar */}
-                <nav style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
-                    <Link to="/" style={{ margin: '0 10px' }}>Home</Link>
-                    <Link to="/about" style={{ margin: '0 10px' }}>About</Link>
-                    <Link to="/skills" style={{ margin: '0 10px' }}>Skills</Link>
-                    <Link to="/projects" style={{ margin: '0 10px' }}>Projects</Link>
-                    <Link to="/contact" style={{ margin: '0 10px' }}>Contact</Link>
-                    <Link to="/links" style={{ margin: '0 10px' }}>Links</Link>
-                </nav>
+                <Navbar />
 
                 {/* Routes */}
                 <Routes>
