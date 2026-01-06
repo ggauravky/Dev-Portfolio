@@ -39,7 +39,7 @@ function About() {
                     </div>
 
                     <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 hover:border-cyan-500 transition-colors duration-300">
-                        <h2 className="text-2xl font-semibold mb-4 text-cyan-400">Currently Learning</h2>
+                        <h2 className="text-2xl font-semibold mb-4 text-cyan-400">Currnpm ently Learning</h2>
                         <ul className="space-y-3 text-slate-300">
                             <li className="flex items-center gap-3">
                                 <span className="text-blue-400">▹</span>

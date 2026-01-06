@@ -6,7 +6,7 @@ function Navbar() {
             <div className="max-w-7xl mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
                     <Link to="/" className="text-xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent">
-                        Gaurav Kumar
+                        Gaurav 
                     </Link>
 
                     <div className="flex gap-8">
