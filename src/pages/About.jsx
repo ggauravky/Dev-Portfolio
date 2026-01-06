@@ -1,63 +1,209 @@
 function About() {
     return (
-        <div className="min-h-screen bg-slate-900 px-6 py-16">
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-5xl font-bold mb-12 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    About Me
-                </h1>
+        <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute top-20 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
 
+            <div className="max-w-6xl mx-auto relative z-10">
+                {/* Hero Section */}
+                <div className="text-center mb-16 animate-fadeIn">
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        About Me
+                    </h1>
+                    <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                        BCA 2nd Year Student | Aspiring Data Scientist & AI Engineer |
+                        Building the Future with Code & Data
+                    </p>
+                </div>
+
+                {/* Main Content Grid */}
                 <div className="space-y-8">
-                    <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 hover:border-blue-500 transition-colors duration-300">
-                        <h2 className="text-2xl font-semibold mb-4 text-blue-400">Who I Am</h2>
-                        <p className="text-slate-300 leading-relaxed mb-4">
-                            Hi! I'm Gaurav Kumar Yadav, a BCA 2nd year student passionate about
-                            Artificial Intelligence, Data Science, and Software Development.
-                        </p>
-                        <p className="text-slate-300 leading-relaxed">
-                            I love solving problems with code and building things that make
-                            a difference. Currently, I'm focused on learning AI/ML technologies
-                            and improving my Python skills.
-                        </p>
-                    </div>
-
-                    <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 hover:border-purple-500 transition-colors duration-300">
-                        <h2 className="text-2xl font-semibold mb-4 text-purple-400">What I Do</h2>
-                        <div className="space-y-4 text-slate-300">
+                    {/* Who I Am Section */}
+                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp">
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-4xl">👨‍💻</span>
+                            <h2 className="text-3xl font-bold text-blue-400">Who I Am</h2>
+                        </div>
+                        <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
                             <p>
-                                <strong className="text-blue-400">AI & Data Science:</strong> Working with machine learning
-                                models, data analysis, and exploring deep learning concepts.
+                                Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student with a passion for
+                                <span className="text-purple-400"> Artificial Intelligence</span>,
+                                <span className="text-cyan-400"> Data Science</span>, and
+                                <span className="text-blue-400"> Software Development</span>.
                             </p>
                             <p>
-                                <strong className="text-purple-400">Python Development:</strong> Building scripts, automation
-                                tools, and backend applications using Python.
-                            </p>
-                            <p>
-                                <strong className="text-cyan-400">Web Development:</strong> Creating websites and web applications
-                                using modern technologies like React.
+                                I chose BCA to build a <span className="text-blue-400 font-semibold">strong foundation in computer science</span> while
+                                practically learning programming, databases, and emerging technologies like AI and cybersecurity.
+                                It's the perfect blend of theory and hands-on experience!
                             </p>
                         </div>
                     </div>
 
-                    <div className="bg-slate-800 p-8 rounded-lg border border-slate-700 hover:border-cyan-500 transition-colors duration-300">
-                        <h2 className="text-2xl font-semibold mb-4 text-cyan-400">Currnpm ently Learning</h2>
-                        <ul className="space-y-3 text-slate-300">
-                            <li className="flex items-center gap-3">
-                                <span className="text-blue-400">▹</span>
-                                Machine Learning & Deep Learning
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="text-purple-400">▹</span>
-                                Data Analysis with Python
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="text-cyan-400">▹</span>
-                                Web Development (React, Node.js)
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <span className="text-blue-400">▹</span>
-                                Database Management
-                            </li>
-                        </ul>
+                    {/* My Journey */}
+                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.1s' }}>
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-4xl">🚀</span>
+                            <h2 className="text-3xl font-bold text-purple-400">My Journey</h2>
+                        </div>
+                        <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
+                            <p>
+                                My tech journey started with <span className="text-blue-400 font-semibold">Python and web projects</span>.
+                                As I dove deeper, I realized how powerful <span className="text-purple-400 font-semibold">data + logic</span> can be
+                                in solving real-world problems.
+                            </p>
+                            <p>
+                                Small experiments with <span className="text-cyan-400 font-semibold">data analysis and ML concepts</span> sparked
+                                my interest in AI/Data Science. The ability to make machines learn and predict outcomes fascinated me,
+                                and there's been no looking back since!
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Goals & Vision */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideRight">
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">🎯</span>
+                                <h2 className="text-2xl font-bold text-cyan-400">Future Vision</h2>
+                            </div>
+                            <p className="text-slate-300 text-lg leading-relaxed">
+                                In 3-5 years, I see myself working as a
+                                <span className="text-cyan-400 font-semibold"> Data Scientist / AI Engineer</span>,
+                                building impactful tech products and contributing to real-world problem solving.
+                            </p>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideRight" style={{ animationDelay: '0.1s' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">💡</span>
+                                <h2 className="text-2xl font-bold text-blue-400">Problems I Solve</h2>
+                            </div>
+                            <div className="space-y-2 text-slate-300">
+                                <p className="flex items-start gap-2">
+                                    <span className="text-cyan-400 mt-1">▹</span>
+                                    <span>Automation & data-driven decision making</span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-purple-400 mt-1">▹</span>
+                                    <span>Security challenges</span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-400 mt-1">▹</span>
+                                    <span>Efficiency in education & business</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Work Style & Learning */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.2s' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">⚡</span>
+                                <h2 className="text-2xl font-bold text-purple-400">Work Style</h2>
+                            </div>
+                            <p className="text-slate-300 text-lg leading-relaxed mb-4">
+                                I'm flexible with both <span className="text-purple-400 font-semibold">solo and team work</span>:
+                            </p>
+                            <div className="space-y-3 text-slate-300">
+                                <p className="flex items-start gap-2">
+                                    <span className="text-cyan-400">🧠</span>
+                                    <span><strong className="text-cyan-400">Alone:</strong> Deep focus & concentration</span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-400">🤝</span>
+                                    <span><strong className="text-blue-400">Teams:</strong> Brainstorming & building bigger projects</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.3s' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">📚</span>
+                                <h2 className="text-2xl font-bold text-blue-400">Learning Style</h2>
+                            </div>
+                            <p className="text-slate-300 text-lg leading-relaxed mb-4">
+                                I learn best by <span className="text-blue-400 font-semibold">doing</span>:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400 text-sm">Hands-on Projects</span>
+                                <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400 text-sm">YouTube</span>
+                                <span className="px-4 py-2 bg-cyan-500/20 border border-cyan-500/30 rounded-full text-cyan-400 text-sm">Documentation</span>
+                                <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-400 text-sm">Courses</span>
+                                <span className="px-4 py-2 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-400 text-sm">Self-Experiments</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Beyond Coding */}
+                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.4s' }}>
+                        <div className="flex items-center gap-3 mb-6">
+                            <span className="text-4xl">🎮</span>
+                            <h2 className="text-3xl font-bold text-cyan-400">Beyond Coding</h2>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6 text-slate-300 text-lg">
+                            <div>
+                                <p className="mb-4 leading-relaxed">
+                                    When I'm not coding, I enjoy <span className="text-cyan-400 font-semibold">exploring new tech trends</span>,
+                                    experimenting with <span className="text-purple-400 font-semibold">AI tools</span>,
+                                    <span className="text-blue-400 font-semibold"> content creation</span>, and
+                                    sometimes casual <span className="text-cyan-400 font-semibold">gaming</span>.
+                                </p>
+                            </div>
+                            <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-700/50">
+                                <p className="text-blue-400 font-semibold mb-2">🐛 When Stuck on a Problem:</p>
+                                <p className="text-sm leading-relaxed">
+                                    Break it down → Debug step-by-step → Check docs → Search smartly → Retry with a fresh approach
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Fun Facts & Achievements */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-sm p-8 rounded-2xl border border-blue-500/30 hover:border-blue-400/50 transition-all duration-300 hover:scale-[1.02] animate-slideRight" style={{ animationDelay: '0.5s' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">✨</span>
+                                <h2 className="text-2xl font-bold text-blue-400">Fun Fact</h2>
+                            </div>
+                            <p className="text-slate-300 text-lg leading-relaxed">
+                                I enjoy building <span className="text-blue-400 font-semibold">long-term learning streaks</span> and
+                                consistently improving <span className="text-purple-400 font-semibold">one small thing every day</span>.
+                                Progress over perfection! 📈
+                            </p>
+                        </div>
+
+                        <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 backdrop-blur-sm p-8 rounded-2xl border border-purple-500/30 hover:border-purple-400/50 transition-all duration-300 hover:scale-[1.02] animate-slideRight" style={{ animationDelay: '0.6s' }}>
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="text-4xl">🏆</span>
+                                <h2 className="text-2xl font-bold text-purple-400">Proud Of</h2>
+                            </div>
+                            <p className="text-slate-300 text-lg leading-relaxed">
+                                Building multiple <span className="text-cyan-400 font-semibold">full-stack, Python, and AI projects</span>
+                                while maintaining long learning streaks on
+                                <span className="text-purple-400 font-semibold"> GitHub</span> and
+                                <span className="text-blue-400 font-semibold"> LinkedIn</span>. 🚀
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Call to Action */}
+                    <div className="bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-cyan-600/20 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-600/50 text-center animate-fadeIn" style={{ animationDelay: '0.7s' }}>
+                        <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                            Let's Build Something Amazing Together!
+                        </h3>
+                        <p className="text-slate-300 text-lg mb-6">
+                            I'm always excited to collaborate on innovative projects and learn from others.
+                        </p>
+                        <div className="flex flex-wrap gap-4 justify-center">
+                            <a href="/projects" className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-blue-500/50">
+                                View My Projects
+                            </a>
+                            <a href="/contact" className="px-8 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-blue-500 rounded-full font-semibold transition-all duration-300 hover:scale-110">
+                                Get In Touch
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
