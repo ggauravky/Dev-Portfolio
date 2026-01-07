@@ -21,21 +21,27 @@ app.use(mongoSanitize()); // Prevent MongoDB injection
 // CORS Configuration
 const corsOptions = {
   origin: function (origin, callback) {
+    // Remove trailing slashes from URLs
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       "http://localhost:5173",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
       "http://localhost:5174", // Additional Vite port
-    ].filter(Boolean); // Remove undefined values
+    ]
+      .filter(Boolean)
+      .map((url) => url.replace(/\/$/, "")); // Remove trailing slashes
 
     // Allow requests with no origin (like mobile apps, curl, or Postman)
     if (!origin) return callback(null, true);
 
+    // Remove trailing slash from origin for comparison
+    const normalizedOrigin = origin.replace(/\/$/, "");
+
     // In production, also allow Vercel preview deployments
     const isVercelPreview = origin && origin.includes(".vercel.app");
 
-    if (allowedOrigins.includes(origin) || isVercelPreview) {
+    if (allowedOrigins.includes(normalizedOrigin) || isVercelPreview) {
       callback(null, true);
     } else {
       console.warn(`⚠️  CORS blocked request from: ${origin}`);

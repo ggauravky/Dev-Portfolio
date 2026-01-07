@@ -25,7 +25,8 @@ function Contact() {
         setStatus({ type: '', message: '' })
 
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+            // Remove trailing slash if present
+            const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
             const response = await fetch(`${API_URL}/api/contact`, {
                 method: 'POST',
