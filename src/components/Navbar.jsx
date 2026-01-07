@@ -5,7 +5,6 @@ function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const location = useLocation()
 
-    // Close mobile menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isMenuOpen && !event.target.closest('nav')) {
@@ -17,12 +16,10 @@ function Navbar() {
         return () => document.removeEventListener('click', handleClickOutside)
     }, [isMenuOpen])
 
-    // Close mobile menu on route change
     useEffect(() => {
         setIsMenuOpen(false)
     }, [location])
 
-    // Prevent body scroll when mobile menu is open
     useEffect(() => {
         if (isMenuOpen) {
             document.body.style.overflow = 'hidden'
@@ -50,7 +47,6 @@ function Navbar() {
             <nav className="bg-slate-900/95 border-b border-slate-800/50 sticky top-0 z-50 backdrop-blur-md shadow-lg shadow-slate-900/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center justify-between">
-                        {/* Logo */}
                         <Link
                             to="/"
                             onClick={() => setIsMenuOpen(false)}
@@ -61,7 +57,6 @@ function Navbar() {
                             <span className="sm:hidden">Gaurav</span>
                         </Link>
 
-                        {/* Desktop Navigation */}
                         <div className="hidden lg:flex items-center gap-1 xl:gap-2">
                             {navLinks.map((link) => (
                                 <Link
@@ -80,7 +75,6 @@ function Navbar() {
                             ))}
                         </div>
 
-                        {/* Mobile Menu Button */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation()
@@ -99,7 +93,6 @@ function Navbar() {
                 </div>
             </nav>
 
-            {/* Mobile Menu Overlay */}
             {isMenuOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
@@ -107,10 +100,8 @@ function Navbar() {
                 />
             )}
 
-            {/* Mobile Menu Slide-in */}
             <div className={`fixed top-0 right-0 h-full w-72 bg-slate-900 border-l border-slate-800 shadow-2xl z-40 lg:hidden transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full pt-20 px-4">
-                    {/* Mobile Navigation Links */}
                     <div className="flex-1 space-y-2 overflow-y-auto">
                         {navLinks.map((link, index) => (
                             <Link
@@ -135,7 +126,6 @@ function Navbar() {
                         ))}
                     </div>
 
-                    {/* Mobile Menu Footer */}
                     <div className="py-6 border-t border-slate-800">
                         <p className="text-slate-500 text-sm text-center">
                             Made with ❤️ by Gaurav

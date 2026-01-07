@@ -5,12 +5,10 @@ const useSEO = ({ title, description, keywords, ogImage }) => {
     const location = useLocation()
 
     useEffect(() => {
-        // Update document title
         if (title) {
             document.title = title
         }
 
-        // Update meta description
         if (description) {
             const metaDescription = document.querySelector('meta[name="description"]')
             if (metaDescription) {
@@ -18,7 +16,6 @@ const useSEO = ({ title, description, keywords, ogImage }) => {
             }
         }
 
-        // Update meta keywords
         if (keywords) {
             const metaKeywords = document.querySelector('meta[name="keywords"]')
             if (metaKeywords) {
@@ -26,7 +23,6 @@ const useSEO = ({ title, description, keywords, ogImage }) => {
             }
         }
 
-        // Update Open Graph tags
         const ogTitle = document.querySelector('meta[property="og:title"]')
         const ogDesc = document.querySelector('meta[property="og:description"]')
         const ogUrl = document.querySelector('meta[property="og:url"]')
@@ -45,7 +41,6 @@ const useSEO = ({ title, description, keywords, ogImage }) => {
             ogImg.setAttribute('content', ogImage)
         }
 
-        // Update Twitter Card tags
         const twitterTitle = document.querySelector('meta[property="twitter:title"]')
         const twitterDesc = document.querySelector('meta[property="twitter:description"]')
         const twitterUrl = document.querySelector('meta[property="twitter:url"]')
@@ -64,7 +59,6 @@ const useSEO = ({ title, description, keywords, ogImage }) => {
             twitterImg.setAttribute('content', ogImage)
         }
 
-        // Update canonical URL
         let canonical = document.querySelector('link[rel="canonical"]')
         if (!canonical) {
             canonical = document.createElement('link')

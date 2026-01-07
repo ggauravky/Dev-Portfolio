@@ -36,7 +36,6 @@ exports.contactValidationRules = [
     .withMessage("Message must be between 10 and 2000 characters"),
 ];
 
-// Middleware to handle validation errors
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);
 
