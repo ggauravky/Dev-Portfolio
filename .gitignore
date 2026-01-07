@@ -23,8 +23,27 @@ dist-ssr
 *.sln
 *.sw?
 
-.env.env.local
+# Environment files
+.env
+.env.local
+.env.production
 .env.production.local
+.env.example
+*.env
 
 # Deployment
 .vercel
+
+# Documentation (optional - uncomment to hide)
+# DEPLOYMENT_GUIDE.md
+# DEPLOYMENT_CHECKLIST.md
+# DEPLOYMENT_READY.md
+# FIX_INSTRUCTIONS.md
+# FIXES_APPLIED.md
+# VALIDATION_FIX.md
+# BACKEND_STATUS.md
+# DEPLOYMENT.md
+
+# Test files
+**/test-*.js
+**/quick-test.js
