@@ -27,12 +27,15 @@ const corsOptions = {
       "http://localhost:3000",
       "http://127.0.0.1:5173",
       "http://localhost:5174", // Additional Vite port
-    ];
+    ].filter(Boolean); // Remove undefined values
 
     // Allow requests with no origin (like mobile apps, curl, or Postman)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    // In production, also allow Vercel preview deployments
+    const isVercelPreview = origin && origin.includes(".vercel.app");
+
+    if (allowedOrigins.includes(origin) || isVercelPreview) {
       callback(null, true);
     } else {
       console.warn(`⚠️  CORS blocked request from: ${origin}`);
@@ -102,12 +105,18 @@ app.use((err, req, res, next) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
+const server = app.listen(PORT, HOST, () => {
   console.log(
-    `\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+    `\n🚀 Server running in ${
+      process.env.NODE_ENV || "development"
+    } mode on port ${PORT}`
   );
   console.log(`🌐 Health check: http://localhost:${PORT}/health`);
-  console.log(`📧 Contact API: http://localhost:${PORT}/api/contact\n`);
+  console.log(`📧 Contact API: http://localhost:${PORT}/api/contact`);
+  if (process.env.FRONTEND_URL) {
+    console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL}\n`);
+  }
 });
 
 // Handle unhandled promise rejections
