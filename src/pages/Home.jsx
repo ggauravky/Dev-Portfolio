@@ -1,6 +1,15 @@
 import { Link } from 'react-router-dom'
+import useSEO from '../hooks/useSEO'
 
 function Home() {
+    // SEO Optimization
+    useSEO({
+        title: 'Gaurav Kumar Yadav - Full Stack Developer | React, Node.js, MongoDB',
+        description: 'Welcome to my portfolio! I am Gaurav Kumar Yadav, a Full Stack Developer specializing in React, Node.js, MongoDB, Python, and modern web technologies. Explore my projects and skills.',
+        keywords: 'Gaurav Kumar Yadav, Full Stack Developer, React Developer, Node.js, MongoDB, Python, Web Development, Portfolio, Software Engineer',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+    })
+
     // Featured projects for home page
     const featuredProjects = [
         {

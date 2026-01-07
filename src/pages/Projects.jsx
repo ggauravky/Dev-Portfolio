@@ -1,6 +1,14 @@
 import { useState, useMemo } from 'react'
+import useSEO from '../hooks/useSEO'
 
 function Projects() {
+    useSEO({
+        title: 'Projects Portfolio - Gaurav Kumar Yadav | Full Stack & AI Projects',
+        description: 'Browse my portfolio of full stack web applications, AI/ML projects, and Python applications. Projects include Real-Time Chat App, E-commerce platforms, AI Video Editing tools, and more.',
+        keywords: 'Web Development Projects, React Projects, Node.js Projects, AI Projects, Machine Learning Projects, Portfolio, Full Stack Applications',
+        ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png'
+    })
+
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
 

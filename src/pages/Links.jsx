@@ -1,4 +1,13 @@
+import useSEO from '../hooks/useSEO'
+
 function Links() {
+    useSEO({
+        title: 'Find Me Online - Gaurav Kumar Yadav | Social Links',
+        description: 'Connect with Gaurav Kumar Yadav on various platforms. Find me on GitHub, LinkedIn, Instagram, Twitter, and more. Let\'s connect and collaborate!',
+        keywords: 'Social Links, GitHub ggauravky, LinkedIn Gaurav Kumar Yadav, Developer Social Media, Connect with Developer',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+    })
+
     const socialLinks = [
         {
             name: "GitHub",

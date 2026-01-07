@@ -1,4 +1,13 @@
+import useSEO from '../hooks/useSEO'
+
 function About() {
+    useSEO({
+        title: 'About Me - Gaurav Kumar Yadav | Full Stack Developer',
+        description: 'Learn about Gaurav Kumar Yadav, a BCA student and aspiring Full Stack Developer passionate about Data Science, AI, and Web Development. Explore my journey, skills, and experience.',
+        keywords: 'About Gaurav Kumar Yadav, BCA Student, Data Science, AI Engineer, Full Stack Developer, Developer Journey',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+    })
+
     return (
         <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
             {/* Animated Background */}

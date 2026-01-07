@@ -1,6 +1,14 @@
 import { useState } from 'react'
+import useSEO from '../hooks/useSEO'
 
 function Contact() {
+    useSEO({
+        title: 'Contact Me - Gaurav Kumar Yadav | Get in Touch',
+        description: 'Get in touch with Gaurav Kumar Yadav for collaboration opportunities, project inquiries, or freelance work. Send me a message and let\'s work together!',
+        keywords: 'Contact Gaurav Kumar Yadav, Hire Full Stack Developer, Freelance Developer, Collaboration, Project Inquiry',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+    })
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',

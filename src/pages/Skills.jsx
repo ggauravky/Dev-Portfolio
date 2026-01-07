@@ -1,6 +1,14 @@
 import { useState } from 'react'
+import useSEO from '../hooks/useSEO'
 
 function Skills() {
+    useSEO({
+        title: 'Skills & Technologies - Gaurav Kumar Yadav | React, Node.js, Python',
+        description: 'Explore my technical skills including React, Node.js, Python, MongoDB, Machine Learning, Data Analysis, and more. View my proficiency in various programming languages and technologies.',
+        keywords: 'React Developer, Node.js, Python, MongoDB, Machine Learning, JavaScript, Web Development Skills, Data Science, AI',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+    })
+
     const [activeTab, setActiveTab] = useState('technical')
 
     const skillCategories = {
@@ -178,8 +186,8 @@ function Skills() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${activeTab === tab.id
-                                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
-                                    : 'bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-300 hover:border-purple-500/50 hover:scale-105'
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                                : 'bg-slate-800/60 border border-slate-700/50 text-slate-400 hover:text-slate-300 hover:border-purple-500/50 hover:scale-105'
                                 }`}
                         >
                             <span className="text-xl">{tab.icon}</span>
