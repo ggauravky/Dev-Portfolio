@@ -26,6 +26,40 @@ function About() {
                     </p>
                 </div>
 
+                <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-slate-700/50 mb-12 animate-slideDown">
+                    <div className="flex flex-wrap items-center justify-center gap-4 text-slate-300">
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl">🎓</span>
+                            <span className="text-sm md:text-base">
+                                BCA 2nd Year at{' '}
+                                <a
+                                    href="https://www.bbdu.ac.in/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 hover:text-blue-300 font-semibold underline decoration-blue-400/30 hover:decoration-blue-300 transition-colors"
+                                >
+                                    BBDU University
+                                </a>
+                            </span>
+                        </div>
+                        <span className="text-slate-600 hidden md:inline">|</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl">🤖</span>
+                            <span className="text-sm md:text-base">
+                                Minor in AI/ML from{' '}
+                                <a
+                                    href="https://www.iitmandi.ac.in/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-purple-400 hover:text-purple-300 font-semibold underline decoration-purple-400/30 hover:decoration-purple-300 transition-colors"
+                                >
+                                    IIT Mandi
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Main Content Grid */}
                 <div className="space-y-8">
                     {/* Who I Am Section */}
