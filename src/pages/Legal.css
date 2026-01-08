@@ -1,0 +1,46 @@
+/* Legal Pages Responsive Styles */
+
+/* Improved list styling for mobile */
+.legal-content ul {
+  @apply list-disc list-inside space-y-2 ml-2 sm:ml-4;
+}
+
+.legal-content ul li {
+  @apply text-sm sm:text-base text-slate-300 leading-relaxed;
+}
+
+.legal-content ul li strong {
+  @apply text-slate-200;
+}
+
+/* Section headings responsive */
+.legal-content h2 {
+  @apply text-xl sm:text-2xl font-bold flex items-center gap-2 flex-wrap;
+}
+
+.legal-content h2 span:first-child {
+  @apply text-2xl sm:text-3xl shrink-0;
+}
+
+.legal-content h3 {
+  @apply text-base sm:text-lg font-semibold text-slate-200;
+}
+
+/* Paragraphs responsive */
+.legal-content p {
+  @apply text-sm sm:text-base text-slate-300 leading-relaxed;
+}
+
+/* Contact boxes responsive */
+.legal-content .contact-box {
+  @apply bg-slate-800/50 p-3 sm:p-4 rounded-lg border border-slate-700/50;
+}
+
+.legal-content .contact-box p {
+  @apply text-xs sm:text-sm text-slate-300;
+}
+
+/* Links responsive */
+.legal-content a {
+  @apply break-words;
+}

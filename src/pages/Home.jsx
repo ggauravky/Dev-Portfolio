@@ -325,14 +325,6 @@ function Home() {
                     </div>
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="py-10 px-6 border-t border-slate-800/50 backdrop-blur-sm bg-slate-900/50">
-                <div className="max-w-6xl mx-auto text-center">
-                    <p className="text-slate-400 mb-2">© 2026 Gaurav Kumar Yadav</p>
-                    <p className="text-slate-500 text-sm">Built with ❤️ using React & Tailwind CSS</p>
-                </div>
-            </footer>
         </div>
     )
 }
