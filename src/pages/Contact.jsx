@@ -135,6 +135,33 @@ function Contact() {
                     </p>
                 </div>
 
+                {/* Resume Download Banner */}
+                <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-cyan-500/30 mb-12 hover:border-cyan-400/50 transition-all duration-300 animate-slideDown">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                        <div className="flex items-center gap-4">
+                            <div className="text-5xl">📄</div>
+                            <div>
+                                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+                                    Want to Know More About Me?
+                                </h3>
+                                <p className="text-slate-300">
+                                    Download my resume for complete details about my experience and skills
+                                </p>
+                            </div>
+                        </div>
+                        <a
+                            href="/resume.pdf"
+                            download="Gaurav_Kumar_Yadav_Resume.pdf"
+                            className="flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-cyan-500/30 whitespace-nowrap"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Download Resume
+                        </a>
+                    </div>
+                </div>
+
                 {/* Contact Info Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16 animate-slideUp">
                     {contactInfo.map((info, index) => (
