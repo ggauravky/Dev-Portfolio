@@ -3,9 +3,9 @@ import useSEO from '../hooks/useSEO'
 
 function Projects() {
     useSEO({
-        title: 'Projects Portfolio - Gaurav Kumar Yadav | Full Stack & AI Projects',
-        description: 'Browse my portfolio of full stack web applications, AI/ML projects, and Python applications. Projects include Real-Time Chat App, E-commerce platforms, AI Video Editing tools, and more.',
-        keywords: 'Web Development Projects, React Projects, Node.js Projects, AI Projects, Machine Learning Projects, Portfolio, Full Stack Applications',
+        title: 'Projects Portfolio - Gaurav Kumar Yadav | Python, AI/ML & Full Stack Projects',
+        description: 'Student Developer portfolio featuring Python projects, AI/ML applications, Data Science tools, and Full Stack web applications. Projects include AI Video Editing, Real-Time Chat App, Data Analysis dashboards, and more. Open for internships and freelance work.',
+        keywords: 'Python Projects, AI ML Projects, Data Science Projects, Full Stack Projects, React Projects, Node.js Projects, Student Developer Portfolio, AI Video Editor, Web Applications, Internship Portfolio',
         ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png'
     })
 

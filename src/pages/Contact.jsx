@@ -3,9 +3,9 @@ import useSEO from '../hooks/useSEO'
 
 function Contact() {
     useSEO({
-        title: 'Contact Me - Gaurav Kumar Yadav | Get in Touch',
-        description: 'Get in touch with Gaurav Kumar Yadav for collaboration opportunities, project inquiries, or freelance work. Send me a message and let\'s work together!',
-        keywords: 'Contact Gaurav Kumar Yadav, Hire Full Stack Developer, Freelance Developer, Collaboration, Project Inquiry',
+        title: 'Contact Me - Gaurav Kumar Yadav | Hire Python & AI Developer from Lucknow',
+        description: 'Contact Gaurav Kumar Yadav for internship opportunities, entry-level positions, freelance projects, or collaborations. Python Developer & AI enthusiast from Lucknow, India. Open to remote work and project-based opportunities. Let\'s build something amazing together!',
+        keywords: 'Contact Gaurav Kumar Yadav, Hire Python Developer, Hire AI Developer, Internship Developer Lucknow, Freelance Developer India, Student Developer, Remote Work, Entry Level Developer, Collaboration',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 

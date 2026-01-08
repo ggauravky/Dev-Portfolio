@@ -2,9 +2,9 @@ import useSEO from '../hooks/useSEO'
 
 function About() {
     useSEO({
-        title: 'About Me - Gaurav Kumar Yadav | Full Stack Developer',
-        description: 'Learn about Gaurav Kumar Yadav, a BCA student and aspiring Full Stack Developer passionate about Data Science, AI, and Web Development. Explore my journey, skills, and experience.',
-        keywords: 'About Gaurav Kumar Yadav, BCA Student, Data Science, AI Engineer, Full Stack Developer, Developer Journey',
+        title: 'About Me - Gaurav Kumar Yadav | Python & AI Developer | Lucknow',
+        description: 'Learn about Gaurav Kumar Yadav, a BCA student from Lucknow pursuing AI/ML certification from IIT Mandi. Passionate about Python, Data Science, AI, and Full Stack Development. Open for internships, freelance projects, and entry-level opportunities.',
+        keywords: 'About Gaurav Kumar Yadav, BCA Student Lucknow, Python Developer, Data Science Student, AI Engineer, Machine Learning, Full Stack Developer, IIT Mandi, Developer Journey, Internship Seeker',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
@@ -21,8 +21,9 @@ function About() {
                         About Me
                     </h1>
                     <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
-                        BCA 2nd Year Student | Aspiring Data Scientist & AI Engineer |
-                        Building the Future with Code & Data
+                        🎓 BCA Student from Lucknow | 🤖 AI/ML Certified by IIT Mandi | 🐍 Python & Full Stack Developer
+                        <br />
+                        <span className="text-green-400 font-semibold mt-2 inline-block">✅ Open for Internships | Entry-Level Roles | Freelance Projects</span>
                     </p>
                 </div>
 
@@ -70,15 +71,22 @@ function About() {
                         </div>
                         <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
                             <p>
-                                Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student with a passion for
-                                <span className="text-purple-400"> Artificial Intelligence</span>,
-                                <span className="text-cyan-400"> Data Science</span>, and
-                                <span className="text-blue-400"> Software Development</span>.
+                                Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student from
+                                <span className="text-green-400 font-semibold"> Lucknow, India</span> with a passion for
+                                <span className="text-purple-400"> Python Development</span>,
+                                <span className="text-cyan-400"> Data Science</span>,
+                                <span className="text-blue-400"> AI/Machine Learning</span>, and
+                                <span className="text-pink-400"> Full Stack Web Development</span>.
                             </p>
                             <p>
-                                I chose BCA to build a <span className="text-blue-400 font-semibold">strong foundation in computer science</span> while
-                                practically learning programming, databases, and emerging technologies like AI and cybersecurity.
-                                It's the perfect blend of theory and hands-on experience!
+                                I'm currently pursuing <span className="text-purple-400 font-semibold">AI & Data Science certification from IIT Mandi × Masai School</span>,
+                                combining academic knowledge with practical, industry-relevant skills. I focus on building real-world projects that solve actual problems,
+                                not just copying tutorials.
+                            </p>
+                            <p>
+                                💼 I'm actively seeking <span className="text-green-400 font-semibold">internships, entry-level positions, and freelance opportunities</span>
+                                where I can apply my skills in Python, AI/ML, Data Analysis, and Full Stack Development. I'm particularly interested in
+                                <span className="text-blue-400"> startups, early-stage tech companies, and agencies</span> where I can learn and contribute meaningfully.
                             </p>
                         </div>
                     </div>

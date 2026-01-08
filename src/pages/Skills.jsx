@@ -3,9 +3,9 @@ import useSEO from '../hooks/useSEO'
 
 function Skills() {
     useSEO({
-        title: 'Skills & Technologies - Gaurav Kumar Yadav | React, Node.js, Python',
-        description: 'Explore my technical skills including React, Node.js, Python, MongoDB, Machine Learning, Data Analysis, and more. View my proficiency in various programming languages and technologies.',
-        keywords: 'React Developer, Node.js, Python, MongoDB, Machine Learning, JavaScript, Web Development Skills, Data Science, AI',
+        title: 'Skills & Technologies - Gaurav Kumar Yadav | Python, AI/ML, Data Science, Full Stack',
+        description: 'Student Developer skilled in Python, Data Science, Machine Learning, React, Node.js, MongoDB, JavaScript, Pandas, NumPy, and modern web technologies. Ready for internships and entry-level positions in AI, Data Science, and Full Stack Development.',
+        keywords: 'Python Developer Skills, AI ML Skills, Data Science, Machine Learning, React Developer, Node.js, MongoDB, JavaScript, Pandas NumPy, Web Development, Tailwind CSS, Student Developer, Internship Ready',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 

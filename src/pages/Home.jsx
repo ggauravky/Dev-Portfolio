@@ -4,9 +4,9 @@ import useSEO from '../hooks/useSEO'
 function Home() {
     // SEO Optimization
     useSEO({
-        title: 'Gaurav Kumar Yadav - Full Stack Developer | React, Node.js, MongoDB',
-        description: 'Welcome to my portfolio! I am Gaurav Kumar Yadav, a Full Stack Developer specializing in React, Node.js, MongoDB, Python, and modern web technologies. Explore my projects and skills.',
-        keywords: 'Gaurav Kumar Yadav, Full Stack Developer, React Developer, Node.js, MongoDB, Python, Web Development, Portfolio, Software Engineer',
+        title: 'Gaurav Kumar Yadav - Python Developer | AI, Data Science & Full Stack | Lucknow',
+        description: 'Welcome! I am Gaurav Kumar Yadav, a student Python Developer and AI enthusiast from Lucknow, India. Specializing in Data Science, Machine Learning, and Full Stack Development with React, Node.js, and MongoDB. Open for internships, entry-level roles, and freelance projects. Explore my portfolio!',
+        keywords: 'Gaurav Kumar Yadav, Python Developer, AI Developer, Data Science, Machine Learning, Full Stack Developer, React, Node.js, MongoDB, Internship, Entry Level, Student Developer Lucknow, BCA Developer, AI Projects',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
@@ -72,17 +72,17 @@ function Home() {
                         </h1>
                         <div className="space-y-3 mb-6">
                             <p className="text-2xl md:text-4xl font-bold text-blue-300 animate-slide-right flex items-center justify-center md:justify-start gap-3">
-                                <span className="text-3xl">🤖</span> AI / Data Scientist
-                            </p>
-                            <p className="text-2xl md:text-4xl font-bold text-purple-300 animate-slide-right delay-100 flex items-center justify-center md:justify-start gap-3">
                                 <span className="text-3xl">🐍</span> Python Developer
                             </p>
+                            <p className="text-2xl md:text-4xl font-bold text-purple-300 animate-slide-right delay-100 flex items-center justify-center md:justify-start gap-3">
+                                <span className="text-3xl">🤖</span> AI & Data Science
+                            </p>
                             <p className="text-2xl md:text-4xl font-bold text-cyan-300 animate-slide-right delay-200 flex items-center justify-center md:justify-start gap-3">
-                                <span className="text-3xl">💻</span> Web Developer
+                                <span className="text-3xl">💻</span> Full Stack Developer
                             </p>
                         </div>
                         <p className="text-xl md:text-2xl text-slate-300 mt-6 mb-8 animate-fade-in delay-300">
-                            ✨ Building intelligent solutions with <span className="text-blue-400 font-semibold">code</span>
+                            🎓 Student Developer from Lucknow | 🚀 Open for <span className="text-blue-400 font-semibold">Internships & Entry-Level Roles</span>
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start animate-slide-up delay-400">
                             <Link to="/projects" className="group relative bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-lg">

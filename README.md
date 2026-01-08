@@ -1,8 +1,10 @@
 <div align="center">
 
-# 🚀 Developer Portfolio
+# 🚀 Gaurav Kumar Yadav - Developer Portfolio
 
-### A stunning full-stack portfolio showcasing modern web development
+### Python Developer | AI & Data Science | Full Stack Web Development
+
+**Student Developer from Lucknow, India 🇮🇳 | Open for Internships & Freelance Projects**
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-success?style=for-the-badge)](https://ggauravky.vercel.app)
 [![Backend API](https://img.shields.io/badge/⚡_Backend-Online-blue?style=for-the-badge)](https://dev-portfolio-ojfs.onrender.com)
