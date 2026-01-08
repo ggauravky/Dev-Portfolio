@@ -5,24 +5,6 @@ function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const location = useLocation()
 
-    const handleDownloadResume = async (e) => {
-        e.preventDefault()
-        try {
-            const response = await fetch('/resume.pdf')
-            const blob = await response.blob()
-            const url = window.URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = 'Gaurav_Kumar_Yadav_Resume.pdf'
-            document.body.appendChild(link)
-            link.click()
-            document.body.removeChild(link)
-            window.URL.revokeObjectURL(url)
-        } catch (error) {
-            console.error('Download failed:', error)
-        }
-    }
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isMenuOpen && !event.target.closest('nav')) {
@@ -93,15 +75,16 @@ function Navbar() {
                             ))}
                         </div>
 
-                        <button
-                            onClick={handleDownloadResume}
+                        <a
+                            href="/resume.pdf"
+                            download
                             className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105 text-sm xl:text-base cursor-pointer"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />see , this
                             </svg>
                             <span>Resume</span>
-                        </button>
+                        </a>
 
                         <button
                             onClick={(e) => {
@@ -155,18 +138,17 @@ function Navbar() {
                     </div>
 
                     <div className="px-4 pb-4">
-                        <button
-                            onClick={(e) => {
-                                handleDownloadResume(e)
-                                setIsMenuOpen(false)
-                            }}
+                        <a
+                            href="/resume.pdf"
+                            download
+                            onClick={() => setIsMenuOpen(false)}
                             className="flex items-center justify-center gap-2 w-full px-5 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/30 cursor-pointer"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             Download Resume
-                        </button>
+                        </a>
                     </div>
 
                     <div className="py-6 border-t border-slate-800">

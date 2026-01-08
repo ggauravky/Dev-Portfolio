@@ -11,6 +11,10 @@
     ],
     "routes": [
         {
+            "src": "/resume.pdf",
+            "dest": "/resume.pdf"
+        },
+        {
             "src": "/images/(.*)",
             "dest": "/images/$1"
         },
@@ -19,7 +23,7 @@
             "dest": "/assets/$1"
         },
         {
-            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp))",
+            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|pdf))",
             "dest": "/$1"
         },
         {
