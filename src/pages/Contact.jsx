@@ -151,7 +151,7 @@ function Contact() {
                         </div>
                         <a
                             href="/resume.pdf"
-                            download="Gaurav_Kumar_Yadav_Resume.pdf"
+                            download
                             className="flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-cyan-500/30 whitespace-nowrap"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

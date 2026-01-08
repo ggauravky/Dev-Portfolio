@@ -77,7 +77,7 @@ function Navbar() {
 
                         <a
                             href="/resume.pdf"
-                            download="Gaurav_Kumar_Yadav_Resume.pdf"
+                            download
                             className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105 text-sm xl:text-base"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +140,7 @@ function Navbar() {
                     <div className="px-4 pb-4">
                         <a
                             href="/resume.pdf"
-                            download="Gaurav_Kumar_Yadav_Resume.pdf"
+                            download
                             onClick={() => setIsMenuOpen(false)}
                             className="flex items-center justify-center gap-2 w-full px-5 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/30"
                         >
