@@ -74,4 +74,48 @@
     width: 200px;
     height: 200px;
   }
+
+  /* Blog section mobile adjustments */
+  .blog-grid-mobile {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce heading sizes on mobile */
+  h1 {
+    font-size: 2.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.75rem !important;
+  }
+
+  /* Adjust blog card on mobile */
+  .blog-card-mobile {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Show 2 columns for blog posts on tablet */
+  .blog-grid-tablet {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

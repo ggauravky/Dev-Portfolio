@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 
 // Initialize express app
@@ -75,6 +76,7 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api/contact", contactRoutes);
+app.use("/api/newsletter", newsletterRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -86,6 +88,8 @@ app.get("/", (req, res) => {
       health: "/health",
       contact: "/api/contact",
       contactStats: "/api/contact/stats",
+      newsletter: "/api/newsletter/subscribe",
+      newsletterStats: "/api/newsletter/stats",
     },
   });
 });

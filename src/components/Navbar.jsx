@@ -36,6 +36,7 @@ function Navbar() {
         { path: '/about', name: 'About' },
         { path: '/skills', name: 'Skills' },
         { path: '/projects', name: 'Projects' },
+        { path: '/blog', name: 'Blog' },
         { path: '/contact', name: 'Contact' },
         { path: '/links', name: 'Find Me' }
     ]
