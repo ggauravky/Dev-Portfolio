@@ -5,6 +5,22 @@ import useSEO from '../hooks/useSEO'
 function NotFound() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [countdown, setCountdown] = useState(10)
+    const [easterEggFound, setEasterEggFound] = useState(false)
+    const [clickCount, setClickCount] = useState(0)
+    const [konami, setKonami] = useState([])
+    const [showSecret, setShowSecret] = useState(false)
+
+    // Funny 404 messages that rotate
+    const funMessages = [
+        "The page you're looking for seems to have vanished into the void... 🕳️",
+        "Houston, we have a 404 problem! 🚀",
+        "This page is on a coffee break... indefinitely ☕",
+        "The intern deleted this page. We're looking for them now... 🔍",
+        "Page.exe has stopped working 💻",
+        "Even Google can't find this page 🤷‍♂️"
+    ]
+
+    const [currentMessage, setCurrentMessage] = useState(0)
 
     useSEO({
         title: '404 - Page Not Found | Gaurav Kumar Yadav',
@@ -21,14 +37,45 @@ function NotFound() {
         return () => window.removeEventListener('mousemove', handleMouseMove)
     }, [])
 
+    // Countdown timer
     useEffect(() => {
-        if (countdown > 0) {
+        if (countdown > 0 && !easterEggFound) {
             const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
             return () => clearTimeout(timer)
-        } else {
+        } else if (countdown === 0 && !easterEggFound) {
             window.location.href = '/'
         }
-    }, [countdown])
+    }, [countdown, easterEggFound])
+
+    // Rotate messages every 3 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentMessage((prev) => (prev + 1) % funMessages.length)
+        }, 3000)
+        return () => clearInterval(interval)
+    }, [])
+
+    // Secret Word Easter Egg - Type "gaurav"
+    useEffect(() => {
+        const secretWord = 'gaurav'
+
+        const handleKeyPress = (e) => {
+            // Only capture letter keys
+            if (e.key.length === 1 && /[a-z]/i.test(e.key)) {
+                const newKonami = [...konami, e.key.toLowerCase()]
+                setKonami(newKonami.slice(-6)) // Keep only last 6 characters
+
+                // Check if last 6 characters spell "gaurav"
+                if (newKonami.slice(-6).join('') === secretWord) {
+                    setShowSecret(true)
+                    setTimeout(() => setShowSecret(false), 5000)
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyPress)
+        return () => window.removeEventListener('keydown', handleKeyPress)
+    }, [konami])
 
     // Calculate eye position based on mouse
     const calculateEyePosition = (eyeX, eyeY) => {
@@ -39,6 +86,16 @@ function NotFound() {
         return {
             x: Math.cos(angle) * distance,
             y: Math.sin(angle) * distance
+        }
+    }
+
+    // Easter egg - click 404 multiple times
+    const handle404Click = () => {
+        const newCount = clickCount + 1
+        setClickCount(newCount)
+
+        if (newCount === 5) {
+            setEasterEggFound(true)
         }
     }
 
@@ -57,9 +114,29 @@ function NotFound() {
             <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
 
             <div className="relative z-10 max-w-4xl w-full text-center">
+                {/* Secret Easter Egg Message */}
+                {showSecret && (
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-20 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl shadow-2xl animate-bounce z-50 border-4 border-yellow-300">
+                        <p className="text-xl font-bold">🎉 Secret Name Unlocked! ✨</p>
+                        <p className="text-sm mt-1">You found the secret! Welcome to Gaurav's world! 🚀</p>
+                    </div>
+                )}
+
+                {/* Easter Egg Found Message */}
+                {easterEggFound && (
+                    <div className="mb-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border-2 border-green-500 p-6 rounded-2xl animate-pulse">
+                        <p className="text-2xl font-bold text-green-400 mb-2">🎉 Easter Egg Found! 🥚</p>
+                        <p className="text-green-300">You clicked the 404 five times! Auto-redirect paused. You're curious, I like that! 😎</p>
+                    </div>
+                )}
+
                 {/* 404 with Eyes */}
                 <div className="mb-8 relative">
-                    <h1 className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none">
+                    <h1
+                        onClick={handle404Click}
+                        className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none cursor-pointer hover:scale-105 transition-transform duration-300"
+                        title="Click me 5 times 😉"
+                    >
                         4
                         <span className="relative inline-block">
                             <span className="relative">
@@ -110,48 +187,71 @@ function NotFound() {
                     <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
                         Oops! Page Not Found
                     </h2>
-                    <p className="text-xl md:text-2xl text-slate-400 mb-6">
-                        The page you're looking for seems to have vanished into the void... 🕳️
+                    <p className="text-xl md:text-2xl text-slate-400 mb-6 transition-all duration-500">
+                        {funMessages[currentMessage]}
                     </p>
                     <p className="text-lg text-slate-500">
-                        Don't worry, even the best developers get lost sometimes!
+                        Don't worry, even the best developers get lost sometimes! 🧭
                     </p>
+
+                    {/* Click Counter Hint */}
+                    {clickCount > 0 && clickCount < 5 && (
+                        <p className="text-sm text-blue-400 animate-pulse">
+                            🤔 Keep clicking the 404... ({clickCount}/5)
+                        </p>
+                    )}
 
                     {/* Fun Messages */}
                     <div className="flex flex-wrap justify-center gap-4 mt-8 mb-8">
-                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50">
-                            <span className="text-blue-400">🔍 Status Code:</span>
+                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-red-500 transition-colors duration-300 hover:scale-110 transform">
+                            <span className="text-red-400">❌ Status Code:</span>
                             <span className="text-white font-bold ml-2">404</span>
                         </div>
-                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50">
+                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-purple-500 transition-colors duration-300 hover:scale-110 transform">
                             <span className="text-purple-400">🤖 AI Analysis:</span>
                             <span className="text-white font-bold ml-2">Lost in Space</span>
+                        </div>
+                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-yellow-500 transition-colors duration-300 hover:scale-110 transform">
+                            <span className="text-yellow-400">⚠️ Error Type:</span>
+                            <span className="text-white font-bold ml-2">Not Found</span>
                         </div>
                     </div>
 
                     {/* Countdown Timer */}
-                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/50 inline-block">
-                        <p className="text-slate-300 mb-2">Redirecting to homepage in</p>
-                        <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            {countdown}
+                    {!easterEggFound && (
+                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/50 inline-block hover:border-blue-500 transition-all duration-300">
+                            <p className="text-slate-300 mb-2">Redirecting to homepage in</p>
+                            <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">
+                                {countdown}
+                            </div>
+                            <p className="text-slate-500 text-sm mt-2">seconds</p>
+                            <button
+                                onClick={() => setEasterEggFound(true)}
+                                className="mt-3 text-xs text-slate-500 hover:text-blue-400 underline transition-colors"
+                            >
+                                Cancel redirect
+                            </button>
                         </div>
-                        <p className="text-slate-500 text-sm mt-2">seconds</p>
-                    </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                         <Link
                             to="/"
-                            className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-lg"
+                            className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-lg overflow-hidden"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
-                                🏠 Go Home
+                                🏠 Take Me Home
+                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
                             </span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </Link>
 
                         <Link
                             to="/projects"
-                            className="group px-8 py-4 border-2 border-blue-500 rounded-xl font-semibold hover:bg-blue-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl text-lg backdrop-blur-sm"
+                            className="group px-8 py-4 border-2 border-cyan-500 rounded-xl font-semibold hover:bg-cyan-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/50 text-lg backdrop-blur-sm"
                         >
                             <span className="flex items-center justify-center gap-2">
                                 🚀 View Projects
@@ -160,7 +260,7 @@ function NotFound() {
 
                         <Link
                             to="/contact"
-                            className="group px-8 py-4 border-2 border-purple-500 rounded-xl font-semibold hover:bg-purple-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl text-lg backdrop-blur-sm"
+                            className="group px-8 py-4 border-2 border-purple-500 rounded-xl font-semibold hover:bg-purple-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/50 text-lg backdrop-blur-sm"
                         >
                             <span className="flex items-center justify-center gap-2">
                                 📧 Contact Me
@@ -170,30 +270,42 @@ function NotFound() {
 
                     {/* Helpful Links */}
                     <div className="mt-12 pt-8 border-t border-slate-800/50">
-                        <p className="text-slate-400 mb-4">Maybe you were looking for:</p>
+                        <p className="text-slate-400 mb-4 flex items-center justify-center gap-2">
+                            <span className="text-2xl">🔗</span>
+                            Maybe you were looking for:
+                        </p>
                         <div className="flex flex-wrap justify-center gap-3">
-                            <Link to="/about" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-colors">
+                            <Link to="/about" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-all hover:scale-110 inline-block">
                                 About Me
                             </Link>
                             <span className="text-slate-600">•</span>
-                            <Link to="/skills" className="text-purple-400 hover:text-purple-300 underline decoration-purple-400/30 hover:decoration-purple-300 transition-colors">
+                            <Link to="/skills" className="text-purple-400 hover:text-purple-300 underline decoration-purple-400/30 hover:decoration-purple-300 transition-all hover:scale-110 inline-block">
                                 Skills
                             </Link>
                             <span className="text-slate-600">•</span>
-                            <Link to="/projects" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/30 hover:decoration-cyan-300 transition-colors">
+                            <Link to="/blog" className="text-pink-400 hover:text-pink-300 underline decoration-pink-400/30 hover:decoration-pink-300 transition-all hover:scale-110 inline-block">
+                                Blog
+                            </Link>
+                            <span className="text-slate-600">•</span>
+                            <Link to="/projects" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/30 hover:decoration-cyan-300 transition-all hover:scale-110 inline-block">
                                 Projects
                             </Link>
                             <span className="text-slate-600">•</span>
-                            <Link to="/links" className="text-green-400 hover:text-green-300 underline decoration-green-400/30 hover:decoration-green-300 transition-colors">
-                                Find Me
+                            <Link to="/links" className="text-green-400 hover:text-green-300 underline decoration-green-400/30 hover:decoration-green-300 transition-all hover:scale-110 inline-block">
+                                Social Links
                             </Link>
                         </div>
                     </div>
 
                     {/* Fun Error Message */}
-                    <div className="mt-8 text-slate-600 text-sm">
-                        <p>💡 Pro Tip: Check the URL or use the navigation above</p>
-                        <p className="mt-2 italic">— Debugging life, one 404 at a time</p>
+                    <div className="mt-8 text-slate-600 text-sm space-y-2">
+                        <p className="flex items-center justify-center gap-2">
+                            💡 <span className="font-semibold">Pro Tip:</span> Check the URL or use the navigation menu
+                        </p>
+                        <p className="italic text-slate-700">— Debugging life, one 404 at a time ☕</p>
+                        <p className="text-xs text-slate-700 mt-4">
+                            🎮 <span className="text-purple-400">Easter Egg Hint:</span> Try typing the creator's name...
+                        </p>
                     </div>
                 </div>
 

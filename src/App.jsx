@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
+import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -89,6 +90,7 @@ function App() {
                 <Footer />
                 <BackToTop />
             </div>
+            <Analytics />
         </Router>
     )
 }
