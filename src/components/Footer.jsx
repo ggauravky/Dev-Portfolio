@@ -131,7 +131,7 @@ function Footer() {
                 {/* Developer Tag */}
                 <div className="mt-4 sm:mt-6 text-center px-4">
                     <p className="text-slate-600 text-[10px] sm:text-xs leading-relaxed">
-                        Designed & Developed by Gaurav Kumar Yadav | Student Developer Portfolio 2026
+                        Designed & Developed by <Link to="/admin" className="hover:text-blue-400 transition-colors duration-200">Gaurav Kumar Yadav</Link> | Student Developer Portfolio 2026
                     </p>
                 </div>
             </div>

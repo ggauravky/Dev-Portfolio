@@ -13,6 +13,7 @@ import Links from './pages/Links'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
+import AdminRedirect from './pages/AdminRedirect'
 
 function ScrollToTop() {
     const { pathname } = useLocation()
@@ -38,6 +39,7 @@ function App() {
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/links" element={<Links />} />
+                    <Route path="/admin" element={<AdminRedirect />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="*" element={<NotFound />} />
