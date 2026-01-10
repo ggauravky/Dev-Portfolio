@@ -7,6 +7,7 @@
 **Student Developer from Lucknow, India 🇮🇳 | Open for Internships & Freelance Projects**
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Visit_Now-success?style=for-the-badge)](https://ggauravky.vercel.app)
+[![Admin Panel](https://img.shields.io/badge/🎭_Admin_Panel-Manage_Data-orange?style=for-the-badge)](https://ggauravkyadmin.vercel.app)
 [![Backend API](https://img.shields.io/badge/⚡_Backend-Online-blue?style=for-the-badge)](https://dev-portfolio-ojfs.onrender.com)
 [![Stars](https://img.shields.io/github/stars/ggauravky/Dev-Portfolio?style=for-the-badge&logo=github)](https://github.com/ggauravky/Dev-Portfolio)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
@@ -17,6 +18,8 @@
 <img src="https://img.shields.io/badge/Vite-5.0-646CFF?style=flat-square&logo=vite" alt="Vite"/>
 
 ### 🔗 [View Live Portfolio →](https://ggauravky.vercel.app/)
+
+### 🎭 [Access Admin Panel →](https://ggauravkyadmin.vercel.app/)
 
 </div>
 
@@ -46,7 +49,11 @@
     <td>Optimized for Google and all search engines</td>
   </tr>
   <tr>
-    <td>🌙 <b>Dark Theme</b></td>
+    <td>� <b>Admin Panel</b></td>
+    <td>Fast & secure dashboard to manage database</td>
+  </tr>
+  <tr>
+    <td>�🌙 <b>Dark Theme</b></td>
     <td>Eye-friendly dark mode design</td>
   </tr>
   <tr>
@@ -299,6 +306,43 @@ vercel
   "contactId": "507f1f77bcf86cd799439011"
 }
 ```
+
+## 🎭 Admin Panel
+
+[![Admin Panel](https://img.shields.io/badge/🎭_Access_Admin_Panel-ggauravkyadmin.vercel.app-orange?style=for-the-badge)](https://ggauravkyadmin.vercel.app)
+
+### 🎯 The Problem
+
+Managing portfolio data through MongoDB directly or basic tools is:
+
+- ❌ **Slow** - Waiting for database queries to load
+- ❌ **Inefficient** - No proper filtering or search capabilities
+- ❌ **Clunky** - Poor user experience for data management
+- ❌ **Time-consuming** - Manual data operations take forever
+
+### ✨ The Solution
+
+A modern, blazing-fast admin panel that gives you:
+
+- ✅ **Instant Access** - View all contact messages and newsletter subscriptions in seconds
+- ✅ **Smart Filtering** - Powerful search, sort, and filter capabilities
+- ✅ **Full Control** - Complete CRUD operations with intuitive UI
+- ✅ **Professional Dashboard** - Beautiful analytics and data visualization
+- ✅ **Secure** - JWT-based authentication with protected routes
+
+### 🚀 Admin Panel Features
+
+| Feature                   | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| 📊 **Dashboard**          | Real-time analytics and statistics            |
+| 💬 **Contact Management** | View, filter, and manage contact submissions  |
+| 📧 **Newsletter**         | Manage newsletter subscriptions               |
+| 🔍 **Search & Filter**    | Advanced search across all data               |
+| 🔐 **Authentication**     | Secure JWT-based login system                 |
+| 📱 **Responsive**         | Works perfectly on all devices                |
+| ⚡ **Fast**               | Optimized performance for instant data access |
+
+**[🎭 Access Admin Panel →](https://ggauravkyadmin.vercel.app)**
 
 ## 🔒 Security Features
 
