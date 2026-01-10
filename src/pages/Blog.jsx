@@ -1,6 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
+import { SkeletonGrid } from '../components/SkeletonLoader'
 import './Blog.css'
 
 function Blog() {
@@ -15,11 +17,18 @@ function Blog() {
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [newsletterEmail, setNewsletterEmail] = useState('')
     const [newsletterLoading, setNewsletterLoading] = useState(false)
-    const [newsletterStatus, setNewsletterStatus] = useState({ type: '', message: '' })
     const [selectedBlog, setSelectedBlog] = useState(null)
-    const [copyStatus, setCopyStatus] = useState({ show: false, success: true })
+    const [isLoading, setIsLoading] = useState(true)
 
     const blogs = blogsData
+
+    // Simulate initial loading
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 800)
+        return () => clearTimeout(timer)
+    }, [])
 
     // Filter blogs based on search and category
     const filteredBlogs = useMemo(() => {
@@ -40,7 +49,9 @@ function Blog() {
     const handleNewsletterSubscribe = async (e) => {
         e.preventDefault()
         setNewsletterLoading(true)
-        setNewsletterStatus({ type: '', message: '' })
+
+        // Show loading toast
+        const loadingToast = toast.loading('Subscribing to newsletter...')
 
         try {
             const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
@@ -56,22 +67,22 @@ function Blog() {
             const data = await response.json()
 
             if (response.ok) {
-                setNewsletterStatus({
-                    type: 'success',
-                    message: data.message || '🎉 Successfully subscribed! You\'ll receive updates about new blog posts.'
+                toast.success(data.message || '🎉 Successfully subscribed! You\'ll receive updates about new blog posts.', {
+                    id: loadingToast,
+                    duration: 5000,
                 })
                 setNewsletterEmail('')
             } else {
-                setNewsletterStatus({
-                    type: 'error',
-                    message: data.message || '❌ Failed to subscribe. Please try again.'
+                toast.error(data.message || '❌ Failed to subscribe. Please try again.', {
+                    id: loadingToast,
+                    duration: 5000,
                 })
             }
         } catch (error) {
             console.error('Newsletter subscription error:', error)
-            setNewsletterStatus({
-                type: 'error',
-                message: '❌ Network error. Please check your connection and try again.'
+            toast.error('❌ Network error. Please check your connection and try again.', {
+                id: loadingToast,
+                duration: 5000,
             })
         } finally {
             setNewsletterLoading(false)
@@ -116,12 +127,10 @@ function Blog() {
             case 'copy':
                 navigator.clipboard.writeText(blogUrl)
                     .then(() => {
-                        setCopyStatus({ show: true, success: true })
-                        setTimeout(() => setCopyStatus({ show: false, success: true }), 3000)
+                        toast.success('🔗 Link copied to clipboard!', { duration: 3000 })
                     })
                     .catch(() => {
-                        setCopyStatus({ show: true, success: false })
-                        setTimeout(() => setCopyStatus({ show: false, success: false }), 3000)
+                        toast.error('Failed to copy link', { duration: 3000 })
                     })
                 break
 
@@ -200,7 +209,9 @@ function Blog() {
 
                 {/* All Blog Posts Grid */}
                 <div>
-                    {filteredBlogs.length === 0 ? (
+                    {isLoading ? (
+                        <SkeletonGrid count={6} />
+                    ) : filteredBlogs.length === 0 ? (
                         <div className="col-span-full text-center py-20">
                             <div className="text-8xl mb-6">📝</div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Blog Posts Found</h3>
@@ -278,16 +289,6 @@ function Blog() {
                     <p className="text-slate-300 mb-6 max-w-2xl mx-auto text-sm md:text-base">
                         Get notified when I publish new blog posts about web development, AI, and coding tutorials!
                     </p>
-
-                    {/* Status Messages */}
-                    {newsletterStatus.message && (
-                        <div className={`mb-4 p-4 rounded-lg text-sm md:text-base ${newsletterStatus.type === 'success'
-                            ? 'bg-green-500/20 border border-green-500/50 text-green-300'
-                            : 'bg-red-500/20 border border-red-500/50 text-red-300'
-                            }`}>
-                            {newsletterStatus.message}
-                        </div>
-                    )}
 
                     <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                         <input
@@ -443,32 +444,6 @@ function Blog() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Copy Link Toast Notification */}
-                {copyStatus.show && (
-                    <div className="fixed bottom-8 right-8 z-[60] animate-slideUp">
-                        <div className={`px-6 py-4 rounded-xl shadow-2xl backdrop-blur-sm flex items-center gap-3 ${copyStatus.success
-                                ? 'bg-gradient-to-r from-green-600/90 to-emerald-600/90 border border-green-400/50'
-                                : 'bg-gradient-to-r from-red-600/90 to-rose-600/90 border border-red-400/50'
-                            }`}>
-                            {copyStatus.success ? (
-                                <>
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span className="text-white font-medium">Link copied to clipboard!</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    <span className="text-white font-medium">Failed to copy link</span>
-                                </>
-                            )}
                         </div>
                     </div>
                 )}

@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import useSEO from '../hooks/useSEO'
+import { SkeletonGrid } from '../components/SkeletonLoader'
 
 function Projects() {
     useSEO({
@@ -11,6 +12,15 @@ function Projects() {
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Simulate initial loading
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 800)
+        return () => clearTimeout(timer)
+    }, [])
 
     const projects = [
         {
@@ -221,7 +231,11 @@ function Projects() {
 
                 {/* Projects Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {filteredProjects.length === 0 ? (
+                    {isLoading ? (
+                        <div className="col-span-full">
+                            <SkeletonGrid count={6} columns={2} />
+                        </div>
+                    ) : filteredProjects.length === 0 ? (
                         <div className="col-span-full text-center py-20">
                             <div className="text-8xl mb-6">🔍</div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Projects Found</h3>

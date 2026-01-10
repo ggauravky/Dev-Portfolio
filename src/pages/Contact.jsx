@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 
 function Contact() {
@@ -16,21 +17,20 @@ function Contact() {
         message: ''
     })
     const [loading, setLoading] = useState(false)
-    const [status, setStatus] = useState({ type: '', message: '' })
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         })
-        // Clear status when user starts typing
-        if (status.message) setStatus({ type: '', message: '' })
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
-        setStatus({ type: '', message: '' })
+
+        // Show loading toast
+        const loadingToast = toast.loading('Sending your message...')
 
         try {
             // Remove trailing slash if present
@@ -47,31 +47,32 @@ function Contact() {
             const data = await response.json()
 
             if (response.ok) {
-                setStatus({
-                    type: 'success',
-                    message: '✅ Message sent successfully! I\'ll get back to you soon.'
+                toast.success('✅ Message sent successfully! I\'ll get back to you soon.', {
+                    id: loadingToast,
+                    duration: 5000,
                 })
                 setFormData({ name: '', email: '', subject: '', message: '' })
             } else {
                 // Show detailed validation errors
-                let errorMessage = data.message || '❌ Failed to send message. Please try again.'
+                let errorMessage = data.message || 'Failed to send message. Please try again.'
 
                 if (data.errors && Array.isArray(data.errors)) {
-                    errorMessage += '\n' + data.errors.map(err => `• ${err.field}: ${err.message}`).join('\n')
+                    const errorList = data.errors.map(err => `${err.field}: ${err.message}`).join('\n')
+                    errorMessage = `${errorMessage}\n${errorList}`
                 }
 
-                setStatus({
-                    type: 'error',
-                    message: errorMessage
+                toast.error(errorMessage, {
+                    id: loadingToast,
+                    duration: 6000,
                 })
 
                 console.error('Validation errors:', data.errors)
             }
         } catch (error) {
             console.error('Error sending message:', error)
-            setStatus({
-                type: 'error',
-                message: '❌ Network error. Please check your connection and try again.'
+            toast.error('❌ Network error. Please check your connection and try again.', {
+                id: loadingToast,
+                duration: 5000,
             })
         } finally {
             setLoading(false)
@@ -260,13 +261,6 @@ function Contact() {
                                         className="w-full bg-slate-900/80 border border-slate-700 text-slate-300 px-4 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 resize-none placeholder-slate-500"
                                     ></textarea>
                                 </div>
-
-                                {/* Status Message */}
-                                {status.message && (
-                                    <div className={`p-4 rounded-xl ${status.type === 'success' ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>
-                                        <div className="whitespace-pre-line">{status.message}</div>
-                                    </div>
-                                )}
 
                                 <button
                                     type="submit"
