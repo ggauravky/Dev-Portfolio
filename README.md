@@ -183,14 +183,23 @@ Dev-Portfolio/
 ├── 📂 src/                      # Frontend source code
 │   ├── 📂 components/           # Reusable components
 │   │   ├── Navbar.jsx          # Navigation bar
-│   │   └── Navbar.css          # Navbar styles
+│   │   ├── Navbar.css          # Navbar styles
+│   │   ├── Footer.jsx          # Footer component
+│   │   └── Footer.css          # Footer styles
 │   ├── 📂 pages/               # Page components
 │   │   ├── Home.jsx            # Home page
 │   │   ├── About.jsx           # About page
 │   │   ├── Skills.jsx          # Skills showcase
 │   │   ├── Projects.jsx        # Projects portfolio
+│   │   ├── Blog.jsx            # Blog listing
 │   │   ├── Contact.jsx         # Contact form
-│   │   └── Links.jsx           # Social links
+│   │   ├── Links.jsx           # Social links
+│   │   ├── Privacy.jsx         # Privacy policy
+│   │   ├── Terms.jsx           # Terms of service
+│   │   ├── NotFound.jsx        # 404 page
+│   │   └── *.css               # Page-specific styles
+│   ├── 📂 data/                # Static data
+│   │   └── blogsData.js        # Blog content
 │   ├── 📂 hooks/               # Custom React hooks
 │   │   └── useSEO.jsx          # SEO optimization
 │   ├── App.jsx                 # Main app component
@@ -199,11 +208,14 @@ Dev-Portfolio/
 │
 ├── 📂 backend/                  # Backend source code
 │   ├── 📂 controllers/          # Request handlers
-│   │   └── contactController.js
+│   │   ├── contactController.js    # Contact form handler
+│   │   └── newsletterController.js # Newsletter handler
 │   ├── 📂 models/              # Database schemas
-│   │   └── Contact.js
+│   │   ├── Contact.js          # Contact schema
+│   │   └── Newsletter.js       # Newsletter schema
 │   ├── 📂 routes/              # API routes
-│   │   └── contactRoutes.js
+│   │   ├── contactRoutes.js    # Contact endpoints
+│   │   └── newsletterRoutes.js # Newsletter endpoints
 │   ├── 📂 middleware/          # Custom middleware
 │   │   ├── validator.js        # Input validation
 │   │   └── rateLimiter.js      # Rate limiting
@@ -212,14 +224,17 @@ Dev-Portfolio/
 │   └── server.js               # Express server
 │
 ├── 📂 public/                   # Static assets
-│   ├── 📂 images/              # Images
+│   ├── 📂 images/              # Image assets
+│   │   ├── 📂 blogs/           # Blog images
+│   │   └── 📂 projects/        # Project images
 │   ├── robots.txt              # SEO crawlers
 │   └── sitemap.xml             # Site structure
 │
 ├── index.html                   # HTML template
-├── package.json                 # Dependencies
+├── package.json                 # Frontend dependencies
 ├── vite.config.js              # Vite configuration
 ├── tailwind.config.js          # Tailwind setup
+├── postcss.config.js           # PostCSS configuration
 └── vercel.json                 # Vercel config
 ```
 
