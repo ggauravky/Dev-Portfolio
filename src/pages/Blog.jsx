@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
@@ -267,12 +268,12 @@ function Blog() {
                                                 </span>
                                             ))}
                                         </div>
-                                        <button
-                                            onClick={() => handleReadMore(blog.id)}
-                                            className="w-full bg-slate-700 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-lg transition-all duration-300 border border-slate-600 hover:border-cyan-500 hover:scale-105"
+                                        <Link
+                                            to={`/blog/${blog.slug}`}
+                                            className="block w-full bg-slate-700 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-lg transition-all duration-300 border border-slate-600 hover:border-cyan-500 hover:scale-105 text-center"
                                         >
                                             Read More →
-                                        </button>
+                                        </Link>
                                     </div>
                                 </div>
                             ))}

@@ -1,34 +1,75 @@
-# https://www.robotstxt.org/robotstxt.html
+# Robots.txt for Gaurav Kumar Yadav Portfolio
+# https://ggauravky.vercel.app
+
+# Allow all search engines to crawl the site
 User-agent: *
 Allow: /
-
-# Disallow admin or private paths if any
-# Disallow: /admin/
+Disallow: /admin
+Disallow: /*.json$
+Disallow: /api/
 
 # Sitemap location
 Sitemap: https://ggauravky.vercel.app/sitemap.xml
 
-# Crawl-delay (optional, helps manage server load)
+# Crawl rate (1 second between requests)
 Crawl-delay: 1
 
-# Allow all major search engines
+# Google Search Console
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
+# Google Image Search
 User-agent: Googlebot-Image
-Allow: /
+Allow: /images/
+Crawl-delay: 1
 
+# Bing
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 1
 
+# Yahoo
 User-agent: Slurp
 Allow: /
+Crawl-delay: 1
 
+# DuckDuckGo
 User-agent: DuckDuckBot
 Allow: /
+Crawl-delay: 1
 
+# Baidu (Chinese search engine)
 User-agent: Baiduspider
 Allow: /
+Crawl-delay: 2
 
+# Yandex (Russian search engine)
 User-agent: YandexBot
 Allow: /
+Crawl-delay: 1
+
+# Twitter/X
+User-agent: Twitterbot
+Allow: /
+
+# Facebook
+User-agent: facebookexternalhit
+Allow: /
+
+# LinkedIn
+User-agent: LinkedInBot
+Allow: /
+
+# Disallow malicious bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

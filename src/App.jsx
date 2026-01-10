@@ -1,29 +1,44 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
 import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
-import Home from './pages/Home'
-import About from './pages/About'
-import Skills from './pages/Skills'
-import Projects from './pages/Projects'
-import Blog from './pages/Blog'
-import Contact from './pages/Contact'
-import Links from './pages/Links'
-import Privacy from './pages/Privacy'
-import Terms from './pages/Terms'
-import NotFound from './pages/NotFound'
-import AdminRedirect from './pages/AdminRedirect'
+import ErrorBoundary from './components/ErrorBoundary'
+
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/Home'))
+const About = lazy(() => import('./pages/About'))
+const Skills = lazy(() => import('./pages/Skills'))
+const Projects = lazy(() => import('./pages/Projects'))
+const Blog = lazy(() => import('./pages/Blog'))
+const BlogPost = lazy(() => import('./pages/BlogPost'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Links = lazy(() => import('./pages/Links'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 
 function ScrollToTop() {
-    const { pathname } = useLocation()
+    const { pathname, hash } = useLocation()
 
     useEffect(() => {
-        window.scrollTo(0, 0)
-    }, [pathname])
+        // If there's a hash, let the browser handle it
+        if (hash) {
+            setTimeout(() => {
+                const element = document.querySelector(hash)
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' })
+                }
+            }, 0)
+        } else {
+            // Scroll to top instantly when route changes
+            window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+        }
+    }, [pathname, hash])
 
     return null
 }
@@ -72,24 +87,36 @@ function App() {
                     },
                 }}
             />
-            <div className="App">
-                <Navbar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/skills" element={<Skills />} />
-                    <Route path="/projects" element={<Projects />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/links" element={<Links />} />
-                    <Route path="/admin" element={<AdminRedirect />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="*" element={<NotFound />} />
-                </Routes>
-                <Footer />
-                <BackToTop />
-            </div>
+            <ErrorBoundary>
+                <div className="App">
+                    <Navbar />
+                    <Suspense fallback={
+                        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                                <p className="mt-4 text-slate-300 font-medium">Loading...</p>
+                            </div>
+                        </div>
+                    }>
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/skills" element={<Skills />} />
+                            <Route path="/projects" element={<Projects />} />
+                            <Route path="/blog" element={<Blog />} />
+                            <Route path="/blog/:slug" element={<BlogPost />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/links" element={<Links />} />
+                            <Route path="/admin" element={<AdminRedirect />} />
+                            <Route path="/privacy" element={<Privacy />} />
+                            <Route path="/terms" element={<Terms />} />
+                            <Route path="*" element={<NotFound />} />
+                        </Routes>
+                    </Suspense>
+                    <Footer />
+                    <BackToTop />
+                </div>
+            </ErrorBoundary>
             <Analytics />
         </Router>
     )

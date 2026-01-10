@@ -28,11 +28,14 @@ dist-ssr
 .env.local
 .env.production
 .env.production.local
-.env.example
 *.env
+!.env.example
 
 # Deployment
 .vercel
+
+# Build stats
+dist/stats.html
 
 # Documentation (optional - uncomment to hide)
 # DEPLOYMENT_GUIDE.md

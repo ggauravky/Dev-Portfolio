@@ -4,6 +4,7 @@
 export const blogsData = [
   {
     id: 1,
+    slug: "ai-inside-every-tool-future",
     title: "What Will the World Look Like When Every Tool Has AI Inside It?",
     excerpt:
       "We're already seeing early signs: phones suggest replies, maps predict traffic, and search engines finish our sentences. But what happens when AI isn't just an add-on — when it's built into everything?",
@@ -91,12 +92,15 @@ export const blogsData = [
     tags: ["AI", "Future", "Productivity", "Technology"],
     author: "Gaurav Kumar Yadav",
     date: "2025-09-21",
+    publishedDate: "2025-09-21T10:00:00Z",
     readTime: "5 min read",
     image: "/images/blogs/blog1.png",
+    ogImage: "https://ggauravky.vercel.app/images/blogs/blog1.png",
     featured: true, // Will appear on home page
   },
   {
     id: 2,
+    slug: "hidden-ai-war-cybercriminals-2025",
     title:
       "The Hidden AI War: How Cybercriminals Are Using AI Against You in 2025",
     excerpt:
@@ -188,12 +192,15 @@ export const blogsData = [
     tags: ["Cybersecurity", "AI", "Security", "Threats", "Defense"],
     author: "Gaurav Kumar Yadav",
     date: "2025-08-10",
+    publishedDate: "2025-08-10T10:00:00Z",
     readTime: "6 min read",
     image: "/images/blogs/blog2.png",
+    ogImage: "https://ggauravky.vercel.app/images/blogs/blog2.png",
     featured: true, // Will appear on home page
   },
   {
     id: 3,
+    slug: "traditional-cybersecurity-dead-ai-revolution",
     title:
       "Is Traditional Cybersecurity Dead? Welcome to the AI-Powered Digital Defense Revolution",
     excerpt:
@@ -281,12 +288,15 @@ export const blogsData = [
     tags: ["AI", "Cybersecurity", "Future", "Defense", "Zero-Trust"],
     author: "Gaurav Kumar Yadav",
     date: "2025-07-21",
+    publishedDate: "2025-07-21T10:00:00Z",
     readTime: "9 min read",
     image: "/images/blogs/blog3.png",
+    ogImage: "https://ggauravky.vercel.app/images/blogs/blog3.png",
     featured: true, // Will appear on home page
   },
   {
     id: 4,
+    slug: "certificates-computer-science-2025-guide",
     title:
       "Do Certificates Really Work in Computer Science? The Ultimate 2025 Student Guide",
     excerpt:
@@ -381,12 +391,15 @@ export const blogsData = [
     tags: ["Certificates", "Career", "Students", "Computer-Science", "Jobs"],
     author: "Gaurav Kumar Yadav",
     date: "2025-07-05",
+    publishedDate: "2025-07-05T10:00:00Z",
     readTime: "8 min read",
     image: "/images/blogs/blog4.png",
+    ogImage: "https://ggauravky.vercel.app/images/blogs/blog4.png",
     featured: false,
   },
   {
     id: 5,
+    slug: "learning-to-code-beyond-syntax",
     title: "I Thought Learning to Code Was Just Syntax. I Was Wrong.",
     excerpt:
       "😅 I used to think learning to code was only about memorizing commands and syntax. 💡 Then I hit a real project - and everything changed. This post is what I learned the hard (but useful) way - simple steps you can start today.",
@@ -465,8 +478,10 @@ export const blogsData = [
     ],
     author: "Gaurav Kumar Yadav",
     date: "2026-01-05",
+    publishedDate: "2026-01-05T10:00:00Z",
     readTime: "7 min read",
     image: "/images/blogs/blog5.png",
+    ogImage: "https://ggauravky.vercel.app/images/blogs/blog5.png",
     featured: false,
   },
 ];

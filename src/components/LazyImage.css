@@ -1,0 +1,28 @@
+/* Lazy Image Loading Styles */
+.lazy-image-loading {
+  filter: blur(10px);
+  opacity: 0.6;
+  transition: filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.lazy-image-loaded {
+  filter: blur(0);
+  opacity: 1;
+  transition: filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Skeleton animation for images */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.lazy-image-skeleton {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #1e293b 4%, #334155 25%, #1e293b 36%);
+  background-size: 1000px 100%;
+}
