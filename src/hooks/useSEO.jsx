@@ -118,7 +118,7 @@ const useSEO = ({
         let structuredData = {}
 
         if (type === 'article') {
-            // Blog post schema
+            // Blog post schema - Google Rich Results compliant
             structuredData = {
                 '@context': 'https://schema.org',
                 '@type': 'BlogPosting',
@@ -126,16 +126,30 @@ const useSEO = ({
                 name: title,
                 description: description,
                 url: fullUrl,
-                image: ogImage || `${siteUrl}/images/profile.jpg`,
-                datePublished: publishedTime,
-                dateModified: publishedTime,
-                author: personSchema,
+                image: {
+                    '@type': 'ImageObject',
+                    url: ogImage || `${siteUrl}/images/profile.jpg`,
+                    width: 1200,
+                    height: 630
+                },
+                datePublished: publishedTime || new Date().toISOString(),
+                dateModified: publishedTime || new Date().toISOString(),
+                author: {
+                    '@type': 'Person',
+                    name: author || 'Gaurav Kumar Yadav',
+                    url: siteUrl,
+                    image: `${siteUrl}/images/profile.jpg`,
+                    jobTitle: 'Python Developer | AI & Data Science Enthusiast'
+                },
                 publisher: {
                     '@type': 'Person',
                     name: 'Gaurav Kumar Yadav',
+                    url: siteUrl,
                     logo: {
                         '@type': 'ImageObject',
-                        url: `${siteUrl}/images/profile.jpg`
+                        url: `${siteUrl}/images/profile.jpg`,
+                        width: 512,
+                        height: 512
                     }
                 },
                 mainEntityOfPage: {
