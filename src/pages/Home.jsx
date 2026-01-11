@@ -6,9 +6,9 @@ import { blogsData } from '../data/blogsData'
 function Home() {
     // SEO Optimization
     useSEO({
-        title: 'Gaurav Kumar Yadav - Python Developer | AI, Data Science & Full Stack | Lucknow',
-        description: 'Welcome! I am Gaurav Kumar Yadav, a student Python Developer and AI enthusiast from Lucknow, India. Specializing in Data Science, Machine Learning, and Full Stack Development with React, Node.js, and MongoDB. Open for internships, entry-level roles, and freelance projects. Explore my portfolio!',
-        keywords: 'Gaurav Kumar Yadav, Python Developer, AI Developer, Data Science, Machine Learning, Full Stack Developer, React, Node.js, MongoDB, Internship, Entry Level, Student Developer Lucknow, BCA Developer, AI Projects',
+        title: 'Gaurav Portfolio - Gaurav Kumar Yadav | Python & AI Developer Portfolio | Full Stack Projects',
+        description: 'Welcome to Gaurav Portfolio! Professional developer portfolio showcasing Python, AI/ML, Data Science, and Full Stack projects by Gaurav Kumar Yadav. Student Python Developer and AI enthusiast from Lucknow, India. Specializing in Data Science, Machine Learning, and Full Stack Development with React, Node.js, and MongoDB. Explore my portfolio of innovative projects, read tech blogs, and connect for internships, entry-level roles, and freelance opportunities.',
+        keywords: 'Gaurav Portfolio, Gaurav Kumar Yadav Portfolio, Portfolio Gaurav, Developer Portfolio, Python Portfolio, AI Portfolio, Portfolio Website, Gaurav Kumar Yadav, Python Developer, AI Developer, Data Science, Machine Learning, Full Stack Developer, React, Node.js, MongoDB, Internship, Entry Level, Student Developer Lucknow, BCA Developer, AI Projects, Professional Portfolio',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 

@@ -4,9 +4,9 @@ import { SkeletonGrid } from '../components/SkeletonLoader'
 
 function Projects() {
     useSEO({
-        title: 'Projects Portfolio - Gaurav Kumar Yadav | Python, AI/ML & Full Stack Projects',
-        description: 'Student Developer portfolio featuring Python projects, AI/ML applications, Data Science tools, and Full Stack web applications. Projects include AI Video Editing, Real-Time Chat App, Data Analysis dashboards, and more. Open for internships and freelance work.',
-        keywords: 'Python Projects, AI ML Projects, Data Science Projects, Full Stack Projects, React Projects, Node.js Projects, Student Developer Portfolio, AI Video Editor, Web Applications, Internship Portfolio',
+        title: 'Projects - Gaurav Portfolio | Python, AI/ML & Full Stack Development Projects',
+        description: 'Explore Gaurav Portfolio Projects! Student developer portfolio featuring innovative Python projects, AI/ML applications, Data Science tools, and Full Stack web applications by Gaurav Kumar Yadav. Projects include AI Video Editing platform, Real-Time Chat App, MERN stack applications, Data Analysis dashboards, and more. Portfolio showcasing real-world solutions. Open for internships and freelance work.',
+        keywords: 'Gaurav Portfolio Projects, Portfolio Projects, Python Projects, AI ML Projects, Data Science Projects, Full Stack Projects, React Projects, Node.js Projects, Student Developer Portfolio, AI Video Editor, Web Applications, Internship Portfolio, Developer Projects, Portfolio Gallery',
         ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png'
     })
 

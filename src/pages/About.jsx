@@ -2,9 +2,9 @@ import useSEO from '../hooks/useSEO'
 
 function About() {
     useSEO({
-        title: 'About Me - Gaurav Kumar Yadav | Python & AI Developer | Lucknow',
-        description: 'Learn about Gaurav Kumar Yadav, a BCA student from Lucknow pursuing AI/ML certification from IIT Mandi. Passionate about Python, Data Science, AI, and Full Stack Development. Open for internships, freelance projects, and entry-level opportunities.',
-        keywords: 'About Gaurav Kumar Yadav, BCA Student Lucknow, Python Developer, Data Science Student, AI Engineer, Machine Learning, Full Stack Developer, IIT Mandi, Developer Journey, Internship Seeker',
+        title: 'About - Gaurav Portfolio | Gaurav Kumar Yadav | Python & AI Developer from Lucknow',
+        description: 'About Gaurav Kumar Yadav Portfolio - Learn about a passionate BCA student from Lucknow pursuing AI/ML certification from IIT Mandi. Explore Gaurav\'s journey as a Python Developer, Data Science enthusiast, AI Engineer, and Full Stack Developer. Discover skills, experience, and career goals. Open for internships, freelance projects, and entry-level opportunities.',
+        keywords: 'About Gaurav Portfolio, About Gaurav Kumar Yadav, Gaurav Portfolio About, Portfolio About Page, BCA Student Lucknow, Python Developer, Data Science Student, AI Engineer, Machine Learning, Full Stack Developer, IIT Mandi, Developer Journey, Internship Seeker, Developer Bio, Portfolio Bio',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 

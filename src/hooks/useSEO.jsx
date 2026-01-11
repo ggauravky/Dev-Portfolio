@@ -90,54 +90,138 @@ const useSEO = ({
         }
         canonical.setAttribute('href', fullUrl)
 
-        // Add JSON-LD structured data - only once per page
+        // Add JSON-LD structured data - Enhanced with multiple schemas
         const jsonLdId = 'seo-json-ld'
         let jsonLdScript = document.getElementById(jsonLdId)
 
-        const structuredData = {
-            '@context': 'https://schema.org',
-            '@type': type === 'article' ? 'BlogPosting' : 'WebSite',
-            name: title,
-            description: description,
-            url: fullUrl,
-            author: {
-                '@type': 'Person',
-                name: author || 'Gaurav Kumar Yadav',
-                url: siteUrl,
-                jobTitle: 'Python Developer | AI & Data Science Enthusiast',
-                sameAs: [
-                    'https://github.com/ggauravky',
-                    'https://www.linkedin.com/in/gauravky/',
-                    'https://leetcode.com/gauravky/'
-                ]
-            }
+        // Base author/person schema
+        const personSchema = {
+            '@type': 'Person',
+            '@id': `${siteUrl}/#person`,
+            name: 'Gaurav Kumar Yadav',
+            url: siteUrl,
+            image: `${siteUrl}/images/profile.jpg`,
+            jobTitle: 'Python Developer | AI & Data Science Enthusiast',
+            description: 'Student Python Developer and AI enthusiast specializing in Data Science, Machine Learning, and Full Stack Development',
+            alumniOf: {
+                '@type': 'EducationalOrganization',
+                name: 'Bachelor of Computer Applications (BCA)'
+            },
+            knowsAbout: ['Python', 'Artificial Intelligence', 'Machine Learning', 'Data Science', 'React', 'Node.js', 'Full Stack Development', 'MongoDB'],
+            sameAs: [
+                'https://github.com/ggauravky',
+                'https://www.linkedin.com/in/gauravky/',
+                'https://leetcode.com/gauravky/'
+            ]
         }
 
+        let structuredData = {}
+
         if (type === 'article') {
-            structuredData['@type'] = 'BlogPosting'
-            structuredData.headline = title
-            structuredData.image = ogImage || `${siteUrl}/images/profile.jpg`
-            structuredData.datePublished = publishedTime
-            structuredData.publisher = {
-                '@type': 'Person',
-                name: 'Gaurav Kumar Yadav',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: `${siteUrl}/images/profile.jpg`
+            // Blog post schema
+            structuredData = {
+                '@context': 'https://schema.org',
+                '@type': 'BlogPosting',
+                headline: title,
+                name: title,
+                description: description,
+                url: fullUrl,
+                image: ogImage || `${siteUrl}/images/profile.jpg`,
+                datePublished: publishedTime,
+                dateModified: publishedTime,
+                author: personSchema,
+                publisher: {
+                    '@type': 'Person',
+                    name: 'Gaurav Kumar Yadav',
+                    logo: {
+                        '@type': 'ImageObject',
+                        url: `${siteUrl}/images/profile.jpg`
+                    }
+                },
+                mainEntityOfPage: {
+                    '@type': 'WebPage',
+                    '@id': fullUrl
                 }
             }
             if (keywords) {
                 structuredData.keywords = keywords
             }
         } else {
-            structuredData['@type'] = 'WebSite'
-            structuredData.potentialAction = {
-                '@type': 'SearchAction',
-                target: {
-                    '@type': 'EntryPoint',
-                    urlTemplate: `${siteUrl}/blog?search={search_term_string}`
-                },
-                'query-input': 'required name=search_term_string'
+            // Portfolio website with comprehensive schemas
+            structuredData = {
+                '@context': 'https://schema.org',
+                '@graph': [
+                    // WebSite Schema
+                    {
+                        '@type': 'WebSite',
+                        '@id': `${siteUrl}/#website`,
+                        url: siteUrl,
+                        name: 'Gaurav Portfolio - Gaurav Kumar Yadav',
+                        alternateName: ['Gaurav Portfolio', 'Gaurav Kumar Yadav Portfolio', 'Portfolio Gaurav'],
+                        description: 'Professional developer portfolio featuring Python, AI/ML, Data Science, and Full Stack projects by Gaurav Kumar Yadav',
+                        inLanguage: 'en-US',
+                        potentialAction: {
+                            '@type': 'SearchAction',
+                            target: {
+                                '@type': 'EntryPoint',
+                                urlTemplate: `${siteUrl}/blog?search={search_term_string}`
+                            },
+                            'query-input': 'required name=search_term_string'
+                        }
+                    },
+                    // Person Schema
+                    personSchema,
+                    // ProfilePage Schema
+                    {
+                        '@type': 'ProfilePage',
+                        '@id': fullUrl,
+                        url: fullUrl,
+                        name: title,
+                        description: description,
+                        mainEntity: {
+                            '@id': `${siteUrl}/#person`
+                        },
+                        breadcrumb: {
+                            '@type': 'BreadcrumbList',
+                            '@id': `${fullUrl}#breadcrumb`,
+                            itemListElement: [
+                                {
+                                    '@type': 'ListItem',
+                                    position: 1,
+                                    name: 'Home',
+                                    item: siteUrl
+                                }
+                            ]
+                        }
+                    },
+                    // Organization Schema (Portfolio as professional presence)
+                    {
+                        '@type': 'Organization',
+                        '@id': `${siteUrl}/#organization`,
+                        name: 'Gaurav Portfolio',
+                        alternateName: 'Gaurav Kumar Yadav Portfolio',
+                        url: siteUrl,
+                        logo: {
+                            '@type': 'ImageObject',
+                            url: `${siteUrl}/images/profile.jpg`,
+                            width: 512,
+                            height: 512
+                        },
+                        founder: {
+                            '@id': `${siteUrl}/#person`
+                        },
+                        contactPoint: {
+                            '@type': 'ContactPoint',
+                            contactType: 'Portfolio Inquiries',
+                            availableLanguage: ['English', 'Hindi']
+                        },
+                        sameAs: [
+                            'https://github.com/ggauravky',
+                            'https://www.linkedin.com/in/gauravky/',
+                            'https://leetcode.com/gauravky/'
+                        ]
+                    }
+                ]
             }
         }
 

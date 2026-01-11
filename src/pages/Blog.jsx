@@ -8,9 +8,9 @@ import './Blog.css'
 
 function Blog() {
     useSEO({
-        title: 'Blog - Gaurav Kumar Yadav | Tech Insights, Tutorials & Developer Journey',
-        description: 'Read my blog posts about Python, AI/ML, Web Development, Data Science, coding tutorials, and my journey as a student developer. Learn from my experiences and projects.',
-        keywords: 'Tech Blog, Python Tutorials, AI ML Blog, Web Development Blog, Student Developer Blog, Coding Tips, Data Science Articles, Programming Guide, Developer Journey',
+        title: 'Blog - Gaurav Portfolio | Tech Articles, Python Tutorials & AI Insights',
+        description: 'Read Gaurav Portfolio Blog! Discover tech insights, Python tutorials, AI/ML articles, Web Development guides, Data Science tips, and developer journey stories by Gaurav Kumar Yadav. Learn from real-world projects, coding tutorials, and industry best practices. Stay updated with the latest in technology.',
+        keywords: 'Gaurav Portfolio Blog, Portfolio Blog, Tech Blog, Python Tutorials, AI ML Blog, Web Development Blog, Student Developer Blog, Coding Tips, Data Science Articles, Programming Guide, Developer Journey, Technology Articles, Coding Tutorials Blog',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
