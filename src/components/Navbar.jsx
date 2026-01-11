@@ -1,37 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const location = useLocation()
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isMenuOpen && !event.target.closest('nav')) {
-                setIsMenuOpen(false)
-            }
-        }
-
-        document.addEventListener('click', handleClickOutside)
-        return () => document.removeEventListener('click', handleClickOutside)
-    }, [isMenuOpen])
-
-    useEffect(() => {
-        setIsMenuOpen(false)
-    }, [location])
-
-    useEffect(() => {
-        if (isMenuOpen) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = 'unset'
-        }
-        return () => {
-            document.body.style.overflow = 'unset'
-        }
-    }, [isMenuOpen])
-
-    const navLinks = [
+    const navLinks = useMemo(() => [
         { path: '/', name: 'Home' },
         { path: '/about', name: 'About' },
         { path: '/skills', name: 'Skills' },
@@ -39,9 +13,35 @@ function Navbar() {
         { path: '/blog', name: 'Blog' },
         { path: '/contact', name: 'Contact' },
         { path: '/links', name: 'Find Me' }
-    ]
+    ], [])
 
-    const isActive = (path) => location.pathname === path
+    const isActive = useCallback((path) => location.pathname === path, [location.pathname])
+
+    const closeMenu = useCallback(() => setIsMenuOpen(false), [])
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isMenuOpen && !event.target.closest('nav')) {
+                closeMenu()
+            }
+        }
+
+        if (isMenuOpen) {
+            document.addEventListener('click', handleClickOutside)
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'unset'
+        }
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside)
+            document.body.style.overflow = 'unset'
+        }
+    }, [isMenuOpen, closeMenu])
+
+    useEffect(() => {
+        closeMenu()
+    }, [location, closeMenu])
 
     return (
         <>
@@ -50,7 +50,7 @@ function Navbar() {
                     <div className="flex items-center justify-between">
                         <Link
                             to="/"
-                            onClick={() => setIsMenuOpen(false)}
+                            onClick={closeMenu}
                             className="text-base sm:text-lg md:text-xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300 flex items-center gap-1 sm:gap-2"
                         >
                             <span className="text-xl sm:text-2xl md:text-3xl">✨</span>
@@ -108,7 +108,7 @@ function Navbar() {
             {isMenuOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={closeMenu}
                 />
             )}
 
@@ -119,7 +119,7 @@ function Navbar() {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                onClick={() => setIsMenuOpen(false)}
+                                onClick={closeMenu}
                                 style={{ animationDelay: `${index * 50}ms` }}
                                 className={`block px-5 py-4 rounded-xl font-medium transition-all duration-300 animate-slideInRight ${isActive(link.path)
                                     ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/50 transform scale-105'
@@ -142,7 +142,7 @@ function Navbar() {
                         <a
                             href="/resume.pdf"
                             download
-                            onClick={() => setIsMenuOpen(false)}
+                            onClick={closeMenu}
                             className="flex items-center justify-center gap-2 w-full px-5 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/30 cursor-pointer"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

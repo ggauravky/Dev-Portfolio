@@ -2,3 +2,34 @@
   min-height: 100vh;
   background-color: #0f172a;
 }
+
+/* Performance optimizations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimize animations */
+.animate-spin,
+.animate-pulse,
+.animate-bounce {
+  will-change: transform;
+}
+
+.animate-fadeIn,
+.animate-slideDown,
+.animate-slideUp,
+.animate-slideInRight {
+  will-change: opacity, transform;
+}
+
+/* Prevent layout shifts */
+img {
+  content-visibility: auto;
+}
+
+/* Optimize backdrop blur */
+.backdrop-blur-md,
+.backdrop-blur-sm {
+  will-change: backdrop-filter;
+}

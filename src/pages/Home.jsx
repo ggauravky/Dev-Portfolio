@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 
@@ -11,8 +12,8 @@ function Home() {
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
-    // Featured projects for home page
-    const featuredProjects = [
+    // Featured projects for home page - memoized to prevent recreation
+    const featuredProjects = useMemo(() => [
         {
             id: 1,
             title: "Real-Time Chat App",
@@ -40,13 +41,13 @@ function Home() {
             demo: "#",
             image: "/images/projects/aireelstp.png"
         }
-    ]
+    ], [])
 
-    const skills = {
+    const skills = useMemo(() => ({
         ai: ["Python", "Machine Learning", "Data Analysis", "Pandas", "NumPy"],
         web: ["React", "JavaScript", "Tailwind CSS", "Node.js", "Git"],
         languages: ["Python", "JavaScript", "C", "SQL"]
-    }
+    }), [])
 
     // Dynamically get featured blogs from the shared data
     const featuredBlogs = blogsData.filter(blog => blog.featured)
@@ -106,6 +107,8 @@ function Home() {
                             <img
                                 src="/images/profile.jpg"
                                 alt="Gaurav Kumar Yadav"
+                                loading="eager"
+                                decoding="async"
                                 className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-4 border-blue-500/30 shadow-2xl group-hover:scale-105 transition-transform duration-500 md:ring-4 md:ring-blue-500/20 md:ring-offset-4 md:ring-offset-slate-900"
                             />
                         </div>

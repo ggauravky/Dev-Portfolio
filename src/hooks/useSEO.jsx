@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 
 const useSEO = ({
@@ -14,8 +14,11 @@ const useSEO = ({
     const location = useLocation()
     const siteUrl = 'https://ggauravky.vercel.app'
     const fullUrl = `${siteUrl}${location.pathname}`
+    const createdMetaRefs = useRef([])
 
     useEffect(() => {
+        // Cleanup function to track created meta tags
+        const createdMeta = []
         // Set page title
         if (title) {
             document.title = title
@@ -37,14 +40,16 @@ const useSEO = ({
             }
         }
 
-        // Set Open Graph tags
+        // Set Open Graph tags - optimized to track created elements
         const updateOrCreateMeta = (property, content, isProperty = true) => {
+            if (!content) return // Skip if no content
             const attribute = isProperty ? 'property' : 'name'
             let meta = document.querySelector(`meta[${attribute}="${property}"]`)
             if (!meta) {
                 meta = document.createElement('meta')
                 meta.setAttribute(attribute, property)
                 document.head.appendChild(meta)
+                createdMeta.push(meta)
             }
             meta.setAttribute('content', content)
         }
@@ -85,11 +90,9 @@ const useSEO = ({
         }
         canonical.setAttribute('href', fullUrl)
 
-        // Add JSON-LD structured data
-        let jsonLdScript = document.querySelector('script[type="application/ld+json"]')
-        if (jsonLdScript) {
-            jsonLdScript.remove()
-        }
+        // Add JSON-LD structured data - only once per page
+        const jsonLdId = 'seo-json-ld'
+        let jsonLdScript = document.getElementById(jsonLdId)
 
         const structuredData = {
             '@context': 'https://schema.org',
@@ -138,12 +141,18 @@ const useSEO = ({
             }
         }
 
-        jsonLdScript = document.createElement('script')
-        jsonLdScript.type = 'application/ld+json'
+        if (!jsonLdScript) {
+            jsonLdScript = document.createElement('script')
+            jsonLdScript.type = 'application/ld+json'
+            jsonLdScript.id = jsonLdId
+            document.head.appendChild(jsonLdScript)
+        }
         jsonLdScript.text = JSON.stringify(structuredData)
-        document.head.appendChild(jsonLdScript)
 
-        // Cleanup function to remove article tags when unmounting
+        // Store ref for cleanup
+        createdMetaRefs.current = createdMeta
+
+        // Cleanup function
         return () => {
             if (type === 'article') {
                 document.querySelectorAll('meta[property="article:tag"]').forEach(tag => tag.remove())
