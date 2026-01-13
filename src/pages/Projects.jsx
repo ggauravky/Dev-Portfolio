@@ -145,7 +145,7 @@ function Projects() {
         }
     ]
 
-    const categories = ['All', 'Full Stack', 'AI/ML', 'Frontend', 'Backend', 'Python']
+    const categories = ['All', 'Full Stack', 'AI/ML', 'Frontend', 'Python']
 
     // Filter projects based on search and category
     const filteredProjects = useMemo(() => {
