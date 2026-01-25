@@ -9,28 +9,33 @@ function About() {
     })
 
     return (
-        <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-900 px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative overflow-hidden">
             {/* Animated Background */}
-            <div className="absolute top-20 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
-            <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-20 right-10 w-64 h-64 sm:w-72 sm:h-72 lg:w-96 lg:h-96 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 left-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
 
             <div className="max-w-6xl mx-auto relative z-10">
                 {/* Hero Section */}
-                <div className="text-center mb-16 animate-fadeIn">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                <div className="text-center mb-12 sm:mb-16 lg:mb-20 animate-fadeIn">
+                    <span className="inline-block text-blue-400 text-xs sm:text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20">
+                        Get to know me
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
                         About Me
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed px-4">
                         🎓 BCA Student from Lucknow | 🤖 AI/ML Certified by IIT Mandi | 🐍 Python & Full Stack Developer
-                        <br />
-                        <span className="text-green-400 font-semibold mt-2 inline-block">✅ Open for Internships | Entry-Level Roles | Freelance Projects</span>
+                        <br className="hidden sm:block" />
+                        <span className="text-green-400 font-semibold mt-3 sm:mt-2 inline-block">
+                            ✅ Open for Internships | Entry-Level Roles | Freelance Projects
+                        </span>
                     </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-slate-700/50 mb-12 animate-slideDown">
-                    <div className="flex flex-wrap items-center justify-center gap-4 text-slate-300">
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🎓</span>
+                <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl border border-slate-700/50 mb-8 sm:mb-12 animate-slideDown">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-slate-300">
+                        <div className="flex items-center gap-2 text-center sm:text-left">
+                            <span className="text-2xl sm:text-3xl">🎓</span>
                             <span className="text-sm md:text-base">
                                 BCA 2nd Year at{' '}
                                 <a
@@ -43,9 +48,9 @@ function About() {
                                 </a>
                             </span>
                         </div>
-                        <span className="text-slate-600 hidden md:inline">|</span>
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🤖</span>
+                        <span className="text-slate-600 hidden sm:inline">|</span>
+                        <div className="flex items-center gap-2 text-center sm:text-left">
+                            <span className="text-2xl sm:text-3xl">🤖</span>
                             <span className="text-sm md:text-base">
                                 Minor in AI/ML from{' '}
                                 <a
@@ -62,14 +67,14 @@ function About() {
                 </div>
 
                 {/* Main Content Grid */}
-                <div className="space-y-8">
+                <div className="space-y-6 sm:space-y-8">
                     {/* Who I Am Section */}
-                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp">
+                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:scale-[1.01] sm:hover:scale-[1.02] animate-slideUp">
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="text-4xl">👨‍💻</span>
-                            <h2 className="text-3xl font-bold text-blue-400">Who I Am</h2>
+                            <span className="text-3xl sm:text-4xl md:text-5xl">👨‍💻</span>
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-400">Who I Am</h2>
                         </div>
-                        <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
+                        <div className="space-y-4 text-slate-300 text-base sm:text-lg leading-relaxed">
                             <p>
                                 Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student from
                                 <span className="text-green-400 font-semibold"> Lucknow, India</span> with a passion for
@@ -92,12 +97,12 @@ function About() {
                     </div>
 
                     {/* My Journey */}
-                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.1s' }}>
+                    <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:scale-[1.01] sm:hover:scale-[1.02] animate-slideUp" style={{ animationDelay: '0.1s' }}>
                         <div className="flex items-center gap-3 mb-6">
-                            <span className="text-4xl">🚀</span>
-                            <h2 className="text-3xl font-bold text-purple-400">My Journey</h2>
+                            <span className="text-3xl sm:text-4xl md:text-5xl">🚀</span>
+                            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-400">My Journey</h2>
                         </div>
-                        <div className="space-y-4 text-slate-300 text-lg leading-relaxed">
+                        <div className="space-y-4 text-slate-300 text-base sm:text-lg leading-relaxed">
                             <p>
                                 My tech journey started with <span className="text-blue-400 font-semibold">Python and web projects</span>.
                                 As I dove deeper, I realized how powerful <span className="text-purple-400 font-semibold">data + logic</span> can be

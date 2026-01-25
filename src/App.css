@@ -1,12 +1,26 @@
 .App {
   min-height: 100vh;
   background-color: #0f172a;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Performance optimizations */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix horizontal overflow issues */
+body, html, #root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+/* Prevent overflow from children */
+.App > * {
+  max-width: 100%;
 }
 
 /* Optimize animations */
@@ -26,10 +40,32 @@
 /* Prevent layout shifts */
 img {
   content-visibility: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Optimize backdrop blur */
 .backdrop-blur-md,
 .backdrop-blur-sm {
   will-change: backdrop-filter;
+}
+
+/* Better button and link states */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix grid and flex overflow */
+.grid, .flex {
+  min-width: 0;
+}
+
+/* Ensure consistent box-sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Smooth scrolling for all elements */
+* {
+  scroll-behavior: smooth;
 }

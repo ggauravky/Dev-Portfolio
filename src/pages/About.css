@@ -53,16 +53,48 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .about-container {
+    padding: 20px 15px;
+  }
+
   .about-content h1 {
     font-size: 2rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .about-section {
+    margin-bottom: 30px;
   }
 
   .about-section h2 {
     font-size: 1.5rem;
+    line-height: 1.3;
   }
 
   .about-section p,
   .about-section ul li {
     font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .about-container {
+    padding: 15px 10px;
+  }
+
+  .about-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .about-section h2 {
+    font-size: 1.35rem;
+  }
+
+  .about-section p,
+  .about-section ul li {
+    font-size: 0.95rem;
   }
 }

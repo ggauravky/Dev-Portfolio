@@ -89,11 +89,81 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .projects-container {
+    padding: 20px 15px;
+  }
+
   .projects-content h1 {
     font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .projects-intro {
+    font-size: 1rem;
+    margin-bottom: 30px;
   }
 
   .projects-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .project-card {
+    padding: 20px;
+  }
+
+  .project-card h3 {
+    font-size: 1.3rem;
+  }
+
+  .project-description {
+    font-size: 0.95rem;
+  }
+
+  .tech-stack {
+    gap: 6px;
+  }
+
+  .tech-tag {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+  }
+
+  .project-links {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .project-link {
+    text-align: center;
+    width: 100%;
+    touch-action: manipulation;
+  }
+
+  .project-link:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .projects-container {
+    padding: 15px 10px;
+  }
+
+  .projects-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .projects-intro {
+    font-size: 0.9rem;
+  }
+
+  .project-card {
+    padding: 15px;
+  }
+
+  .project-card h3 {
+    font-size: 1.2rem;
   }
 }

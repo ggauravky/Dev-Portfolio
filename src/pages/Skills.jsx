@@ -160,19 +160,22 @@ function Skills() {
     ]
 
     return (
-        <div className="min-h-screen bg-slate-900 px-4 sm:px-6 py-16 relative overflow-x-hidden w-full">
+        <div className="min-h-screen bg-slate-900 px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative overflow-x-hidden w-full">
             {/* Animated Background */}
-            <div className="absolute top-20 -right-20 sm:right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 -left-20 sm:left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-20 -right-20 sm:right-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 -left-20 sm:left-10 w-64 h-64 sm:w-96 sm:h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             <div className="max-w-7xl mx-auto relative z-10">
                 {/* Header */}
-                <div className="text-center mb-12 animate-fadeIn">
-                    <div className="inline-block mb-4">
-                        <span className="text-5xl">⚡</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                        Skills & Expertise
+                <div className="text-center mb-12 sm:mb-16 animate-fadeIn">
+                    <span className="inline-block text-purple-400 text-xs sm:text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20">
+                        My Expertise
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 mt-2 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                        <div className="inline-block mb-4">
+                            <span className="text-4xl sm:text-5xl md:text-6xl">⚡</span>
+                        </div>
+                        <br />Skills & Expertise
                     </h1>
                     <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto">
                         Technologies and tools I use to bring ideas to life

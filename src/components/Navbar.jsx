@@ -79,10 +79,10 @@ function Navbar() {
                         <a
                             href="/resume.pdf"
                             download
-                            className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105 text-sm xl:text-base cursor-pointer"
+                            className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-5 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium rounded-lg transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105 text-sm xl:text-base cursor-pointer whitespace-nowrap"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />see , this
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
                             <span>Resume</span>
                         </a>
@@ -112,9 +112,9 @@ function Navbar() {
                 />
             )}
 
-            <div className={`fixed top-0 right-0 h-full w-72 bg-slate-900 border-l border-slate-800 shadow-2xl z-40 lg:hidden transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed top-0 right-0 h-full w-72 sm:w-80 bg-slate-900 border-l border-slate-800 shadow-2xl z-40 lg:hidden transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}>
                 <div className="flex flex-col h-full pt-20 px-4">
-                    <div className="flex-1 space-y-2 overflow-y-auto">
+                    <div className="flex-1 space-y-2 overflow-y-auto pb-4">
                         {navLinks.map((link, index) => (
                             <Link
                                 key={link.path}
@@ -138,7 +138,7 @@ function Navbar() {
                         ))}
                     </div>
 
-                    <div className="px-4 pb-4">
+                    <div className="px-4 pb-4 border-t border-slate-800 pt-4">
                         <a
                             href="/resume.pdf"
                             download
@@ -152,7 +152,7 @@ function Navbar() {
                         </a>
                     </div>
 
-                    <div className="py-6 border-t border-slate-800">
+                    <div className="py-4 border-t border-slate-800">
                         <p className="text-slate-500 text-sm text-center">
                             Made with ❤️ by Gaurav
                         </p>

@@ -55,7 +55,7 @@ function Home() {
     return (
         <div className="bg-slate-900 overflow-x-hidden w-full">
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 overflow-hidden w-full">
+            <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 overflow-hidden w-full">
                 {/* Animated Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
@@ -65,58 +65,107 @@ function Home() {
                 <div className="absolute top-20 -left-20 sm:left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
                 <div className="absolute bottom-20 -right-20 sm:right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
 
-                <div className="relative max-w-6xl w-full flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20 z-10">
-                    <div className="flex-1 text-center md:text-left space-y-6 animate-fade-in">
-                        <div className="inline-block">
-                            <span className="text-blue-400 text-sm font-semibold tracking-wider uppercase mb-2 block animate-slide-down">Welcome to my portfolio</span>
-                        </div>
-                        <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
-                            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-gradient">
-                                Gaurav Kumar Yadav
-                            </span>
-                        </h1>
-                        <div className="space-y-3 mb-6">
-                            <p className="text-2xl md:text-4xl font-bold text-blue-300 animate-slide-right flex items-center justify-center md:justify-start gap-3">
-                                <span className="text-3xl">🐍</span> Python Developer
-                            </p>
-                            <p className="text-2xl md:text-4xl font-bold text-purple-300 animate-slide-right delay-100 flex items-center justify-center md:justify-start gap-3">
-                                <span className="text-3xl">🤖</span> AI & Data Science
-                            </p>
-                            <p className="text-2xl md:text-4xl font-bold text-cyan-300 animate-slide-right delay-200 flex items-center justify-center md:justify-start gap-3">
-                                <span className="text-3xl">💻</span> Full Stack Developer
-                            </p>
-                        </div>
-                        <p className="text-xl md:text-2xl text-slate-300 mt-6 mb-8 animate-fade-in delay-300">
-                            🎓 Student Developer from Lucknow | 🚀 Open for <span className="text-blue-400 font-semibold">Internships & Entry-Level Roles</span>
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start animate-slide-up delay-400">
-                            <Link to="/projects" className="group relative bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-lg">
-                                <span className="relative z-10">View Projects →</span>
-                            </Link>
-                            <Link to="/contact" className="group border-2 border-blue-500 px-8 py-4 rounded-xl font-semibold hover:bg-blue-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl text-lg backdrop-blur-sm">
-                                Contact Me 📧
-                            </Link>
-                        </div>
-                    </div>
+                <div className="relative max-w-7xl w-full mx-auto z-10">
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                        {/* Left Content */}
+                        <div className="text-center lg:text-left space-y-8 order-2 lg:order-1">
+                            <div className="space-y-4">
+                                <span className="inline-block text-blue-400 text-xs sm:text-sm font-bold tracking-widest uppercase px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20 animate-pulse">
+                                    Welcome to my portfolio
+                                </span>
+                                
+                                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight">
+                                    <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-gradient mb-2">
+                                        Gaurav Kumar
+                                    </span>
+                                    <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient">
+                                        Yadav
+                                    </span>
+                                </h1>
+                            </div>
 
-                    <div className="flex-1 flex justify-center animate-float">
-                        <div className="relative group">
-                            {/* Animated backgrounds - hidden on mobile */}
-                            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
-                            <div className="hidden md:block absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full blur-2xl opacity-30 animate-spin-slow"></div>
-                            <img
-                                src="/images/profile.jpg"
-                                alt="Gaurav Kumar Yadav"
-                                loading="eager"
-                                decoding="async"
-                                className="relative w-64 h-64 md:w-96 md:h-96 rounded-full object-cover border-4 border-blue-500/30 shadow-2xl group-hover:scale-105 transition-transform duration-500 md:ring-4 md:ring-blue-500/20 md:ring-offset-4 md:ring-offset-slate-900"
-                            />
+                            {/* Role Tags */}
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-2xl hover:border-blue-500/40 transition-all duration-300 group">
+                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">🐍</span>
+                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-300">Python Developer</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-2xl hover:border-purple-500/40 transition-all duration-300 group">
+                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">🤖</span>
+                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-300">AI & Data Science</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20 rounded-2xl hover:border-cyan-500/40 transition-all duration-300 group">
+                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">💻</span>
+                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-cyan-300">Full Stack Developer</span>
+                                </div>
+                            </div>
+
+                            {/* Status Badge */}
+                            <div className="flex items-center justify-center lg:justify-start gap-3 text-base sm:text-lg md:text-xl">
+                                <span className="text-2xl">🎓</span>
+                                <span className="text-slate-300">Student Developer from <span className="text-blue-400 font-semibold">Lucknow</span></span>
+                            </div>
+                            
+                            <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-6 py-3 bg-green-500/10 border border-green-500/30 rounded-xl">
+                                <span className="text-xl">🚀</span>
+                                <span className="text-green-400 font-bold text-base sm:text-lg">Open for Internships & Entry-Level Roles</span>
+                            </div>
+
+                            {/* CTA Buttons */}
+                            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                                <Link 
+                                    to="/projects" 
+                                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-base sm:text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-center overflow-hidden"
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-2">
+                                        View Projects 
+                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    </span>
+                                </Link>
+                                <Link 
+                                    to="/contact" 
+                                    className="group px-8 py-4 border-2 border-blue-500 rounded-xl font-bold text-base sm:text-lg hover:bg-blue-500/20 transition-all duration-300 hover:scale-105 hover:shadow-xl text-center backdrop-blur-sm"
+                                >
+                                    <span className="flex items-center justify-center gap-2">
+                                        Contact Me 
+                                        <span className="text-xl">📧</span>
+                                    </span>
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Right - Profile Image */}
+                        <div className="flex justify-center order-1 lg:order-2">
+                            <div className="relative group">
+                                {/* Animated backgrounds */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 animate-pulse"></div>
+                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full blur-2xl opacity-30 animate-spin-slow"></div>
+                                
+                                {/* Profile Image */}
+                                <div className="relative">
+                                    <img
+                                        src="/images/profile.jpg"
+                                        alt="Gaurav Kumar Yadav"
+                                        loading="eager"
+                                        decoding="async"
+                                        className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full object-cover border-4 border-blue-500/30 shadow-2xl group-hover:scale-105 transition-transform duration-500 ring-4 ring-blue-500/20 ring-offset-4 ring-offset-slate-900"
+                                    />
+                                    
+                                    {/* Floating badge */}
+                                    <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-full font-bold text-sm shadow-xl border-4 border-slate-900 animate-bounce">
+                                        Available! 🚀
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Scroll Indicator - Hidden on mobile */}
-                <div className="hidden md:flex absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div className="hidden md:flex absolute bottom-8 left-1/2 transform -translate-x-1/2 flex-col items-center gap-2 animate-bounce">
+                    <span className="text-slate-400 text-sm">Scroll Down</span>
                     <div className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center">
                         <div className="w-1 h-3 bg-blue-400 rounded-full mt-2 animate-scroll"></div>
                     </div>
@@ -124,96 +173,166 @@ function Home() {
             </section>
 
             {/* About Section */}
-            <section className="py-20 px-6 bg-slate-800/30 backdrop-blur-sm relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/5 to-transparent"></div>
-                <div className="max-w-5xl mx-auto relative z-10">
-                    <div className="text-center mb-12">
-                        <span className="text-blue-400 text-sm font-semibold tracking-wider uppercase">Get to know me</span>
-                        <h2 className="text-4xl md:text-5xl font-bold mt-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                            About Me
+            <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900 via-slate-800/50 to-slate-900 relative overflow-hidden">
+                {/* Background Elements */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+                </div>
+                
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <div className="text-center mb-16 animate-fadeIn">
+                        <span className="inline-block text-blue-400 text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20">Get to know me</span>
+                        <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mt-4 mb-6">
+                            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                                About Me
+                            </span>
                         </h2>
+                        <p className="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto">
+                            Learn about my journey as a developer and what drives my passion for technology
+                        </p>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="group bg-slate-800/50 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2">
-                            <div className="text-4xl mb-4">👨‍💻</div>
-                            <h3 className="text-2xl font-semibold text-blue-400 mb-4 group-hover:text-blue-300 transition-colors">Who I Am</h3>
-                            <p className="text-slate-300 leading-relaxed text-lg">
-                                BCA 2nd year student passionate about AI, Data Science, and Software Development.
-                                I love solving problems with code and building things that make a difference.
-                            </p>
+
+                    <div className="grid md:grid-cols-2 gap-8 mb-12">
+                        <div className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-2 overflow-hidden">
+                            {/* Card Background Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="text-6xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">👨‍💻</div>
+                                <h3 className="text-3xl font-bold text-blue-400 mb-5 group-hover:text-blue-300 transition-colors">Who I Am</h3>
+                                <p className="text-slate-300 leading-relaxed text-base md:text-lg">
+                                    I'm a <span className="text-blue-400 font-semibold">BCA 2nd year student</span> passionate about AI, Data Science, and Software Development. I love solving real-world problems with code and building innovative solutions that make a meaningful impact.
+                                </p>
+                                <div className="mt-6 flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">🎓 Student</span>
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">💡 Problem Solver</span>
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">🚀 Innovator</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="group bg-slate-800/50 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-2">
-                            <div className="text-4xl mb-4">🚀</div>
-                            <h3 className="text-2xl font-semibold text-purple-400 mb-4 group-hover:text-purple-300 transition-colors">What I Do</h3>
-                            <p className="text-slate-300 leading-relaxed text-lg">
-                                Working with machine learning models, building Python applications, and creating
-                                modern web experiences using React and other technologies.
-                            </p>
+
+                        <div className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-2 overflow-hidden">
+                            {/* Card Background Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="text-6xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">🚀</div>
+                                <h3 className="text-3xl font-bold text-purple-400 mb-5 group-hover:text-purple-300 transition-colors">What I Do</h3>
+                                <p className="text-slate-300 leading-relaxed text-base md:text-lg">
+                                    I specialize in <span className="text-purple-400 font-semibold">machine learning models</span>, building powerful Python applications, and creating modern, responsive web experiences using React and cutting-edge technologies.
+                                </p>
+                                <div className="mt-6 flex flex-wrap gap-2">
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">🤖 AI/ML</span>
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">🐍 Python</span>
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">⚛️ React</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="text-center mt-10">
-                        <Link to="/about" className="group inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-semibold text-lg transition-all duration-300">
+
+                    <div className="text-center mt-12 animate-fadeIn">
+                        <Link to="/about" className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/50">
                             Learn More About Me
-                            <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+                            <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
                 </div>
             </section>
 
             {/* Skills Section */}
-            <section className="py-20 px-6 relative">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-12">
-                        <span className="text-purple-400 text-sm font-semibold tracking-wider uppercase">What I know</span>
-                        <h2 className="text-4xl md:text-5xl font-bold mt-2 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                            My Skills
+            <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+                {/* Background Elements */}
+                <div className="absolute inset-0">
+                    <div className="absolute top-1/2 -left-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/4 -right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                </div>
+
+                <div className="max-w-7xl mx-auto relative z-10">
+                    <div className="text-center mb-16 animate-fadeIn">
+                        <span className="inline-block text-purple-400 text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20">What I know</span>
+                        <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mt-4 mb-6">
+                            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
+                                My Skills
+                            </span>
                         </h2>
+                        <p className="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto">
+                            Technologies and tools I use to bring ideas to life
+                        </p>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        <div className="group bg-slate-800/40 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-2">
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-4xl">🤖</span>
-                                <h3 className="text-2xl font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">AI & Data Science</h3>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                        {/* AI & Data Science Card */}
+                        <div className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-700/50 hover:border-blue-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-3 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">🤖</div>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-blue-400 group-hover:text-blue-300 transition-colors">AI & Data Science</h3>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {skills.ai.map((skill, index) => (
+                                        <span key={index} className="bg-blue-500/20 border border-blue-500/40 text-blue-300 px-4 py-2.5 rounded-xl hover:bg-blue-500/40 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                {skills.ai.map((skill, index) => (
-                                    <span key={index} className="bg-blue-500/20 border border-blue-500/50 text-blue-300 px-4 py-2 rounded-lg hover:bg-blue-500/30 hover:scale-105 transition-all duration-200 cursor-default">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
+                            
+                            {/* Corner Accent */}
+                            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/30 transition-all duration-500"></div>
                         </div>
-                        <div className="group bg-slate-800/40 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:-translate-y-2">
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-4xl">💻</span>
-                                <h3 className="text-2xl font-semibold text-purple-400 group-hover:text-purple-300 transition-colors">Web Development</h3>
+
+                        {/* Web Development Card */}
+                        <div className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-700/50 hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20 hover:-translate-y-3 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">💻</div>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors">Web Development</h3>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {skills.web.map((skill, index) => (
+                                        <span key={index} className="bg-purple-500/20 border border-purple-500/40 text-purple-300 px-4 py-2.5 rounded-xl hover:bg-purple-500/40 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                {skills.web.map((skill, index) => (
-                                    <span key={index} className="bg-purple-500/20 border border-purple-500/50 text-purple-300 px-4 py-2 rounded-lg hover:bg-purple-500/30 hover:scale-105 transition-all duration-200 cursor-default">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
+                            
+                            {/* Corner Accent */}
+                            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl group-hover:bg-purple-500/30 transition-all duration-500"></div>
                         </div>
-                        <div className="group bg-slate-800/40 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-2">
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-4xl">🔤</span>
-                                <h3 className="text-2xl font-semibold text-cyan-400 group-hover:text-cyan-300 transition-colors">Languages</h3>
+
+                        {/* Languages Card */}
+                        <div className="group relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl p-8 rounded-3xl border border-slate-700/50 hover:border-cyan-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-3 overflow-hidden md:col-span-2 lg:col-span-1">
+                            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">🔤</div>
+                                    <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">Languages</h3>
+                                </div>
+                                <div className="flex flex-wrap gap-3">
+                                    {skills.languages.map((skill, index) => (
+                                        <span key={index} className="bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 px-4 py-2.5 rounded-xl hover:bg-cyan-500/40 hover:scale-110 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="flex flex-wrap gap-3">
-                                {skills.languages.map((skill, index) => (
-                                    <span key={index} className="bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 px-4 py-2 rounded-lg hover:bg-cyan-500/30 hover:scale-105 transition-all duration-200 cursor-default">
-                                        {skill}
-                                    </span>
-                                ))}
-                            </div>
+                            
+                            {/* Corner Accent */}
+                            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-cyan-500/20 rounded-full blur-2xl group-hover:bg-cyan-500/30 transition-all duration-500"></div>
                         </div>
                     </div>
-                    <div className="text-center mt-10">
-                        <Link to="/skills" className="group inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-semibold text-lg transition-all duration-300">
-                            View All Skills
-                            <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
+
+                    <div className="text-center mt-16 animate-fadeIn">
+                        <Link to="/skills" className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/50">
+                            View All Skills & Expertise
+                            <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
                 </div>

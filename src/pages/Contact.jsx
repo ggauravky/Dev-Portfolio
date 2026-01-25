@@ -119,25 +119,28 @@ function Contact() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
+        <div className="min-h-screen bg-slate-900 px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 relative overflow-hidden">
             {/* Animated Background */}
-            <div className="absolute top-20 right-10 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl animate-float"></div>
-            <div className="absolute bottom-20 left-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-20 right-10 w-64 h-64 sm:w-72 sm:h-72 lg:w-96 lg:h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 left-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
 
             <div className="max-w-6xl mx-auto relative z-10">
                 {/* Header */}
-                <div className="text-center mb-16 animate-fadeIn">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <div className="text-center mb-12 sm:mb-16 animate-fadeIn">
+                    <span className="inline-block text-cyan-400 text-xs sm:text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+                        Let's Connect
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                         Get In Touch
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+                    <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed px-4">
                         Have a project in mind, want to collaborate, or just say hi?
                         I'd love to hear from you! 💬
                     </p>
                 </div>
 
                 {/* Resume Download Banner */}
-                <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 backdrop-blur-sm p-6 md:p-8 rounded-2xl border border-cyan-500/30 mb-12 hover:border-cyan-400/50 transition-all duration-300 animate-slideDown">
+                <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 backdrop-blur-sm p-4 sm:p-6 md:p-8 rounded-2xl border border-cyan-500/30 mb-8 sm:mb-12 hover:border-cyan-400/50 transition-all duration-300 animate-slideDown">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
                         <div className="flex items-center gap-4">
                             <div className="text-5xl">📄</div>

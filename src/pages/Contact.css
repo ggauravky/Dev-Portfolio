@@ -64,19 +64,66 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .submit-btn:hover {
   background-color: #0056b3;
 }
 
+.submit-btn:active {
+  transform: scale(0.98);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
+  .contact-container {
+    padding: 20px 15px;
+  }
+
   .contact-content h1 {
     font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .contact-intro {
+    font-size: 1rem;
+    margin-bottom: 30px;
   }
 
   .contact-form {
     padding: 20px;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 14px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .contact-container {
+    padding: 15px 10px;
+  }
+
+  .contact-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .contact-intro {
+    font-size: 0.95rem;
+  }
+
+  .contact-form {
+    padding: 15px;
   }
 }
