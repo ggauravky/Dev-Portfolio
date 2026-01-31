@@ -7,6 +7,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
 import ErrorBoundary from './components/ErrorBoundary'
+import { pingBackend } from './utils/backendPing'
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'))
@@ -44,6 +45,11 @@ function ScrollToTop() {
 }
 
 function App() {
+    // Wake up backend server on app mount to prevent cold starts
+    useEffect(() => {
+        pingBackend()
+    }, [])
+
     return (
         <Router>
             <ScrollToTop />

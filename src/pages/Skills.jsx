@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import useSEO from '../hooks/useSEO'
+import './Skills.css'
 
 function Skills() {
     useSEO({
@@ -17,49 +18,25 @@ function Skills() {
                 title: "Programming Languages",
                 icon: "💻",
                 color: "purple",
-                skills: [
-                    { name: "Python", level: 90 },
-                    { name: "JavaScript", level: 85 },
-                    { name: "Java", level: 65 },
-                    { name: "C", level: 60 },
-                    { name: "SQL", level: 85 }
-                ]
+                skills: ["Python", "JavaScript", "Java", "C", "SQL"]
             },
             {
                 title: "Frontend Development",
                 icon: "🎨",
                 color: "cyan",
-                skills: [
-                    { name: "React.js", level: 75 },
-                    { name: "HTML5 & CSS3", level: 95 },
-                    { name: "Tailwind CSS", level: 85 },
-                    { name: "Bootstrap", level: 85 },
-                    { name: "Responsive Design", level: 90 }
-                ]
+                skills: ["React.js", "HTML5 & CSS3", "Tailwind CSS", "Bootstrap", "Responsive Design"]
             },
             {
                 title: "Backend Development",
                 icon: "⚙️",
                 color: "blue",
-                skills: [
-                    { name: "Node.js", level: 70 },
-                    { name: "Express.js", level: 75 },
-                    { name: "Flask", level: 60 },
-                    { name: "REST APIs", level: 60 },
-                    { name: "Authentication", level: 60 }
-                ]
+                skills: ["Node.js", "Express.js", "Flask", "REST APIs", "Authentication"]
             },
             {
                 title: "Database & Tools",
                 icon: "🗄️",
                 color: "green",
-                skills: [
-                    { name: "MongoDB", level: 85 },
-                    { name: "MySQL", level: 85 },
-                    { name: "Git & GitHub", level: 96 },
-                    { name: "VS Code", level: 95 },
-                    { name: "Postman", level: 85 }
-                ]
+                skills: ["MongoDB", "MySQL", "Git & GitHub", "VS Code", "Postman"]
             }
         ],
         dataAI: [
@@ -67,37 +44,19 @@ function Skills() {
                 title: "Data Science",
                 icon: "📊",
                 color: "orange",
-                skills: [
-                    { name: "Pandas", level: 85 },
-                    { name: "NumPy", level: 85 },
-                    { name: "Matplotlib", level: 80 },
-                    { name: "Seaborn", level: 80 },
-                    { name: "Data Analysis", level: 85 }
-                ]
+                skills: ["Pandas", "NumPy", "Matplotlib", "Seaborn", "Data Analysis"]
             },
             {
                 title: "Machine Learning",
                 icon: "🤖",
                 color: "pink",
-                skills: [
-                    { name: "Scikit-learn", level: 60 },
-                    { name: "Model Training", level: 50 },
-                    { name: "Data Preprocessing", level: 85 },
-                    { name: "Feature Engineering", level: 50 },
-                    { name: "ML Algorithms", level: 50 }
-                ]
+                skills: ["Scikit-learn", "Model Training", "Data Preprocessing", "Feature Engineering", "ML Algorithms"]
             },
             {
                 title: "Cloud & Platforms",
                 icon: "☁️",
                 color: "sky",
-                skills: [
-                    { name: "Google Cloud Platform", level: 80 },
-                    { name: "AWS Basics", level: 60 },
-                    { name: "Jupyter Notebooks", level: 95 },
-                    { name: "Google Colab", level: 95 },
-                    { name: "Kaggle", level: 85 }
-                ]
+                skills: ["Google Cloud Platform", "AWS Basics", "Jupyter Notebooks", "Google Colab", "Kaggle"]
             }
         ],
         other: [
@@ -105,52 +64,94 @@ function Skills() {
                 title: "Computer Science",
                 icon: "🧩",
                 color: "indigo",
-                skills: [
-                    { name: "Data Structures", level: 80 },
-                    { name: "Algorithms", level: 75 },
-                    { name: "OOP Concepts", level: 85 },
-                    { name: "DBMS", level: 85 },
-                    { name: "Computer Networks", level: 80 }
-                ]
+                skills: ["Data Structures", "Algorithms", "OOP Concepts", "DBMS", "Computer Networks"]
             },
             {
                 title: "Soft Skills",
                 icon: "🤝",
                 color: "teal",
-                skills: [
-                    { name: "Problem Solving", level: 90 },
-                    { name: "Team Collaboration", level: 85 },
-                    { name: "Self Learning", level: 95 },
-                    { name: "Time Management", level: 80 },
-                    { name: "Communication", level: 85 }
-                ]
+                skills: ["Problem Solving", "Team Collaboration", "Self Learning", "Time Management", "Communication"]
             },
             {
                 title: "Security & DevOps",
                 icon: "🔐",
                 color: "red",
-                skills: [
-                    { name: "Cybersecurity Basics", level: 90 },
-                    { name: "Secure Coding", level: 70 },
-                    { name: "API Security", level: 70 },
-                    { name: "Version Control", level: 95 },
-                    { name: "CI/CD Basics", level: 40 }
-                ]
+                skills: ["Cybersecurity Basics", "Secure Coding", "API Security", "Version Control", "CI/CD Basics"]
             }
         ]
     }
 
     const colorClasses = {
-        purple: { bg: "from-purple-500/20 to-purple-600/30", border: "border-purple-500/40", text: "text-purple-400", progress: "bg-purple-500" },
-        cyan: { bg: "from-cyan-500/20 to-cyan-600/30", border: "border-cyan-500/40", text: "text-cyan-400", progress: "bg-cyan-500" },
-        blue: { bg: "from-blue-500/20 to-blue-600/30", border: "border-blue-500/40", text: "text-blue-400", progress: "bg-blue-500" },
-        green: { bg: "from-green-500/20 to-green-600/30", border: "border-green-500/40", text: "text-green-400", progress: "bg-green-500" },
-        orange: { bg: "from-orange-500/20 to-orange-600/30", border: "border-orange-500/40", text: "text-orange-400", progress: "bg-orange-500" },
-        pink: { bg: "from-pink-500/20 to-pink-600/30", border: "border-pink-500/40", text: "text-pink-400", progress: "bg-pink-500" },
-        sky: { bg: "from-sky-500/20 to-sky-600/30", border: "border-sky-500/40", text: "text-sky-400", progress: "bg-sky-500" },
-        indigo: { bg: "from-indigo-500/20 to-indigo-600/30", border: "border-indigo-500/40", text: "text-indigo-400", progress: "bg-indigo-500" },
-        teal: { bg: "from-teal-500/20 to-teal-600/30", border: "border-teal-500/40", text: "text-teal-400", progress: "bg-teal-500" },
-        red: { bg: "from-red-500/20 to-red-600/30", border: "border-red-500/40", text: "text-red-400", progress: "bg-red-500" }
+        purple: { 
+            bg: "from-purple-500/20 to-purple-600/30", 
+            border: "border-purple-500/40", 
+            text: "text-purple-400", 
+            hover: "hover:border-purple-400 hover:shadow-purple-500/20",
+            badge: "bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:border-purple-400"
+        },
+        cyan: { 
+            bg: "from-cyan-500/20 to-cyan-600/30", 
+            border: "border-cyan-500/40", 
+            text: "text-cyan-400", 
+            hover: "hover:border-cyan-400 hover:shadow-cyan-500/20",
+            badge: "bg-cyan-500/10 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/20 hover:border-cyan-400"
+        },
+        blue: { 
+            bg: "from-blue-500/20 to-blue-600/30", 
+            border: "border-blue-500/40", 
+            text: "text-blue-400", 
+            hover: "hover:border-blue-400 hover:shadow-blue-500/20",
+            badge: "bg-blue-500/10 border-blue-500/30 text-blue-300 hover:bg-blue-500/20 hover:border-blue-400"
+        },
+        green: { 
+            bg: "from-green-500/20 to-green-600/30", 
+            border: "border-green-500/40", 
+            text: "text-green-400", 
+            hover: "hover:border-green-400 hover:shadow-green-500/20",
+            badge: "bg-green-500/10 border-green-500/30 text-green-300 hover:bg-green-500/20 hover:border-green-400"
+        },
+        orange: { 
+            bg: "from-orange-500/20 to-orange-600/30", 
+            border: "border-orange-500/40", 
+            text: "text-orange-400", 
+            hover: "hover:border-orange-400 hover:shadow-orange-500/20",
+            badge: "bg-orange-500/10 border-orange-500/30 text-orange-300 hover:bg-orange-500/20 hover:border-orange-400"
+        },
+        pink: { 
+            bg: "from-pink-500/20 to-pink-600/30", 
+            border: "border-pink-500/40", 
+            text: "text-pink-400", 
+            hover: "hover:border-pink-400 hover:shadow-pink-500/20",
+            badge: "bg-pink-500/10 border-pink-500/30 text-pink-300 hover:bg-pink-500/20 hover:border-pink-400"
+        },
+        sky: { 
+            bg: "from-sky-500/20 to-sky-600/30", 
+            border: "border-sky-500/40", 
+            text: "text-sky-400", 
+            hover: "hover:border-sky-400 hover:shadow-sky-500/20",
+            badge: "bg-sky-500/10 border-sky-500/30 text-sky-300 hover:bg-sky-500/20 hover:border-sky-400"
+        },
+        indigo: { 
+            bg: "from-indigo-500/20 to-indigo-600/30", 
+            border: "border-indigo-500/40", 
+            text: "text-indigo-400", 
+            hover: "hover:border-indigo-400 hover:shadow-indigo-500/20",
+            badge: "bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-400"
+        },
+        teal: { 
+            bg: "from-teal-500/20 to-teal-600/30", 
+            border: "border-teal-500/40", 
+            text: "text-teal-400", 
+            hover: "hover:border-teal-400 hover:shadow-teal-500/20",
+            badge: "bg-teal-500/10 border-teal-500/30 text-teal-300 hover:bg-teal-500/20 hover:border-teal-400"
+        },
+        red: { 
+            bg: "from-red-500/20 to-red-600/30", 
+            border: "border-red-500/40", 
+            text: "text-red-400", 
+            hover: "hover:border-red-400 hover:shadow-red-500/20",
+            badge: "bg-red-500/10 border-red-500/30 text-red-300 hover:bg-red-500/20 hover:border-red-400"
+        }
     }
 
     const tabs = [
@@ -200,37 +201,47 @@ function Skills() {
                 </div>
 
                 {/* Skills Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {skillCategories[activeTab].map((category, index) => (
                         <div
                             key={index}
-                            className={`group bg-gradient-to-br ${colorClasses[category.color].bg} backdrop-blur-sm p-6 rounded-2xl border ${colorClasses[category.color].border} hover:scale-[1.02] transition-all duration-300 hover:shadow-xl animate-slideUp`}
+                            className={`skill-card group bg-gradient-to-br ${colorClasses[category.color].bg} backdrop-blur-md p-6 sm:p-8 rounded-3xl border-2 ${colorClasses[category.color].border} ${colorClasses[category.color].hover} transition-all duration-500 hover:shadow-2xl animate-slideUp hover:-translate-y-2`}
                             style={{ animationDelay: `${index * 0.1}s` }}
                         >
                             {/* Category Header */}
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-3xl group-hover:scale-110 transition-transform duration-300">{category.icon}</span>
-                                <h3 className={`text-xl font-bold ${colorClasses[category.color].text}`}>
+                            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-700/50">
+                                <div className="skill-icon-wrapper text-4xl sm:text-5xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500">
+                                    {category.icon}
+                                </div>
+                                <h3 className={`text-lg sm:text-xl font-bold ${colorClasses[category.color].text} tracking-tight`}>
                                     {category.title}
                                 </h3>
                             </div>
 
-                            {/* Skills with Progress Bars */}
-                            <div className="space-y-4">
+                            {/* Skills Badges Grid */}
+                            <div className="flex flex-wrap gap-2 sm:gap-3">
                                 {category.skills.map((skill, skillIndex) => (
-                                    <div key={skillIndex} className="group/skill">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-slate-300 text-sm font-medium">{skill.name}</span>
-                                            <span className={`text-xs font-semibold ${colorClasses[category.color].text}`}>{skill.level}%</span>
-                                        </div>
-                                        <div className="h-2 bg-slate-800/50 rounded-full overflow-hidden">
-                                            <div
-                                                className={`h-full ${colorClasses[category.color].progress} rounded-full transition-all duration-1000 ease-out group-hover/skill:animate-pulse`}
-                                                style={{ width: `${skill.level}%`, transitionDelay: `${skillIndex * 0.1}s` }}
-                                            ></div>
-                                        </div>
-                                    </div>
+                                    <span
+                                        key={skillIndex}
+                                        className={`skill-badge inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-300 cursor-default ${colorClasses[category.color].badge} hover:scale-110 hover:shadow-lg whitespace-nowrap`}
+                                        style={{ 
+                                            animationDelay: `${(index * 0.1) + (skillIndex * 0.05)}s` 
+                                        }}
+                                    >
+                                        <span className="skill-badge-dot w-1.5 h-1.5 rounded-full bg-current mr-2 animate-pulse"></span>
+                                        {skill}
+                                    </span>
                                 ))}
+                            </div>
+
+                            {/* Skill Count Badge */}
+                            <div className="mt-6 pt-4 border-t border-slate-700/50">
+                                <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-400">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {category.skills.length} Skills Mastered
+                                </span>
                             </div>
                         </div>
                     ))}

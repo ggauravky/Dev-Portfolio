@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
+import { pingBackend } from '../utils/backendPing'
 
 function Home() {
+    // Wake up backend server on component mount
+    useEffect(() => {
+        // Ping backend silently to prevent cold start
+        pingBackend()
+    }, [])
+
     // SEO Optimization
     useSEO({
         title: 'Gaurav Portfolio - Gaurav Kumar Yadav | Python & AI Developer Portfolio | Full Stack Projects',
