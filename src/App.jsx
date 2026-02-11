@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { useEffect, lazy, Suspense } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'   // ✅ ADDED
 import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -27,7 +28,6 @@ function ScrollToTop() {
     const { pathname, hash } = useLocation()
 
     useEffect(() => {
-        // If there's a hash, let the browser handle it
         if (hash) {
             setTimeout(() => {
                 const element = document.querySelector(hash)
@@ -36,7 +36,6 @@ function ScrollToTop() {
                 }
             }, 0)
         } else {
-            // Scroll to top instantly when route changes
             window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
         }
     }, [pathname, hash])
@@ -45,7 +44,6 @@ function ScrollToTop() {
 }
 
 function App() {
-    // Wake up backend server on app mount to prevent cold starts
     useEffect(() => {
         pingBackend()
     }, [])
@@ -123,7 +121,11 @@ function App() {
                     <BackToTop />
                 </div>
             </ErrorBoundary>
+
+            {/* Vercel Analytics & Speed Insights */}
             <Analytics />
+            <SpeedInsights />   
+
         </Router>
     )
 }
