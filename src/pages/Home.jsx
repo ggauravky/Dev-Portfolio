@@ -3,6 +3,7 @@ import { useMemo, useEffect } from 'react'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import { pingBackend } from '../utils/backendPing'
+import LazyImage from '../components/LazyImage'
 
 function Home() {
     // Wake up backend server on component mount
@@ -13,10 +14,10 @@ function Home() {
 
     // SEO Optimization
     useSEO({
-        title: 'Gaurav Portfolio - Gaurav Kumar Yadav | Python & AI Developer Portfolio | Full Stack Projects',
-        description: 'Welcome to Gaurav Portfolio! Professional developer portfolio showcasing Python, AI/ML, Data Science, and Full Stack projects by Gaurav Kumar Yadav. Student Python Developer and AI enthusiast from Lucknow, India. Specializing in Data Science, Machine Learning, and Full Stack Development with React, Node.js, and MongoDB. Explore my portfolio of innovative projects, read tech blogs, and connect for internships, entry-level roles, and freelance opportunities.',
-        keywords: 'Gaurav Portfolio, Gaurav Kumar Yadav Portfolio, Portfolio Gaurav, Developer Portfolio, Python Portfolio, AI Portfolio, Portfolio Website, Gaurav Kumar Yadav, Python Developer, AI Developer, Data Science, Machine Learning, Full Stack Developer, React, Node.js, MongoDB, Internship, Entry Level, Student Developer Lucknow, BCA Developer, AI Projects, Professional Portfolio',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+        title: 'Gaurav Kumar Yadav | Best Python & AI Developer in Lucknow | Full Stack Portfolio',
+        description: 'Gaurav Kumar Yadav - Top Python Developer, AI/ML Engineer & Full Stack Developer from Lucknow, India. Explore innovative projects in Data Science, Machine Learning, React, Node.js & MongoDB. Award-winning portfolio of a student developer specializing in artificial intelligence, deep learning, and modern web development. Hire for internships, freelance & collaboration.',
+        keywords: 'Gaurav Kumar Yadav, best developer in Lucknow, top Python developer India, AI developer Lucknow, best portfolio website, Gaurav Portfolio, developer portfolio, Python developer, AI engineer, machine learning developer, data science portfolio, full stack developer Lucknow, React developer India, Node.js developer, best student developer, web developer Lucknow, freelance developer India, hire Python developer, hire AI developer, MERN stack developer, software engineer Lucknow, best coder Lucknow, top programmer India, Gaurav Yadav developer, ggauravky, best developer portfolio 2026, AI projects portfolio, Lucknow IT developer, UP developer, Indian developer portfolio, BCA developer, BBDU developer, coding portfolio, tech blog India, JavaScript developer',
+        ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
     })
 
     // Featured projects for home page - memoized to prevent recreation
@@ -62,107 +63,127 @@ function Home() {
     return (
         <div className="bg-slate-900 overflow-x-hidden w-full">
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-20 overflow-hidden w-full">
-                {/* Animated Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900"></div>
+            <section className="hero-section relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10 lg:pt-14 lg:pb-0 overflow-hidden w-full">
+                {/* Subtle Animated Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-purple-900/15"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/10 via-transparent to-transparent"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-600/10 via-transparent to-transparent"></div>
-
-                {/* Floating Elements */}
-                <div className="absolute top-20 -left-20 sm:left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute bottom-20 -right-20 sm:right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+                
+                {/* Soft ambient orbs */}
+                <div className="absolute inset-0 opacity-20 pointer-events-none">
+                    <div className="absolute top-10 -left-10 w-72 h-72 bg-purple-500 rounded-full filter blur-3xl animate-float"></div>
+                    <div className="absolute bottom-10 -right-10 w-72 h-72 bg-blue-500 rounded-full filter blur-3xl animate-float" style={{animationDelay: '3s'}}></div>
+                </div>
 
                 <div className="relative max-w-7xl w-full mx-auto z-10">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                    <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
                         {/* Left Content */}
-                        <div className="text-center lg:text-left space-y-8 order-2 lg:order-1">
-                            <div className="space-y-4">
-                                <span className="inline-block text-blue-400 text-xs sm:text-sm font-bold tracking-widest uppercase px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20 animate-pulse">
-                                    Welcome to my portfolio
+                        <div className="text-center lg:text-left space-y-4 order-2 lg:order-1">
+                            {/* Welcome Badge */}
+                            <span className="inline-flex items-center gap-2 text-blue-400 text-xs sm:text-sm font-semibold tracking-widest uppercase px-4 py-1.5 bg-blue-500/10 rounded-full border border-blue-500/25 backdrop-blur-sm">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                                 </span>
-                                
-                                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight">
-                                    <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-gradient mb-2">
-                                        Gaurav Kumar
-                                    </span>
-                                    <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-gradient">
-                                        Yadav
-                                    </span>
-                                </h1>
-                            </div>
-
-                            {/* Role Tags */}
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-2xl hover:border-blue-500/40 transition-all duration-300 group">
-                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">🐍</span>
-                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-300">Python Developer</span>
-                                </div>
-                                
-                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-purple-500/10 to-purple-600/5 border border-purple-500/20 rounded-2xl hover:border-purple-500/40 transition-all duration-300 group">
-                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">🤖</span>
-                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-300">AI & Data Science</span>
-                                </div>
-                                
-                                <div className="flex items-center justify-center lg:justify-start gap-3 px-6 py-4 bg-gradient-to-r from-cyan-500/10 to-cyan-600/5 border border-cyan-500/20 rounded-2xl hover:border-cyan-500/40 transition-all duration-300 group">
-                                    <span className="text-3xl sm:text-4xl group-hover:scale-125 transition-transform duration-300">💻</span>
-                                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-cyan-300">Full Stack Developer</span>
-                                </div>
-                            </div>
-
-                            {/* Status Badge */}
-                            <div className="flex items-center justify-center lg:justify-start gap-3 text-base sm:text-lg md:text-xl">
-                                <span className="text-2xl">🎓</span>
-                                <span className="text-slate-300">Student Developer from <span className="text-blue-400 font-semibold">Lucknow</span></span>
-                            </div>
+                                Welcome to my portfolio
+                            </span>
                             
-                            <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-6 py-3 bg-green-500/10 border border-green-500/30 rounded-xl">
-                                <span className="text-xl">🚀</span>
-                                <span className="text-green-400 font-bold text-base sm:text-lg">Open for Internships & Entry-Level Roles</span>
+                            {/* Name */}
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight">
+                                <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent animate-gradient">
+                                    Gaurav Kumar
+                                </span>
+                                <span className="block bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+                                    Yadav
+                                </span>
+                            </h1>
+
+                            {/* Role Tags - Compact inline pills */}
+                            <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
+                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-blue-500/10 border border-blue-500/25 rounded-lg hover:border-blue-400/50 hover:bg-blue-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">🐍</span>
+                                    <span className="text-sm sm:text-base font-semibold text-blue-300">Python Developer</span>
+                                </div>
+                                
+                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-purple-500/10 border border-purple-500/25 rounded-lg hover:border-purple-400/50 hover:bg-purple-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">🤖</span>
+                                    <span className="text-sm sm:text-base font-semibold text-purple-300">AI & Data Science</span>
+                                </div>
+                                
+                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-cyan-500/10 border border-cyan-500/25 rounded-lg hover:border-cyan-400/50 hover:bg-cyan-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">💻</span>
+                                    <span className="text-sm sm:text-base font-semibold text-cyan-300">Full Stack Developer</span>
+                                </div>
+                            </div>
+
+                            {/* Status Info - Compact */}
+                            <div className="flex flex-col gap-2">
+                                <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 text-sm text-slate-300">
+                                    <span className="text-lg">🎓</span>
+                                    <span>Student Developer from <span className="text-blue-400 font-semibold">Lucknow, India</span> 🇮🇳</span>
+                                </div>
+                                
+                                <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg w-fit mx-auto lg:mx-0">
+                                    <span className="text-lg">🚀</span>
+                                    <span className="text-emerald-300 font-semibold text-sm">Open for Internships & Freelance</span>
+                                </div>
                             </div>
 
                             {/* CTA Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <div className="flex flex-row gap-3 pt-2 justify-center lg:justify-start">
                                 <Link 
                                     to="/projects" 
-                                    className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-bold text-base sm:text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-center overflow-hidden"
+                                    className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-xl font-bold text-sm sm:text-base hover:from-blue-500 hover:via-purple-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/40 text-center overflow-hidden inline-flex items-center justify-center"
                                 >
-                                    <span className="relative z-10 flex items-center justify-center gap-2">
-                                        View Projects 
-                                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                        <span>View Projects</span>
+                                        <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                                     </span>
                                 </Link>
                                 <Link 
                                     to="/contact" 
-                                    className="group px-8 py-4 border-2 border-blue-500 rounded-xl font-bold text-base sm:text-lg hover:bg-blue-500/20 transition-all duration-300 hover:scale-105 hover:shadow-xl text-center backdrop-blur-sm"
+                                    className="group relative px-6 py-3 border-2 border-blue-500/40 rounded-xl font-bold text-sm sm:text-base hover:bg-blue-500/10 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 text-center backdrop-blur-sm hover:border-blue-400/60 inline-flex items-center justify-center"
                                 >
-                                    <span className="flex items-center justify-center gap-2">
-                                        Contact Me 
-                                        <span className="text-xl">📧</span>
+                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                        <span>Contact Me</span>
+                                        <span className="text-lg leading-none">📧</span>
                                     </span>
                                 </Link>
+                            </div>
+
+                            {/* Divider line after buttons */}
+                            <div className="pt-6 flex justify-center lg:justify-start">
+                                <div className="w-full max-w-xl h-px bg-gradient-to-r from-blue-500/50 via-purple-500/30 to-transparent"></div>
                             </div>
                         </div>
 
                         {/* Right - Profile Image */}
-                        <div className="flex justify-center order-1 lg:order-2">
+                        <div className="flex justify-center items-center order-1 lg:order-2">
                             <div className="relative group">
-                                {/* Animated backgrounds */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity duration-500 animate-pulse"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full blur-2xl opacity-30 animate-spin-slow"></div>
+                                {/* Clean glow behind image */}
+                                <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 rounded-full blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500 animate-pulse"></div>
                                 
-                                {/* Profile Image */}
+                                {/* Profile Image Container - Explicit square for perfect circle */}
                                 <div className="relative">
-                                    <img
-                                        src="/images/profile.jpg"
-                                        alt="Gaurav Kumar Yadav"
-                                        loading="eager"
-                                        decoding="async"
-                                        className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96 rounded-full object-cover border-4 border-blue-500/30 shadow-2xl group-hover:scale-105 transition-transform duration-500 ring-4 ring-blue-500/20 ring-offset-4 ring-offset-slate-900"
-                                    />
+                                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-80 lg:h-80 xl:w-[340px] xl:h-[340px] rounded-full overflow-hidden border-[3px] border-blue-500/30 shadow-2xl shadow-blue-500/20 group-hover:border-purple-500/50 transition-all duration-500 ring-2 ring-blue-500/15 ring-offset-2 ring-offset-slate-900">
+                                        <img
+                                            src="/images/profile.jpg"
+                                            alt="Gaurav Kumar Yadav"
+                                            loading="eager"
+                                            decoding="async"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        />
+                                    </div>
                                     
-                                    {/* Floating badge */}
-                                    <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-full font-bold text-sm shadow-xl border-4 border-slate-900 animate-bounce">
-                                        Available! 🚀
+                                    {/* Available badge */}
+                                    <div className="absolute -bottom-2 right-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 rounded-full font-bold text-xs shadow-lg border-2 border-slate-900">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="relative flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                                            </span>
+                                            <span>Available!</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -170,11 +191,11 @@ function Home() {
                     </div>
                 </div>
 
-                {/* Scroll Indicator - Hidden on mobile */}
-                <div className="hidden md:flex absolute bottom-8 left-1/2 transform -translate-x-1/2 flex-col items-center gap-2 animate-bounce">
-                    <span className="text-slate-400 text-sm">Scroll Down</span>
-                    <div className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center">
-                        <div className="w-1 h-3 bg-blue-400 rounded-full mt-2 animate-scroll"></div>
+                {/* Scroll Indicator */}
+                <div className="hidden lg:flex absolute bottom-4 left-1/2 transform -translate-x-1/2 flex-col items-center gap-1.5 animate-bounce cursor-pointer">
+                    <span className="text-slate-500 text-xs font-medium">Scroll Down</span>
+                    <div className="w-5 h-8 border-2 border-slate-600/50 rounded-full flex justify-center p-1 bg-slate-800/30">
+                        <div className="w-1 h-1.5 bg-gradient-to-b from-blue-400 to-purple-500 rounded-full animate-scroll"></div>
                     </div>
                 </div>
             </section>
@@ -360,13 +381,10 @@ function Home() {
                             <div key={project.id} className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-purple-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300">
                                 {/* Project Image */}
                                 <div className="relative h-40 bg-slate-700 overflow-hidden">
-                                    <img
+                                    <LazyImage
                                         src={project.image}
                                         alt={project.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                        onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/400x300/1e293b/60a5fa?text=' + project.title.replace(/ /g, '+')
-                                        }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                 </div>
@@ -389,10 +407,10 @@ function Home() {
                                             href={project.github}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 text-center bg-slate-700 hover:bg-purple-600 text-slate-300 hover:text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 border border-slate-600 hover:border-purple-500 hover:scale-105 text-xs"
+                                            className="flex-1 inline-flex items-center justify-center bg-slate-700 hover:bg-purple-600 text-slate-300 hover:text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 border border-slate-600 hover:border-purple-500 hover:scale-105 text-xs"
                                         >
-                                            <span className="flex items-center justify-center gap-1">
-                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <span className="flex items-center justify-center gap-1 leading-none">
+                                                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                                                 </svg>
                                                 Code
@@ -403,10 +421,10 @@ function Home() {
                                                 href={project.demo}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex-1 text-center bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 hover:scale-105 text-xs"
+                                                className="flex-1 inline-flex items-center justify-center bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 hover:scale-105 text-xs"
                                             >
-                                                <span className="flex items-center justify-center gap-1">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <span className="flex items-center justify-center gap-1 leading-none">
+                                                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                     </svg>
                                                     Demo
@@ -445,13 +463,10 @@ function Home() {
                             <div key={blog.id} className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-pink-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/20 transition-all duration-300">
                                 {/* Blog Image */}
                                 <div className="relative h-40 bg-slate-700 overflow-hidden">
-                                    <img
+                                    <LazyImage
                                         src={blog.image}
                                         alt={blog.title}
                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                        onError={(e) => {
-                                            e.target.src = 'https://via.placeholder.com/400x300/1e293b/ec4899?text=' + blog.title.replace(/ /g, '+')
-                                        }}
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                 </div>
@@ -472,7 +487,7 @@ function Home() {
                                     {/* Read More Button */}
                                     <Link
                                         to="/blog"
-                                        className="block text-center bg-slate-700 hover:bg-gradient-to-r hover:from-pink-600 hover:to-purple-600 text-slate-300 hover:text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 border border-slate-600 hover:border-pink-500 hover:scale-105 text-xs"
+                                        className="flex items-center justify-center bg-slate-700 hover:bg-gradient-to-r hover:from-pink-600 hover:to-purple-600 text-slate-300 hover:text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 border border-slate-600 hover:border-pink-500 hover:scale-105 text-xs leading-none"
                                     >
                                         Read More →
                                     </Link>

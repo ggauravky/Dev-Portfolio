@@ -26,75 +26,101 @@ function Footer() {
     }
 
     return (
-        <footer className="relative bg-slate-900 border-t border-slate-800/50 backdrop-blur-sm">
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-slate-900/50"></div>
+        <footer className="relative bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-700/50 backdrop-blur-sm overflow-hidden">
+            {/* Enhanced Gradient Background */}
+            <div className="absolute inset-0 bg-gradient-to-t from-blue-950/30 via-purple-950/20 to-slate-900/50"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
+            
+            {/* Animated background elements */}
+            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
 
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-                {/* Main Footer Content - Centered */}
-                <div className="text-center mb-16">
-                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent mb-6">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+                {/* Main Footer Content - Enhanced */}
+                <div className="text-center mb-20">
+                    <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-6 animate-text-gradient">
                         Gaurav Kumar Yadav
                     </h3>
-                    <p className="text-slate-300 text-base sm:text-lg mb-4 max-w-2xl mx-auto">
+                    <p className="text-slate-300 text-lg sm:text-xl mb-6 max-w-2xl mx-auto font-medium">
                         🐍 Python Developer | 🤖 AI & Data Science | 💻 Full Stack Developer
                     </p>
-                    <p className="text-slate-400 text-sm sm:text-base mb-3">
-                        📍 Based in Lucknow, India
-                    </p>
-                    <p className="text-green-400 text-sm sm:text-base font-semibold">
-                        ✅ Open for Internships & Freelance
-                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm sm:text-base">
+                        <p className="text-slate-400 flex items-center gap-2">
+                            <span className="text-blue-400">📍</span> Based in Lucknow, India 🇮🇳
+                        </p>
+                        <span className="hidden sm:inline text-slate-600">|</span>
+                        <p className="text-green-400 font-bold flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Open for Internships & Freelance
+                        </p>
+                    </div>
                 </div>
 
-                {/* Social Links - Grid Layout */}
-                <div className="mb-16">
-                    <h4 className="text-xl sm:text-2xl font-bold text-center text-slate-200 mb-8">Connect With Me</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-4xl mx-auto">
+                {/* Social Links - Enhanced Grid Layout */}
+                <div className="mb-20">
+                    <h4 className="text-2xl sm:text-3xl font-bold text-center text-slate-200 mb-10 flex items-center justify-center gap-3">
+                        <span className="text-3xl">🌐</span>
+                        Connect With Me
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
                         {footerLinks.social.map((link, index) => (
                             <a
                                 key={index}
                                 href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group flex flex-col items-center justify-center p-6 sm:p-8 bg-slate-800/40 hover:bg-slate-800/70 border border-slate-700/50 hover:border-blue-500/50 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/20"
+                                className="group relative flex flex-col items-center justify-center p-8 sm:p-10 bg-gradient-to-br from-slate-800/60 to-slate-900/60 hover:from-slate-800/90 hover:to-slate-900/90 border border-slate-700/50 hover:border-blue-500/60 rounded-2xl transition-all duration-300 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/30 backdrop-blur-sm overflow-hidden"
                             >
-                                <span className="text-4xl sm:text-5xl mb-3 group-hover:scale-110 transition-transform duration-300">{link.icon}</span>
-                                <span className="text-slate-300 group-hover:text-blue-400 font-medium text-sm sm:text-base transition-colors duration-300">{link.name}</span>
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <span className="text-5xl sm:text-6xl mb-4 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300 relative z-10">{link.icon}</span>
+                                <span className="text-slate-300 group-hover:text-blue-400 font-semibold text-sm sm:text-base transition-colors duration-300 relative z-10">{link.name}</span>
                             </a>
                         ))}
                     </div>
                 </div>
 
-                {/* Quick Links & CTA - Grid Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 mb-16 max-w-5xl mx-auto">
+                {/* Quick Links & CTA - Enhanced Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 mb-20 max-w-6xl mx-auto">
                     {/* Quick Links */}
                     <div className="text-center md:text-left">
-                        <h4 className="text-lg sm:text-xl font-bold text-slate-200 mb-6">Quick Navigation</h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-8 flex items-center justify-center md:justify-start gap-2">
+                            <span className="text-2xl">🔗</span>
+                            Quick Navigation
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {footerLinks.quickLinks.map((link, index) => (
                                 <Link
                                     key={index}
                                     to={link.path}
-                                    className="text-slate-400 hover:text-blue-400 transition-all duration-200 text-sm sm:text-base hover:translate-x-1 inline-block font-medium"
+                                    className="group text-slate-400 hover:text-blue-400 transition-all duration-300 text-sm sm:text-base hover:translate-x-1 inline-block font-medium relative"
                                 >
-                                    {link.name}
+                                    <span className="relative z-10">{link.name}</span>
+                                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300"></span>
                                 </Link>
                             ))}
                         </div>
                     </div>
 
-                    {/* CTA Section */}
+                    {/* CTA Section - Enhanced */}
                     <div className="text-center md:text-right">
-                        <h4 className="text-lg sm:text-xl font-bold text-slate-200 mb-4">Get In Touch</h4>
-                        <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-6">
-                            Looking for a dedicated developer for your project?
+                        <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-6 flex items-center justify-center md:justify-end gap-2">
+                            <span className="text-2xl">💬</span>
+                            Let's Work Together
+                        </h4>
+                        <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
+                            Have a project in mind? Need a skilled developer? <br className="hidden sm:inline" />
+                            <span className="text-blue-400 font-semibold">Let's build something amazing!</span>
                         </p>
                         <Link
                             to="/contact"
-                            className="inline-block px-8 py-4 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 hover:from-blue-600 hover:via-purple-600 hover:to-cyan-600 rounded-xl font-bold transition-all duration-300 hover:scale-105 text-base sm:text-lg shadow-xl hover:shadow-2xl hover:shadow-blue-500/50"
+                            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-500 hover:via-purple-500 hover:to -cyan-500 rounded-2xl font-bold transition-all duration-300 hover:scale-110 text-base sm:text-lg shadow-2xl hover:shadow-purple-500/60 relative overflow-hidden"
                         >
-                            Let's Talk 💬
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+                            <span className="relative z-10">Let's Talk</span>
+                            <span className="text-2xl relative z-10 group-hover:scale-125 transition-transform">💬</span>
                         </Link>
                     </div>
                 </div>

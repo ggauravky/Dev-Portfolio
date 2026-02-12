@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
 import { SkeletonGrid } from '../components/SkeletonLoader'
+import LazyImage from '../components/LazyImage'
 import './Blog.css'
 
 function Blog() {
@@ -21,13 +22,18 @@ function Blog() {
     const [selectedBlog, setSelectedBlog] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
 
-    const blogs = blogsData
+    // Optimize: Only load blog metadata, not full content
+    const blogs = useMemo(() => blogsData.map(blog => ({
+        ...blog,
+        // Only keep essential fields for list view
+        content: undefined // Remove heavy content from list view
+    })), [])
 
     // Simulate initial loading
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsLoading(false)
-        }, 800)
+        }, 500) // Reduced from 800ms
         return () => clearTimeout(timer)
     }, [])
 
@@ -235,15 +241,12 @@ function Blog() {
                                     className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-cyan-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 animate-slideUp"
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                 >
-                                    {/* Blog Image */}
+                                    {/* Blog Image - Lazy Loaded */}
                                     <div className="relative h-48 bg-slate-700 overflow-hidden">
-                                        <img
+                                        <LazyImage
                                             src={blog.image}
                                             alt={blog.title}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                            onError={(e) => {
-                                                e.target.src = 'https://via.placeholder.com/400x300/1e293b/60a5fa?text=' + blog.title.replace(/ /g, '+')
-                                            }}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                     </div>
@@ -334,13 +337,10 @@ function Blog() {
 
                             {/* Blog Header Image */}
                             <div className="relative h-64 md:h-80 bg-slate-700 overflow-hidden rounded-t-2xl">
-                                <img
+                                <LazyImage
                                     src={selectedBlog.image}
                                     alt={selectedBlog.title}
                                     className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/800x400/1e293b/60a5fa?text=' + selectedBlog.title.replace(/ /g, '+')
-                                    }}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                             </div>

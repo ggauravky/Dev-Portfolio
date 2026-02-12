@@ -55,6 +55,12 @@
   object-fit: cover;
 }
 
+/* ======= Hero Section ======= */
+.hero-section {
+  min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport for mobile browsers */
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .home-container {
@@ -89,6 +95,12 @@
     height: 180px;
   }
 
+  .hero-section {
+    min-height: 0;
+    padding-top: 5rem;
+    padding-bottom: 2rem;
+  }
+
   /* Blog section mobile adjustments */
   .blog-grid-mobile {
     grid-template-columns: 1fr !important;
@@ -112,7 +124,7 @@
   }
 }
 
-/* Extra small devices */
+/* Small mobile */
 @media (max-width: 480px) {
   .home-name {
     font-size: 1.5rem;
@@ -140,13 +152,15 @@
   }
 }
 
-/* Tablet adjustments */
+/* Tablet and Medium screens */
 @media (min-width: 768px) and (max-width: 1023px) {
   /* Show 2 columns for blog posts on tablet */
   .blog-grid-tablet {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
+
+
 
 /* Line clamp utilities for text truncation */
 .line-clamp-2 {

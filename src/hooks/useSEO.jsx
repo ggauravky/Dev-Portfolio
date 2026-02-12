@@ -101,17 +101,32 @@ const useSEO = ({
             name: 'Gaurav Kumar Yadav',
             url: siteUrl,
             image: `${siteUrl}/images/profile.jpg`,
-            jobTitle: 'Python Developer | AI & Data Science Enthusiast',
-            description: 'Student Python Developer and AI enthusiast specializing in Data Science, Machine Learning, and Full Stack Development',
-            alumniOf: {
-                '@type': 'EducationalOrganization',
-                name: 'Bachelor of Computer Applications (BCA)'
+            jobTitle: 'Python Developer, AI Engineer & Full Stack Developer',
+            description: 'Best Python Developer, AI/ML Engineer and Full Stack Developer from Lucknow, India. Top-rated student developer specializing in Data Science, Machine Learning, Deep Learning, React, Node.js and modern web technologies.',
+            alumniOf: [
+                {
+                    '@type': 'EducationalOrganization',
+                    name: 'BBDU University',
+                    department: 'Computer Applications'
+                },
+                {
+                    '@type': 'Organization',
+                    name: 'IIT Mandi',
+                    description: 'AI & Data Science Certification'
+                }
+            ],
+            address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Lucknow',
+                addressRegion: 'Uttar Pradesh',
+                addressCountry: 'IN'
             },
-            knowsAbout: ['Python', 'Artificial Intelligence', 'Machine Learning', 'Data Science', 'React', 'Node.js', 'Full Stack Development', 'MongoDB'],
+            knowsAbout: ['Python', 'Artificial Intelligence', 'Machine Learning', 'Deep Learning', 'Data Science', 'React', 'Node.js', 'Full Stack Development', 'MongoDB', 'MERN Stack', 'TensorFlow', 'Flask', 'REST APIs'],
+            knowsLanguage: ['English', 'Hindi'],
             sameAs: [
                 'https://github.com/ggauravky',
-                'https://www.linkedin.com/in/gauravky/',
-                'https://leetcode.com/gauravky/'
+                'https://www.linkedin.com/in/gauravkumaryadav05',
+                'https://twitter.com/ggauravky'
             ]
         }
 
@@ -231,8 +246,8 @@ const useSEO = ({
                         },
                         sameAs: [
                             'https://github.com/ggauravky',
-                            'https://www.linkedin.com/in/gauravky/',
-                            'https://leetcode.com/gauravky/'
+                            'https://www.linkedin.com/in/gauravkumaryadav05',
+                            'https://twitter.com/ggauravky'
                         ]
                     }
                 ]
