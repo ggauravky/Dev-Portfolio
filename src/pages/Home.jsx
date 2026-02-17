@@ -4,6 +4,7 @@ import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
+import StatsCards from '../components/StatsCards'
 
 function Home() {
     // Wake up backend server on component mount
@@ -257,6 +258,19 @@ function Home() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Stats Section - GitHub & LeetCode */}
+                    <div className="mt-16 mb-12 animate-fadeIn">
+                        <div className="text-center mb-8">
+                            <h3 className="text-2xl md:text-3xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2">
+                                Coding Journey
+                            </h3>
+                            <p className="text-slate-400 text-sm md:text-base">
+                                Consistent practice & problem-solving every day
+                            </p>
+                        </div>
+                        <StatsCards />
                     </div>
 
                     <div className="text-center mt-12 animate-fadeIn">
