@@ -18,6 +18,7 @@ const Projects = lazy(() => import('./pages/Projects'))
 const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
+const Lab = lazy(() => import('./pages/Lab'))
 const Links = lazy(() => import('./pages/Links'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
@@ -105,6 +106,7 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/about" element={<About />} />
+                            <Route path="/lab" element={<Lab />} />
                             <Route path="/skills" element={<Skills />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/blog" element={<Blog />} />

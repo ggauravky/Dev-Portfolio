@@ -8,6 +8,7 @@ function Navbar() {
     const navLinks = useMemo(() => [
         { path: '/', name: 'Home' },
         { path: '/about', name: 'About' },
+        { path: '/lab', name: 'Lab' },
         { path: '/skills', name: 'Skills' },
         { path: '/projects', name: 'Projects' },
         { path: '/blog', name: 'Blog' },
@@ -142,6 +143,7 @@ function Navbar() {
                                         <span className="text-2xl">
                                             {link.path === '/' && '🏠'}
                                             {link.path === '/about' && '👤'}
+                                            {link.path === '/lab' && '🧪'}
                                             {link.path === '/skills' && '⚡'}
                                             {link.path === '/projects' && '💼'}
                                             {link.path === '/blog' && '📝'}
