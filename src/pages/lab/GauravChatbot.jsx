@@ -96,10 +96,16 @@ function GauravChatbot() {
             if (textareaRef.current) textareaRef.current.style.height = 'auto'
 
             try {
+                // Build conversation history for multi-turn context (skip the initial AI greeting)
+                const historySnapshot = messages
+                    .filter((m) => m.id !== INITIAL_AI_MESSAGE.id)
+                    .slice(-12)
+                    .map((m) => ({ role: m.role === 'ai' ? 'model' : 'user', text: m.content }))
+
                 const response = await fetch(`${API_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: trimmed }),
+                    body: JSON.stringify({ message: trimmed, history: historySnapshot }),
                     signal: AbortSignal.timeout(25000),
                 })
 
@@ -117,7 +123,7 @@ function GauravChatbot() {
                 textareaRef.current?.focus()
             }
         },
-        [input, isLoading]
+        [input, isLoading, messages]
     )
 
     const handleKeyDown = (e) => {
