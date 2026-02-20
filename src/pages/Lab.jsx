@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
 import './Lab.css'
 
@@ -39,8 +40,24 @@ function Lab() {
 
                 {/* Coming Soon Cards — placeholder sections for future features */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-12">
+                    {/* AI Chatbot — LIVE: links to the chatbot page */}
+                    <Link
+                        to="/lab/gaurav-chatbot"
+                        className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-blue-500/40 hover:bg-slate-800/80 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10 overflow-hidden block"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                        <div className="relative">
+                            <span className="text-3xl mb-3 block">🤖</span>
+                            <h3 className="text-white font-semibold text-lg mb-1">AI Chatbot</h3>
+                            <p className="text-slate-400 text-sm leading-relaxed">Chat with an AI version of Gaurav — powered by Gemini and real portfolio data.</p>
+                        </div>
+                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded-full border border-blue-500/30 font-semibold">
+                            Live ✨
+                        </span>
+                    </Link>
+
+                    {/* Remaining placeholders */}
                     {[
-                        { icon: '🤖', title: 'AI Chatbot', desc: 'An interactive chatbot powered by large language models.' },
                         { icon: '📊', title: 'ML Demos', desc: 'Live machine learning model demonstrations and visualizations.' },
                         { icon: '📈', title: 'Consistency Dashboard', desc: 'Track coding streaks, GitHub activity, and learning progress.' },
                         { icon: '🧪', title: 'Experimental Features', desc: 'A sandbox for testing new ideas and cutting-edge technologies.' },
@@ -65,8 +82,6 @@ function Lab() {
                         </div>
                     ))}
                 </div>
-
-                {/* Footer note */}
                 <p className="text-center text-slate-500 text-sm mt-12">
                     This space is actively being built. Check back soon!
                 </p>

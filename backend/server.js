@@ -1,12 +1,23 @@
+// Force IPv4-first DNS resolution - fixes Node.js 18+ defaulting to IPv6 (::1),
+// which breaks MongoDB Atlas SRV lookups (querySrv ECONNREFUSED) and
+// causes EADDRINUSE on ::1 instead of 127.0.0.1.
+const dns = require("dns");
+dns.setDefaultResultOrder("ipv4first");
+// Use Google & Cloudflare DNS directly - ISP/system DNS often blocks SRV queries
+// needed by MongoDB Atlas (mongodb+srv://) connection strings.
+dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 
 // Initialize express app
@@ -15,37 +26,33 @@ const app = express();
 // Connect to MongoDB
 connectDatabase();
 
-// Security Middleware
-app.use(helmet()); // Set security headers
-app.use(mongoSanitize()); // Prevent MongoDB injection
+// Security middleware
+app.use(helmet());
+app.use(mongoSanitize());
 
-// CORS Configuration
+// CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Remove trailing slashes from URLs
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       "http://localhost:5173",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
-      "http://localhost:5174", // Additional Vite port
+      "http://localhost:5174",
     ]
       .filter(Boolean)
-      .map((url) => url.replace(/\/$/, "")); // Remove trailing slashes
+      .map((url) => url.replace(/\/$/, ""));
 
-    // Allow requests with no origin (like mobile apps, curl, or Postman)
+    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
 
-    // Remove trailing slash from origin for comparison
     const normalizedOrigin = origin.replace(/\/$/, "");
-
-    // In production, also allow Vercel preview deployments
-    const isVercelPreview = origin && origin.includes(".vercel.app");
+    const isVercelPreview = origin.includes(".vercel.app");
 
     if (allowedOrigins.includes(normalizedOrigin) || isVercelPreview) {
       callback(null, true);
     } else {
-      console.warn(`⚠️  CORS blocked request from: ${origin}`);
+      console.warn(`CORS blocked request from: ${origin}`);
       callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
@@ -74,9 +81,10 @@ app.get("/health", (req, res) => {
   });
 });
 
-// API Routes
+// API routes
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -90,6 +98,7 @@ app.get("/", (req, res) => {
       contactStats: "/api/contact/stats",
       newsletter: "/api/newsletter/subscribe",
       newsletterStats: "/api/newsletter/stats",
+      chat: "/api/chat",
     },
   });
 });
@@ -114,31 +123,67 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "localhost";
-const server = app.listen(PORT, HOST, () => {
+const BASE_PORT = parseInt(process.env.PORT, 10) || 5000;
+const MAX_PORT_RETRIES = parseInt(process.env.PORT_RETRIES, 10) || 10;
+// Use 127.0.0.1 explicitly in development to avoid IPv6 localhost issues.
+const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
+let server;
+
+const logServerInfo = (port) => {
   console.log(
-    `\n🚀 Server running in ${
+    `\nServer running in ${
       process.env.NODE_ENV || "development"
-    } mode on port ${PORT}`
+    } mode on port ${port}`
   );
-  console.log(`🌐 Health check: http://localhost:${PORT}/health`);
-  console.log(`📧 Contact API: http://localhost:${PORT}/api/contact`);
+  console.log(`Health check: http://localhost:${port}/health`);
+  console.log(`Contact API: http://localhost:${port}/api/contact`);
   if (process.env.FRONTEND_URL) {
-    console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL}\n`);
+    console.log(`Frontend URL: ${process.env.FRONTEND_URL}\n`);
   }
-});
+};
+
+const startServer = (port, retriesLeft) => {
+  server = app.listen(port, HOST, () => {
+    logServerInfo(port);
+  });
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE" && retriesLeft > 0) {
+      const nextPort = port + 1;
+      console.warn(`Port ${port} is already in use on ${HOST}. Trying ${nextPort}...`);
+      startServer(nextPort, retriesLeft - 1);
+      return;
+    }
+
+    console.error("Server failed to start:", err.message);
+    process.exit(1);
+  });
+};
+
+startServer(BASE_PORT, MAX_PORT_RETRIES);
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error("❌ Unhandled Rejection:", err.message);
-  server.close(() => process.exit(1));
+  console.error("Unhandled Rejection:", err.message);
+  // In development, log and continue rather than killing the server.
+  // In production, shut down gracefully so the process manager can restart.
+  if (process.env.NODE_ENV === "production") {
+    if (server) {
+      server.close(() => process.exit(1));
+    } else {
+      process.exit(1);
+    }
+  }
 });
 
 // Handle SIGTERM
 process.on("SIGTERM", () => {
-  console.log("👋 SIGTERM received. Shutting down gracefully...");
-  server.close(() => {
-    console.log("✅ Process terminated");
-  });
+  console.log("SIGTERM received. Shutting down gracefully...");
+  if (server) {
+    server.close(() => {
+      console.log("Process terminated");
+    });
+  } else {
+    console.log("Process terminated");
+  }
 });

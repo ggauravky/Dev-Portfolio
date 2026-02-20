@@ -37,7 +37,7 @@ const newsletterSchema = new mongoose.Schema(
 );
 
 // Index for faster queries
-newsletterSchema.index({ email: 1 });
+// Note: email index is already created by unique:true above, don't duplicate it
 newsletterSchema.index({ subscribed: 1 });
 
 // Method to unsubscribe

@@ -19,6 +19,7 @@ const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Lab = lazy(() => import('./pages/Lab'))
+const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
 const Links = lazy(() => import('./pages/Links'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
@@ -42,6 +43,22 @@ function ScrollToTop() {
     }, [pathname, hash])
 
     return null
+}
+
+// Routes that should render without Navbar / Footer (full-screen layouts)
+const FULL_SCREEN_ROUTES = ['/lab/gaurav-chatbot']
+
+function AppLayout({ children }) {
+    const { pathname } = useLocation()
+    const isFullScreen = FULL_SCREEN_ROUTES.includes(pathname)
+    return (
+        <div className="App">
+            {!isFullScreen && <Navbar />}
+            {children}
+            {!isFullScreen && <Footer />}
+            {!isFullScreen && <BackToTop />}
+        </div>
+    )
 }
 
 function App() {
@@ -93,8 +110,7 @@ function App() {
                 }}
             />
             <ErrorBoundary>
-                <div className="App">
-                    <Navbar />
+                <AppLayout>
                     <Suspense fallback={
                         <div className="min-h-screen bg-slate-900 flex items-center justify-center">
                             <div className="text-center">
@@ -107,6 +123,7 @@ function App() {
                             <Route path="/" element={<Home />} />
                             <Route path="/about" element={<About />} />
                             <Route path="/lab" element={<Lab />} />
+                            <Route path="/lab/gaurav-chatbot" element={<GauravChatbot />} />
                             <Route path="/skills" element={<Skills />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/blog" element={<Blog />} />
@@ -119,9 +136,7 @@ function App() {
                             <Route path="*" element={<NotFound />} />
                         </Routes>
                     </Suspense>
-                    <Footer />
-                    <BackToTop />
-                </div>
+                </AppLayout>
             </ErrorBoundary>
 
             {/* Vercel Analytics & Speed Insights */}

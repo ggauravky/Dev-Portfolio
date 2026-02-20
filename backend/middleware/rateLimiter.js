@@ -28,3 +28,21 @@ exports.generalRateLimiter = rateLimit({
     message: "Too many requests from this IP, please try again later.",
   },
 });
+
+// Chat (AI chatbot) rate limiter — 30 messages per 10 minutes per IP
+exports.chatRateLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: parseInt(process.env.CHAT_RATE_LIMIT_MAX) || 30,
+  message: {
+    success: false,
+    reply: "You're sending messages too quickly. Please wait a few minutes before trying again.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      reply: "Too many messages sent. Please slow down and try again in a few minutes.",
+    });
+  },
+});
