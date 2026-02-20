@@ -56,6 +56,11 @@ function GauravChatbot() {
     const [chipsVisible, setChipsVisible] = useState(true)
     const [isFocused, setIsFocused] = useState(false)
 
+    // Stable session ID for this page visit — groups all turns from one visitor together
+    const sessionIdRef = useRef(`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`)
+    // Count of user messages sent in this session (for messageIndex analytics)
+    const msgCountRef = useRef(0)
+
     const messagesEndRef = useRef(null)
     const textareaRef = useRef(null)
 
@@ -102,10 +107,18 @@ function GauravChatbot() {
                     .slice(-12)
                     .map((m) => ({ role: m.role === 'ai' ? 'model' : 'user', text: m.content }))
 
+                const currentIndex = msgCountRef.current;
+                msgCountRef.current += 1;
+
                 const response = await fetch(`${API_URL}/api/chat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: trimmed, history: historySnapshot }),
+                    body: JSON.stringify({
+                        message: trimmed,
+                        history: historySnapshot,
+                        sessionId: sessionIdRef.current,
+                        messageIndex: currentIndex,
+                    }),
                     signal: AbortSignal.timeout(25000),
                 })
 

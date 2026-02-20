@@ -1,4 +1,96 @@
-// ─── Complete profile data ────────────────────────────────────────────────────
+import mongoose from "mongoose";
+
+// ─── MongoDB singleton (serverless-safe) ─────────────────────────────────
+let _dbReady = false;
+
+async function connectDB() {
+  if (_dbReady && mongoose.connection.readyState === 1) return;
+  const uri = process.env.MONGODB_URI;
+  if (!uri) return;
+  try {
+    await mongoose.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 4000 });
+    _dbReady = true;
+  } catch (e) {
+    console.warn("MongoDB connect failed (non-fatal):", e.message);
+  }
+}
+
+// ─── Inline ChatLog model (matches backend schema) ────────────────────────
+const chatLogSchema = new mongoose.Schema(
+  {
+    userMessage:    { type: String, required: true, trim: true, maxLength: 1000 },
+    aiReply:        { type: String, required: true, trim: true },
+    source:         { type: String, enum: ["gemini", "fallback"], default: "gemini" },
+    degraded:       { type: Boolean, default: false },
+    model:          { type: String, default: "unknown" },
+    responseTimeMs: { type: Number, default: null },
+    sessionId:      { type: String, default: "unknown", index: true },
+    messageIndex:   { type: Number, default: 0 },
+    historyLength:  { type: Number, default: 0 },
+    messageLength:  { type: Number, default: 0 },
+    intentTag:      { type: String, default: "other" },
+    ipAddress:      { type: String, default: "unknown" },
+    userAgent:      { type: String, default: "unknown" },
+    referrer:       { type: String, default: "direct" },
+    country:        { type: String, default: "unknown" },
+    countryCode:    { type: String, default: "unknown" },
+    city:           { type: String, default: "unknown" },
+    region:         { type: String, default: "unknown" },
+    timezone:       { type: String, default: "unknown" },
+  },
+  { timestamps: true, collection: "chatlogs" }
+);
+
+const ChatLog =
+  mongoose.models.ChatLog || mongoose.model("ChatLog", chatLogSchema);
+
+// ─── Non-blocking save ────────────────────────────────────────────────────
+const saveChatLog = async (userMessage, aiReply, meta) => {
+  try {
+    await connectDB();
+    if (mongoose.connection.readyState !== 1) return;
+    await ChatLog.create({
+      userMessage:    String(userMessage).slice(0, 1000),
+      aiReply:        String(aiReply).slice(0, 5000),
+      source:         meta.source         || "gemini",
+      degraded:       Boolean(meta.degraded),
+      model:          meta.model          || "unknown",
+      responseTimeMs: meta.responseTimeMs || null,
+      sessionId:      meta.sessionId      || "unknown",
+      messageIndex:   meta.messageIndex   || 0,
+      historyLength:  meta.historyLength  || 0,
+      messageLength:  meta.messageLength  || 0,
+      intentTag:      meta.intentTag      || "other",
+      ipAddress:      meta.ipAddress      || "unknown",
+      userAgent:      meta.userAgent      || "unknown",
+      referrer:       meta.referrer       || "direct",
+      country:        meta.country        || "unknown",
+      countryCode:    meta.countryCode    || "unknown",
+      city:           meta.city           || "unknown",
+      region:         meta.region         || "unknown",
+      timezone:       meta.timezone       || "unknown",
+    });
+  } catch (err) {
+    console.warn("⚠️ ChatLog save failed (non-fatal):", err.message);
+  }
+};
+
+// ─── Intent tagger ────────────────────────────────────────────────────────
+const detectIntent = (message) => {
+  const q = String(message || "").toLowerCase();
+  const has = (terms) => terms.some((t) => q.includes(t));
+  if (has(["hi", "hello", "hey", "howdy", "sup", "greetings", "how are you"])) return "greeting";
+  if (has(["intern", "hire", "available", "freelance", "job", "recruit", "role", "why hire", "why should", "what makes", "different"])) return "hiring";
+  if (has(["skill", "tech", "stack", "language", "python", "react", "node", "ai", "ml", "framework", "tool"])) return "skills";
+  if (has(["project", "built", "build", "app", "chat", "mern", "aireel", "notes", "grocery", "shopease", "tasknexus"])) return "projects";
+  if (has(["education", "college", "degree", "iit", "bca", "mandi", "bbdu", "certification"])) return "education";
+  if (has(["goal", "future", "plan", "learn", "studying", "improving", "currently"])) return "goals";
+  if (has(["blog", "article", "write", "wrote", "post", "published"])) return "blogs";
+  if (has(["contact", "email", "linkedin", "github", "reach"])) return "contact";
+  return "other";
+};
+
+// ─── Complete profile data ─────────────────────────────────────────────────
 const GAURAV = {
   personal: {
     name: "Gaurav Kumar Yadav",
@@ -530,14 +622,28 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, reply: "Method not allowed." });
   }
 
+  const startTime = Date.now();
+
+  // ── Extract visitor metadata from Vercel/CF headers ────────────────────
+  const ipAddress   = (req.headers["x-real-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "unknown").replace(/^::ffff:/, "");
+  const userAgent   = String(req.headers["user-agent"]   || "unknown").slice(0, 300);
+  const referrer    = String(req.headers["referer"] || req.headers["referrer"] || "direct").slice(0, 300);
+  // Vercel injects these geo headers automatically on deployed functions
+  const countryCode = String(req.headers["x-vercel-ip-country"]        || "unknown");
+  const region      = String(req.headers["x-vercel-ip-country-region"] || "unknown");
+  const city        = String(req.headers["x-vercel-ip-city"]           || "unknown");
+  const timezone    = String(req.headers["x-vercel-ip-timezone"]       || "unknown");
+
   try {
     const body =
       typeof req.body === "string"
         ? JSON.parse(req.body || "{}")
         : req.body || {};
 
-    const message = String(body.message || "").trim();
-    const history = Array.isArray(body.history) ? body.history : [];
+    const message      = String(body.message || "").trim();
+    const history      = Array.isArray(body.history) ? body.history : [];
+    const sessionId    = String(body.sessionId || req.headers["x-session-id"] || "unknown").slice(0, 64);
+    const messageIndex = parseInt(body.messageIndex, 10) || 0;
 
     if (!message) {
       return res
@@ -552,10 +658,19 @@ export default async function handler(req, res) {
       : "gemini-2.0-flash";
 
     if (!apiKey) {
+      const reply = fallbackReply(message);
+      saveChatLog(message, reply, {
+        source: "fallback", degraded: true, model: "none",
+        responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
+        historyLength: history.length, messageLength: message.length,
+        intentTag: detectIntent(message),
+        ipAddress, userAgent, referrer, countryCode, city, region, timezone,
+        country: countryCode, // Vercel doesn't give full name, use code
+      });
       return res.status(200).json({
         success: true,
         degraded: true,
-        reply: fallbackReply(message),
+        reply,
       });
     }
 
@@ -587,30 +702,53 @@ export default async function handler(req, res) {
 
     if (!geminiResponse.ok || !geminiText) {
       if (isRateLimited(geminiResponse.status, apiErrorMessage)) {
+        const reply = fallbackReply(message);
+        saveChatLog(message, reply, {
+          source: "fallback", degraded: true, model,
+          responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
+          historyLength: history.length, messageLength: message.length,
+          intentTag: detectIntent(message),
+          ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
+        });
         return res.status(200).json({
           success: true,
           degraded: true,
-          reply: fallbackReply(message),
+          reply,
         });
       }
 
       console.error("Gemini error:", apiErrorMessage || "Empty response");
+      const reply = fallbackReply(message);
+      saveChatLog(message, reply, {
+        source: "fallback", degraded: true, model,
+        responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
+        historyLength: history.length, messageLength: message.length,
+        intentTag: detectIntent(message),
+        ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
+      });
       return res.status(200).json({
         success: true,
         degraded: true,
-        reply: fallbackReply(message),
+        reply,
       });
     }
+
+    saveChatLog(message, geminiText, {
+      source: "gemini", degraded: false, model,
+      responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
+      historyLength: history.length, messageLength: message.length,
+      intentTag: detectIntent(message),
+      ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
+    });
 
     return res.status(200).json({ success: true, reply: geminiText });
   } catch (error) {
     console.error("Vercel chat error:", error?.message || error);
+    const fallback = fallbackReply(typeof req.body === "object" ? req.body?.message : "");
     return res.status(200).json({
       success: true,
       degraded: true,
-      reply: fallbackReply(
-        typeof req.body === "object" ? req.body?.message : ""
-      ),
+      reply: fallback,
     });
   }
 }

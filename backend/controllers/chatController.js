@@ -302,16 +302,67 @@ const buildFallbackReply = (userMessage) => {
   }`;
 };
 
-// Save a chat turn to MongoDB non-fatally — if DB is down, log and continue.
-const saveChatLog = async (userMessage, aiReply, source, degraded, ip) => {
+// ─── Intent tagger ────────────────────────────────────────────────────────────
+const detectIntent = (message) => {
+  const q = toLower(message);
+  if (includesAny(q, ["hi", "hello", "hey", "howdy", "sup", "greetings", "how are you"])) return "greeting";
+  if (includesAny(q, ["intern", "hire", "available", "freelance", "job", "recruit", "role", "why hire", "why should", "what makes", "different"])) return "hiring";
+  if (includesAny(q, ["skill", "tech", "stack", "language", "python", "react", "node", "ai", "ml", "framework", "tool"])) return "skills";
+  if (includesAny(q, ["project", "built", "build", "app", "chat", "mern", "aireel", "notes", "grocery", "shopease", "tasknexus"])) return "projects";
+  if (includesAny(q, ["education", "college", "degree", "iit", "bca", "mandi", "bbdu", "certification"])) return "education";
+  if (includesAny(q, ["goal", "future", "plan", "learn", "studying", "improving", "currently"])) return "goals";
+  if (includesAny(q, ["blog", "article", "write", "wrote", "post", "published"])) return "blogs";
+  if (includesAny(q, ["contact", "email", "linkedin", "github", "reach"])) return "contact";
+  return "other";
+};
+
+// ─── IP geo lookup (non-blocking, best-effort) ─────────────────────────────
+const lookupGeo = async (ip) => {
+  const blank = { country: "unknown", countryCode: "unknown", city: "unknown", region: "unknown", timezone: "unknown" };
+  if (!ip || ip === "unknown" || ip === "127.0.0.1" || ip === "::1") return blank;
   try {
-    if (mongoose.connection.readyState !== 1) return; // DB not connected, skip silently
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1500);
+    const res = await fetch(`https://ipapi.co/${ip}/json/`, {
+      signal: controller.signal,
+      headers: { "User-Agent": "portfolio-chatbot/1.0" },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return blank;
+    const data = await res.json();
+    return {
+      country:     data.country_name  || "unknown",
+      countryCode: data.country_code  || "unknown",
+      city:        data.city          || "unknown",
+      region:      data.region        || "unknown",
+      timezone:    data.timezone      || "unknown",
+    };
+  } catch {
+    return blank;
+  }
+};
+
+// ─── Save to MongoDB (non-fatal) ────────────────────────────────────────────
+const saveChatLog = async (userMessage, aiReply, meta) => {
+  try {
+    if (mongoose.connection.readyState !== 1) return;
+    const geo = await lookupGeo(meta.ipAddress);
     await ChatLog.create({
-      userMessage: String(userMessage).slice(0, 1000),
-      aiReply: String(aiReply).slice(0, 5000),
-      source,
-      degraded: Boolean(degraded),
-      ipAddress: ip || "unknown",
+      userMessage:   String(userMessage).slice(0, 1000),
+      aiReply:       String(aiReply).slice(0, 5000),
+      source:        meta.source        || "gemini",
+      degraded:      Boolean(meta.degraded),
+      model:         meta.model         || "unknown",
+      responseTimeMs:meta.responseTimeMs || null,
+      sessionId:     meta.sessionId     || "unknown",
+      messageIndex:  meta.messageIndex  || 0,
+      historyLength: meta.historyLength || 0,
+      messageLength: meta.messageLength || 0,
+      intentTag:     meta.intentTag     || "other",
+      ipAddress:     meta.ipAddress     || "unknown",
+      userAgent:     meta.userAgent     || "unknown",
+      referrer:      meta.referrer      || "direct",
+      ...geo,
     });
   } catch (err) {
     console.warn("⚠️  ChatLog save failed (non-fatal):", err.message);
@@ -343,11 +394,14 @@ const sendMessageWithRetry = async (chat, message, maxRetries = 2) => {
  * @access  Public
  */
 exports.chat = async (req, res) => {
-  const message = req.body?.message;
-  const clientIp =
-    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    "unknown";
+  const message    = req.body?.message;
+  const clientIp   = (req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown").replace(/^::ffff:/, "");
+  const userAgent  = String(req.headers["user-agent"] || "unknown").slice(0, 300);
+  const referrer   = String(req.headers["referer"] || req.headers["referrer"] || "direct").slice(0, 300);
+  const sessionId  = String(req.headers["x-session-id"] || req.body?.sessionId || "unknown").slice(0, 64);
+  const msgIndex   = parseInt(req.body?.messageIndex, 10) || 0;
+  const historyLen = Array.isArray(req.body?.history) ? req.body.history.length : 0;
+  const startTime  = Date.now();
 
   if (!message || typeof message !== "string" || message.trim().length === 0) {
     return res.status(400).json({
@@ -410,8 +464,16 @@ exports.chat = async (req, res) => {
       });
     }
 
-    const trimmedReply = reply.trim();
-    saveChatLog(trimmedMessage, trimmedReply, "gemini", false, clientIp);
+    const trimmedReply  = reply.trim();
+    const responseTimeMs = Date.now() - startTime;
+
+    saveChatLog(trimmedMessage, trimmedReply, {
+      source: "gemini", degraded: false, model: GEMINI_MODEL,
+      responseTimeMs, sessionId, messageIndex: msgIndex,
+      historyLength: historyLen, messageLength: trimmedMessage.length,
+      intentTag: detectIntent(trimmedMessage),
+      ipAddress: clientIp, userAgent, referrer,
+    });
 
     return res.status(200).json({
       success: true,
@@ -436,7 +498,13 @@ exports.chat = async (req, res) => {
 
     if (isGeminiRateLimitError(error)) {
       const fallbackReply = buildFallbackReply(trimmedMessage);
-      saveChatLog(trimmedMessage, fallbackReply, "fallback", true, clientIp);
+      saveChatLog(trimmedMessage, fallbackReply, {
+        source: "fallback", degraded: true, model: GEMINI_MODEL,
+        responseTimeMs: Date.now() - startTime, sessionId, messageIndex: msgIndex,
+        historyLength: historyLen, messageLength: trimmedMessage.length,
+        intentTag: detectIntent(trimmedMessage),
+        ipAddress: clientIp, userAgent, referrer,
+      });
       return res.status(200).json({
         success: true,
         degraded: true,
