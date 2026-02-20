@@ -664,7 +664,7 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       const reply = fallbackReply(message);
-      saveChatLog(message, reply, {
+      await saveChatLog(message, reply, {
         source: "fallback", degraded: true, model: "none",
         responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
         historyLength: history.length, messageLength: message.length,
@@ -708,7 +708,7 @@ export default async function handler(req, res) {
     if (!geminiResponse.ok || !geminiText) {
       if (isRateLimited(geminiResponse.status, apiErrorMessage)) {
         const reply = fallbackReply(message);
-        saveChatLog(message, reply, {
+        await saveChatLog(message, reply, {
           source: "fallback", degraded: true, model,
           responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
           historyLength: history.length, messageLength: message.length,
@@ -724,7 +724,7 @@ export default async function handler(req, res) {
 
       console.error("Gemini error:", apiErrorMessage || "Empty response");
       const reply = fallbackReply(message);
-      saveChatLog(message, reply, {
+      await saveChatLog(message, reply, {
         source: "fallback", degraded: true, model,
         responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
         historyLength: history.length, messageLength: message.length,
@@ -738,7 +738,7 @@ export default async function handler(req, res) {
       });
     }
 
-    saveChatLog(message, geminiText, {
+    await saveChatLog(message, geminiText, {
       source: "gemini", degraded: false, model,
       responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
       historyLength: history.length, messageLength: message.length,
