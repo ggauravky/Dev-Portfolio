@@ -85,25 +85,6 @@ function GauravChatbot() {
         resizeTextarea()
     }, [input, resizeTextarea])
 
-    // â"€â"€ Easter egg: red heart → love message for Khushi â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-    const isRedHeartOnly = (text) => {
-        // Matches messages that are only red heart emoji(s) ❤️ or ❤, with optional spaces
-        // U+2764 = ❤, U+FE0F = variation selector (makes it red on most devices)
-        const stripped = text.replace(/[\u2764\uFE0F\s]/g, '')
-        return stripped.length === 0 && /\u2764/.test(text)
-    }
-
-    const KHUSHI_REPLY =
-        `Awww... you just unlocked Gaurav's secret! 🥰🔓\n\n` +
-        `There's someone very special in his life — **Khushi** 💖\n\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n` +
-        `❤️  I love you, Khushi!  ❤️\n` +
-        `━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `You're not just his girlfriend — you're his calm in the chaos, his sunshine on the worst days, his reason to keep building and growing. 🌹✨\n\n` +
-        `Every late-night coding session, every dream he chases, every line of code he ships — it's all a little bit for you. 💻💕\n\n` +
-        `आई लव यू खुशी! 🌙💌\n\n` +
-        `— Gaurav 🫀`
-
     // â"€â"€ Send message â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
     const sendMessage = useCallback(
         async (text) => {
@@ -115,16 +96,6 @@ function GauravChatbot() {
             setInput('')
 
             setMessages((prev) => [...prev, makeMsg('user', trimmed)])
-
-            // 🎁 Easter egg — red heart triggers the Khushi love message instantly
-            if (isRedHeartOnly(trimmed)) {
-                setTimeout(() => {
-                    setMessages((prev) => [...prev, makeMsg('ai', KHUSHI_REPLY)])
-                    textareaRef.current?.focus()
-                }, 600)
-                return
-            }
-
             setIsLoading(true)
 
             if (textareaRef.current) textareaRef.current.style.height = 'auto'
