@@ -1,54 +1,59 @@
-import mongoose from "mongoose";
-
-// ─── MongoDB singleton (serverless-safe) ─────────────────────────────────
-let _dbReady = false;
+// ─── MongoDB (lazy dynamic import — safe even if package missing) ─────────
+let _mg       = null;
+let _ChatLog  = null;
+let _dbReady  = false;
 
 async function connectDB() {
-  if (_dbReady && mongoose.connection.readyState === 1) return;
   const uri = process.env.MONGODB_URI;
-  if (!uri) return;
+  if (!uri) return null;
   try {
-    await mongoose.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 4000 });
+    if (!_mg) _mg = (await import("mongoose")).default;
+    if (_dbReady && _mg.connection.readyState === 1) return _mg;
+    await _mg.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 4000 });
     _dbReady = true;
+    return _mg;
   } catch (e) {
     console.warn("MongoDB connect failed (non-fatal):", e.message);
+    return null;
   }
 }
 
-// ─── Inline ChatLog model (matches backend schema) ────────────────────────
-const chatLogSchema = new mongoose.Schema(
-  {
-    userMessage:    { type: String, required: true, trim: true, maxLength: 1000 },
-    aiReply:        { type: String, required: true, trim: true },
-    source:         { type: String, enum: ["gemini", "fallback"], default: "gemini" },
-    degraded:       { type: Boolean, default: false },
-    model:          { type: String, default: "unknown" },
-    responseTimeMs: { type: Number, default: null },
-    sessionId:      { type: String, default: "unknown", index: true },
-    messageIndex:   { type: Number, default: 0 },
-    historyLength:  { type: Number, default: 0 },
-    messageLength:  { type: Number, default: 0 },
-    intentTag:      { type: String, default: "other" },
-    ipAddress:      { type: String, default: "unknown" },
-    userAgent:      { type: String, default: "unknown" },
-    referrer:       { type: String, default: "direct" },
-    country:        { type: String, default: "unknown" },
-    countryCode:    { type: String, default: "unknown" },
-    city:           { type: String, default: "unknown" },
-    region:         { type: String, default: "unknown" },
-    timezone:       { type: String, default: "unknown" },
-  },
-  { timestamps: true, collection: "chatlogs" }
-);
-
-const ChatLog =
-  mongoose.models.ChatLog || mongoose.model("ChatLog", chatLogSchema);
+function getChatLog(mg) {
+  if (_ChatLog) return _ChatLog;
+  const schema = new mg.Schema(
+    {
+      userMessage:    { type: String, required: true, trim: true, maxLength: 1000 },
+      aiReply:        { type: String, required: true, trim: true },
+      source:         { type: String, enum: ["gemini", "fallback"], default: "gemini" },
+      degraded:       { type: Boolean, default: false },
+      model:          { type: String, default: "unknown" },
+      responseTimeMs: { type: Number, default: null },
+      sessionId:      { type: String, default: "unknown", index: true },
+      messageIndex:   { type: Number, default: 0 },
+      historyLength:  { type: Number, default: 0 },
+      messageLength:  { type: Number, default: 0 },
+      intentTag:      { type: String, default: "other" },
+      ipAddress:      { type: String, default: "unknown" },
+      userAgent:      { type: String, default: "unknown" },
+      referrer:       { type: String, default: "direct" },
+      country:        { type: String, default: "unknown" },
+      countryCode:    { type: String, default: "unknown" },
+      city:           { type: String, default: "unknown" },
+      region:         { type: String, default: "unknown" },
+      timezone:       { type: String, default: "unknown" },
+    },
+    { timestamps: true, collection: "chatlogs" }
+  );
+  _ChatLog = mg.models.ChatLog || mg.model("ChatLog", schema);
+  return _ChatLog;
+}
 
 // ─── Non-blocking save ────────────────────────────────────────────────────
 const saveChatLog = async (userMessage, aiReply, meta) => {
   try {
-    await connectDB();
-    if (mongoose.connection.readyState !== 1) return;
+    const mg = await connectDB();
+    if (!mg || mg.connection.readyState !== 1) return;
+    const ChatLog = getChatLog(mg);
     await ChatLog.create({
       userMessage:    String(userMessage).slice(0, 1000),
       aiReply:        String(aiReply).slice(0, 5000),
