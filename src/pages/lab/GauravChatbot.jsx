@@ -9,7 +9,13 @@ import TypingIndicator from '../../components/chat/TypingIndicator'
 
 // â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
+// In production, force same-origin API so requests go to Vercel /api/chat.
+// In development, allow explicit chat API override, then fallback to local backend.
+const API_URL = (
+    import.meta.env.PROD
+        ? ''
+        : import.meta.env.VITE_CHAT_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'
+).replace(/\/$/, '')
 
 const SUGGESTION_CHIPS = [
     'Tell me about yourself',
