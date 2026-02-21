@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "node scripts/generate-sitemap.js && vite build",
+        "sync-chat-data": "node scripts/sync-chat-data.js",
+        "build": "node scripts/sync-chat-data.js && node scripts/generate-sitemap.js && vite build",
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js"
     },

@@ -33,7 +33,20 @@ try {
 }
 
 const toLower = (value) => String(value || "").toLowerCase();
-const includesAny = (text, terms) => terms.some((term) => text.includes(term));
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hasTerm = (text, term) => {
+  const source = toLower(text);
+  const token = toLower(term).trim();
+  if (!source || !token) return false;
+
+  const simpleWord = /^[a-z0-9]+$/.test(token);
+  if (simpleWord) {
+    return new RegExp(`\\b${escapeRegExp(token)}\\b`, "i").test(source);
+  }
+
+  return source.includes(token);
+};
+const includesAny = (text, terms) => terms.some((term) => hasTerm(text, term));
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const isGeminiRateLimitError = (error) => {
@@ -86,7 +99,7 @@ const buildRelevantContext = (userMessage) => {
   const query = toLower(userMessage);
 
   // For greetings, return minimal context — the system prompt handles the response
-  if (includesAny(query, ["hi", "hello", "hey", "howdy", "sup", "greetings"])) {
+  if (includesAny(query, ["hi", "hello", "hey", "howdy", "sup", "greetings", "how are you", "how's it going"])) {
     return JSON.stringify({ personal: gauravData.personal || {}, voice: gauravData.voice || {} });
   }
 
@@ -118,6 +131,7 @@ const buildRelevantContext = (userMessage) => {
       "project",
       "built",
       "build",
+      "portfolio",
       "tasknexus",
       "chat app",
       "mern",
@@ -138,6 +152,12 @@ const buildRelevantContext = (userMessage) => {
 
   if (
     includesAny(query, [
+      "hire",
+      "choose you",
+      "why hire",
+      "why should i choose you",
+      "why i choose you",
+      "available",
       "blog",
       "article",
       "post",
@@ -154,6 +174,30 @@ const buildRelevantContext = (userMessage) => {
   ) {
     const matches = findMatchingBlogs(query);
     context.blogs = matches.length ? matches.slice(0, 4) : safeArray(gauravData.blogs).slice(0, 4);
+  }
+
+  if (
+    includesAny(query, [
+      "why you made this",
+      "why did you make this",
+      "why build this portfolio",
+      "purpose of this portfolio",
+      "what did you use to build this",
+      "how did you build this portfolio",
+      "tech stack of this portfolio",
+      "built this website",
+    ])
+  ) {
+    context.portfolioMeta = {
+      whyBuilt:
+        "I built this portfolio to show real proof-of-work and make it easy for recruiters to evaluate my projects and growth quickly.",
+      stack: {
+        frontend: ["React", "Vite", "Tailwind CSS", "React Router"],
+        backend: ["Node.js", "Express.js", "MongoDB"],
+        aiChat: ["Gemini API"],
+        deployment: ["Vercel (frontend/functions)", "Render (backend API)"],
+      },
+    };
   }
 
   if (includesAny(query, ["education", "college", "degree", "iit", "bbdu"])) {
@@ -186,13 +230,14 @@ Your personality: direct, confident, thoughtful, build-first mindset. Not roboti
 
 RULES — follow strictly:
 1. FIRST PERSON ALWAYS: You are Gaurav speaking. Every response must use "I", "my", "me". Never third person.
-2. GREETINGS: If the user says hi, hello, hey, or any greeting, respond warmly as yourself. Example: "Hey! 👋 I'm Gaurav. Feel free to ask me anything — about what I build, what I know, or whether I'm available. Happy to chat!"
+2. GREETINGS & SMALL TALK: If the user says hi/hello or asks "how are you", respond warmly and briefly as yourself, then guide back to portfolio topics.
 3. ON-TOPIC ONLY: Answer only questions about your skills, projects, education, experience, goals, or availability, using the provided context.
 4. NO HALLUCINATIONS: Never invent details not in the context.
 5. MISSING INFO: If something isn't in the context, say: "I don't have that detail handy right now. You can reach me directly at https://ggauravky.vercel.app/contact"
 6. OFF-TOPIC: If the question has nothing to do with you (general knowledge, other people, coding tutorials), say: "That's a bit outside my lane! I'm here to talk about myself and my work. Feel free to reach me directly: https://ggauravky.vercel.app/contact"
-7. TONE: Confident, warm, brief — like a developer who knows what they're about. Not stiff. Not verbose.
-8. FORMAT: Short bullet points when listing things. Keep replies concise and scannable. Avoid long paragraphs.
+7. SPECIAL QUESTIONS: If asked "why should I choose/hire you", answer with concrete strengths and project evidence. If asked "why you made this portfolio" or "what stack you used to build this", answer directly.
+8. TONE: Confident, warm, brief — like a developer who knows what they're about. Not stiff. Not verbose.
+9. FORMAT: Short bullet points when listing things. Keep replies concise and scannable. Avoid long paragraphs.
 
 Context about me (Gaurav):
 ${contextJson}
@@ -208,6 +253,10 @@ const buildFallbackReply = (userMessage) => {
   // Greetings
   if (includesAny(query, ["hi", "hello", "hey", "howdy", "sup", "greetings"])) {
     return "Hey! 👋 I'm Gaurav. Feel free to ask me anything — about what I build, what I know, or whether I'm available. Happy to chat!";
+  }
+
+  if (includesAny(query, ["how are you", "how's it going", "what's up"])) {
+    return `I'm doing great and focused on building projects. Right now I'm working on improving my DSA and AI/ML fundamentals while shipping real products.`;
   }
 
   // FAQ match (answers are already first-person)
@@ -229,14 +278,71 @@ const buildFallbackReply = (userMessage) => {
     }
   }
 
-  if (includesAny(query, ["contact", "email", "linkedin", "github", "reach"])) {
+  if (
+    includesAny(query, [
+      "why hire you",
+      "why should i hire you",
+      "why should i choose you",
+      "why i choose you",
+      "why choose you",
+      "why should we hire you",
+    ])
+  ) {
+    const strengths = safeArray(gauravData.recruiterSignals?.strengths);
+    const valueLine =
+      gauravData.recruiterSignals?.whyHire ||
+      voice.forRecruiters ||
+      voice.whatMakesMeDifferent ||
+      "I build real projects consistently and can deliver production-ready features end-to-end.";
+
+    const bullets = strengths.length
+      ? strengths.slice(0, 4).map((s) => `- ${s}`).join("\n")
+      : [
+          "- Built and deployed 12+ real projects",
+          "- Strong in both MERN and Python/Flask stacks",
+          "- Hands-on with real-time systems (Socket.IO chat app)",
+          "- Practical AI/ML direction with IIT Mandi certification",
+        ].join("\n");
+
+    return `Great question. Here is why I can add value quickly:\n${bullets}\n\n${valueLine}\n\nContact: ${
+      contact.contactPage || "https://ggauravky.vercel.app/contact"
+    }`;
+  }
+
+  if (
+    includesAny(query, [
+      "why you made this",
+      "why did you make this",
+      "why build this portfolio",
+      "purpose of this portfolio",
+      "why this portfolio",
+    ])
+  ) {
+    return `I built this portfolio to show proof-of-work, not just claims on a resume.\n\nMain purpose:\n- Show real deployed projects with clear tech stacks\n- Help recruiters quickly evaluate my strengths\n- Make collaboration and contact easy`;
+  }
+
+  if (
+    includesAny(query, [
+      "what did you use to build this",
+      "how did you build this portfolio",
+      "tech stack of this portfolio",
+      "which tech used in portfolio",
+      "built this website",
+    ])
+  ) {
+    return `I built this portfolio with:\n- Frontend: React, Vite, Tailwind CSS, React Router\n- Backend/API: Node.js, Express.js, MongoDB\n- AI Chat: Gemini API\n- Deployment: Vercel (frontend/functions) + Render (backend API)`;
+  }
+
+  if (includesAny(query, ["contact", "email", "linkedin", "github", "reach", "social", "instagram", "twitter", "x.com", "kaggle", "leetcode", "geeksforgeeks", "whatsapp", "links"])) {
     return `Here's how you can reach me:\n- Email: ${
       contact.email || personal.email || "ggauravky@gmail.com"
     }\n- Portfolio: ${
       contact.portfolio || personal.portfolio || "https://ggauravky.vercel.app"
     }\n- LinkedIn: ${
       contact.linkedin || personal.linkedin || "https://linkedin.com/in/ggauravky"
-    }`;
+    }\n- GitHub: ${
+      contact.github || personal.github || "https://github.com/ggauravky"
+    }\n- WhatsApp: https://wa.me/918542036499\n- LeetCode: https://leetcode.com/u/gauravky/\n- GeeksforGeeks: https://www.geeksforgeeks.org/profile/gauravky\n- Kaggle: https://www.kaggle.com/kgauravky\n- X: https://x.com/xgauravky\n- Instagram: https://www.instagram.com/the_gau_rav/`;
   }
 
   if (includesAny(query, ["project", "built", "build", "tasknexus", "chat", "mern", "notes", "aireel"])) {
@@ -269,7 +375,7 @@ const buildFallbackReply = (userMessage) => {
       : `I'm currently improving my DSA, advanced AI/ML concepts, MERN scalability, and system design fundamentals.`;
   }
 
-  if (includesAny(query, ["different", "unique", "stand out", "why you", "why hire"])) {
+  if (includesAny(query, ["different", "unique", "stand out", "why you", "why hire", "choose you"])) {
     return voice.whatMakesMeDifferent
       ? voice.whatMakesMeDifferent
       : `I build real projects, not just tutorials. My consistency mindset and build-in-public approach is what sets me apart.`;
@@ -306,13 +412,14 @@ const buildFallbackReply = (userMessage) => {
 const detectIntent = (message) => {
   const q = toLower(message);
   if (includesAny(q, ["hi", "hello", "hey", "howdy", "sup", "greetings", "how are you"])) return "greeting";
-  if (includesAny(q, ["intern", "hire", "available", "freelance", "job", "recruit", "role", "why hire", "why should", "what makes", "different"])) return "hiring";
+  if (includesAny(q, ["why you made this", "why did you make this", "why build this portfolio", "purpose of this portfolio", "what did you use to build this", "how did you build this portfolio", "tech stack of this portfolio"])) return "portfolio";
+  if (includesAny(q, ["intern", "hire", "available", "freelance", "job", "recruit", "role", "why hire", "why hire you", "why should", "what makes", "different", "why choose you", "why i choose you", "why should i choose you"])) return "hiring";
   if (includesAny(q, ["skill", "tech", "stack", "language", "python", "react", "node", "ai", "ml", "framework", "tool"])) return "skills";
   if (includesAny(q, ["project", "built", "build", "app", "chat", "mern", "aireel", "notes", "grocery", "shopease", "tasknexus"])) return "projects";
   if (includesAny(q, ["education", "college", "degree", "iit", "bca", "mandi", "bbdu", "certification"])) return "education";
   if (includesAny(q, ["goal", "future", "plan", "learn", "studying", "improving", "currently"])) return "goals";
   if (includesAny(q, ["blog", "article", "write", "wrote", "post", "published"])) return "blogs";
-  if (includesAny(q, ["contact", "email", "linkedin", "github", "reach"])) return "contact";
+  if (includesAny(q, ["contact", "email", "linkedin", "github", "reach", "social", "instagram", "twitter", "x.com", "kaggle", "leetcode", "geeksforgeeks", "whatsapp", "links"])) return "contact";
   return "other";
 };
 

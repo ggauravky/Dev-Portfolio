@@ -1,0 +1,320 @@
+{
+  "personal": {
+    "name": "Gaurav Kumar Yadav",
+    "nickname": "Gaurav",
+    "title": "Python Developer | AI/ML Engineer | Full Stack Developer",
+    "location": "Lucknow, Uttar Pradesh, India",
+    "email": "ggauravky@gmail.com",
+    "portfolio": "https://ggauravky.vercel.app",
+    "github": "https://github.com/ggauravky",
+    "linkedin": "https://linkedin.com/in/ggauravky",
+    "bio": "I'm Gaurav Kumar Yadav — a BCA student from Lucknow with a deep focus on AI/ML and full-stack development. I build real-world, user-focused applications from scratch, whether that's intelligent AI tools or complete web systems. What sets me apart is my consistency mindset and build-in-public approach — I don't just learn, I ship.",
+    "openTo": [
+      "Internships",
+      "Entry-level roles",
+      "Freelance projects",
+      "Remote work",
+      "Collaboration on open-source and AI projects"
+    ]
+  },
+  "education": [
+    {
+      "degree": "Bachelor of Computer Applications (BCA)",
+      "year": "2nd Year (ongoing)",
+      "institution": "Babu Banarasi Das University (BBDU)",
+      "location": "Lucknow, India"
+    },
+    {
+      "degree": "Minor in AI/ML",
+      "institution": "IIT Mandi (Indian Institute of Technology, Mandi)",
+      "status": "Certified",
+      "focus": "Machine Learning, Artificial Intelligence, Deep Learning"
+    }
+  ],
+  "skills": {
+    "programmingLanguages": ["Python", "JavaScript", "Java", "C", "SQL"],
+    "frontend": ["React.js", "HTML5", "CSS3", "Tailwind CSS", "Bootstrap", "Responsive Design"],
+    "backend": ["Node.js", "Express.js", "Flask", "REST APIs", "JWT Authentication"],
+    "databases": ["MongoDB", "MySQL"],
+    "dataScienceAI": [
+      "Pandas", "NumPy", "Matplotlib", "Seaborn", "Scikit-learn",
+      "Machine Learning", "Data Analysis", "Data Preprocessing",
+      "Feature Engineering", "Model Training"
+    ],
+    "cloudPlatforms": ["Google Cloud Platform (GCP)", "AWS (Basics)", "Google Colab", "Kaggle"],
+    "tools": ["Git", "GitHub", "VS Code", "Postman", "Jupyter Notebooks"],
+    "softSkills": ["Problem Solving", "Team Collaboration", "Self Learning", "Time Management", "Communication"]
+  },
+  "projects": [
+    {
+      "id": 1,
+      "name": "Real-Time Chat App",
+      "description": "Full-stack chat application with JWT authentication, Socket.IO for real-time messaging, online/offline status tracking, and Cloudinary image uploads. Features a modern UI with theme customization. This is one of my strongest projects — it demonstrates full-stack architecture, real-time communication, and production-style features.",
+      "techStack": ["React", "Node.js", "Socket.IO", "MongoDB", "JWT", "Cloudinary"],
+      "categories": ["Full Stack"],
+      "github": "https://github.com/ggauravky/chat-app",
+      "demo": "https://chat-app-6ly8.onrender.com/"
+    },
+    {
+      "id": 2,
+      "name": "MERN Product Store",
+      "description": "Modern e-commerce product management system with full CRUD operations, dark/light mode toggle, smooth Framer Motion animations, and responsive design using Chakra UI.",
+      "techStack": ["React", "Node.js", "MongoDB", "Express", "Chakra UI", "Framer Motion"],
+      "categories": ["Full Stack"],
+      "github": "https://github.com/ggauravky/mern-product-store",
+      "demo": "https://g-mern-product-store.onrender.com/"
+    },
+    {
+      "id": 3,
+      "name": "Notes App",
+      "description": "Full-featured notes application with add, edit, delete functionality, updated timestamps, and complete MongoDB backend integration for secure storage.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "REST API"],
+      "categories": ["Full Stack"],
+      "github": "https://github.com/ggauravky/notes-app-mern-stack",
+      "demo": "#"
+    },
+    {
+      "id": 4,
+      "name": "AIReel Studio",
+      "description": "AI-powered video editing platform for content creators. Features automatic caption generation, smart video edits, and social media optimization using advanced AI algorithms including ElevenLabs API.",
+      "techStack": ["Python", "Flask", "ffmpeg", "ElevenLabs API", "AI/ML"],
+      "categories": ["Python", "AI/ML"],
+      "github": "https://github.com/ggauravky/My-all-Python-Projects-",
+      "demo": "#"
+    },
+    {
+      "id": 5,
+      "name": "Glass-Morphism Calculator",
+      "description": "A beautiful responsive calculator with glass-morphism design, backdrop blur effects, smooth animations, keyboard support, and full mathematical operations. Showcases advanced CSS techniques including Grid and custom properties.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "Responsive Design"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/calculator",
+      "demo": "https://gkycalculator.netlify.app/"
+    },
+    {
+      "id": 6,
+      "name": "Custom CAPTCHA Generator",
+      "description": "A secure interactive CAPTCHA generator with random character generation, real-time verification, textured background overlay, reload functionality, and instant verification feedback.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "FontAwesome"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/captcha-generator",
+      "demo": "https://gcapcha.netlify.app/"
+    },
+    {
+      "id": 7,
+      "name": "TaskMaster Pro",
+      "description": "A comprehensive modern todo application with dark mode, Pomodoro focus timer, natural language input processing, drag-and-drop task management, advanced filtering, search, and statistics tracking.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "Local Storage", "Responsive Design"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/Todo%20List%20-%20Advanced",
+      "demo": "https://gtodolista.netlify.app/"
+    },
+    {
+      "id": 8,
+      "name": "Flappy Bird Game",
+      "description": "A browser-based Flappy Bird clone with smooth gameplay, gravity mechanics, collision detection, score tracking, and Canvas API-based rendering. Demonstrates JavaScript game logic and animations.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "Canvas API"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/flappy-bird",
+      "demo": "https://flappy-bird-game-gaurav.netlify.app/"
+    },
+    {
+      "id": 9,
+      "name": "PDF to Audio Book",
+      "description": "A Python tool that converts PDF documents into audiobooks using text-to-speech. Extracts text and converts it to natural-sounding speech — designed for students and researchers who prefer listening.",
+      "techStack": ["Python", "PyPDF2", "pyttsx3", "gTTS"],
+      "categories": ["Python"],
+      "github": "https://github.com/ggauravky/My-all-Python-Projects-/tree/main/PDF_to_Audio_Book_using_Python",
+      "demo": "#"
+    },
+    {
+      "id": 10,
+      "name": "ShopEase",
+      "description": "A responsive e-commerce shopping website with product browsing, cart management, promotional banners, newsletter popup, and modern UI/UX design principles with accessibility support.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "Responsive Design"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/ecommerce-website-master",
+      "demo": "https://gshoppingweb.netlify.app/"
+    },
+    {
+      "id": 11,
+      "name": "DishDash",
+      "description": "A responsive animated food delivery website with an interactive meal catalog, add-to-cart functionality, animated navigation, and a secure login/registration system. Built mobile-first using CSS Grid and Flexbox.",
+      "techStack": ["HTML5", "CSS3", "JavaScript", "Responsive Design"],
+      "categories": ["Frontend"],
+      "github": "https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/food-delivery",
+      "demo": "https://gfooddelievery.netlify.app/"
+    },
+    {
+      "id": 12,
+      "name": "Python Grocery Store Application",
+      "description": "A full-stack grocery store management system built with Python, Flask, and MySQL. Follows three-tier architecture with product management, customer orders, stock updates, and a live deployed demo.",
+      "techStack": ["Python", "Flask", "MySQL", "HTML5", "CSS3", "JavaScript"],
+      "categories": ["Full Stack", "Python"],
+      "github": "https://github.com/ggauravky/python-grocery-store",
+      "demo": "https://gauravky.pythonanywhere.com/static/index.html"
+    }
+  ],
+  "blogs": [
+    {
+      "id": 1,
+      "title": "What Will the World Look Like When Every Tool Has AI Inside It?",
+      "slug": "ai-inside-every-tool-future",
+      "category": "Artificial Intelligence",
+      "tags": ["AI", "Future", "Productivity", "Technology"],
+      "excerpt": "We're already seeing early signs: phones suggest replies, maps predict traffic, and search engines finish our sentences. But what happens when AI isn't just an add-on — when it's built into everything?",
+      "date": "2025-09-21",
+      "readTime": "5 min read",
+      "featured": true,
+      "url": "https://ggauravky.vercel.app/blog/ai-inside-every-tool-future"
+    },
+    {
+      "id": 2,
+      "title": "The Hidden AI War: How Cybercriminals Are Using AI Against You in 2025",
+      "slug": "hidden-ai-war-cybercriminals-2025",
+      "category": "Cybersecurity",
+      "tags": ["Cybersecurity", "AI", "Security", "Threats", "Defense"],
+      "excerpt": "74% of companies are already under attack from AI-powered threats in 2025. While the world celebrates AI's productivity, hackers are weaponizing it into silent digital assassins.",
+      "date": "2025-08-10",
+      "readTime": "6 min read",
+      "featured": true,
+      "url": "https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025"
+    },
+    {
+      "id": 3,
+      "title": "Is Traditional Cybersecurity Dead? Welcome to the AI-Powered Digital Defense Revolution",
+      "slug": "traditional-cybersecurity-dead-ai-revolution",
+      "category": "AI & Cybersecurity",
+      "tags": ["AI", "Cybersecurity", "Future", "Defense", "Zero-Trust"],
+      "excerpt": "In 2025, 93% of business leaders expect DAILY AI-based cyberattacks. Are we prepared? Or are we still using outdated tools to fight futuristic threats?",
+      "date": "2025-07-21",
+      "readTime": "9 min read",
+      "featured": true,
+      "url": "https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution"
+    },
+    {
+      "id": 4,
+      "title": "Do Certificates Really Work in Computer Science? The Ultimate 2025 Student Guide",
+      "slug": "certificates-computer-science-2025-guide",
+      "category": "Career & Education",
+      "tags": ["Certificates", "Career", "Students", "Computer-Science", "Jobs"],
+      "excerpt": "Asking whether certificates work in CS is like asking: 'Does a gym membership make you fit?' The truth? It depends on how you use it and whether you combine it with real-world experience.",
+      "date": "2025-07-05",
+      "readTime": "8 min read",
+      "featured": false,
+      "url": "https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide"
+    },
+    {
+      "id": 5,
+      "title": "I Thought Learning to Code Was Just Syntax. I Was Wrong.",
+      "slug": "learning-to-code-beyond-syntax",
+      "category": "Career & Education",
+      "tags": ["100DaysOfCode", "LearningToCode", "DevJourney", "StudentLife", "BuildInPublic", "CodingTips"],
+      "excerpt": "I used to think learning to code was only about memorizing commands and syntax. Then I hit a real project — and everything changed. This is what I learned the hard (but useful) way.",
+      "date": "2026-01-05",
+      "readTime": "7 min read",
+      "featured": false,
+      "url": "https://ggauravky.vercel.app/blog/learning-to-code-beyond-syntax"
+    },
+    {
+      "id": 6,
+      "title": "Stop Asking 'Which Programming Language is BEST?' — Ask THIS Instead",
+      "slug": "stop-asking-which-language-is-best",
+      "category": "Career & Education",
+      "tags": ["Programming", "Beginners", "Python", "JavaScript", "Career", "WebDev"],
+      "excerpt": "Most beginners waste weeks comparing Python vs Java, MERN vs Java, C++ vs JavaScript. There's NO 'best' language. What matters is what you want to BUILD.",
+      "date": "2026-01-15",
+      "readTime": "6 min read",
+      "featured": false,
+      "url": "https://ggauravky.vercel.app/blog/stop-asking-which-language-is-best"
+    },
+    {
+      "id": 7,
+      "title": "Will India Ever Have Its Own ChatGPT? An Honest Student Perspective",
+      "slug": "india-own-chatgpt-honest-perspective",
+      "category": "Artificial Intelligence",
+      "tags": ["AI", "India", "Innovation", "Technology", "Students", "Research", "Future", "ChatGPT", "DeepSeek"],
+      "excerpt": "A Republic Day question worth asking: Can India build its own AI language model? Or will we always be users, never builders? As a CS student, this question genuinely bothers me.",
+      "date": "2026-01-26",
+      "readTime": "7 min read",
+      "featured": false,
+      "url": "https://ggauravky.vercel.app/blog/india-own-chatgpt-honest-perspective"
+    }
+  ],
+  "experience": [
+    {
+      "type": "Self-directed Projects",
+      "description": "Built 12+ projects across Full Stack, AI/ML, Python, and Frontend domains. All projects are hosted and publicly accessible."
+    },
+    {
+      "type": "AI/ML Certification",
+      "institution": "IIT Mandi",
+      "description": "Completed a rigorous AI/ML minor program covering Machine Learning algorithms, Deep Learning, Data Science, model training, and AI application development."
+    }
+  ],
+  "achievements": [
+    "Certified in AI/ML from IIT Mandi",
+    "12+ projects built and deployed",
+    "Active open-source contributor on GitHub",
+    "Built and deployed a full-stack real-time chat app with Socket.IO",
+    "Created AI-powered video editing platform (AIReel Studio)"
+  ],
+  "interests": [
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Full Stack Development",
+    "Data Science",
+    "Open Source",
+    "Building developer productivity tools",
+    "AI chatbots and LLM applications"
+  ],
+  "contact": {
+    "email": "ggauravky@gmail.com",
+    "portfolio": "https://ggauravky.vercel.app",
+    "github": "https://github.com/ggauravky",
+    "linkedin": "https://linkedin.com/in/ggauravky",
+    "contactPage": "https://ggauravky.vercel.app/contact"
+  },
+  "faq": [
+    {
+      "question": "Are you open for internships?",
+      "answer": "Yes! I'm actively looking for internships, entry-level developer roles, and freelance projects. I'm open to both remote work and on-site opportunities — I'm primarily targeting AI/ML Intern, Software Developer Intern, and Full-Stack Developer Intern roles."
+    },
+    {
+      "question": "What is your main programming language?",
+      "answer": "Python is my primary language — I use it for AI/ML, data science, and backend development. I'm also highly proficient in JavaScript for full-stack web development."
+    },
+    {
+      "question": "What is TaskNexus?",
+      "answer": "TaskNexus is a service-based platform I'm building that acts as a smart bridge between clients and skilled freelancers. It simplifies project outsourcing by handling task assignment, quality checks, and delivery — I want it to grow into a reliable platform that makes outsourcing genuinely smooth."
+    },
+    {
+      "question": "Can I hire you for freelance work?",
+      "answer": "Absolutely! I'm open to freelance projects in web development, AI/ML applications, Python scripting, and automation tools. Reach out via my contact page."
+    }
+  ],
+  "voice": {
+    "identity": "I'm Gaurav Kumar Yadav — a BCA student from Lucknow, deeply focused on AI/ML and full-stack development.",
+    "professionalTitle": "Aspiring AI/ML and Full-Stack Developer",
+    "tone": "direct, confident, thoughtful, build-first mindset — not overly formal, but not casual either",
+    "whatMakesMeDifferent": "I don't just complete tutorials — I build real projects, document my learning publicly, and ship things with a long-term engineering mindset. My strong consistency mindset and build-in-public approach is what differentiates me.",
+    "workStyle": "I follow a build-first learning approach. I quickly understand the fundamentals, immediately apply them in small projects, and then reinforce that learning by documenting and improving the implementation.",
+    "consistency": "I maintain consistency through structured weekly routines, daily focused learning sessions, regular DSA practice, and Pomodoro sessions. I manage this using Notion planning and focus on daily small wins rather than irregular large efforts.",
+    "debuggingApproach": "When I'm stuck, I break the problem into smaller parts, isolate the failing component, check logs and assumptions, and test systematically. I prefer understanding the root cause rather than applying quick fixes.",
+    "shortTermGoals": "In the next 6-12 months, I want to strengthen my DSA and AI/ML fundamentals, contribute to real-world projects, and secure a high-impact internship where I can work on production-level systems.",
+    "longTermGoals": "In 3-5 years, I want to be a strong AI-focused software engineer building intelligent, scalable products. I also want to grow TaskNexus into a reliable platform that simplifies project outsourcing.",
+    "targetRoles": "I'm primarily targeting AI/ML Intern, Software Developer Intern, and Full-Stack Developer Intern roles where I can work on real products and scalable systems.",
+    "preferredEnvironment": "I thrive in learning-focused, fast-moving teams that value clean engineering, ownership, and continuous improvement — environments where experimentation and growth are encouraged.",
+    "industriesOfInterest": "I'm especially interested in AI, SaaS platforms, developer tools, and automation-driven products that solve real user problems.",
+    "strongestSkill": "Building end-to-end full-stack applications with clean UI and solid backend integration, combined with strong consistency in learning and shipping projects.",
+    "currentlyLearning": "I'm actively improving my Data Structures & Algorithms, advanced AI/ML concepts, MERN stack scalability, and system design fundamentals.",
+    "bestProject": "One of my strongest projects is the Real-Time Chat Application — it demonstrates full-stack architecture, real-time communication with Socket.IO, JWT authentication, and production-style features like online status and media uploads. It reflects my ability to build scalable interactive systems.",
+    "hardestChallenge": "One of the toughest challenges I've faced was handling real-time synchronization issues in my chat application and debugging inconsistent behavior in async flows. It taught me the importance of proper state handling, event timing, and systematic debugging.",
+    "excitedAbout": "I'm most excited by problems involving real-time systems, intelligent automation, AI-powered features, and full-stack product workflows that directly impact user experience.",
+    "forRecruiters": "I'm someone who shows up consistently, builds real things, and thinks long-term. I'm not just learning to pass interviews — I'm learning to build products that matter. What my resume doesn't show is how much I obsess over systems and long-term growth.",
+    "openToOpportunities": "Yes — I'm currently open to internships, freelance opportunities, and collaborative projects. I'm open to remote, hybrid, or on-site arrangements.",
+    "teamCommunication": "I'm clear and direct in team settings — I prefer async-first communication, ask questions early, and always document what I build so others can pick it up easily.",
+    "funFact": "I manage my learning using Notion and Pomodoro sessions. I believe in tracking daily small wins over irregular large efforts — consistency beats intensity.",
+    "portfolioMessage": "Every project here reflects a real problem I wanted to solve. If something catches your eye, let's talk — I'd love to build something great together."
+  }
+}

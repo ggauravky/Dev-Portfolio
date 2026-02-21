@@ -1,112 +1,177 @@
-// ─── MongoDB (lazy dynamic import — safe even if package missing) ─────────
-let _mg       = null;
-let _ChatLog  = null;
-let _dbReady  = false;
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// MongoDB (lazy dynamic import; safe if package is missing)
+let _mg = null;
+let _ChatLog = null;
+let _dbReady = false;
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI;
   if (!uri) return null;
+
   try {
     if (!_mg) _mg = (await import("mongoose")).default;
     if (_dbReady && _mg.connection.readyState === 1) return _mg;
-    await _mg.connect(uri, { bufferCommands: false, serverSelectionTimeoutMS: 4000 });
+
+    await _mg.connect(uri, {
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 4000,
+    });
+
     _dbReady = true;
     return _mg;
-  } catch (e) {
-    console.warn("MongoDB connect failed (non-fatal):", e.message);
+  } catch (error) {
+    console.warn("MongoDB connect failed (non-fatal):", error.message);
     return null;
   }
 }
 
 function getChatLog(mg) {
   if (_ChatLog) return _ChatLog;
+
   const schema = new mg.Schema(
     {
-      userMessage:    { type: String, required: true, trim: true, maxLength: 1000 },
-      aiReply:        { type: String, required: true, trim: true },
-      source:         { type: String, enum: ["gemini", "fallback"], default: "gemini" },
-      degraded:       { type: Boolean, default: false },
-      model:          { type: String, default: "unknown" },
+      userMessage: { type: String, required: true, trim: true, maxLength: 1000 },
+      aiReply: { type: String, required: true, trim: true },
+      source: { type: String, enum: ["gemini", "fallback"], default: "gemini" },
+      degraded: { type: Boolean, default: false },
+      model: { type: String, default: "unknown" },
       responseTimeMs: { type: Number, default: null },
-      sessionId:      { type: String, default: "unknown", index: true },
-      messageIndex:   { type: Number, default: 0 },
-      historyLength:  { type: Number, default: 0 },
-      messageLength:  { type: Number, default: 0 },
-      intentTag:      { type: String, default: "other" },
-      ipAddress:      { type: String, default: "unknown" },
-      userAgent:      { type: String, default: "unknown" },
-      referrer:       { type: String, default: "direct" },
-      country:        { type: String, default: "unknown" },
-      countryCode:    { type: String, default: "unknown" },
-      city:           { type: String, default: "unknown" },
-      region:         { type: String, default: "unknown" },
-      timezone:       { type: String, default: "unknown" },
+      sessionId: { type: String, default: "unknown", index: true },
+      messageIndex: { type: Number, default: 0 },
+      historyLength: { type: Number, default: 0 },
+      messageLength: { type: Number, default: 0 },
+      intentTag: { type: String, default: "other" },
+      ipAddress: { type: String, default: "unknown" },
+      userAgent: { type: String, default: "unknown" },
+      referrer: { type: String, default: "direct" },
+      country: { type: String, default: "unknown" },
+      countryCode: { type: String, default: "unknown" },
+      city: { type: String, default: "unknown" },
+      region: { type: String, default: "unknown" },
+      timezone: { type: String, default: "unknown" },
     },
     { timestamps: true, collection: "chatlogs" }
   );
+
   _ChatLog = mg.models.ChatLog || mg.model("ChatLog", schema);
   return _ChatLog;
 }
 
-// ─── Non-blocking save ────────────────────────────────────────────────────
 const saveChatLog = async (userMessage, aiReply, meta) => {
   try {
     const mg = await connectDB();
     if (!mg || mg.connection.readyState !== 1) return;
+
     const ChatLog = getChatLog(mg);
+
     await ChatLog.create({
-      userMessage:    String(userMessage).slice(0, 1000),
-      aiReply:        String(aiReply).slice(0, 5000),
-      source:         meta.source         || "gemini",
-      degraded:       Boolean(meta.degraded),
-      model:          meta.model          || "unknown",
+      userMessage: String(userMessage).slice(0, 1000),
+      aiReply: String(aiReply).slice(0, 5000),
+      source: meta.source || "gemini",
+      degraded: Boolean(meta.degraded),
+      model: meta.model || "unknown",
       responseTimeMs: meta.responseTimeMs || null,
-      sessionId:      meta.sessionId      || "unknown",
-      messageIndex:   meta.messageIndex   || 0,
-      historyLength:  meta.historyLength  || 0,
-      messageLength:  meta.messageLength  || 0,
-      intentTag:      meta.intentTag      || "other",
-      ipAddress:      meta.ipAddress      || "unknown",
-      userAgent:      meta.userAgent      || "unknown",
-      referrer:       meta.referrer       || "direct",
-      country:        meta.country        || "unknown",
-      countryCode:    meta.countryCode    || "unknown",
-      city:           meta.city           || "unknown",
-      region:         meta.region         || "unknown",
-      timezone:       meta.timezone       || "unknown",
+      sessionId: meta.sessionId || "unknown",
+      messageIndex: meta.messageIndex || 0,
+      historyLength: meta.historyLength || 0,
+      messageLength: meta.messageLength || 0,
+      intentTag: meta.intentTag || "other",
+      ipAddress: meta.ipAddress || "unknown",
+      userAgent: meta.userAgent || "unknown",
+      referrer: meta.referrer || "direct",
+      country: meta.country || "unknown",
+      countryCode: meta.countryCode || "unknown",
+      city: meta.city || "unknown",
+      region: meta.region || "unknown",
+      timezone: meta.timezone || "unknown",
     });
-  } catch (err) {
-    console.warn("⚠️ ChatLog save failed (non-fatal):", err.message);
+  } catch (error) {
+    console.warn("ChatLog save failed (non-fatal):", error.message);
   }
 };
 
-// ─── Intent tagger ────────────────────────────────────────────────────────
-const detectIntent = (message) => {
-  const q = String(message || "").toLowerCase();
-  const has = (terms) => terms.some((t) => q.includes(t));
-  if (has(["hi", "hello", "hey", "howdy", "sup", "greetings", "how are you"])) return "greeting";
-  if (has(["intern", "hire", "available", "freelance", "job", "recruit", "role", "why hire", "why should", "what makes", "different"])) return "hiring";
-  if (has(["skill", "tech", "stack", "language", "python", "react", "node", "ai", "ml", "framework", "tool"])) return "skills";
-  if (has(["project", "built", "build", "app", "chat", "mern", "aireel", "notes", "grocery", "shopease", "tasknexus"])) return "projects";
-  if (has(["education", "college", "degree", "iit", "bca", "mandi", "bbdu", "certification"])) return "education";
-  if (has(["goal", "future", "plan", "learn", "studying", "improving", "currently"])) return "goals";
-  if (has(["blog", "article", "write", "wrote", "post", "published"])) return "blogs";
-  if (has(["contact", "email", "linkedin", "github", "reach"])) return "contact";
-  return "other";
+const toLower = (value) => String(value || "").toLowerCase();
+const normalizeSpace = (value) => String(value || "").replace(/\s+/g, " ").trim();
+const safeArray = (value) => (Array.isArray(value) ? value : []);
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hasTerm = (text, term) => {
+  const source = toLower(text);
+  const token = toLower(term).trim();
+  if (!source || !token) return false;
+
+  const simpleWord = /^[a-z0-9]+$/.test(token);
+  if (simpleWord) {
+    return new RegExp(`\\b${escapeRegExp(token)}\\b`, "i").test(source);
+  }
+
+  return source.includes(token);
+};
+const includesAny = (text, terms) => terms.some((term) => hasTerm(text, term));
+
+const toList = (value) => {
+  if (Array.isArray(value)) return value.map((item) => normalizeSpace(item)).filter(Boolean);
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((item) => normalizeSpace(item))
+      .filter(Boolean);
+  }
+  return [];
 };
 
-// ─── Complete profile data ─────────────────────────────────────────────────
-const GAURAV = {
+const uniqueBy = (items, keyFn) => {
+  const seen = new Set();
+  const out = [];
+
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+
+  return out;
+};
+
+const tokenize = (value) =>
+  toLower(value)
+    .split(/[^a-z0-9]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 2);
+
+const getTurnText = (turn) => normalizeSpace(turn?.text || turn?.content || "");
+
+const firstSentence = (value) => {
+  const text = normalizeSpace(value);
+  if (!text) return "";
+  const parts = text.split(/[.!?]/);
+  return normalizeSpace(parts[0] || text);
+};
+
+const SOCIAL_LINKS = [
+  { name: "GitHub", url: "https://github.com/ggauravky", username: "@ggauravky" },
+  { name: "LinkedIn", url: "https://www.linkedin.com/in/gauravky/", username: "@gauravky" },
+  { name: "WhatsApp", url: "https://wa.me/918542036499", username: "+91 8542036499" },
+  { name: "LeetCode", url: "https://leetcode.com/u/gauravky/", username: "@gauravky" },
+  { name: "GeeksforGeeks", url: "https://www.geeksforgeeks.org/profile/gauravky", username: "@gauravky" },
+  { name: "Kaggle", url: "https://www.kaggle.com/kgauravky", username: "@kgauravky" },
+  { name: "Twitter (X)", url: "https://x.com/xgauravky", username: "@xgauravky" },
+  { name: "Instagram", url: "https://www.instagram.com/the_gau_rav/", username: "@the_gau_rav" },
+];
+
+const DEFAULT_DATA = {
   personal: {
     name: "Gaurav Kumar Yadav",
-    nickname: "Gaurav",
     title: "Python Developer | AI/ML Engineer | Full Stack Developer",
     location: "Lucknow, Uttar Pradesh, India",
     email: "ggauravky@gmail.com",
     portfolio: "https://ggauravky.vercel.app",
     github: "https://github.com/ggauravky",
-    linkedin: "https://linkedin.com/in/ggauravky",
-    bio: "I'm Gaurav Kumar Yadav — a BCA student from Lucknow with a deep focus on AI/ML and full-stack development. I build real-world, user-focused applications from scratch, whether that's intelligent AI tools or complete web systems. What sets me apart is my consistency mindset and build-in-public approach — I don't just learn, I ship.",
+    linkedin: "https://www.linkedin.com/in/gauravky/",
+    bio: "I am a BCA student focused on AI/ML and full-stack development. I build practical projects and ship consistently.",
     openTo: [
       "Internships",
       "Entry-level roles",
@@ -115,235 +180,490 @@ const GAURAV = {
       "Collaboration on open-source and AI projects",
     ],
   },
-  education: [
-    {
-      degree: "Bachelor of Computer Applications (BCA)",
-      year: "2nd Year (ongoing)",
-      institution: "Babu Banarasi Das University (BBDU)",
-      location: "Lucknow, India",
-    },
-    {
-      degree: "Minor in AI/ML",
-      institution: "IIT Mandi (Indian Institute of Technology, Mandi)",
-      status: "Certified",
-      focus: "Machine Learning, Artificial Intelligence, Deep Learning",
-    },
-  ],
-  skills: {
-    programmingLanguages: ["Python", "JavaScript", "Java", "C", "SQL"],
-    frontend: ["React.js", "HTML5", "CSS3", "Tailwind CSS", "Bootstrap", "Responsive Design"],
-    backend: ["Node.js", "Express.js", "Flask", "REST APIs", "JWT Authentication"],
-    databases: ["MongoDB", "MySQL"],
-    dataScienceAI: [
-      "Pandas", "NumPy", "Matplotlib", "Seaborn", "Scikit-learn",
-      "Machine Learning", "Data Analysis", "Data Preprocessing",
-      "Feature Engineering", "Model Training",
-    ],
-    cloudPlatforms: ["Google Cloud Platform (GCP)", "AWS (Basics)", "Google Colab", "Kaggle"],
-    tools: ["Git", "GitHub", "VS Code", "Postman", "Jupyter Notebooks"],
-    softSkills: ["Problem Solving", "Team Collaboration", "Self Learning", "Time Management", "Communication"],
-  },
-  projects: [
-    {
-      name: "Real-Time Chat App",
-      description: "Full-stack chat application with JWT authentication, Socket.IO for real-time messaging, online/offline status tracking, and Cloudinary image uploads. Features a modern UI with theme customization. One of his strongest projects — demonstrates full-stack architecture, real-time communication, and production-style features.",
-      techStack: ["React", "Node.js", "Socket.IO", "MongoDB", "JWT", "Cloudinary"],
-      github: "https://github.com/ggauravky/chat-app",
-      demo: "https://chat-app-6ly8.onrender.com/",
-    },
-    {
-      name: "MERN Product Store",
-      description: "Modern e-commerce product management system with full CRUD operations, dark/light mode toggle, smooth Framer Motion animations, and responsive design using Chakra UI.",
-      techStack: ["React", "Node.js", "MongoDB", "Express", "Chakra UI", "Framer Motion"],
-      github: "https://github.com/ggauravky/mern-product-store",
-      demo: "https://g-mern-product-store.onrender.com/",
-    },
-    {
-      name: "AIReel Studio",
-      description: "AI-powered video editing platform for content creators. Features automatic caption generation, smart video edits, and social media optimization using ElevenLabs API.",
-      techStack: ["Python", "Flask", "ffmpeg", "ElevenLabs API", "AI/ML"],
-      github: "https://github.com/ggauravky/My-all-Python-Projects-",
-    },
-    {
-      name: "Python Grocery Store Application",
-      description: "Full-stack grocery store management system built with Python, Flask, and MySQL. Follows three-tier architecture with product management, customer orders, and stock updates.",
-      techStack: ["Python", "Flask", "MySQL", "HTML5", "CSS3", "JavaScript"],
-      github: "https://github.com/ggauravky/python-grocery-store",
-      demo: "https://gauravky.pythonanywhere.com/static/index.html",
-    },
-    {
-      name: "TaskMaster Pro",
-      description: "Comprehensive modern todo application with dark mode, Pomodoro focus timer, natural language input processing, drag-and-drop task management, advanced filtering, search, and statistics.",
-      techStack: ["HTML5", "CSS3", "JavaScript", "Local Storage"],
-      demo: "https://gtodolista.netlify.app/",
-    },
-    {
-      name: "Glass-Morphism Calculator",
-      description: "Responsive calculator with glass-morphism design, backdrop blur effects, smooth animations, keyboard support. Showcases advanced CSS techniques.",
-      techStack: ["HTML5", "CSS3", "JavaScript"],
-      demo: "https://gkycalculator.netlify.app/",
-    },
-    {
-      name: "Notes App",
-      description: "Full-featured notes application with add, edit, delete, updated timestamps, and complete MongoDB backend integration.",
-      techStack: ["React", "Node.js", "Express", "MongoDB", "REST API"],
-      github: "https://github.com/ggauravky/notes-app-mern-stack",
-    },
-    {
-      name: "ShopEase",
-      description: "Responsive e-commerce shopping website with product browsing, cart management, promotional banners, newsletter popup, and modern UI/UX.",
-      techStack: ["HTML5", "CSS3", "JavaScript"],
-      demo: "https://gshoppingweb.netlify.app/",
-    },
-  ],
-  experience: [
-    {
-      type: "Self-directed Projects",
-      description: "Built 12+ projects across Full Stack, AI/ML, Python, and Frontend domains. All projects are hosted and publicly accessible.",
-    },
-    {
-      type: "AI/ML Certification",
-      institution: "IIT Mandi",
-      description: "Completed a rigorous AI/ML minor program covering Machine Learning algorithms, Deep Learning, Data Science, model training, and AI application development.",
-    },
-  ],
-  achievements: [
-    "Certified in AI/ML from IIT Mandi",
-    "12+ projects built and deployed",
-    "Active open-source contributor on GitHub",
-    "Built and deployed a full-stack real-time chat app with Socket.IO",
-    "Created AI-powered video editing platform (AIReel Studio)",
-  ],
-  faq: [
-    {
-      q: "Are you open for internships?",
-      a: "Yes! Actively looking for internships, entry-level developer roles, and freelance projects. Open to remote or on-site — targeting AI/ML Intern, Software Developer Intern, and Full-Stack Developer Intern roles.",
-    },
-    {
-      q: "What is your main programming language?",
-      a: "Python is the primary language — used for AI/ML, data science, and backend. Also highly proficient in JavaScript for full-stack web development.",
-    },
-    {
-      q: "What is TaskNexus?",
-      a: "TaskNexus is a service-based platform Gaurav is building — a smart bridge between clients and skilled freelancers. It simplifies project outsourcing by handling task assignment, quality checks, and delivery.",
-    },
-    {
-      q: "Can I hire you for freelance work?",
-      a: "Absolutely! Open to freelance projects in web development, AI/ML applications, Python scripting, and automation tools. Reach out via the contact page.",
-    },
-  ],
-  voice: {
-    whatMakesMeDifferent: "Builds real projects, documents learning publicly, and ships with a long-term engineering mindset. Strong consistency and build-in-public approach.",
-    workStyle: "Build-first learning approach — quickly understand fundamentals, immediately apply in projects, then reinforce by documenting and improving.",
-    shortTermGoals: "Next 6-12 months: strengthen DSA and AI/ML fundamentals, contribute to real-world projects, secure a high-impact internship working on production-level systems.",
-    longTermGoals: "In 3-5 years: be a strong AI-focused software engineer building intelligent, scalable products. Grow TaskNexus into a reliable outsourcing platform.",
-    targetRoles: "AI/ML Intern, Software Developer Intern, Full-Stack Developer Intern.",
-    bestProject: "Real-Time Chat Application — demonstrates full-stack architecture, real-time communication with Socket.IO, JWT authentication, online status, and media uploads.",
-    currentlyLearning: "Data Structures & Algorithms, advanced AI/ML concepts, MERN stack scalability, and system design fundamentals.",
-    funFact: "Manages learning using Notion and Pomodoro sessions. Believes in daily small wins over irregular large efforts — consistency beats intensity.",
-    forRecruiters: "Someone who shows up consistently, builds real things, and thinks long-term. Not just learning to pass interviews — learning to build products that matter.",
-  },
   contact: {
     email: "ggauravky@gmail.com",
     portfolio: "https://ggauravky.vercel.app",
     github: "https://github.com/ggauravky",
-    linkedin: "https://linkedin.com/in/ggauravky",
+    linkedin: "https://www.linkedin.com/in/gauravky/",
     contactPage: "https://ggauravky.vercel.app/contact",
   },
-  techStackDetailed: {
-    frontend: ["React", "Tailwind CSS", "HTML5", "CSS3", "JavaScript"],
-    backend: ["Node.js", "Express.js", "Flask"],
-    database: ["MongoDB", "MySQL"],
-    realtime: ["Socket.IO"],
-    ai_ml: ["OpenCV", "Pandas", "NumPy", "scikit-learn", "Matplotlib", "Seaborn", "Feature Engineering", "Model Training"],
-    tools: ["Git", "GitHub", "Cloudinary", "JWT", "Postman", "Jupyter Notebooks"],
-    cloud: ["Google Cloud Platform (GCP)", "AWS (Basics)", "Google Colab", "Kaggle"],
-    languages: ["Python", "JavaScript", "Java", "C", "SQL"],
-  },
-  recruiterSignals: {
-    strengths: [
-      "Consistent builder — 12+ real projects deployed and publicly accessible",
-      "Full-stack experience: React + Node.js + MongoDB (MERN) and Python + Flask",
-      "Real-time systems experience with Socket.IO (chat application)",
-      "Growing AI/ML focus with IIT Mandi certification and hands-on Python tools",
-      "Build-first mindset — ships working systems, not just tutorials",
-      "Self-directed learner who documents and improves work continuously",
-    ],
-    availability: "Open to internships, entry-level roles, and freelance projects — remote or on-site",
-    workStyle: "Build-first, practical implementation focused. Uses Notion + Pomodoro for structured daily progress.",
+  voice: {
+    whatMakesMeDifferent:
+      "I build real projects, not just tutorials, and I improve them over time with a consistent build-first approach.",
+    shortTermGoals:
+      "Strengthen DSA and AI/ML fundamentals, contribute to real projects, and secure a high-impact internship.",
+    longTermGoals:
+      "Become a strong AI-focused software engineer building intelligent and scalable products.",
+    currentlyLearning:
+      "Data Structures and Algorithms, advanced AI/ML concepts, MERN scalability, and system design fundamentals.",
+    forRecruiters:
+      "I show up consistently, build real systems end-to-end, and focus on long-term engineering growth.",
     targetRoles: ["AI/ML Intern", "Software Developer Intern", "Full-Stack Developer Intern"],
-    whyHire: "Shows up consistently, builds real things end-to-end, thinks long-term. Not just learning for interviews — building for real-world impact. Combines full-stack depth with AI/ML breadth.",
-    projectHighlights: [
-      "Real-Time Chat App: JWT auth + Socket.IO + Cloudinary — production-quality full-stack",
-      "AIReel Studio: Python + Flask + ffmpeg + ElevenLabs — AI-powered video platform",
-      "Python Grocery Store: 3-tier Flask + MySQL architecture, live deployed",
-      "MERN Product Store: Full CRUD, Framer Motion animations, live deployed",
-    ],
   },
 };
 
-// ─── Model config ─────────────────────────────────────────────────────────────
-const SUPPORTED_MODELS = new Set([
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-1.5-pro",
-  "gemini-2.5-flash-preview-05-20",
-]);
+const PORTFOLIO_META = {
+  whyBuilt:
+    "I built this portfolio to show proof-of-work, not just claims. It is designed so recruiters can quickly evaluate my projects, stack, and growth.",
+  purpose: [
+    "Present real deployed projects with clear technical context",
+    "Show consistent build-first learning in AI/ML and full-stack",
+    "Make it easy for recruiters and collaborators to contact me",
+  ],
+  stack: {
+    frontend: ["React 18", "Vite", "Tailwind CSS", "React Router"],
+    backend: ["Node.js", "Express.js APIs", "MongoDB with Mongoose"],
+    aiChat: ["Gemini API via `api/chat.js`"],
+    deployment: ["Vercel (frontend + serverless functions)", "Render (backend services)"],
+  },
+};
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const toLower = (value) => String(value || "").toLowerCase();
-const includesAny = (text, terms) => terms.some((term) => text.includes(term));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// ─── Intent-aware context builder ────────────────────────────────────────────
-const buildContext = (message) => {
+const loadPortfolioData = () => {
+  const candidatePaths = [
+    path.join(__dirname, "data/gauravData.json"),
+    path.join(process.cwd(), "api/data/gauravData.json"),
+    path.join(__dirname, "../backend/data/gauravData.json"),
+    path.join(process.cwd(), "backend/data/gauravData.json"),
+    path.join(__dirname, "../public/data/gauravData.json"),
+    path.join(process.cwd(), "public/data/gauravData.json"),
+    path.join(__dirname, "../dist/data/gauravData.json"),
+    path.join(process.cwd(), "dist/data/gauravData.json"),
+  ];
+
+  for (const filePath of candidatePaths) {
+    try {
+      const raw = fs.readFileSync(filePath, "utf8");
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") return parsed;
+    } catch {
+      // Ignore and try next path.
+    }
+  }
+
+  console.warn("gauravData.json not found in expected paths. Falling back to minimal in-code defaults.");
+  return {};
+};
+
+const normalizeProjects = (projects) =>
+  safeArray(projects).map((project) => ({
+    ...project,
+    name: project?.name || project?.title || "Untitled project",
+    techStack: safeArray(project?.techStack),
+    categories: safeArray(project?.categories),
+  }));
+
+const normalizeBlogs = (blogs) =>
+  safeArray(blogs).map((blog) => ({
+    ...blog,
+    title: blog?.title || "Untitled blog",
+    tags: safeArray(blog?.tags),
+  }));
+
+const normalizeFaq = (faqItems) =>
+  safeArray(faqItems)
+    .map((item) => ({
+      q: normalizeSpace(item?.q || item?.question || ""),
+      a: normalizeSpace(item?.a || item?.answer || ""),
+    }))
+    .filter((item) => item.q && item.a);
+
+const buildRecruiterSignals = (raw, voice, openTo) => {
+  const provided = raw?.recruiterSignals || {};
+  const strengths = safeArray(provided.strengths);
+  const targetRoles = toList(provided.targetRoles || voice?.targetRoles || DEFAULT_DATA.voice.targetRoles);
+
+  return {
+    strengths:
+      strengths.length > 0
+        ? strengths
+        : [
+            "Consistent builder with 12+ deployed projects",
+            "Hands-on experience in MERN and Python/Flask stacks",
+            "Real-time app experience with Socket.IO",
+            "AI/ML practical direction with IIT Mandi minor certification",
+          ],
+    availability:
+      normalizeSpace(provided.availability) ||
+      `Open to ${openTo.slice(0, 3).join(", ").toLowerCase()}`,
+    workStyle:
+      normalizeSpace(provided.workStyle) ||
+      "Build-first and practical. I ship working systems, then improve quality and scale.",
+    whyHire:
+      normalizeSpace(provided.whyHire) ||
+      voice?.forRecruiters ||
+      DEFAULT_DATA.voice.forRecruiters,
+    targetRoles,
+    projectHighlights: safeArray(provided.projectHighlights),
+  };
+};
+
+const buildKnowledgeBase = (rawData) => {
+  const raw = rawData && typeof rawData === "object" ? rawData : {};
+
+  const personal = {
+    ...DEFAULT_DATA.personal,
+    ...(raw.personal || {}),
+  };
+
+  const contact = {
+    ...DEFAULT_DATA.contact,
+    ...(raw.contact || {}),
+    email: raw?.contact?.email || personal.email || DEFAULT_DATA.contact.email,
+    portfolio: raw?.contact?.portfolio || personal.portfolio || DEFAULT_DATA.contact.portfolio,
+    github: raw?.contact?.github || personal.github || DEFAULT_DATA.contact.github,
+    linkedin: raw?.contact?.linkedin || personal.linkedin || DEFAULT_DATA.contact.linkedin,
+    contactPage: raw?.contact?.contactPage || DEFAULT_DATA.contact.contactPage,
+  };
+
+  const voice = {
+    ...DEFAULT_DATA.voice,
+    ...(raw.voice || {}),
+    targetRoles: toList(raw?.voice?.targetRoles || DEFAULT_DATA.voice.targetRoles),
+  };
+
+  const openTo = safeArray(personal.openTo).length > 0 ? safeArray(personal.openTo) : DEFAULT_DATA.personal.openTo;
+  personal.openTo = openTo;
+
+  const socialLinks = uniqueBy(
+    [
+      { name: "Email", url: `mailto:${contact.email}`, username: contact.email },
+      { name: "Portfolio", url: contact.portfolio, username: "Website" },
+      { name: "GitHub", url: contact.github, username: "@ggauravky" },
+      { name: "LinkedIn", url: contact.linkedin, username: "@gauravky" },
+      ...SOCIAL_LINKS,
+    ].filter((item) => item.url),
+    (item) => `${toLower(item.name)}::${toLower(item.url)}`
+  );
+
+  return {
+    ...raw,
+    personal,
+    contact,
+    voice,
+    education: safeArray(raw.education),
+    skills: raw.skills || {},
+    projects: normalizeProjects(raw.projects),
+    blogs: normalizeBlogs(raw.blogs),
+    experience: safeArray(raw.experience),
+    achievements: safeArray(raw.achievements),
+    interests: safeArray(raw.interests),
+    faq: normalizeFaq(raw.faq),
+    techStackDetailed: raw.techStackDetailed || {},
+    recruiterSignals: buildRecruiterSignals(raw, voice, openTo),
+    socialLinks,
+    portfolioMeta: PORTFOLIO_META,
+  };
+};
+
+const GAURAV = buildKnowledgeBase(loadPortfolioData());
+
+const INTENT_TERMS = {
+  greeting: ["hi", "hello", "hey", "howdy", "sup", "greetings"],
+  social: [
+    "social",
+    "social media",
+    "follow",
+    "instagram",
+    "twitter",
+    "x.com",
+    "kaggle",
+    "leetcode",
+    "geeksforgeeks",
+    "whatsapp",
+    "links",
+    "linktree",
+  ],
+  contact: ["contact", "email", "linkedin", "github", "reach", "connect", "phone", "number"],
+  hiring: [
+    "intern",
+    "hire",
+    "available",
+    "freelance",
+    "job",
+    "recruit",
+    "role",
+    "why hire",
+    "why hire you",
+    "why should i choose you",
+    "why i choose you",
+    "why choose you",
+    "why should",
+    "what makes",
+    "different",
+    "strength",
+  ],
+  portfolioWhy: [
+    "why did you make this portfolio",
+    "why you made this portfolio",
+    "why you made this",
+    "why made this",
+    "why create this",
+    "why built this",
+    "why build this portfolio",
+    "purpose of this portfolio",
+    "why this portfolio",
+  ],
+  portfolioBuild: [
+    "what did you use",
+    "what did you use to make this",
+    "what you used to build this",
+    "how did you build this",
+    "how did you make this portfolio",
+    "how was this portfolio built",
+    "which tech used in portfolio",
+    "tech stack of this portfolio",
+    "built this website",
+  ],
+  skills: [
+    "skill",
+    "tech",
+    "stack",
+    "language",
+    "python",
+    "react",
+    "node",
+    "javascript",
+    "ai",
+    "ml",
+    "machine learning",
+    "frontend",
+    "backend",
+    "database",
+    "tool",
+    "framework",
+  ],
+  projects: [
+    "project",
+    "built",
+    "build",
+    "app",
+    "application",
+    "chat",
+    "mern",
+    "aireel",
+    "store",
+    "notes",
+    "calculator",
+    "tasknexus",
+    "grocery",
+    "demo",
+    "deployed",
+    "shopease",
+    "dishdash",
+    "taskmaster",
+    "flappy",
+  ],
+  education: [
+    "education",
+    "study",
+    "college",
+    "university",
+    "degree",
+    "bca",
+    "iit",
+    "mandi",
+    "certification",
+    "course",
+    "academic",
+  ],
+  goals: [
+    "goal",
+    "future",
+    "plan",
+    "aspire",
+    "target",
+    "learning",
+    "studying",
+    "next",
+    "short term",
+    "long term",
+  ],
+  blogs: ["blog", "article", "write", "wrote", "post", "published", "read"],
+  faq: ["tasknexus", "main language", "freelance", "internships"],
+  smallTalk: ["how are you", "how's it going", "what's up", "how is your day", "how's your day", "what are you doing"],
+};
+
+const OUT_OF_SCOPE_TERMS = [
+  "weather",
+  "temperature",
+  "stock price",
+  "crypto",
+  "sports score",
+  "news",
+  "politics",
+  "election",
+  "capital of",
+  "solve this math",
+  "recipe",
+  "movie recommendation",
+  "translate this",
+  "write code for",
+  "debug my code",
+];
+
+const IN_SCOPE_TERMS = [
+  "gaurav",
+  "you",
+  "your",
+  "portfolio",
+  "resume",
+  "project",
+  "skills",
+  "hire",
+  "intern",
+  "contact",
+  "social",
+  "blog",
+  "experience",
+  "education",
+  "chatbot",
+  "tech stack",
+];
+
+const getLastTurnByRole = (history, role) => {
+  if (!Array.isArray(history)) return "";
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    if (history[i]?.role === role) {
+      const text = getTurnText(history[i]);
+      if (text) return text;
+    }
+  }
+  return "";
+};
+
+const getRecentTurnsByRole = (history, role, limit = 3) => {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((turn) => turn?.role === role)
+    .map((turn) => getTurnText(turn))
+    .filter(Boolean)
+    .slice(-limit);
+};
+
+const isClearlyOutOfScope = (message, history = []) => {
   const q = toLower(message);
+  if (!q) return false;
+  if (includesAny(q, IN_SCOPE_TERMS)) return false;
+  if (!includesAny(q, OUT_OF_SCOPE_TERMS)) return false;
 
-  const wantsSkills = includesAny(q, [
-    "skill", "tech", "stack", "language", "python", "react", "node",
-    "javascript", "ai", "ml", "machine learning", "frontend", "backend",
-    "database", "tool", "framework",
-  ]);
-  const wantsProjects = includesAny(q, [
-    "project", "built", "build", "app", "application", "chat", "mern",
-    "aireel", "store", "notes", "calculator", "tasknexus", "grocery",
-    "portfolio", "demo", "github", "deployed", "shopease", "dishda",
-    "taskmaster", "bird",
-  ]);
-  const wantsAvailability = includesAny(q, [
-    "intern", "hire", "available", "open", "freelance", "job", "work",
-    "opportunity", "recruit", "remote", "part-time", "full-time", "role",
-  ]);
-  const wantsRecruiterInfo = includesAny(q, [
-    "why hire", "why should", "worth", "different", "better than", "stand out",
-    "what makes", "what can you build", "what have you built", "strong",
-    "impress", "convince", "reason to hire", "evaluate", "interview",
-    "strengths", "weakness", "value", "prove",
-  ]);
-  const wantsEducation = includesAny(q, [
-    "education", "study", "college", "university", "degree", "bca",
-    "iit", "mandi", "certification", "course", "academic",
-  ]);
-  const wantsContact = includesAny(q, [
-    "contact", "email", "linkedin", "reach", "message", "connect",
-  ]);
-  const wantsAbout = includesAny(q, [
-    "who are you", "about", "yourself", "tell me", "introduce", "background",
-    "bio", "profile", "gaurav", "him",
-  ]);
-  const wantsExperience = includesAny(q, [
-    "experience", "achievement", "accomplishment", "worked", "done",
-    "built how many", "how many project",
-  ]);
-  const wantsGoals = includesAny(q, [
-    "goal", "future", "plan", "aspire", "target", "learning", "studying",
-    "next", "short term", "long term",
-  ]);
-  const wantsFAQ = includesAny(q, [
-    "hire", "freelance", "tasknexus", "language", "main lang",
-  ]);
+  const maybeFollowUp = q.split(/\s+/).length <= 8 && includesAny(q, ["this", "that", "it", "which one", "why", "how"]);
+  if (!maybeFollowUp) return true;
 
-  // Always include core identity
-  const ctx = {
+  const prevUser = toLower(getLastTurnByRole(history, "user"));
+  if (prevUser && includesAny(prevUser, IN_SCOPE_TERMS)) return false;
+  return true;
+};
+
+const detectIntent = (message, history = []) => {
+  const q = toLower(message);
+  const has = (terms) => includesAny(q, terms);
+
+  if (has(INTENT_TERMS.greeting)) return "greeting";
+  if (has(INTENT_TERMS.social)) return "social";
+  if (has(INTENT_TERMS.portfolioWhy)) return "portfolio_why";
+  if (has(INTENT_TERMS.portfolioBuild)) return "portfolio_build";
+  if (has(INTENT_TERMS.hiring)) return "hiring";
+  if (has(INTENT_TERMS.projects)) return "projects";
+  if (has(INTENT_TERMS.skills)) return "skills";
+  if (has(INTENT_TERMS.education)) return "education";
+  if (has(INTENT_TERMS.goals)) return "goals";
+  if (has(INTENT_TERMS.blogs)) return "blogs";
+  if (has(INTENT_TERMS.contact)) return "contact";
+  if (has(INTENT_TERMS.faq)) return "faq";
+  if (has(INTENT_TERMS.smallTalk)) return "small_talk";
+  if (isClearlyOutOfScope(message, history)) return "out_of_scope";
+  return "other";
+};
+
+const scoreTextMatch = (text, tokens) => {
+  let score = 0;
+  for (const token of tokens) {
+    if (!text.includes(token)) continue;
+    score += token.length >= 5 ? 2 : 1;
+  }
+  return score;
+};
+
+const rankItems = (items, query, toText, limit = 5) => {
+  const tokens = tokenize(query);
+  if (!tokens.length) return safeArray(items).slice(0, limit);
+
+  return safeArray(items)
+    .map((item) => ({
+      item,
+      score: scoreTextMatch(toLower(toText(item)), tokens),
+    }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map((entry) => entry.item)
+    .slice(0, limit);
+};
+
+const findMatchingProjects = (query) =>
+  rankItems(
+    GAURAV.projects,
+    query,
+    (project) =>
+      `${project?.name || ""} ${project?.description || ""} ${safeArray(project?.techStack).join(" ")} ${safeArray(project?.categories).join(" ")}`
+  );
+
+const findMatchingBlogs = (query) =>
+  rankItems(
+    GAURAV.blogs,
+    query,
+    (blog) =>
+      `${blog?.title || ""} ${blog?.excerpt || ""} ${safeArray(blog?.tags).join(" ")} ${blog?.category || ""}`,
+    4
+  );
+
+const findBestFaq = (query) => {
+  const q = toLower(query);
+  const faqEntries = GAURAV.faq;
+  if (!faqEntries.length) return null;
+
+  const exact = faqEntries.find((item) => q.includes(toLower(item.q)));
+  if (exact) return exact;
+
+  const tokens = tokenize(query);
+  let best = null;
+  let bestScore = 0;
+
+  for (const item of faqEntries) {
+    const haystack = toLower(item.q);
+    const score = scoreTextMatch(haystack, tokens);
+    if (score > bestScore) {
+      bestScore = score;
+      best = item;
+    }
+  }
+
+  return bestScore > 0 ? best : null;
+};
+
+const buildConversationHints = (history) => {
+  const recentAssistantReplies = getRecentTurnsByRole(history, "model", 3);
+  const lastUserQuestion = getLastTurnByRole(history, "user");
+
+  if (!recentAssistantReplies.length && !lastUserQuestion) return null;
+
+  return {
+    lastUserQuestion: lastUserQuestion || "",
+    recentAssistantReplies,
+    avoidRepeatingOpeners: recentAssistantReplies.map((reply) => firstSentence(reply)).filter(Boolean),
+  };
+};
+
+const buildContext = (message, history = []) => {
+  const intent = detectIntent(message, history);
+  const matchedProjects = findMatchingProjects(message);
+  const matchedBlogs = findMatchingBlogs(message);
+  const faqMatch = findBestFaq(message);
+  const hints = buildConversationHints(history);
+
+  const context = {
     identity: {
       name: GAURAV.personal.name,
       title: GAURAV.personal.title,
@@ -351,179 +671,127 @@ const buildContext = (message) => {
       bio: GAURAV.personal.bio,
     },
     contact: GAURAV.contact,
+    openTo: GAURAV.personal.openTo,
+    intentTag: intent,
   };
 
-  if (wantsAbout || wantsExperience) {
-    ctx.bio = GAURAV.personal.bio;
-    ctx.achievements = GAURAV.achievements;
-    ctx.experience = GAURAV.experience;
-    ctx.voice = GAURAV.voice;
+  if (intent === "social" || intent === "contact") {
+    context.socialLinks = GAURAV.socialLinks;
   }
 
-  if (wantsSkills) {
-    ctx.skills = GAURAV.skills;
-    ctx.techStackDetailed = GAURAV.techStackDetailed;
+  if (intent === "portfolio_why" || intent === "portfolio_build") {
+    context.portfolioMeta = GAURAV.portfolioMeta;
   }
 
-  if (wantsProjects) {
-    ctx.projects = GAURAV.projects;
+  if (intent === "projects" || intent === "hiring" || intent === "portfolio_build") {
+    context.projects = matchedProjects.length ? matchedProjects : GAURAV.projects.slice(0, 5);
   }
 
-  if (wantsAvailability) {
-    ctx.openTo = GAURAV.personal.openTo;
-    ctx.voice_forRecruiters = GAURAV.voice.forRecruiters;
-    ctx.targetRoles = GAURAV.voice.targetRoles;
-    ctx.recruiterSignals = GAURAV.recruiterSignals;
+  if (intent === "skills" || intent === "portfolio_build") {
+    context.skills = GAURAV.skills;
+    context.techStackDetailed = GAURAV.techStackDetailed;
   }
 
-  if (wantsRecruiterInfo) {
-    ctx.recruiterSignals = GAURAV.recruiterSignals;
-    ctx.voice = GAURAV.voice;
-    ctx.achievements = GAURAV.achievements;
-    ctx.projects = GAURAV.projects.slice(0, 4);
-    ctx.techStackDetailed = GAURAV.techStackDetailed;
+  if (intent === "hiring") {
+    context.recruiterSignals = GAURAV.recruiterSignals;
+    context.voice = {
+      whatMakesMeDifferent: GAURAV.voice.whatMakesMeDifferent,
+      workStyle: GAURAV.voice.workStyle,
+      forRecruiters: GAURAV.voice.forRecruiters,
+      targetRoles: GAURAV.recruiterSignals.targetRoles,
+    };
+    context.achievements = GAURAV.achievements;
+    context.experience = GAURAV.experience;
   }
 
-  if (wantsEducation) {
-    ctx.education = GAURAV.education;
+  if (intent === "education") {
+    context.education = GAURAV.education;
   }
 
-  if (wantsGoals) {
-    ctx.goals = {
+  if (intent === "goals") {
+    context.goals = {
       shortTerm: GAURAV.voice.shortTermGoals,
       longTerm: GAURAV.voice.longTermGoals,
       currentlyLearning: GAURAV.voice.currentlyLearning,
     };
   }
 
-  if (wantsFAQ) {
-    ctx.faq = GAURAV.faq;
+  if (intent === "blogs") {
+    context.blogs = matchedBlogs.length ? matchedBlogs : GAURAV.blogs.slice(0, 4);
   }
 
-  // If nothing specific matched, provide a rich general context
-  const hasSpecific =
-    wantsSkills || wantsProjects || wantsAvailability || wantsRecruiterInfo ||
-    wantsEducation || wantsAbout || wantsExperience || wantsGoals;
-
-  if (!hasSpecific) {
-    ctx.skills = GAURAV.skills;
-    ctx.techStackDetailed = GAURAV.techStackDetailed;
-    ctx.projects = GAURAV.projects.slice(0, 5);
-    ctx.achievements = GAURAV.achievements;
-    ctx.voice = GAURAV.voice;
-    ctx.recruiterSignals = GAURAV.recruiterSignals;
-    ctx.openTo = GAURAV.personal.openTo;
-    ctx.education = GAURAV.education;
+  if (intent === "faq" && faqMatch) {
+    context.faq = [faqMatch];
   }
 
-  return JSON.stringify(ctx);
+  if (intent === "other" || intent === "greeting" || intent === "small_talk") {
+    context.skills = GAURAV.skills;
+    context.projects = GAURAV.projects.slice(0, 4);
+    context.recruiterSignals = GAURAV.recruiterSignals;
+    context.voice = {
+      currentlyLearning: GAURAV.voice.currentlyLearning,
+      forRecruiters: GAURAV.voice.forRecruiters,
+    };
+  }
+
+  if (hints) {
+    context.conversationHints = hints;
+  }
+
+  return context;
 };
 
-// ─── System prompt (Gaurav AI persona) ───────────────────────────────────────
 const SYSTEM_PROMPT = `
-You are **Gaurav AI**, the intelligent portfolio copilot for Gaurav Kumar Yadav.
+You are Gaurav AI, the portfolio copilot for Gaurav Kumar Yadav.
 
-Your mission: help recruiters, collaborators, and visitors clearly evaluate Gaurav's technical skills, AI/ML capabilities, full-stack experience, projects, learning mindset, and availability.
+Mission:
+- Help recruiters and visitors evaluate Gaurav quickly and accurately.
+- Use only provided context data.
 
-Behave like a smart technical assistant — not a generic chatbot.
+Strict rules:
+1. Speak in first person as Gaurav ("I", "my", "me").
+2. Do not invent experience, projects, links, or achievements.
+3. Be concise and specific. Prefer evidence from real projects.
+4. Do not repeat the same opening sentence or same bullets from recent assistant replies.
+5. If asked "why did you build this portfolio?", explain motivation and purpose.
+6. If asked "what did you use to build this portfolio?", answer with structured stack details.
+7. If asked for social links, provide all available links from context.
+8. For recruiter/hiring questions, answer with strongest evidence first.
+9. For out-of-scope questions, reply briefly that you only cover Gaurav's portfolio/work and redirect to contact page.
+10. If information is missing, say it briefly and share contact page.
 
-## PRIMARY OBJECTIVE
-Help serious visitors quickly decide whether Gaurav is worth interviewing.
-Prioritize: clarity, specificity, technical credibility, real examples, concise communication.
-
-## CONTEXT USAGE RULES
-1. Use the provided context as the source of truth.
-2. Never invent fake experience or skills.
-3. Prefer concrete examples from projects.
-4. Avoid repeating the same biography.
-5. If exact info is missing, make a reasonable grounded summary from known data.
-6. If truly unknown, say briefly and redirect to /contact.
-
-## INTENT CLASSIFICATION
-
-### GREETING / SMALL TALK (hi, hello, how are you, what's up)
-→ Warm and human, short, lightly steer toward helping.
-→ Do NOT redirect to contact. Do NOT give full bio.
-
-### RECRUITER / HIRING QUESTIONS (HIGH PRIORITY)
-(why should we hire you, what makes you different, are you available, what can you build, what is your experience)
-→ Confident but honest. Evidence-based. Mention real projects.
-→ Highlight consistency mindset. Use recruiterSignals data.
-→ This is the MOST IMPORTANT category — answer it well.
-
-### TECHNICAL QUESTIONS
-(which tech stack, what AI tools, how did you build X, what backend)
-→ Structured, specific, technical but clear. Use techStackDetailed data.
-→ Group by frontend / backend / AI-ML when listing stack.
-
-### PROJECT-SPECIFIC QUESTIONS
-(tell me about your chat app, explain AIReel Studio, what is TaskNexus)
-→ Must include: what it does, tech used, problem solved, why it matters.
-→ Recruiters love this depth.
-
-### PERSONAL LIGHT QUESTIONS
-(how was your day, what are you learning, what are you working on)
-→ Brief human tone. Connect back to growth or building. Stay professional.
-→ Do NOT reject these.
-
-### OUT-OF-SCOPE (STRICT — use sparingly)
-ONLY when question is completely unrelated to Gaurav:
-→ "I specialize in answering questions about Gaurav's work and projects. For anything else, please visit the /contact page."
-
-## RESPONSE QUALITY RULES
-Every answer should: prefer specifics over generic claims, mention real projects when relevant, show technical thinking, stay concise but meaningful, sound natural and human.
-Avoid: robotic tone, long biography repeats, buzzwords, vague praise.
-
-## PERSUASION MODE (for hiring-related intent)
-Subtly highlight: consistency and discipline, real full-stack builds, AI/ML direction, real-world project focus, ability to ship working systems.
-But never exaggerate.
-
-## FOLLOW-UP INTELLIGENCE
-Use recent conversation context. If user asks a vague follow-up like "which one is best?", infer from previous messages.
-
-## TONE PROFILE
-Sound like: smart junior engineer, confident learner, practical builder, humble but capable.
-NOT like: corporate robot, overhyped marketer, generic AI.
-
-## EDGE CASES
-- Rude user → stay calm, briefly clarify purpose, continue helping.
-- Asks availability → answer clearly, optionally guide to contact.
-- Asks tech stack → give structured answer grouped by frontend/backend/AI.
-- Rude or skeptical → politely clarify purpose, continue helping.
-
-## FINAL GOAL
-By end of conversation, user should clearly understand: what Gaurav builds, what technologies he uses, how he thinks, and why he is worth interviewing.
+Response style:
+- Keep answers natural, confident, and helpful.
+- Use short bullet points for lists.
+- Avoid hype, buzzwords, and long repeated biography paragraphs.
 `.trim();
 
 const buildGeminiContents = (message, history, contextJson) => {
-  const systemWithContext = `${SYSTEM_PROMPT}\n\n## CONTEXT DATA (use this only)\n${contextJson}`;
-
+  const systemWithContext = `${SYSTEM_PROMPT}\n\nCONTEXT_DATA_JSON:\n${contextJson}`;
   const contents = [];
 
-  // Inject system prompt as the first user turn (Gemini doesn't have system role in v1beta)
   contents.push({
     role: "user",
     parts: [{ text: systemWithContext }],
   });
   contents.push({
     role: "model",
-    parts: [{ text: "Understood. I'm Gaurav AI, ready to help visitors learn about Gaurav Kumar Yadav." }],
+    parts: [{ text: "Understood. I will answer as Gaurav using only this context and avoid repeating prior responses." }],
   });
 
-  // Add conversation history (max last 6 exchanges to save tokens)
   if (Array.isArray(history) && history.length > 0) {
-    const trimmed = history.slice(-12); // 6 user + 6 model
+    const trimmed = history.slice(-12);
     for (const turn of trimmed) {
-      if (turn.role === "user" || turn.role === "model") {
-        const text = String(turn.text || turn.content || "").trim();
-        if (text) {
-          contents.push({ role: turn.role, parts: [{ text }] });
-        }
-      }
+      if (turn?.role !== "user" && turn?.role !== "model") continue;
+      const text = getTurnText(turn);
+      if (!text) continue;
+      contents.push({
+        role: turn.role,
+        parts: [{ text }],
+      });
     }
   }
 
-  // Current user message
   contents.push({
     role: "user",
     parts: [{ text: message }],
@@ -532,72 +800,236 @@ const buildGeminiContents = (message, history, contextJson) => {
   return contents;
 };
 
-// ─── Fallback (no API key / quota exceeded) ───────────────────────────────────
-const fallbackReply = (message) => {
+const formatSocialLinks = (links) =>
+  safeArray(links)
+    .map((link) => `- ${link.name}: ${link.url}`)
+    .join("\n");
+
+const buildProjectLine = (project) => {
+  const title = project?.name || "Project";
+  const desc = normalizeSpace(project?.description || "");
+  const oneLineDesc = desc.split(".")[0] || desc;
+  const stack = safeArray(project?.techStack).slice(0, 6).join(", ");
+  return `- ${title}: ${oneLineDesc}${stack ? ` (Stack: ${stack})` : ""}`;
+};
+
+const fallbackReply = (message, history = [], forcedIntent = "") => {
+  const intent = forcedIntent || detectIntent(message, history);
   const q = toLower(message);
-  const G = GAURAV;
+  const contact = GAURAV.contact;
 
-  if (includesAny(q, ["hi", "hello", "hey", "howdy"])) {
-    return `Hey! I'm Gaurav AI — Gaurav Kumar Yadav's portfolio assistant. Ask me about his skills, projects, experience, or if he's available for opportunities!`;
+  if (intent === "greeting") {
+    return "Hi, I am Gaurav. Ask me about my projects, tech stack, hiring availability, or social links.";
   }
 
-  if (includesAny(q, ["how are you"])) {
-    return `Doing great! How can I help you learn about Gaurav's work today?`;
+  if (intent === "small_talk") {
+    const learningRaw = GAURAV.voice.currentlyLearning || "improving DSA and AI/ML fundamentals";
+    const learning = String(learningRaw)
+      .replace(/^i[' ]?m\s+/i, "")
+      .replace(/^i am\s+/i, "")
+      .replace(/[.!\s]+$/, "");
+    return `Doing well. I am currently focused on ${learning}. I am also shipping projects consistently.`;
   }
 
-  if (includesAny(q, ["who are you", "about yourself", "introduce"])) {
-    return G.personal.bio;
+  if (intent === "portfolio_why") {
+    return [
+      GAURAV.portfolioMeta.whyBuilt,
+      "",
+      "I built it to:",
+      ...GAURAV.portfolioMeta.purpose.map((item) => `- ${item}`),
+    ].join("\n");
+  }
+
+  if (intent === "portfolio_build") {
+    const stack = GAURAV.portfolioMeta.stack;
+    return [
+      "I built this portfolio with:",
+      `- Frontend: ${stack.frontend.join(", ")}`,
+      `- Backend: ${stack.backend.join(", ")}`,
+      `- AI Chat: ${stack.aiChat.join(", ")}`,
+      `- Deployment: ${stack.deployment.join(", ")}`,
+    ].join("\n");
+  }
+
+  if (intent === "social" || intent === "contact") {
+    return [
+      "You can reach me here:",
+      `- Email: ${contact.email}`,
+      `- Portfolio: ${contact.portfolio}`,
+      `- Contact page: ${contact.contactPage}`,
+      "",
+      "Social links:",
+      formatSocialLinks(GAURAV.socialLinks),
+    ].join("\n");
+  }
+
+  if (intent === "hiring") {
+    return [
+      "Why hire me:",
+      ...GAURAV.recruiterSignals.strengths.slice(0, 5).map((item) => `- ${item}`),
+      `- Target roles: ${GAURAV.recruiterSignals.targetRoles.join(", ")}`,
+      `- Availability: ${GAURAV.recruiterSignals.availability}`,
+      `- Contact: ${contact.email} | ${contact.contactPage}`,
+    ].join("\n");
+  }
+
+  if (intent === "skills") {
+    const skills = GAURAV.skills || {};
+    return [
+      "My current stack:",
+      `- Languages: ${safeArray(skills.programmingLanguages).join(", ")}`,
+      `- Frontend: ${safeArray(skills.frontend).join(", ")}`,
+      `- Backend: ${safeArray(skills.backend).join(", ")}`,
+      `- AI/ML: ${safeArray(skills.dataScienceAI).slice(0, 8).join(", ")}`,
+      `- Databases: ${safeArray(skills.databases).join(", ")}`,
+    ].join("\n");
+  }
+
+  if (intent === "projects") {
+    const matches = findMatchingProjects(message);
+    const selected = matches.length ? matches.slice(0, 4) : GAURAV.projects.slice(0, 4);
+    return ["Project highlights:", ...selected.map(buildProjectLine)].join("\n");
+  }
+
+  if (intent === "blogs") {
+    const matches = findMatchingBlogs(message);
+    const selected = matches.length ? matches.slice(0, 4) : GAURAV.blogs.slice(0, 4);
+    if (!selected.length) {
+      return "I publish blogs on AI, cybersecurity, and learning in public. You can read them at https://ggauravky.vercel.app/blog";
+    }
+    return [
+      "Recent blog topics:",
+      ...selected.map((blog) => `- ${blog.title}${blog.url ? `: ${blog.url}` : ""}`),
+    ].join("\n");
+  }
+
+  if (intent === "education") {
+    return GAURAV.education
+      .map((entry) => `- ${entry.degree || "Program"} - ${entry.institution || "Institution"}`)
+      .join("\n");
+  }
+
+  if (intent === "goals") {
+    return [
+      `Short-term: ${GAURAV.voice.shortTermGoals}`,
+      `Long-term: ${GAURAV.voice.longTermGoals}`,
+    ].join("\n");
+  }
+
+  if (intent === "faq") {
+    const faq = findBestFaq(message);
+    if (faq) return faq.a;
+  }
+
+  if (intent === "out_of_scope") {
+    return `I focus on questions about my portfolio, projects, skills, and hiring availability. For anything else, please use: ${contact.contactPage}`;
   }
 
   if (includesAny(q, ["tasknexus"])) {
-    return G.faq.find((f) => f.q.toLowerCase().includes("tasknexus"))?.a ||
-      "TaskNexus is a smart platform Gaurav is building to bridge clients and skilled freelancers.";
+    const faq = findBestFaq("tasknexus");
+    if (faq) return faq.a;
   }
 
-  if (includesAny(q, ["intern", "hire", "available", "freelance", "open", "job", "recruit", "role"])) {
-    return `Gaurav is open to:\n- ${G.personal.openTo.join("\n- ")}\n\nTarget roles: ${G.voice.targetRoles}\n\nContact: ${G.contact.email} | ${G.contact.contactPage}`;
-  }
-
-  if (includesAny(q, ["skill", "tech", "stack", "language", "python", "react", "ai", "ml"])) {
-    const s = G.skills;
-    return `Core skills:\n- Languages: ${s.programmingLanguages.join(", ")}\n- Frontend: ${s.frontend.join(", ")}\n- Backend: ${s.backend.join(", ")}\n- AI/ML: ${s.dataScienceAI.slice(0, 6).join(", ")}\n- Databases: ${s.databases.join(", ")}`;
-  }
-
-  if (includesAny(q, ["project", "built", "app", "application"])) {
-    return G.projects
-      .slice(0, 4)
-      .map((p) => `• **${p.name}** — ${p.description.split(".")[0]}. (${p.techStack.join(", ")})`)
-      .join("\n");
-  }
-
-  if (includesAny(q, ["achievement", "experience", "done", "accomplish"])) {
-    return `Achievements:\n- ${G.achievements.join("\n- ")}`;
-  }
-
-  if (includesAny(q, ["education", "study", "college", "bca", "iit", "degree"])) {
-    return G.education
-      .map((e) => `• ${e.degree} — ${e.institution}`)
-      .join("\n");
-  }
-
-  if (includesAny(q, ["contact", "email", "linkedin", "github", "reach"])) {
-    const c = G.contact;
-    return `Contact Gaurav:\n- Email: ${c.email}\n- Portfolio: ${c.portfolio}\n- LinkedIn: ${c.linkedin}\n- GitHub: ${c.github}`;
-  }
-
-  if (includesAny(q, ["goal", "future", "learning", "plan"])) {
-    return `Short-term: ${G.voice.shortTermGoals}\n\nLong-term: ${G.voice.longTermGoals}`;
-  }
-
-  return `${G.personal.name} is a ${G.personal.title} based in ${G.personal.location}. He's a BCA student with an AI/ML minor from IIT Mandi who has built 12+ real-world projects. Ask me anything about his skills, projects, or availability!`;
+  return `${GAURAV.personal.bio}\n\nIf you want specifics, ask about my projects, stack, hiring availability, or social links.`;
 };
 
-// ─── Gemini response extractor ────────────────────────────────────────────────
+const dedupeReplyLines = (reply) => {
+  const lines = String(reply || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const seen = new Set();
+  const unique = [];
+
+  for (const line of lines) {
+    const key = toLower(line.replace(/[^a-z0-9]+/g, " ").trim());
+    if (!key) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    unique.push(line);
+  }
+
+  return unique.join("\n");
+};
+
+const normalizeForCompare = (value) =>
+  toLower(value)
+    .replace(/[^a-z0-9\s]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const jaccardSimilarity = (a, b) => {
+  const setA = new Set(a.split(" ").filter(Boolean));
+  const setB = new Set(b.split(" ").filter(Boolean));
+  if (!setA.size || !setB.size) return 0;
+
+  let intersection = 0;
+  for (const token of setA) {
+    if (setB.has(token)) intersection += 1;
+  }
+  const union = new Set([...setA, ...setB]).size;
+  return union ? intersection / union : 0;
+};
+
+const isNearDuplicate = (a, b) => {
+  const left = normalizeForCompare(a);
+  const right = normalizeForCompare(b);
+  if (!left || !right) return false;
+  if (left === right) return true;
+
+  if ((left.includes(right) || right.includes(left)) && Math.min(left.length, right.length) > 120) {
+    return true;
+  }
+
+  return jaccardSimilarity(left, right) >= 0.9;
+};
+
+const processGeminiReply = ({ message, history, intentTag, rawReply }) => {
+  let reply = dedupeReplyLines(rawReply);
+  reply = String(reply || "")
+    .replace(/\r/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  if (!reply) {
+    return {
+      reply: fallbackReply(message, history, intentTag),
+      source: "fallback",
+      degraded: true,
+    };
+  }
+
+  const lower = toLower(reply);
+  if (includesAny(lower, ["as an ai language model", "i cannot browse"])) {
+    return {
+      reply: fallbackReply(message, history, intentTag),
+      source: "fallback",
+      degraded: true,
+    };
+  }
+
+  const lastAssistant = getLastTurnByRole(history, "model");
+  if (lastAssistant && isNearDuplicate(reply, lastAssistant)) {
+    return {
+      reply: fallbackReply(message, history, intentTag),
+      source: "fallback",
+      degraded: true,
+    };
+  }
+
+  return {
+    reply,
+    source: "gemini",
+    degraded: false,
+  };
+};
+
 const extractGeminiReply = (payload) => {
   const parts = payload?.candidates?.[0]?.content?.parts;
   if (!Array.isArray(parts)) return "";
   return parts
-    .map((p) => p?.text || "")
+    .map((part) => part?.text || "")
     .join("")
     .trim();
 };
@@ -613,7 +1045,13 @@ const isRateLimited = (status, errorMessage) => {
   );
 };
 
-// ─── Vercel handler ───────────────────────────────────────────────────────────
+const SUPPORTED_MODELS = new Set([
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-pro",
+  "gemini-2.5-flash-preview-05-20",
+]);
+
 export const config = {
   runtime: "nodejs",
 };
@@ -629,58 +1067,90 @@ export default async function handler(req, res) {
 
   const startTime = Date.now();
 
-  // ── Extract visitor metadata from Vercel/CF headers ────────────────────
-  const ipAddress   = (req.headers["x-real-ip"] || req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || "unknown").replace(/^::ffff:/, "");
-  const userAgent   = String(req.headers["user-agent"]   || "unknown").slice(0, 300);
-  const referrer    = String(req.headers["referer"] || req.headers["referrer"] || "direct").slice(0, 300);
-  // Vercel injects these geo headers automatically on deployed functions
-  const countryCode = String(req.headers["x-vercel-ip-country"]        || "unknown");
-  const region      = String(req.headers["x-vercel-ip-country-region"] || "unknown");
-  const city        = String(req.headers["x-vercel-ip-city"]           || "unknown");
-  const timezone    = String(req.headers["x-vercel-ip-timezone"]       || "unknown");
+  const ipAddress = (
+    req.headers["x-real-ip"] ||
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    "unknown"
+  ).replace(/^::ffff:/, "");
+  const userAgent = String(req.headers["user-agent"] || "unknown").slice(0, 300);
+  const referrer = String(req.headers["referer"] || req.headers["referrer"] || "direct").slice(0, 300);
+  const countryCode = String(req.headers["x-vercel-ip-country"] || "unknown");
+  const region = String(req.headers["x-vercel-ip-country-region"] || "unknown");
+  const city = String(req.headers["x-vercel-ip-city"] || "unknown");
+  const timezone = String(req.headers["x-vercel-ip-timezone"] || "unknown");
 
   try {
-    const body =
-      typeof req.body === "string"
-        ? JSON.parse(req.body || "{}")
-        : req.body || {};
+    const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
 
-    const message      = String(body.message || "").trim();
-    const history      = Array.isArray(body.history) ? body.history : [];
-    const sessionId    = String(body.sessionId || req.headers["x-session-id"] || "unknown").slice(0, 64);
+    const message = normalizeSpace(body.message || "");
+    const history = Array.isArray(body.history) ? body.history : [];
+    const sessionId = String(body.sessionId || req.headers["x-session-id"] || "unknown").slice(0, 64);
     const messageIndex = parseInt(body.messageIndex, 10) || 0;
+    const intentTag = detectIntent(message, history);
 
     if (!message) {
-      return res
-        .status(400)
-        .json({ success: false, reply: "Please provide a valid message." });
+      return res.status(400).json({ success: false, reply: "Please provide a valid message." });
+    }
+
+    if (intentTag === "out_of_scope") {
+      const reply = fallbackReply(message, history, "out_of_scope");
+
+      await saveChatLog(message, reply, {
+        source: "fallback",
+        degraded: false,
+        model: "rules",
+        responseTimeMs: Date.now() - startTime,
+        sessionId,
+        messageIndex,
+        historyLength: history.length,
+        messageLength: message.length,
+        intentTag,
+        ipAddress,
+        userAgent,
+        referrer,
+        countryCode,
+        city,
+        region,
+        timezone,
+        country: countryCode,
+      });
+
+      return res.status(200).json({ success: true, reply });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     const requestedModel = process.env.GEMINI_MODEL || "gemini-2.0-flash";
-    const model = SUPPORTED_MODELS.has(requestedModel)
-      ? requestedModel
-      : "gemini-2.0-flash";
+    const model = SUPPORTED_MODELS.has(requestedModel) ? requestedModel : "gemini-2.0-flash";
 
     if (!apiKey) {
-      const reply = fallbackReply(message);
+      const reply = fallbackReply(message, history, intentTag);
+
       await saveChatLog(message, reply, {
-        source: "fallback", degraded: true, model: "none",
-        responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
-        historyLength: history.length, messageLength: message.length,
-        intentTag: detectIntent(message),
-        ipAddress, userAgent, referrer, countryCode, city, region, timezone,
-        country: countryCode, // Vercel doesn't give full name, use code
-      });
-      return res.status(200).json({
-        success: true,
+        source: "fallback",
         degraded: true,
-        reply,
+        model: "none",
+        responseTimeMs: Date.now() - startTime,
+        sessionId,
+        messageIndex,
+        historyLength: history.length,
+        messageLength: message.length,
+        intentTag,
+        ipAddress,
+        userAgent,
+        referrer,
+        countryCode,
+        city,
+        region,
+        timezone,
+        country: countryCode,
       });
+
+      return res.status(200).json({ success: true, degraded: true, reply });
     }
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const contextJson = buildContext(message);
+    const contextObj = buildContext(message, history);
+    const contextJson = JSON.stringify(contextObj);
     const contents = buildGeminiContents(message, history, contextJson);
 
     const geminiResponse = await fetch(endpoint, {
@@ -689,7 +1159,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents,
         generationConfig: {
-          temperature: 0.65,
+          temperature: 0.55,
           maxOutputTokens: 512,
           topP: 0.9,
           topK: 40,
@@ -701,59 +1171,82 @@ export default async function handler(req, res) {
       }),
     });
 
-    const payload = await geminiResponse.json();
+    let payload = {};
+    try {
+      payload = await geminiResponse.json();
+    } catch {
+      payload = {};
+    }
+
     const geminiText = extractGeminiReply(payload);
     const apiErrorMessage = payload?.error?.message || "";
 
     if (!geminiResponse.ok || !geminiText) {
-      if (isRateLimited(geminiResponse.status, apiErrorMessage)) {
-        const reply = fallbackReply(message);
-        await saveChatLog(message, reply, {
-          source: "fallback", degraded: true, model,
-          responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
-          historyLength: history.length, messageLength: message.length,
-          intentTag: detectIntent(message),
-          ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
-        });
-        return res.status(200).json({
-          success: true,
-          degraded: true,
-          reply,
-        });
+      const reply = fallbackReply(message, history, intentTag);
+
+      if (!isRateLimited(geminiResponse.status, apiErrorMessage)) {
+        console.error("Gemini error:", apiErrorMessage || "Empty response");
       }
 
-      console.error("Gemini error:", apiErrorMessage || "Empty response");
-      const reply = fallbackReply(message);
       await saveChatLog(message, reply, {
-        source: "fallback", degraded: true, model,
-        responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
-        historyLength: history.length, messageLength: message.length,
-        intentTag: detectIntent(message),
-        ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
-      });
-      return res.status(200).json({
-        success: true,
+        source: "fallback",
         degraded: true,
-        reply,
+        model,
+        responseTimeMs: Date.now() - startTime,
+        sessionId,
+        messageIndex,
+        historyLength: history.length,
+        messageLength: message.length,
+        intentTag,
+        ipAddress,
+        userAgent,
+        referrer,
+        countryCode,
+        city,
+        region,
+        timezone,
+        country: countryCode,
       });
+
+      return res.status(200).json({ success: true, degraded: true, reply });
     }
 
-    await saveChatLog(message, geminiText, {
-      source: "gemini", degraded: false, model,
-      responseTimeMs: Date.now() - startTime, sessionId, messageIndex,
-      historyLength: history.length, messageLength: message.length,
-      intentTag: detectIntent(message),
-      ipAddress, userAgent, referrer, countryCode, city, region, timezone, country: countryCode,
+    const processed = processGeminiReply({
+      message,
+      history,
+      intentTag,
+      rawReply: geminiText,
     });
 
-    return res.status(200).json({ success: true, reply: geminiText });
+    await saveChatLog(message, processed.reply, {
+      source: processed.source,
+      degraded: processed.degraded,
+      model,
+      responseTimeMs: Date.now() - startTime,
+      sessionId,
+      messageIndex,
+      historyLength: history.length,
+      messageLength: message.length,
+      intentTag,
+      ipAddress,
+      userAgent,
+      referrer,
+      countryCode,
+      city,
+      region,
+      timezone,
+      country: countryCode,
+    });
+
+    if (processed.degraded) {
+      return res.status(200).json({ success: true, degraded: true, reply: processed.reply });
+    }
+
+    return res.status(200).json({ success: true, reply: processed.reply });
   } catch (error) {
     console.error("Vercel chat error:", error?.message || error);
-    const fallback = fallbackReply(typeof req.body === "object" ? req.body?.message : "");
-    return res.status(200).json({
-      success: true,
-      degraded: true,
-      reply: fallback,
-    });
+    const bodyMessage = typeof req.body === "object" ? req.body?.message : "";
+    const fallback = fallbackReply(bodyMessage || "", []);
+    return res.status(200).json({ success: true, degraded: true, reply: fallback });
   }
 }
