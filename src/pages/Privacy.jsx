@@ -22,7 +22,7 @@ function Privacy() {
                         Privacy Policy
                     </h1>
                     <p className="text-slate-400 text-base sm:text-lg">
-                        Last Updated: January 8, 2026
+                        Last Updated: February 23, 2026
                     </p>
                 </div>
 
@@ -50,12 +50,15 @@ function Privacy() {
                             <ul className="list-disc list-inside space-y-2 text-sm sm:text-base ml-2 sm:ml-4">
                                 <li><strong>Contact Form:</strong> Name, email address, subject, and message when you reach out via the contact form</li>
                                 <li><strong>Email Communication:</strong> Any additional information you choose to share in emails</li>
+                                <li><strong>AI Image Analyzer Uploads:</strong> Images you upload for analysis, along with related prediction results</li>
+                                <li><strong>Prompt Improver Content:</strong> Prompts you submit, improved prompt output, and selected prompt settings</li>
                             </ul>
 
                             <h3 className="text-base sm:text-lg font-semibold text-slate-200 mt-4">Automatically Collected Information:</h3>
                             <ul className="list-disc list-inside space-y-2 text-sm sm:text-base ml-2 sm:ml-4">
                                 <li><strong>Analytics Data:</strong> Basic usage data through Google Analytics (page views, time spent, device type)</li>
                                 <li><strong>Technical Data:</strong> IP address, browser type, operating system, referral source</li>
+                                <li><strong>AI Usage Metadata:</strong> Demo type, event logs, and approximate location data (country/city from request headers)</li>
                             </ul>
                         </div>
                     </section>
@@ -69,9 +72,30 @@ function Privacy() {
                             <li>To respond to your inquiries and communication</li>
                             <li>To improve website functionality and user experience</li>
                             <li>To analyze website traffic and usage patterns</li>
+                            <li>To operate AI demo features, including image analysis and prompt improvement</li>
+                            <li>To monitor misuse, debug issues, and improve reliability of AI features</li>
                             <li>To consider you for potential collaboration or job opportunities</li>
                             <li>To comply with legal obligations if required</li>
                         </ul>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-bold text-emerald-400 flex items-center gap-2">
+                            <span>AI</span> AI Feature Data Handling
+                        </h2>
+                        <div className="space-y-3 text-slate-300 text-sm sm:text-base leading-relaxed">
+                            <p>
+                                When you use AI features on this website, the submitted data is processed and stored on secure infrastructure to provide the feature and maintain service quality.
+                            </p>
+                            <ul className="list-disc list-inside space-y-2 ml-2 sm:ml-4">
+                                <li><strong>Image Analyzer:</strong> Uploaded images may be stored in secure cloud media storage and linked with analysis logs.</li>
+                                <li><strong>Prompt Improver:</strong> Input prompts, improved prompts, and prompt settings may be stored in secure databases for feature operation, abuse prevention, debugging, and quality improvement.</li>
+                                <li><strong>Retention:</strong> Data may be retained as needed for legitimate operational and security purposes, unless deletion is requested and technically feasible.</li>
+                            </ul>
+                            <p>
+                                Please avoid uploading sensitive personal, confidential, or regulated information to AI tools.
+                            </p>
+                        </div>
                     </section>
 
                     <section className="space-y-3 sm:space-y-4">
@@ -86,7 +110,7 @@ function Privacy() {
                             <li>Contact form data is sent via secure HTTPS connection</li>
                             <li>Email addresses are never shared with third parties</li>
                             <li>Data is stored securely and accessed only when necessary</li>
-                            <li>No sensitive information (passwords, financial data) is collected</li>
+                            <li>Uploaded AI inputs and outputs are protected with administrative and technical safeguards</li>
                         </ul>
                     </section>
 
@@ -117,6 +141,7 @@ function Privacy() {
                             <li><strong>Vercel:</strong> Website hosting (read their <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Privacy Policy</a>)</li>
                             <li><strong>Google Analytics:</strong> Website analytics (read their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Privacy Policy</a>)</li>
                             <li><strong>MongoDB Atlas:</strong> Database storage (read their <a href="https://www.mongodb.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Privacy Policy</a>)</li>
+                            <li><strong>Cloudinary:</strong> Secure image storage and delivery for AI image uploads (read their <a href="https://cloudinary.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Privacy Policy</a>)</li>
                         </ul>
                     </section>
 

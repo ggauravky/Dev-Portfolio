@@ -22,7 +22,7 @@ function Terms() {
                         Terms of Service
                     </h1>
                     <p className="text-slate-400 text-base sm:text-lg">
-                        Last Updated: January 8, 2026
+                        Last Updated: February 23, 2026
                     </p>
                 </div>
 
@@ -53,6 +53,21 @@ function Terms() {
                             <li>Contact me through the provided contact form for legitimate inquiries</li>
                             <li>Share links to this website with others</li>
                             <li>View my projects and code examples for learning purposes</li>
+                        </ul>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-2xl font-bold text-emerald-400 flex items-center gap-2">
+                            <span>AI</span> AI Features and Data Processing
+                        </h2>
+                        <p className="text-slate-300 leading-relaxed">
+                            If you use AI tools on this website (including the Image Analyzer and Prompt Improver), you authorize processing and storage of related data to provide, secure, and improve these features.
+                        </p>
+                        <ul className="list-disc list-inside space-y-2 text-slate-300 ml-4">
+                            <li>Uploaded images may be stored in secure media infrastructure and linked with analysis logs.</li>
+                            <li>Submitted prompts, improved prompts, and prompt settings may be stored in secure databases.</li>
+                            <li>Related technical and usage metadata (such as IP, user agent, and coarse location headers) may be logged for security, abuse prevention, debugging, and analytics.</li>
+                            <li>You should not upload confidential, sensitive, or legally restricted content unless you are authorized to share it.</li>
                         </ul>
                     </section>
 
