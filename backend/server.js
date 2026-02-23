@@ -18,6 +18,7 @@ const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const mlLogRoutes = require("./routes/mlLogRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 
 // Initialize express app
@@ -85,6 +86,7 @@ app.get("/health", (req, res) => {
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/ml-log", mlLogRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -99,6 +101,7 @@ app.get("/", (req, res) => {
       newsletter: "/api/newsletter/subscribe",
       newsletterStats: "/api/newsletter/stats",
       chat: "/api/chat",
+      mlLog: "/api/ml-log",
     },
   });
 });

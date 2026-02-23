@@ -14,16 +14,34 @@ export default defineConfig({
     }),
   ],
   base: "/", // Ensure base path is set for production
+
+  // TF.js and MobileNet are loaded from CDN (window.tf / window.mobilenet) at
+  // runtime — no Vite bundling needed, no CJS→ESM conversion issues.
+  // compromise is loaded the same way (window.nlp).
+  // Nothing to pre-bundle or chunk for these libraries.
+
   build: {
     outDir: "dist",
     assetsDir: "assets",
-    // Copy public folder contents to dist root
     copyPublicDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          analytics: ["@vercel/analytics", "@vercel/speed-insights"],
+        manualChunks(id) {
+          // React ecosystem shared across all routes
+          if (
+            id.includes("react") ||
+            id.includes("react-dom") ||
+            id.includes("react-router-dom")
+          ) {
+            return "vendor";
+          }
+          // Vercel edge analytics
+          if (
+            id.includes("@vercel/analytics") ||
+            id.includes("@vercel/speed-insights")
+          ) {
+            return "analytics";
+          }
         },
       },
     },

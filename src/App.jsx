@@ -20,6 +20,7 @@ const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Lab = lazy(() => import('./pages/Lab'))
 const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
+const MlDemos = lazy(() => import('./pages/lab/MlDemos'))
 const Links = lazy(() => import('./pages/Links'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
@@ -124,6 +125,7 @@ function App() {
                             <Route path="/about" element={<About />} />
                             <Route path="/lab" element={<Lab />} />
                             <Route path="/lab/gaurav-chatbot" element={<GauravChatbot />} />
+                            <Route path="/lab/ml-demos" element={<MlDemos />} />
                             <Route path="/skills" element={<Skills />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/blog" element={<Blog />} />
