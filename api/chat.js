@@ -248,12 +248,22 @@ const loadPortfolioData = () => {
 };
 
 const normalizeProjects = (projects) =>
-  safeArray(projects).map((project) => ({
-    ...project,
-    name: project?.name || project?.title || "Untitled project",
-    techStack: safeArray(project?.techStack),
-    categories: safeArray(project?.categories),
-  }));
+  safeArray(projects).map((project) => {
+    const name = project?.name || project?.title || "Untitled project";
+    const description = normalizeSpace(project?.description || "");
+    const techStack = safeArray(project?.techStack);
+    const categories = safeArray(project?.categories);
+    const searchText = `${name} ${description} ${techStack.join(" ")} ${categories.join(" ")}`.toLowerCase();
+
+    return {
+      ...project,
+      name,
+      description,
+      techStack,
+      categories,
+      searchText,
+    };
+  });
 
 const normalizeBlogs = (blogs) =>
   safeArray(blogs).map((blog) => ({
@@ -483,8 +493,70 @@ const INTENT_TERMS = {
   ],
   blogs: ["blog", "article", "write", "wrote", "post", "published", "read"],
   faq: ["tasknexus", "main language", "freelance", "internships"],
+  studentGuidance: [
+    "how to start coding",
+    "how do i start coding",
+    "how should i start coding",
+    "is dsa important",
+    "is dsa necessary",
+    "which language should i learn",
+    "best language should i learn",
+    "which programming language should i learn",
+    "how did you learn",
+    "how did you start coding",
+    "coding beginner",
+    "beginner coding",
+  ],
   smallTalk: ["how are you", "how's it going", "what's up", "how is your day", "how's your day", "what are you doing"],
 };
+
+const FOLLOW_UP_TERMS = [
+  "which one",
+  "which is best",
+  "tell more",
+  "explain more",
+  "why that",
+  "how so",
+  "which tech",
+  "what about that",
+];
+
+const FOLLOW_UP_ELIGIBLE_INTENTS = new Set([
+  "hiring",
+  "projects",
+  "project",
+  "skills",
+  "education",
+  "goals",
+  "blogs",
+  "contact",
+  "social",
+  "faq",
+  "portfolio_why",
+  "portfolio_build",
+  "student_guidance",
+]);
+
+const ABUSIVE_TERMS = [
+  "fuck",
+  "fucking",
+  "shit",
+  "bitch",
+  "bastard",
+  "idiot",
+  "stupid",
+  "moron",
+  "asshole",
+  "chutiya",
+  "madarchod",
+  "bhenchod",
+  "gandu",
+];
+
+const ABUSIVE_REPLY =
+  "I'm here to help with questions about Gaurav's work and projects. Let me know how I can assist you.";
+
+const HIRING_CTA_LINE = "If helpful, Gaurav would be happy to discuss how he can contribute to your team.";
 
 const OUT_OF_SCOPE_TERMS = [
   "weather",
@@ -557,14 +629,18 @@ const isClearlyOutOfScope = (message, history = []) => {
   return true;
 };
 
-const detectIntent = (message, history = []) => {
+const isAbusiveMessage = (message) => includesAny(message, ABUSIVE_TERMS);
+
+const detectIntentFromMessage = (message, history = []) => {
   const q = toLower(message);
   const has = (terms) => includesAny(q, terms);
 
+  if (isAbusiveMessage(q)) return "abusive";
   if (has(INTENT_TERMS.greeting)) return "greeting";
   if (has(INTENT_TERMS.social)) return "social";
   if (has(INTENT_TERMS.portfolioWhy)) return "portfolio_why";
   if (has(INTENT_TERMS.portfolioBuild)) return "portfolio_build";
+  if (has(INTENT_TERMS.studentGuidance)) return "student_guidance";
   if (has(INTENT_TERMS.hiring)) return "hiring";
   if (has(INTENT_TERMS.projects)) return "projects";
   if (has(INTENT_TERMS.skills)) return "skills";
@@ -577,6 +653,60 @@ const detectIntent = (message, history = []) => {
   if (isClearlyOutOfScope(message, history)) return "out_of_scope";
   return "other";
 };
+
+const getPreviousIntentFromHistory = (history = []) => {
+  if (!Array.isArray(history)) return "";
+
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    if (history[i]?.role !== "user") continue;
+
+    const priorMessage = getTurnText(history[i]);
+    if (!priorMessage) continue;
+
+    const priorIntent = detectIntentFromMessage(priorMessage, history.slice(0, i));
+    if (!priorIntent) continue;
+    if (["other", "greeting", "small_talk", "out_of_scope", "abusive"].includes(priorIntent)) continue;
+
+    return priorIntent;
+  }
+
+  return "";
+};
+
+const isFollowUpMessage = (message) => {
+  const text = normalizeSpace(message);
+  if (!text || text.length >= 40) return false;
+  return includesAny(text, FOLLOW_UP_TERMS);
+};
+
+const detectIntentMeta = (message, history = []) => {
+  const normalizedMessage = normalizeSpace(message);
+  const previousIntent = getPreviousIntentFromHistory(history);
+
+  if (isAbusiveMessage(normalizedMessage)) {
+    return {
+      intent: "abusive",
+      followUp: false,
+      previousIntent,
+    };
+  }
+
+  if (isFollowUpMessage(normalizedMessage) && previousIntent && FOLLOW_UP_ELIGIBLE_INTENTS.has(previousIntent)) {
+    return {
+      intent: previousIntent,
+      followUp: true,
+      previousIntent,
+    };
+  }
+
+  return {
+    intent: detectIntentFromMessage(normalizedMessage, history),
+    followUp: false,
+    previousIntent,
+  };
+};
+
+const detectIntent = (message, history = []) => detectIntentMeta(message, history).intent;
 
 const scoreTextMatch = (text, tokens) => {
   let score = 0;
@@ -602,13 +732,94 @@ const rankItems = (items, query, toText, limit = 5) => {
     .slice(0, limit);
 };
 
-const findMatchingProjects = (query) =>
-  rankItems(
-    GAURAV.projects,
-    query,
-    (project) =>
+const buildProjectSearchText = (project) =>
+  toLower(
+    project?.searchText ||
       `${project?.name || ""} ${project?.description || ""} ${safeArray(project?.techStack).join(" ")} ${safeArray(project?.categories).join(" ")}`
   );
+
+const scoreProjectSemanticMatch = (project, queryText, queryTokens) => {
+  const searchText = buildProjectSearchText(project);
+  if (!searchText || !queryTokens.length) return 0;
+
+  const searchTokens = searchText.split(/[^a-z0-9]+/).filter(Boolean);
+  const tokenSet = new Set(searchTokens);
+  let score = 0;
+
+  for (const token of queryTokens) {
+    if (tokenSet.has(token)) {
+      score += token.length >= 5 ? 3 : 2;
+      continue;
+    }
+
+    if (searchText.includes(token)) {
+      score += token.length >= 5 ? 2 : 1;
+      continue;
+    }
+
+    const partialMatch = searchTokens.some((candidate) => {
+      if (candidate.startsWith(token) || token.startsWith(candidate)) return true;
+      if (token.length < 4) return false;
+      return candidate.includes(token.slice(0, token.length - 1));
+    });
+
+    if (partialMatch) score += 1;
+  }
+
+  const compactQuery = queryText.replace(/[^a-z0-9]+/g, " ").trim();
+  const compactProjectName = toLower(project?.name || "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+  if (compactQuery && compactProjectName && (compactProjectName.includes(compactQuery) || compactQuery.includes(compactProjectName))) {
+    score += 3;
+  }
+
+  return score;
+};
+
+const scoreProjectBoost = (project, intentTag = "other") => {
+  const categories = safeArray(project?.categories).map((item) => toLower(item));
+  const techStack = safeArray(project?.techStack).map((item) => toLower(item));
+  let boost = 0;
+
+  if (categories.includes("full stack")) boost += 2;
+  if (categories.includes("ai/ml")) boost += 2;
+  if (techStack.includes("socket.io")) boost += 2;
+  if (techStack.includes("mongodb")) boost += 1;
+  if (intentTag === "hiring") boost += 3;
+  if (intentTag === "project" || intentTag === "projects") boost += 2;
+
+  return boost;
+};
+
+const rankProjects = (projects, query, intentTag = "other", limit = 5) => {
+  const queryText = toLower(query);
+  const queryTokens = tokenize(query);
+
+  return safeArray(projects)
+    .map((project, index) => {
+      const semanticScore = scoreProjectSemanticMatch(project, queryText, queryTokens);
+      const boostScore = scoreProjectBoost(project, intentTag);
+      return {
+        item: project,
+        score: semanticScore + boostScore,
+        semanticScore,
+        boostScore,
+        index,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.semanticScore - a.semanticScore ||
+        b.boostScore - a.boostScore ||
+        a.index - b.index
+    )
+    .map((entry) => entry.item)
+    .slice(0, limit);
+};
+
+const findMatchingProjects = (query, intentTag = "other", limit = 5) => rankProjects(GAURAV.projects, query, intentTag, limit);
 
 const findMatchingBlogs = (query) =>
   rankItems(
@@ -643,25 +854,95 @@ const findBestFaq = (query) => {
   return bestScore > 0 ? best : null;
 };
 
+const toProjectSummary = (project) => {
+  const summary = {
+    name: project?.name || "Project",
+    description: firstSentence(project?.description || ""),
+    techStack: safeArray(project?.techStack).slice(0, 6),
+    categories: safeArray(project?.categories).slice(0, 3),
+  };
+
+  if (project?.github && project.github !== "#") summary.github = project.github;
+  if (project?.demo && project.demo !== "#") summary.demo = project.demo;
+
+  return summary;
+};
+
+const toBlogSummary = (blog) => ({
+  title: blog?.title || "Blog",
+  category: blog?.category || "",
+  excerpt: firstSentence(blog?.excerpt || ""),
+  date: blog?.date || "",
+  tags: safeArray(blog?.tags).slice(0, 4),
+  ...(blog?.url ? { url: blog.url } : {}),
+});
+
+const buildSkillsSnapshot = (skills = {}) => ({
+  strongest: normalizeSpace(GAURAV.voice.strongestSkill || GAURAV.voice.whatMakesMeDifferent),
+  languages: safeArray(skills?.programmingLanguages).slice(0, 5),
+  frontend: safeArray(skills?.frontend).slice(0, 4),
+  backend: safeArray(skills?.backend).slice(0, 4),
+  aiMl: safeArray(skills?.dataScienceAI).slice(0, 6),
+  databases: safeArray(skills?.databases).slice(0, 3),
+});
+
+const buildStudentGuidanceSnapshot = () => ({
+  philosophy: normalizeSpace(GAURAV.voice.workStyle || GAURAV.voice.whatMakesMeDifferent),
+  dsaView: "DSA is important for problem-solving and interviews, so I practice it consistently.",
+  languageAdvice: "Start with one language and build projects regularly instead of chasing the perfect stack.",
+  currentlyLearning: normalizeSpace(GAURAV.voice.currentlyLearning),
+});
+
+const buildHiringSnapshot = (message) => {
+  const topProjects = findMatchingProjects(message, "hiring", 3);
+  const bestProject = topProjects[0] || GAURAV.projects[0] || {};
+  const bestProjectSummary =
+    normalizeSpace(GAURAV.voice.bestProject) || firstSentence(bestProject?.description || "");
+
+  return {
+    strongestSkills: buildSkillsSnapshot(GAURAV.skills),
+    bestProjectHighlight: {
+      name: bestProject?.name || "Project",
+      summary: bestProjectSummary,
+    },
+    topProjects: topProjects.map(toProjectSummary).slice(0, 3),
+    availability:
+      normalizeSpace(GAURAV.recruiterSignals?.availability) ||
+      normalizeSpace(GAURAV.voice.openToOpportunities) ||
+      "Open to opportunities.",
+    recruiterSignals: {
+      strengths: safeArray(GAURAV.recruiterSignals?.strengths).slice(0, 4),
+      targetRoles: safeArray(GAURAV.recruiterSignals?.targetRoles).slice(0, 3),
+      workStyle: normalizeSpace(GAURAV.recruiterSignals?.workStyle || GAURAV.voice.workStyle),
+      whyHire: normalizeSpace(GAURAV.recruiterSignals?.whyHire || GAURAV.voice.forRecruiters),
+    },
+  };
+};
+
 const buildConversationHints = (history) => {
   const recentAssistantReplies = getRecentTurnsByRole(history, "model", 3);
   const lastUserQuestion = getLastTurnByRole(history, "user");
 
   if (!recentAssistantReplies.length && !lastUserQuestion) return null;
 
+  const compactReplies = recentAssistantReplies.map((reply) => firstSentence(reply)).filter(Boolean);
+
   return {
     lastUserQuestion: lastUserQuestion || "",
-    recentAssistantReplies,
-    avoidRepeatingOpeners: recentAssistantReplies.map((reply) => firstSentence(reply)).filter(Boolean),
+    recentAssistantReplies: compactReplies,
+    avoidRepeatingOpeners: compactReplies,
   };
 };
 
-const buildContext = (message, history = []) => {
-  const intent = detectIntent(message, history);
-  const matchedProjects = findMatchingProjects(message);
+const buildContext = (message, history = [], intentMetaInput = null) => {
+  const intentMeta =
+    intentMetaInput && typeof intentMetaInput === "object" ? intentMetaInput : detectIntentMeta(message, history);
+  const intent = intentMeta?.intent || "other";
+  const matchedProjects = findMatchingProjects(message, intent, intent === "hiring" ? 3 : 5);
   const matchedBlogs = findMatchingBlogs(message);
   const faqMatch = findBestFaq(message);
   const hints = buildConversationHints(history);
+  const skillsSnapshot = buildSkillsSnapshot(GAURAV.skills);
 
   const context = {
     identity: {
@@ -675,6 +956,13 @@ const buildContext = (message, history = []) => {
     intentTag: intent,
   };
 
+  if (intentMeta?.followUp) {
+    context.followUp = {
+      enabled: true,
+      previousIntent: intentMeta.previousIntent || "",
+    };
+  }
+
   if (intent === "social" || intent === "contact") {
     context.socialLinks = GAURAV.socialLinks;
   }
@@ -683,29 +971,31 @@ const buildContext = (message, history = []) => {
     context.portfolioMeta = GAURAV.portfolioMeta;
   }
 
-  if (intent === "projects" || intent === "hiring" || intent === "portfolio_build") {
-    context.projects = matchedProjects.length ? matchedProjects : GAURAV.projects.slice(0, 5);
+  if (intent === "projects" || intent === "portfolio_build") {
+    context.projects = matchedProjects.map(toProjectSummary).slice(0, 5);
   }
 
   if (intent === "skills" || intent === "portfolio_build") {
-    context.skills = GAURAV.skills;
-    context.techStackDetailed = GAURAV.techStackDetailed;
+    context.skillsSnapshot = skillsSnapshot;
+    context.techStackDetailed = {
+      frontend: safeArray(GAURAV.techStackDetailed?.frontend).slice(0, 5),
+      backend: safeArray(GAURAV.techStackDetailed?.backend).slice(0, 5),
+      aiMl: safeArray(GAURAV.techStackDetailed?.aiMl || GAURAV.techStackDetailed?.aiML).slice(0, 5),
+    };
   }
 
   if (intent === "hiring") {
-    context.recruiterSignals = GAURAV.recruiterSignals;
-    context.voice = {
-      whatMakesMeDifferent: GAURAV.voice.whatMakesMeDifferent,
-      workStyle: GAURAV.voice.workStyle,
-      forRecruiters: GAURAV.voice.forRecruiters,
-      targetRoles: GAURAV.recruiterSignals.targetRoles,
-    };
-    context.achievements = GAURAV.achievements;
-    context.experience = GAURAV.experience;
+    const hiringSnapshot = buildHiringSnapshot(message);
+    context.hiring = hiringSnapshot;
+    context.projects = hiringSnapshot.topProjects;
+    context.skillsSnapshot = hiringSnapshot.strongestSkills;
+    context.recruiterSignals = hiringSnapshot.recruiterSignals;
+    context.availability = hiringSnapshot.availability;
+    context.bestProjectHighlight = hiringSnapshot.bestProjectHighlight;
   }
 
   if (intent === "education") {
-    context.education = GAURAV.education;
+    context.education = safeArray(GAURAV.education).slice(0, 3);
   }
 
   if (intent === "goals") {
@@ -717,17 +1007,29 @@ const buildContext = (message, history = []) => {
   }
 
   if (intent === "blogs") {
-    context.blogs = matchedBlogs.length ? matchedBlogs : GAURAV.blogs.slice(0, 4);
+    context.blogs = (matchedBlogs.length ? matchedBlogs : GAURAV.blogs.slice(0, 4)).map(toBlogSummary);
   }
 
   if (intent === "faq" && faqMatch) {
     context.faq = [faqMatch];
   }
 
+  if (intent === "student_guidance") {
+    context.studentGuidance = buildStudentGuidanceSnapshot();
+    context.projects = findMatchingProjects(message, "projects", 2).map(toProjectSummary);
+  }
+
+  if (intent === "abusive") {
+    context.responsePolicy = "Stay professional and redirect to portfolio-related help.";
+  }
+
   if (intent === "other" || intent === "greeting" || intent === "small_talk") {
-    context.skills = GAURAV.skills;
-    context.projects = GAURAV.projects.slice(0, 4);
-    context.recruiterSignals = GAURAV.recruiterSignals;
+    context.skillsSnapshot = skillsSnapshot;
+    context.projects = findMatchingProjects("", "projects", 3).map(toProjectSummary);
+    context.recruiterSignals = {
+      strengths: safeArray(GAURAV.recruiterSignals?.strengths).slice(0, 3),
+      targetRoles: safeArray(GAURAV.recruiterSignals?.targetRoles).slice(0, 3),
+    };
     context.voice = {
       currentlyLearning: GAURAV.voice.currentlyLearning,
       forRecruiters: GAURAV.voice.forRecruiters,
@@ -759,6 +1061,8 @@ Strict rules:
 8. For recruiter/hiring questions, answer with strongest evidence first.
 9. For out-of-scope questions, reply briefly that you only cover Gaurav's portfolio/work and redirect to contact page.
 10. If information is missing, say it briefly and share contact page.
+11. For student guidance questions, answer briefly from my own build-first learning journey.
+12. If the user is rude, stay calm and redirect to portfolio/work topics.
 
 Response style:
 - Keep answers natural, confident, and helpful.
@@ -814,9 +1118,13 @@ const buildProjectLine = (project) => {
 };
 
 const fallbackReply = (message, history = [], forcedIntent = "") => {
-  const intent = forcedIntent || detectIntent(message, history);
+  const intent = forcedIntent || detectIntentMeta(message, history).intent;
   const q = toLower(message);
   const contact = GAURAV.contact;
+
+  if (intent === "abusive") {
+    return ABUSIVE_REPLY;
+  }
 
   if (intent === "greeting") {
     return "Hi, I am Gaurav. Ask me about my projects, tech stack, hiring availability, or social links.";
@@ -864,31 +1172,47 @@ const fallbackReply = (message, history = [], forcedIntent = "") => {
   }
 
   if (intent === "hiring") {
+    const hiring = buildHiringSnapshot(message);
     return [
-      "Why hire me:",
-      ...GAURAV.recruiterSignals.strengths.slice(0, 5).map((item) => `- ${item}`),
-      `- Target roles: ${GAURAV.recruiterSignals.targetRoles.join(", ")}`,
-      `- Availability: ${GAURAV.recruiterSignals.availability}`,
+      "Quick hiring snapshot:",
+      `- Strongest skills: ${hiring.strongestSkills.strongest}`,
+      `- Best project: ${hiring.bestProjectHighlight.name} - ${hiring.bestProjectHighlight.summary}`,
+      "- Top projects:",
+      ...hiring.topProjects.map(buildProjectLine),
+      `- Availability: ${hiring.availability}`,
+      `- Target roles: ${safeArray(hiring.recruiterSignals.targetRoles).join(", ")}`,
+      `- Key signals: ${safeArray(hiring.recruiterSignals.strengths).slice(0, 3).join("; ")}`,
       `- Contact: ${contact.email} | ${contact.contactPage}`,
     ].join("\n");
   }
 
   if (intent === "skills") {
-    const skills = GAURAV.skills || {};
+    const skills = buildSkillsSnapshot(GAURAV.skills);
     return [
       "My current stack:",
-      `- Languages: ${safeArray(skills.programmingLanguages).join(", ")}`,
+      `- Languages: ${safeArray(skills.languages).join(", ")}`,
       `- Frontend: ${safeArray(skills.frontend).join(", ")}`,
       `- Backend: ${safeArray(skills.backend).join(", ")}`,
-      `- AI/ML: ${safeArray(skills.dataScienceAI).slice(0, 8).join(", ")}`,
+      `- AI/ML: ${safeArray(skills.aiMl).join(", ")}`,
       `- Databases: ${safeArray(skills.databases).join(", ")}`,
     ].join("\n");
   }
 
   if (intent === "projects") {
-    const matches = findMatchingProjects(message);
+    const matches = findMatchingProjects(message, intent, 4);
     const selected = matches.length ? matches.slice(0, 4) : GAURAV.projects.slice(0, 4);
     return ["Project highlights:", ...selected.map(buildProjectLine)].join("\n");
+  }
+
+  if (intent === "student_guidance") {
+    const guide = buildStudentGuidanceSnapshot();
+    return [
+      "How I approach learning coding:",
+      `- ${guide.philosophy}`,
+      `- ${guide.languageAdvice}`,
+      `- ${guide.dsaView}`,
+      `- What I am focused on now: ${guide.currentlyLearning}`,
+    ].join("\n");
   }
 
   if (intent === "blogs") {
@@ -931,6 +1255,18 @@ const fallbackReply = (message, history = [], forcedIntent = "") => {
   }
 
   return `${GAURAV.personal.bio}\n\nIf you want specifics, ask about my projects, stack, hiring availability, or social links.`;
+};
+
+const maybeAppendHiringCTA = (reply, intentTag) => {
+  if (intentTag !== "hiring") return reply;
+
+  const normalizedReply = String(reply || "").trim();
+  if (!normalizedReply || normalizedReply.length <= 400) return normalizedReply;
+  if (includesAny(normalizedReply, ["happy to discuss how he can contribute", "contribute to your team"])) {
+    return normalizedReply;
+  }
+
+  return `${normalizedReply}\n\n${HIRING_CTA_LINE}`;
 };
 
 const dedupeReplyLines = (reply) => {
@@ -1086,10 +1422,38 @@ export default async function handler(req, res) {
     const history = Array.isArray(body.history) ? body.history : [];
     const sessionId = String(body.sessionId || req.headers["x-session-id"] || "unknown").slice(0, 64);
     const messageIndex = parseInt(body.messageIndex, 10) || 0;
-    const intentTag = detectIntent(message, history);
 
     if (!message) {
       return res.status(400).json({ success: false, reply: "Please provide a valid message." });
+    }
+
+    const intentMeta = detectIntentMeta(message, history);
+    const intentTag = intentMeta.intent;
+
+    if (intentTag === "abusive") {
+      const reply = ABUSIVE_REPLY;
+
+      await saveChatLog(message, reply, {
+        source: "fallback",
+        degraded: false,
+        model: "rules",
+        responseTimeMs: Date.now() - startTime,
+        sessionId,
+        messageIndex,
+        historyLength: history.length,
+        messageLength: message.length,
+        intentTag,
+        ipAddress,
+        userAgent,
+        referrer,
+        countryCode,
+        city,
+        region,
+        timezone,
+        country: countryCode,
+      });
+
+      return res.status(200).json({ success: true, reply });
     }
 
     if (intentTag === "out_of_scope") {
@@ -1123,7 +1487,7 @@ export default async function handler(req, res) {
     const model = SUPPORTED_MODELS.has(requestedModel) ? requestedModel : "gemini-2.0-flash";
 
     if (!apiKey) {
-      const reply = fallbackReply(message, history, intentTag);
+      const reply = maybeAppendHiringCTA(fallbackReply(message, history, intentTag), intentTag);
 
       await saveChatLog(message, reply, {
         source: "fallback",
@@ -1149,7 +1513,7 @@ export default async function handler(req, res) {
     }
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const contextObj = buildContext(message, history);
+    const contextObj = buildContext(message, history, intentMeta);
     const contextJson = JSON.stringify(contextObj);
     const contents = buildGeminiContents(message, history, contextJson);
 
@@ -1182,7 +1546,7 @@ export default async function handler(req, res) {
     const apiErrorMessage = payload?.error?.message || "";
 
     if (!geminiResponse.ok || !geminiText) {
-      const reply = fallbackReply(message, history, intentTag);
+      const reply = maybeAppendHiringCTA(fallbackReply(message, history, intentTag), intentTag);
 
       if (!isRateLimited(geminiResponse.status, apiErrorMessage)) {
         console.error("Gemini error:", apiErrorMessage || "Empty response");
@@ -1218,7 +1582,9 @@ export default async function handler(req, res) {
       rawReply: geminiText,
     });
 
-    await saveChatLog(message, processed.reply, {
+    const finalReply = maybeAppendHiringCTA(processed.reply, intentTag);
+
+    await saveChatLog(message, finalReply, {
       source: processed.source,
       degraded: processed.degraded,
       model,
@@ -1239,14 +1605,15 @@ export default async function handler(req, res) {
     });
 
     if (processed.degraded) {
-      return res.status(200).json({ success: true, degraded: true, reply: processed.reply });
+      return res.status(200).json({ success: true, degraded: true, reply: finalReply });
     }
 
-    return res.status(200).json({ success: true, reply: processed.reply });
+    return res.status(200).json({ success: true, reply: finalReply });
   } catch (error) {
     console.error("Vercel chat error:", error?.message || error);
-    const bodyMessage = typeof req.body === "object" ? req.body?.message : "";
-    const fallback = fallbackReply(bodyMessage || "", []);
+    const bodyMessage = normalizeSpace(typeof req.body === "object" ? req.body?.message : "");
+    const safeIntent = detectIntent(bodyMessage || "", []);
+    const fallback = maybeAppendHiringCTA(fallbackReply(bodyMessage || "", [], safeIntent), safeIntent);
     return res.status(200).json({ success: true, degraded: true, reply: fallback });
   }
 }
