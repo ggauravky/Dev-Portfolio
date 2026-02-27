@@ -79,19 +79,26 @@ function Lab() {
                     </Link>
 
                     {/* Card 3 — Consistency Dashboard */}
-                    <div className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-emerald-500/30 hover:bg-slate-800/70 transition-all duration-300 overflow-hidden cursor-not-allowed">
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/3 to-teal-600/3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                    <Link
+                        to="/lab/consistency-dashboard"
+                        className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-emerald-500/40 hover:bg-slate-800/80 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 overflow-hidden block"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/5 to-teal-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         <div className="relative">
                             <span className="text-3xl mb-3 block">📊</span>
                             <h3 className="text-white font-semibold text-lg mb-1">Consistency Dashboard</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                Visualise streaks, coding activity, and habit tracking data in one view.
+                                Track GitHub streaks, LeetCode progress, and coding activity in real-time.
                             </p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                <span className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20">GitHub Heatmap</span>
+                                <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">LeetCode Stats</span>
+                            </div>
                         </div>
-                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-slate-700/80 text-slate-400 rounded-full border border-slate-600/50">
-                            Coming Soon
+                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-emerald-600/20 text-emerald-400 rounded-full border border-emerald-500/30 font-semibold">
+                            Live
                         </span>
-                    </div>
+                    </Link>
 
                     {/* Card 4 — Next Lab Drop */}
                     <div className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-amber-500/30 hover:bg-slate-800/70 transition-all duration-300 overflow-hidden cursor-not-allowed">
