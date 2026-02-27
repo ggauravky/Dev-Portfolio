@@ -11,6 +11,8 @@ import BackToTop from './components/BackToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import PageTransition from './components/PageTransition'
 import SplashScreen from './components/SplashScreen'
+import CursorSpotlight from './components/CursorSpotlight'
+import AvailabilityBanner from './components/AvailabilityBanner'
 import { pingBackend } from './utils/backendPing'
 
 // Lazy load pages for better performance
@@ -58,6 +60,7 @@ function AppLayout({ children }) {
     const isFullScreen = FULL_SCREEN_ROUTES.includes(pathname)
     return (
         <div className="App">
+            {!isFullScreen && <AvailabilityBanner />}
             {!isFullScreen && <Navbar />}
             {children}
             {!isFullScreen && <Footer />}
@@ -112,6 +115,7 @@ function App() {
 
     return (
         <Router>
+            <CursorSpotlight />
             <ScrollToTop />
             <Toaster
                 position="top-center"

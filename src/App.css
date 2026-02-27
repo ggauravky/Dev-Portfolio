@@ -69,3 +69,25 @@ button, a {
 * {
   scroll-behavior: smooth;
 }
+
+/* Hide cursor spotlight on touch/mobile devices */
+@media (hover: none), (pointer: coarse) {
+  .hidden-on-touch {
+    display: none !important;
+  }
+}
+
+/* Custom scrollbar — palette-matched */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #818cf8, #a78bfa);
+}
