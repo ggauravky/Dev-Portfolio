@@ -101,18 +101,30 @@ function Home() {
 
                             {/* Role Tags - Compact inline pills */}
                             <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
-                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-blue-500/10 border border-blue-500/25 rounded-lg hover:border-blue-400/50 hover:bg-blue-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
-                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">🐍</span>
+                                {/* Python Developer */}
+                                <div className="group flex items-center gap-2.5 px-3.5 py-2 bg-blue-500/10 border border-blue-500/25 rounded-lg hover:border-blue-400/50 hover:bg-blue-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <svg className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M11.914 0C5.82 0 6.2 2.656 6.2 2.656l.007 2.752h5.814v.826H3.9S0 5.789 0 11.969c0 6.18 3.403 5.96 3.403 5.96h2.034v-2.867s-.11-3.402 3.35-3.402h5.766s3.24.052 3.24-3.13V3.188S18.27 0 11.914 0zm-3.26 1.838a1.051 1.051 0 1 1 0 2.101 1.05 1.05 0 0 1 0-2.101z" fill="#4B91CC"/>
+                                        <path d="M12.086 24c6.094 0 5.714-2.656 5.714-2.656l-.007-2.752H12v-.826h8.1S24 18.211 24 12.031c0-6.18-3.403-5.96-3.403-5.96H18.56v2.867s.114 3.402-3.347 3.402H9.448s-3.24-.052-3.24 3.13v5.342S5.73 24 12.086 24zm3.26-1.838a1.051 1.051 0 1 1 0-2.101 1.051 1.051 0 0 1 0 2.1z" fill="#FFD444"/>
+                                    </svg>
                                     <span className="text-sm sm:text-base font-semibold text-blue-300">Python Developer</span>
                                 </div>
-                                
-                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-purple-500/10 border border-purple-500/25 rounded-lg hover:border-purple-400/50 hover:bg-purple-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
-                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">🤖</span>
+
+                                {/* AI & Data Science */}
+                                <div className="group flex items-center gap-2.5 px-3.5 py-2 bg-purple-500/10 border border-purple-500/25 rounded-lg hover:border-purple-400/50 hover:bg-purple-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <svg className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                        <path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
+                                        <path d="M16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                                    </svg>
                                     <span className="text-sm sm:text-base font-semibold text-purple-300">AI & Data Science</span>
                                 </div>
-                                
-                                <div className="group flex items-center gap-2 px-3.5 py-2 bg-cyan-500/10 border border-cyan-500/25 rounded-lg hover:border-cyan-400/50 hover:bg-cyan-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
-                                    <span className="text-lg sm:text-xl group-hover:scale-110 transition-transform duration-300">💻</span>
+
+                                {/* Full Stack Developer */}
+                                <div className="group flex items-center gap-2.5 px-3.5 py-2 bg-cyan-500/10 border border-cyan-500/25 rounded-lg hover:border-cyan-400/50 hover:bg-cyan-500/20 transition-all duration-300 backdrop-blur-sm cursor-default">
+                                    <svg className="w-5 h-5 shrink-0 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <path d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" />
+                                    </svg>
                                     <span className="text-sm sm:text-base font-semibold text-cyan-300">Full Stack Developer</span>
                                 </div>
                             </div>
