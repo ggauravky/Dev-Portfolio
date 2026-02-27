@@ -1,13 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { Toaster } from 'react-hot-toast'
 import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/react'   // ✅ ADDED
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'
 import ErrorBoundary from './components/ErrorBoundary'
+import PageTransition from './components/PageTransition'
+import SplashScreen from './components/SplashScreen'
 import { pingBackend } from './utils/backendPing'
 
 // Lazy load pages for better performance
@@ -63,10 +66,49 @@ function AppLayout({ children }) {
     )
 }
 
+function AnimatedRoutes() {
+    const location = useLocation()
+    return (
+        <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+                <Route path="/"                           element={<PageTransition><Home /></PageTransition>} />
+                <Route path="/about"                      element={<PageTransition><About /></PageTransition>} />
+                <Route path="/lab"                        element={<PageTransition><Lab /></PageTransition>} />
+                <Route path="/lab/gaurav-chatbot"         element={<PageTransition><GauravChatbot /></PageTransition>} />
+                <Route path="/lab/ml-demos"               element={<PageTransition><MlDemos /></PageTransition>} />
+                <Route path="/lab/consistency-dashboard"  element={<PageTransition><ConsistencyDashboard /></PageTransition>} />
+                <Route path="/skills"                     element={<PageTransition><Skills /></PageTransition>} />
+                <Route path="/projects"                   element={<PageTransition><Projects /></PageTransition>} />
+                <Route path="/blog"                       element={<PageTransition><Blog /></PageTransition>} />
+                <Route path="/blog/:slug"                 element={<PageTransition><BlogPost /></PageTransition>} />
+                <Route path="/contact"                    element={<PageTransition><Contact /></PageTransition>} />
+                <Route path="/links"                      element={<PageTransition><Links /></PageTransition>} />
+                <Route path="/admin"                      element={<PageTransition><AdminRedirect /></PageTransition>} />
+                <Route path="/privacy"                    element={<PageTransition><Privacy /></PageTransition>} />
+                <Route path="/terms"                      element={<PageTransition><Terms /></PageTransition>} />
+                <Route path="*"                           element={<PageTransition><NotFound /></PageTransition>} />
+            </Routes>
+        </AnimatePresence>
+    )
+}
+
 function App() {
+    // Show splash screen only once per browser session
+    const [appReady, setAppReady] = useState(() => !!sessionStorage.getItem('splashShown'))
+
+    const handleSplashDone = () => {
+        sessionStorage.setItem('splashShown', '1')
+        setAppReady(true)
+    }
+
+    // Ping backend as soon as JS loads (even during splash)
     useEffect(() => {
         pingBackend()
     }, [])
+
+    if (!appReady) {
+        return <SplashScreen onDone={handleSplashDone} />
+    }
 
     return (
         <Router>
@@ -121,24 +163,7 @@ function App() {
                             </div>
                         </div>
                     }>
-                        <Routes>
-                            <Route path="/" element={<Home />} />
-                            <Route path="/about" element={<About />} />
-                            <Route path="/lab" element={<Lab />} />
-                            <Route path="/lab/gaurav-chatbot" element={<GauravChatbot />} />
-                            <Route path="/lab/ml-demos" element={<MlDemos />} />
-                            <Route path="/lab/consistency-dashboard" element={<ConsistencyDashboard />} />
-                            <Route path="/skills" element={<Skills />} />
-                            <Route path="/projects" element={<Projects />} />
-                            <Route path="/blog" element={<Blog />} />
-                            <Route path="/blog/:slug" element={<BlogPost />} />
-                            <Route path="/contact" element={<Contact />} />
-                            <Route path="/links" element={<Links />} />
-                            <Route path="/admin" element={<AdminRedirect />} />
-                            <Route path="/privacy" element={<Privacy />} />
-                            <Route path="/terms" element={<Terms />} />
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <AnimatedRoutes />
                     </Suspense>
                 </AppLayout>
             </ErrorBoundary>
