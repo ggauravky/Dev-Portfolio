@@ -32,6 +32,30 @@ const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+
+// Per-route loading fallback — keeps loading state isolated per route
+// so AnimatePresence exit animations are never interrupted by a Suspense bubble
+const PageLoader = () => (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-slate-300 font-medium">Loading...</p>
+        </div>
+    </div>
+)
+
+// Wraps each route with its own Suspense so lazy loading never bubbles
+// past AnimatePresence and causes a blank screen during page transitions
+function R({ children }) {
+    return (
+        <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+                {children}
+            </Suspense>
+        </PageTransition>
+    )
+}
 
 function ScrollToTop() {
     const { pathname, hash } = useLocation()
@@ -74,22 +98,23 @@ function AnimatedRoutes() {
     return (
         <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
-                <Route path="/"                           element={<PageTransition><Home /></PageTransition>} />
-                <Route path="/about"                      element={<PageTransition><About /></PageTransition>} />
-                <Route path="/lab"                        element={<PageTransition><Lab /></PageTransition>} />
-                <Route path="/lab/gaurav-chatbot"         element={<PageTransition><GauravChatbot /></PageTransition>} />
-                <Route path="/lab/ml-demos"               element={<PageTransition><MlDemos /></PageTransition>} />
-                <Route path="/lab/consistency-dashboard"  element={<PageTransition><ConsistencyDashboard /></PageTransition>} />
-                <Route path="/skills"                     element={<PageTransition><Skills /></PageTransition>} />
-                <Route path="/projects"                   element={<PageTransition><Projects /></PageTransition>} />
-                <Route path="/blog"                       element={<PageTransition><Blog /></PageTransition>} />
-                <Route path="/blog/:slug"                 element={<PageTransition><BlogPost /></PageTransition>} />
-                <Route path="/contact"                    element={<PageTransition><Contact /></PageTransition>} />
-                <Route path="/links"                      element={<PageTransition><Links /></PageTransition>} />
-                <Route path="/admin"                      element={<PageTransition><AdminRedirect /></PageTransition>} />
-                <Route path="/privacy"                    element={<PageTransition><Privacy /></PageTransition>} />
-                <Route path="/terms"                      element={<PageTransition><Terms /></PageTransition>} />
-                <Route path="*"                           element={<PageTransition><NotFound /></PageTransition>} />
+                <Route path="/"                           element={<R><Home /></R>} />
+                <Route path="/about"                      element={<R><About /></R>} />
+                <Route path="/lab"                        element={<R><Lab /></R>} />
+                <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
+                <Route path="/lab/ml-demos"               element={<R><MlDemos /></R>} />
+                <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
+                <Route path="/skills"                     element={<R><Skills /></R>} />
+                <Route path="/projects"                   element={<R><Projects /></R>} />
+                <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
+                <Route path="/blog"                       element={<R><Blog /></R>} />
+                <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
+                <Route path="/contact"                    element={<R><Contact /></R>} />
+                <Route path="/links"                      element={<R><Links /></R>} />
+                <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
+                <Route path="/privacy"                    element={<R><Privacy /></R>} />
+                <Route path="/terms"                      element={<R><Terms /></R>} />
+                <Route path="*"                           element={<R><NotFound /></R>} />
             </Routes>
         </AnimatePresence>
     )
@@ -159,16 +184,7 @@ function App() {
             />
             <ErrorBoundary>
                 <AppLayout>
-                    <Suspense fallback={
-                        <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-                                <p className="mt-4 text-slate-300 font-medium">Loading...</p>
-                            </div>
-                        </div>
-                    }>
-                        <AnimatedRoutes />
-                    </Suspense>
+                    <AnimatedRoutes />
                 </AppLayout>
             </ErrorBoundary>
 

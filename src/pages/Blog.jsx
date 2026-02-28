@@ -242,11 +242,11 @@ function Blog() {
                                     style={{ animationDelay: `${index * 0.05}s` }}
                                 >
                                     {/* Blog Image - Lazy Loaded */}
-                                    <div className="relative h-48 bg-slate-700 overflow-hidden">
+                                    <div className="card-img-wrap relative h-48 bg-slate-700 overflow-hidden">
                                         <LazyImage
                                             src={blog.image}
                                             alt={blog.title}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-cover card-img-zoom"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                     </div>

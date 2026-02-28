@@ -421,3 +421,62 @@ img, video, iframe {
 html {
   scroll-behavior: smooth;
 }
+
+/* ── Smooth card image hover zoom ── */
+
+/* Apply to the overflow-hidden wrapper div around the image */
+.card-img-wrap {
+  overflow: hidden;
+  transform: translateZ(0);        /* own compositing layer — isolates from card's transition-all */
+  backface-visibility: hidden;
+}
+
+/* Apply to the <img> / LazyImage itself */
+.card-img-zoom {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale3d(1, 1, 1);    /* explicit start — no snap on first hover */
+  transition: transform 0.9s ease; /* gentle standard ease-out curve */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.card-img-wrap:hover .card-img-zoom,
+.group:hover .card-img-wrap .card-img-zoom,
+.group:hover .card-img-zoom {
+  transform: scale3d(1.06, 1.06, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-img-zoom,
+  .card-img-wrap:hover .card-img-zoom,
+  .group:hover .card-img-wrap .card-img-zoom,
+  .group:hover .card-img-zoom {
+    transition: none;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+/* ── Scroll-triggered reveal animation ── */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scroll-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respect prefers-reduced-motion accessibility setting */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

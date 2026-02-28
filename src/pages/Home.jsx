@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom'
 import { useMemo, useEffect } from 'react'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
+import { projectsData } from '../data/projectsData'
 import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
 import StatsCards from '../components/StatsCards'
+import ScrollReveal from '../components/ScrollReveal'
 
 function Home() {
     // Wake up backend server on component mount
@@ -21,36 +23,8 @@ function Home() {
         ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
     })
 
-    // Featured projects for home page - memoized to prevent recreation
-    const featuredProjects = useMemo(() => [
-        {
-            id: 1,
-            title: "Real-Time Chat App",
-            description: "Full-stack chat with Socket.IO, JWT auth, and real-time messaging.",
-            techStack: ["React", "Node.js", "Socket.IO"],
-            github: "https://github.com/ggauravky/chat-app",
-            demo: "https://chat-app-6ly8.onrender.com/",
-            image: "/images/projects/chatapp.png"
-        },
-        {
-            id: 2,
-            title: "MERN Product Store",
-            description: "E-commerce product management with dark mode and animations.",
-            techStack: ["React", "MongoDB", "Chakra UI"],
-            github: "https://github.com/ggauravky/mern-product-store",
-            demo: "https://g-mern-product-store.onrender.com/",
-            image: "/images/projects/prod.png"
-        },
-        {
-            id: 3,
-            title: "AIReel Studio",
-            description: "AI-powered video editing platform with automatic captions.",
-            techStack: ["Python", "Flask", "AI/ML"],
-            github: "https://github.com/ggauravky/My-all-Python-Projects-",
-            demo: "#",
-            image: "/images/projects/aireelstp.png"
-        }
-    ], [])
+    // Featured projects for home page - driven by featured:true flag in projectsData
+    const featuredProjects = useMemo(() => projectsData.filter(p => p.featured), [])
 
     const skills = useMemo(() => ({
         ai: ["Python", "Machine Learning", "Data Analysis", "Pandas", "NumPy"],
@@ -221,7 +195,7 @@ function Home() {
                     <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
                 </div>
                 
-                <div className="max-w-6xl mx-auto relative z-10">
+                <ScrollReveal className="max-w-6xl mx-auto relative z-10">
                     <div className="text-center mb-16 animate-fadeIn">
                         <span className="inline-block text-blue-400 text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20">Get to know me</span>
                         <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mt-4 mb-6">
@@ -291,7 +265,7 @@ function Home() {
                             <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
 
             {/* Skills Section */}
@@ -302,7 +276,7 @@ function Home() {
                     <div className="absolute top-1/4 -right-20 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto relative z-10">
+                <ScrollReveal className="max-w-7xl mx-auto relative z-10" delay={80}>
                     <div className="text-center mb-16 animate-fadeIn">
                         <span className="inline-block text-purple-400 text-sm font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20">What I know</span>
                         <h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mt-4 mb-6">
@@ -389,13 +363,13 @@ function Home() {
                             <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
 
             {/* Projects Section */}
             <section className="py-20 px-6 bg-slate-800/30 backdrop-blur-sm relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-transparent via-purple-900/5 to-transparent"></div>
-                <div className="max-w-7xl mx-auto relative z-10">
+                <ScrollReveal className="max-w-7xl mx-auto relative z-10" delay={60}>
                     <div className="text-center mb-12">
                         <span className="text-cyan-400 text-sm font-semibold tracking-wider uppercase">My work</span>
                         <h2 className="text-4xl md:text-5xl font-bold mt-2 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
@@ -406,11 +380,11 @@ function Home() {
                         {featuredProjects.map(project => (
                             <div key={project.id} className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-purple-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300">
                                 {/* Project Image */}
-                                <div className="relative h-40 bg-slate-700 overflow-hidden">
+                                <div className="card-img-wrap relative h-40 bg-slate-700 overflow-hidden">
                                     <LazyImage
                                         src={project.image}
                                         alt={project.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        className="w-full h-full object-cover card-img-zoom"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                 </div>
@@ -472,12 +446,12 @@ function Home() {
                             </div>
                         </Link>
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
 
             {/* Blog Section */}
             <section className="py-20 px-6 relative">
-                <div className="max-w-7xl mx-auto">
+                <ScrollReveal className="max-w-7xl mx-auto" delay={60}>
                     <div className="text-center mb-12">
                         <span className="text-pink-400 text-sm font-semibold tracking-wider uppercase">Latest from blog</span>
                         <h2 className="text-4xl md:text-5xl font-bold mt-2 bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
@@ -488,11 +462,11 @@ function Home() {
                         {featuredBlogs.map((blog, index) => (
                             <div key={blog.id} className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-pink-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/20 transition-all duration-300">
                                 {/* Blog Image */}
-                                <div className="relative h-40 bg-slate-700 overflow-hidden">
+                                <div className="card-img-wrap relative h-40 bg-slate-700 overflow-hidden">
                                     <LazyImage
                                         src={blog.image}
                                         alt={blog.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        className="w-full h-full object-cover card-img-zoom"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
                                 </div>
@@ -512,7 +486,7 @@ function Home() {
 
                                     {/* Read More Button */}
                                     <Link
-                                        to="/blog"
+                                        to={`/blog/${blog.slug}`}
                                         className="flex items-center justify-center bg-slate-700 hover:bg-gradient-to-r hover:from-pink-600 hover:to-purple-600 text-slate-300 hover:text-white font-medium px-2 py-2 rounded-lg transition-all duration-300 border border-slate-600 hover:border-pink-500 hover:scale-105 text-xs leading-none"
                                     >
                                         Read More →
@@ -531,7 +505,7 @@ function Home() {
                             </div>
                         </Link>
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
 
             {/* Contact Section */}
@@ -539,7 +513,7 @@ function Home() {
             >
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-900/10 to-transparent"></div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-                <div className="max-w-4xl mx-auto text-center relative z-10">
+                <ScrollReveal className="max-w-4xl mx-auto text-center relative z-10" delay={60}>
                     <div className="mb-8">
                         <span className="text-blue-400 text-sm font-semibold tracking-wider uppercase">Get in touch</span>
                     </div>
@@ -560,7 +534,7 @@ function Home() {
                             Social Links <span className="text-2xl group-hover:rotate-12 transition-transform">🔗</span>
                         </Link>
                     </div>
-                </div>
+                </ScrollReveal>
             </section>
         </div>
     )
