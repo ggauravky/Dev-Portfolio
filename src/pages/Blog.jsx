@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
-import { SkeletonGrid } from '../components/SkeletonLoader'
 import LazyImage from '../components/LazyImage'
 import './Blog.css'
 
@@ -20,7 +19,6 @@ function Blog() {
     const [newsletterEmail, setNewsletterEmail] = useState('')
     const [newsletterLoading, setNewsletterLoading] = useState(false)
     const [selectedBlog, setSelectedBlog] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
 
     // Optimize: Only load blog metadata, not full content
     const blogs = useMemo(() => blogsData.map(blog => ({
@@ -29,29 +27,19 @@ function Blog() {
         content: undefined // Remove heavy content from list view
     })), [])
 
-    // Simulate initial loading
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 500) // Reduced from 800ms
-        return () => clearTimeout(timer)
-    }, [])
-
     // Filter blogs based on search and category
     const filteredBlogs = useMemo(() => {
         return blogs.filter(blog => {
             const matchesSearch =
-                blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                blog.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+                (blog.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (blog.excerpt || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (blog.tags || []).some(tag => (tag || '').toLowerCase().includes(searchQuery.toLowerCase()))
 
             const matchesCategory = selectedCategory === 'All' || blog.category === selectedCategory
 
             return matchesSearch && matchesCategory
         })
     }, [searchQuery, selectedCategory])
-
-    const featuredBlogs = blogs.filter(blog => blog.featured)
 
     const handleNewsletterSubscribe = async (e) => {
         e.preventDefault()
@@ -96,8 +84,12 @@ function Blog() {
         }
     }
 
+    // Cleanup body overflow lock if component unmounts while modal is open
+    useEffect(() => () => { document.body.style.overflow = '' }, [])
+
     const handleReadMore = (blogId) => {
-        const blog = blogs.find(b => b.id === blogId)
+        // Use blogsData (not the stripped-content list) so modal content is available
+        const blog = blogsData.find(b => b.id === blogId)
         setSelectedBlog(blog)
         document.body.style.overflow = 'hidden' // Prevent scrolling when modal is open
     }
@@ -216,9 +208,7 @@ function Blog() {
 
                 {/* All Blog Posts Grid */}
                 <div>
-                    {isLoading ? (
-                        <SkeletonGrid count={6} />
-                    ) : filteredBlogs.length === 0 ? (
+                    {filteredBlogs.length === 0 ? (
                         <div className="col-span-full text-center py-20">
                             <div className="text-8xl mb-6">📝</div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Blog Posts Found</h3>
@@ -265,7 +255,7 @@ function Blog() {
                                         </h3>
                                         <p className="text-slate-400 mb-4 line-clamp-3">{blog.excerpt}</p>
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {blog.tags.slice(0, 3).map((tag, index) => (
+                                            {(blog.tags || []).slice(0, 3).map((tag, index) => (
                                                 <span key={index} className="bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-xs">
                                                     {tag}
                                                 </span>

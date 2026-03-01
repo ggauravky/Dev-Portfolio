@@ -133,7 +133,7 @@ function Projects() {
                             <div
                                 key={project.id}
                                 className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] animate-slideUp"
-                                style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                                style={{ animationDelay: `${Math.min(0.3 + index * 0.1, 0.8)}s` }}
                             >
                                 {/* Project Image - Lazy Loaded */}
                                 <div className="card-img-wrap relative h-56 bg-slate-700/50 overflow-hidden">
@@ -144,13 +144,18 @@ function Projects() {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent opacity-70"></div>
 
-                                    {/* Category Badges */}
-                                    <div className="absolute top-4 right-4 flex flex-wrap gap-2 justify-end">
-                                        {project.categories.map((category, idx) => (
-                                            <span key={idx} className="px-4 py-2 bg-purple-600/90 backdrop-blur-sm text-white text-sm font-semibold rounded-full border border-purple-400/50">
+                                    {/* Category Badges — show first 2 to avoid overflow-hidden clipping */}
+                                    <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end">
+                                        {project.categories.slice(0, 2).map((category, i) => (
+                                            <span key={i} className="px-3 py-1 bg-purple-600/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full border border-purple-400/50 whitespace-nowrap">
                                                 {category}
                                             </span>
                                         ))}
+                                        {project.categories.length > 2 && (
+                                            <span className="px-3 py-1 bg-slate-700/90 backdrop-blur-sm text-slate-300 text-xs font-semibold rounded-full border border-slate-500/50">
+                                                +{project.categories.length - 2}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -165,10 +170,10 @@ function Projects() {
 
                                     {/* Tech Stack */}
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {project.techStack.map((tech, index) => (
+                                        {project.techStack.map((tech, i) => (
                                             <span
-                                                key={index}
-                                                className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-sm border border-slate-700/50 hover:border-purple-500/50 hover:text-purple-400 hover:scale-110 transition-all duration-300"
+                                                key={i}
+                                                className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-sm border border-slate-700/50 hover:border-purple-500/50 hover:text-purple-400 transition-all duration-200"
                                             >
                                                 {tech}
                                             </span>
@@ -202,7 +207,7 @@ function Projects() {
                                                     Code
                                                 </span>
                                             </a>
-                                            {project.demo !== "#" && (
+                                            {project.demo && project.demo !== "#" && (
                                                 <a
                                                     href={project.demo}
                                                     target="_blank"
@@ -226,7 +231,7 @@ function Projects() {
                 </div>
 
                 {/* Call to Action */}
-                {filteredProjects.length > 0 && (
+                {!isLoading && filteredProjects.length > 0 && (
                     <div className="mt-16 text-center animate-fadeIn" style={{ animationDelay: '0.8s' }}>
                         <div className="bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-cyan-600/20 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-600/50">
                             <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">

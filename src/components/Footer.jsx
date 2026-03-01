@@ -157,7 +157,7 @@ function Footer() {
                         </p>
                         <Link
                             to="/contact"
-                            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-500 hover:via-purple-500 hover:to -cyan-500 rounded-2xl font-bold transition-all duration-300 hover:scale-110 text-base sm:text-lg shadow-2xl hover:shadow-purple-500/60 relative overflow-hidden"
+                            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-500 hover:via-purple-500 hover:to-cyan-500 rounded-2xl font-bold transition-all duration-300 hover:scale-110 text-base sm:text-lg shadow-2xl hover:shadow-purple-500/60 relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
                             <span className="relative z-10">Let's Talk</span>

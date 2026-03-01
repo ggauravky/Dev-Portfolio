@@ -24,6 +24,8 @@ export default defineConfig({
     outDir: "dist",
     assetsDir: "assets",
     copyPublicDir: true,
+    target: "es2020", // modern syntax → smaller transforms, smaller bundles
+    reportCompressedSize: false, // skip per-file gzip calculation → faster builds
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -34,6 +36,10 @@ export default defineConfig({
             id.includes("react-router-dom")
           ) {
             return "vendor";
+          }
+          // Framer Motion — large animation lib, isolate to its own chunk
+          if (id.includes("framer-motion")) {
+            return "framer";
           }
           // Vercel edge analytics
           if (
@@ -47,5 +53,11 @@ export default defineConfig({
     },
     chunkSizeWarningLimit: 1000,
   },
+
+  // Strip console.* and debugger statements from production bundle
+  esbuild: {
+    drop: ["console", "debugger"],
+  },
+
   publicDir: "public",
 });

@@ -3,6 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Critical LCP image preload — tells browser to fetch hero image before JS boots -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/profile.jpg"
+      fetchpriority="high"
+    />
+
+    <!-- Sitemap discovery link -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
     <meta
       name="google-site-verification"
       content="rgn73htOt7Pcg5LkNWsHWO8uMvfAuNqd3qxkvP-OiEY"
@@ -350,7 +362,7 @@
               "name": "Gaurav Kumar Yadav",
               "url": "https://ggauravky.vercel.app"
             },
-            "url": "https://ggauravky.vercel.app/blog/ai-cybercriminals-2025"
+            "url": "https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025"
           },
           {
             "@type": "BlogPosting",
@@ -373,7 +385,7 @@
               "name": "Gaurav Kumar Yadav",
               "url": "https://ggauravky.vercel.app"
             },
-            "url": "https://ggauravky.vercel.app/blog/ai-powered-cybersecurity-revolution"
+            "url": "https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution"
           },
           {
             "@type": "BlogPosting",
@@ -396,7 +408,7 @@
               "name": "Gaurav Kumar Yadav",
               "url": "https://ggauravky.vercel.app"
             },
-            "url": "https://ggauravky.vercel.app/blog/do-certificates-work-computer-science"
+            "url": "https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide"
           },
           {
             "@type": "BlogPosting",
@@ -470,8 +482,18 @@
         ]
       }
     </script>
+
   </head>
   <body>
+    <!-- Fallback for crawlers/bots that don't execute JavaScript -->
+    <noscript>
+      <p>Gaurav Kumar Yadav — Python Developer, AI/ML Engineer &amp; Full Stack
+      Developer from Lucknow, India. This portfolio showcases projects in Data
+      Science, Machine Learning, React, and Node.js. Please enable JavaScript
+      for the full interactive experience, or visit
+      <a href="https://github.com/ggauravky">github.com/ggauravky</a> to
+      explore the source code directly.</p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -33,7 +33,7 @@ function Home() {
     }), [])
 
     // Dynamically get featured blogs from the shared data
-    const featuredBlogs = blogsData.filter(blog => blog.featured)
+    const featuredBlogs = useMemo(() => blogsData.filter(blog => blog.featured), [])
 
     return (
         <div className="bg-slate-900 overflow-x-hidden w-full">
@@ -416,7 +416,7 @@ function Home() {
                                                 Code
                                             </span>
                                         </a>
-                                        {project.demo !== "#" && (
+                                        {project.demo && project.demo !== "#" && (
                                             <a
                                                 href={project.demo}
                                                 target="_blank"

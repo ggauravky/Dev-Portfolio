@@ -17,11 +17,12 @@ function ProjectDetail() {
 
         const found = projectsData.find(p => p.slug === slug)
         if (!found) {
+            // keep loading=true so the spinner shows while we wait to redirect
             setTimeout(() => navigate('/projects', { replace: true }), 1500)
         } else {
             setProject(found)
+            setLoading(false)
         }
-        setLoading(false)
     }, [slug, navigate])
 
     // Related projects — same category, excluding current

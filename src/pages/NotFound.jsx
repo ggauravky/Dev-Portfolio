@@ -2,6 +2,16 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import useSEO from '../hooks/useSEO'
 
+// Defined outside component to avoid recreating on every render
+const funMessages = [
+    "The page you're looking for seems to have vanished into the void... 🕳️",
+    "Houston, we have a 404 problem! 🚀",
+    "This page is on a coffee break... indefinitely ☕",
+    "The intern deleted this page. We're looking for them now... 🔍",
+    "Page.exe has stopped working 💻",
+    "Even Google can't find this page 🤷‍♂️"
+]
+
 function NotFound() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [countdown, setCountdown] = useState(10)
@@ -9,16 +19,6 @@ function NotFound() {
     const [clickCount, setClickCount] = useState(0)
     const [konami, setKonami] = useState([])
     const [showSecret, setShowSecret] = useState(false)
-
-    // Funny 404 messages that rotate
-    const funMessages = [
-        "The page you're looking for seems to have vanished into the void... 🕳️",
-        "Houston, we have a 404 problem! 🚀",
-        "This page is on a coffee break... indefinitely ☕",
-        "The intern deleted this page. We're looking for them now... 🔍",
-        "Page.exe has stopped working 💻",
-        "Even Google can't find this page 🤷‍♂️"
-    ]
 
     const [currentMessage, setCurrentMessage] = useState(0)
 
