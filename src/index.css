@@ -1,3 +1,17 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Unauthorized copying, modification, or distribution of this software,
+ * via any medium, is strictly prohibited without the express written
+ * consent of the author. See LICENSE for details.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* Fingerprint: identity marker — do not remove.
+   Origin: https://github.com/ggauravky/Dev-Portfolio | Author: Gaurav Kumar Yadav */
+:root {
+  --_cp: 'ggauravky-2026-all-rights-reserved';
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

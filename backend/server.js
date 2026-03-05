@@ -1,3 +1,9 @@
+// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+// Unauthorized copying, modification, or distribution of this software,
+// via any medium, is strictly prohibited without the express written
+// consent of the author. See LICENSE for details.
+// Source: https://github.com/ggauravky/Dev-Portfolio
+
 // Force IPv4-first DNS resolution - fixes Node.js 18+ defaulting to IPv6 (::1),
 // which breaks MongoDB Atlas SRV lookups (querySrv ECONNREFUSED) and
 // causes EADDRINUSE on ::1 instead of 127.0.0.1.

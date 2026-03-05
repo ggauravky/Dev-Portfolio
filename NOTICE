@@ -1,0 +1,48 @@
+Dev-Portfolio
+Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+
+Repository : https://github.com/ggauravky/Dev-Portfolio
+Portfolio  : https://ggauravky.vercel.app
+Author     : Gaurav Kumar Yadav
+
+------------------------------------------------------------------------
+PROPRIETARY — ALL RIGHTS RESERVED
+------------------------------------------------------------------------
+
+This software and all associated source files, assets, data, and
+configuration are the exclusive intellectual property of Gaurav Kumar
+Yadav (the "Author").
+
+You are NOT permitted to:
+  • Copy, reproduce, or clone this software in whole or in part.
+  • Modify, adapt, translate, or create derivative works.
+  • Distribute, publish, sublicense, sell, or transfer the software or
+    any portion of it to any third party.
+  • Use this software or any portion of it in personal, commercial, or
+    open-source projects.
+  • Reverse-engineer, decompile, or attempt to extract source code from
+    any compiled, minified, or obfuscated version of this software.
+  • Remove or alter any copyright, trademark, or proprietary notices.
+
+You ARE permitted to:
+  • View this code for personal educational reference only.
+  • Fork this repository on GitHub solely to report issues or propose
+    contributions back to the original repository via a pull request.
+
+Any unauthorized use will be pursued via GitHub DMCA takedown and
+applicable copyright law.
+
+------------------------------------------------------------------------
+THIRD-PARTY LICENSES
+------------------------------------------------------------------------
+
+This project uses open-source libraries. Each dependency is governed
+by its own license (MIT, ISC, Apache-2.0, etc.). Usage of those
+libraries does not transfer any rights over the original portfolio
+code written by the Author.
+
+A full list of dependencies and their licenses can be found in:
+  ./package.json            (frontend dependencies)
+  ./backend/package.json    (backend dependencies)
+
+------------------------------------------------------------------------
