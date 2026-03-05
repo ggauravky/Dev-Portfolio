@@ -31,31 +31,10 @@ body, html, #root {
   max-width: 100%;
 }
 
-/* Optimize animations */
-.animate-spin,
-.animate-pulse,
-.animate-bounce {
-  will-change: transform;
-}
-
-.animate-fadeIn,
-.animate-slideDown,
-.animate-slideUp,
-.animate-slideInRight {
-  will-change: opacity, transform;
-}
-
 /* Prevent layout shifts */
 img {
-  content-visibility: auto;
   max-width: 100%;
   height: auto;
-}
-
-/* Optimize backdrop blur */
-.backdrop-blur-md,
-.backdrop-blur-sm {
-  will-change: backdrop-filter;
 }
 
 /* Better button and link states */
@@ -73,9 +52,11 @@ button, a {
   box-sizing: border-box;
 }
 
-/* Smooth scrolling for all elements */
-* {
-  scroll-behavior: smooth;
+/* GPU layer for sticky navbar — ensures backdrop-blur is composited
+   once and reused on each scroll tick instead of being re-rendered */
+nav.sticky, nav[class*="sticky"] {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Hide cursor spotlight on touch/mobile devices */
