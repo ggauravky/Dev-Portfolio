@@ -341,7 +341,7 @@ const buildFallbackReply = (userMessage) => {
 
   if (includesAny(query, ["contact", "email", "linkedin", "github", "reach", "social", "instagram", "twitter", "x.com", "kaggle", "leetcode", "geeksforgeeks", "whatsapp", "links"])) {
     return `Here's how you can reach me:\n- Email: ${
-      contact.email || personal.email || "ggauravky@gmail.com"
+      contact.email || personal.email || "kumar.gaurav.yadav2007@gmail.com"
     }\n- Portfolio: ${
       contact.portfolio || personal.portfolio || "https://ggauravky.vercel.app"
     }\n- LinkedIn: ${

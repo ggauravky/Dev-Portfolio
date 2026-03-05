@@ -25,6 +25,20 @@
 
 ---
 
+## 🏛️ Community Standards
+
+<div align="center">
+
+[![Code of Conduct](https://img.shields.io/badge/\ud83e\udd1d_Code_of_Conduct-Read-4baaaa?style=flat-square)](CODE_OF_CONDUCT.md)
+[![Contributing](https://img.shields.io/badge/\ud83d\udcd6_Contributing-Guide-brightgreen?style=flat-square)](CONTRIBUTING.md)
+[![Security Policy](https://img.shields.io/badge/\ud83d\udd10_Security-Policy-orange?style=flat-square)](SECURITY.md)
+[![Bug Report](https://img.shields.io/badge/\ud83d\udc1b_Bug-Report-red?style=flat-square)](https://github.com/ggauravky/Dev-Portfolio/issues/new?template=bug_report.md)
+[![Feature Request](https://img.shields.io/badge/\u2728_Feature-Request-blueviolet?style=flat-square)](https://github.com/ggauravky/Dev-Portfolio/issues/new?template=feature_request.md)
+
+</div>
+
+---
+
 ## 🔒 Copyright & License
 
 > **© 2026 Gaurav Kumar Yadav — All Rights Reserved.**
@@ -394,17 +408,24 @@ Accent:       #06b6d4  /* Cyan 500 */
 
 ## 🤝 Contributing
 
-Contributions make the open source community amazing! Any contributions you make are **greatly appreciated**.
+<div align="center">
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+[![Bug Report](https://img.shields.io/badge/🐛_Bug_Report-Open_Issue-red?style=for-the-badge)](https://github.com/ggauravky/Dev-Portfolio/issues/new?template=bug_report.md)
+[![Feature Request](https://img.shields.io/badge/✨_Feature_Request-Open_Issue-blueviolet?style=for-the-badge)](https://github.com/ggauravky/Dev-Portfolio/issues/new?template=feature_request.md)
+[![Contributing Guide](https://img.shields.io/badge/📖_How_to_Contribute-Read_Guide-blue?style=for-the-badge)](CONTRIBUTING.md)
+
+</div>
+
+Bug reports, suggestions, and focused pull requests are **welcome and appreciated**.
+Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** before submitting anything.
+
+> ⚠️ **Note:** This is a proprietary project. Contributions do not grant any ownership or license rights. See [LICENSE](LICENSE) for details.
 
 ## 📝 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+**© 2026 Gaurav Kumar Yadav — All Rights Reserved.**
+This is **not** an open-source project. Viewing is permitted for educational reference only.
+See [LICENSE](LICENSE) · [NOTICE](NOTICE) · [DMCA.md](DMCA.md) for full terms.
 
 ## 👨‍💻 Author
 

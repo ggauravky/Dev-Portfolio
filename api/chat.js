@@ -173,7 +173,7 @@ const DEFAULT_DATA = {
     name: "Gaurav Kumar Yadav",
     title: "Python Developer | AI/ML Engineer | Full Stack Developer",
     location: "Lucknow, Uttar Pradesh, India",
-    email: "ggauravky@gmail.com",
+    email: "kumar.gaurav.yadav2007@gmail.com",
     portfolio: "https://ggauravky.vercel.app",
     github: "https://github.com/ggauravky",
     linkedin: "https://www.linkedin.com/in/gauravky/",
@@ -187,7 +187,7 @@ const DEFAULT_DATA = {
     ],
   },
   contact: {
-    email: "ggauravky@gmail.com",
+    email: "kumar.gaurav.yadav2007@gmail.com",
     portfolio: "https://ggauravky.vercel.app",
     github: "https://github.com/ggauravky",
     linkedin: "https://www.linkedin.com/in/gauravky/",

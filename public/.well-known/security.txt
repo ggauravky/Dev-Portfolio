@@ -2,7 +2,7 @@
 # RFC 9116 compliant security.txt
 # https://ggauravky.vercel.app/.well-known/security.txt
 
-Contact: mailto:ggauravky@gmail.com
+Contact: mailto:kumar.gaurav.yadav2007@gmail.com
 Preferred-Languages: en, hi
 
 # Copyright notice

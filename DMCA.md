@@ -22,7 +22,7 @@ I have a good faith belief that the repository listed below infringes my copyrig
 Repository : https://github.com/ggauravky/Dev-Portfolio
 Live site  : https://ggauravky.vercel.app
 Owner      : Gaurav Kumar Yadav
-Contact    : ggauravky@gmail.com
+Contact    : kumar.gaurav.yadav2007@gmail.com
 License    : All Rights Reserved (see LICENSE file in repository)
 
 Identifying fingerprints present in original:
@@ -50,7 +50,7 @@ repository/pages listed above.
 
 Signed,
 Gaurav Kumar Yadav
-ggauravky@gmail.com
+kumar.gaurav.yadav2007@gmail.com
 Date: [TODAY'S DATE]
 ```
 
@@ -66,7 +66,7 @@ Subject: DMCA Content Removal — Unauthorized clone of ggauravky.vercel.app
 
 Original work:
   URL   : https://ggauravky.vercel.app
-  Owner : Gaurav Kumar Yadav (ggauravky@gmail.com)
+  Owner : Gaurav Kumar Yadav (kumar.gaurav.yadav2007@gmail.com)
   Source: https://github.com/ggauravky/Dev-Portfolio
 
 Infringing URL(s):
@@ -88,7 +88,7 @@ my agent, or the law (17 U.S.C. § 512).
 Under penalty of perjury, I am the copyright owner of the work described.
 
 Gaurav Kumar Yadav
-ggauravky@gmail.com
+kumar.gaurav.yadav2007@gmail.com
 Date: [TODAY'S DATE]
 ```
 
@@ -120,7 +120,7 @@ Identifiable fingerprint in the infringing copy:
 Please remove or suspend the infringing deployment immediately.
 
 Gaurav Kumar Yadav
-ggauravky@gmail.com
+kumar.gaurav.yadav2007@gmail.com
 Date: [TODAY'S DATE]
 ```
 
