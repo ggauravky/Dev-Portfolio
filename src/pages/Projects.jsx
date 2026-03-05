@@ -4,10 +4,9 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
-import { SkeletonGrid } from '../components/SkeletonLoader'
 import LazyImage from '../components/LazyImage'
 import { projectsData, projectCategories } from '../data/projectsData'
 
@@ -21,15 +20,6 @@ function Projects() {
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
-    const [isLoading, setIsLoading] = useState(true)
-
-    // Simulate initial loading
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 500) // Reduced from 800ms
-        return () => clearTimeout(timer)
-    }, [])
 
     // Filter projects based on search and category
     const filteredProjects = useMemo(() => {
@@ -115,11 +105,7 @@ function Projects() {
 
                 {/* Projects Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {isLoading ? (
-                        <div className="col-span-full">
-                            <SkeletonGrid count={6} columns={2} />
-                        </div>
-                    ) : filteredProjects.length === 0 ? (
+                    {filteredProjects.length === 0 ? (
                         <div className="col-span-full text-center py-20">
                             <div className="text-8xl mb-6">🔍</div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Projects Found</h3>
@@ -237,7 +223,7 @@ function Projects() {
                 </div>
 
                 {/* Call to Action */}
-                {!isLoading && filteredProjects.length > 0 && (
+                {filteredProjects.length > 0 && (
                     <div className="mt-16 text-center animate-fadeIn" style={{ animationDelay: '0.8s' }}>
                         <div className="bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-cyan-600/20 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-600/50">
                             <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">

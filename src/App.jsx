@@ -38,8 +38,14 @@ import { pingBackend } from './utils/backendPing'
 const Home = lazy(() => import('./pages/Home'))
 const About = lazy(() => import('./pages/About'))
 const Skills = lazy(() => import('./pages/Skills'))
-const Projects = lazy(() => import('./pages/Projects'))
-const Blog = lazy(() => import('./pages/Blog'))
+
+// Pre-fetch Blog and Projects chunks immediately so they're ready before the
+// user navigates — eliminates the Suspense spinner + CSS-animation race that
+// causes a blank page on first navigation to these pages.
+const _blogChunk     = import('./pages/Blog')
+const _projectsChunk = import('./pages/Projects')
+const Blog     = lazy(() => _blogChunk)
+const Projects = lazy(() => _projectsChunk)
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Lab = lazy(() => import('./pages/Lab'))

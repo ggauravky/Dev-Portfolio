@@ -52,11 +52,11 @@
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.6s ease-out both;
 }
 
 .animate-slideUp {
-  animation: slideUp 0.6s ease-out;
+  animation: slideUp 0.6s ease-out both;
 }
 
 .animate-float {
