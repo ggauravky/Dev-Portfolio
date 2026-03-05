@@ -51,6 +51,12 @@ const generateSitemap = () => {
   const today = new Date().toISOString().split("T")[0];
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sitemap for https://ggauravky.vercel.app
+  Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+  Origin fingerprint: ggauravky-4f9e-orig-portfolio-2026
+  Unauthorized copying or redistribution is strictly prohibited.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"

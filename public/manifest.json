@@ -1,4 +1,11 @@
 {
+  "_copyright": {
+    "author": "Gaurav Kumar Yadav",
+    "year": 2026,
+    "license": "All Rights Reserved",
+    "origin": "https://github.com/ggauravky/Dev-Portfolio",
+    "fingerprint": "ggauravky-4f9e-orig-portfolio-2026"
+  },
   "name": "Gaurav Portfolio - Gaurav Kumar Yadav",
   "short_name": "Gaurav Portfolio",
   "description": "Professional developer portfolio showcasing Python, AI/ML, Data Science, and Full Stack Development projects by Gaurav Kumar Yadav from Lucknow, India",

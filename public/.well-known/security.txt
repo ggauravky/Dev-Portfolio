@@ -1,0 +1,17 @@
+# Security & Copyright Contact — Gaurav Kumar Yadav Portfolio
+# RFC 9116 compliant security.txt
+# https://ggauravky.vercel.app/.well-known/security.txt
+
+Contact: mailto:ggauravky@gmail.com
+Preferred-Languages: en, hi
+
+# Copyright notice
+# This website and all its source code are the exclusive intellectual
+# property of Gaurav Kumar Yadav.
+# License     : All Rights Reserved (see https://ggauravky.vercel.app/LICENSE)
+# Repository  : https://github.com/ggauravky/Dev-Portfolio
+# Fingerprint : ggauravky-4f9e-orig-portfolio-2026
+#
+# To report unauthorized copies or DMCA violations, email the contact above.
+
+Expires: 2027-03-05T00:00:00.000Z

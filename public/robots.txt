@@ -1,5 +1,9 @@
 # Robots.txt for Gaurav Kumar Yadav Portfolio
 # https://ggauravky.vercel.app
+#
+# Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+# Origin fingerprint: ggauravky-4f9e-orig-portfolio-2026
+# Unauthorized cloning or redistribution is prohibited. See /LICENSE.
 
 # Allow all search engines to crawl the site
 User-agent: *

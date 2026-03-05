@@ -10,7 +10,7 @@
 [![Admin Panel](https://img.shields.io/badge/🎭_Admin_Panel-Manage_Data-orange?style=for-the-badge)](https://ggauravkyadmin.vercel.app)
 [![Backend API](https://img.shields.io/badge/⚡_Backend-Online-blue?style=for-the-badge)](https://dev-portfolio-ojfs.onrender.com)
 [![Stars](https://img.shields.io/github/stars/ggauravky/Dev-Portfolio?style=for-the-badge&logo=github)](https://github.com/ggauravky/Dev-Portfolio)
-[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-All_Rights_Reserved-red?style=for-the-badge)](LICENSE)
 
 <img src="https://img.shields.io/badge/React-18.2.0-61DAFB?style=flat-square&logo=react" alt="React"/>
 <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js" alt="Node.js"/>
@@ -22,6 +22,23 @@
 ### 🎭 [Access Admin Panel →](https://ggauravkyadmin.vercel.app/)
 
 </div>
+
+---
+
+## 🔒 Copyright & License
+
+> **© 2026 Gaurav Kumar Yadav — All Rights Reserved.**
+>
+> This source code is **proprietary and not open-source.**
+> Viewing is permitted for personal educational reference only.
+> Copying, cloning, modifying, or redistributing any part of this code
+> — in whole or in part — **without explicit written consent is prohibited.**
+>
+> See [LICENSE](LICENSE) and [NOTICE](NOTICE) for full terms.
+> To report an unauthorized clone, see [DMCA.md](DMCA.md).
+
+**Unique origin fingerprint:** `ggauravky-4f9e-orig-portfolio-2026`
+_(Search this token on Google to find unauthorized copies)_
 
 ---
 
