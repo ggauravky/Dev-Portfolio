@@ -1425,7 +1425,9 @@ export default async function handler(req, res) {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
 
     const message = normalizeSpace(body.message || "");
-    const history = Array.isArray(body.history) ? body.history : [];
+    // Cap history to 40 turns maximum — prevents memory abuse from oversized client payloads.
+    // The Gemini builder already trims to the last 12 turns internally.
+    const history = (Array.isArray(body.history) ? body.history : []).slice(-40);
     const sessionId = String(body.sessionId || req.headers["x-session-id"] || "unknown").slice(0, 64);
     const messageIndex = parseInt(body.messageIndex, 10) || 0;
 

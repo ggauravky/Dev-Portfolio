@@ -38,6 +38,16 @@ app.use(helmet());
 app.use(mongoSanitize());
 
 // CORS configuration
+// Allowed origins: production URL + localhost dev servers + explicitly listed preview URLs.
+// We do NOT blanket-allow all *.vercel.app origins — that would let any Vercel project
+// bypass CORS on this API.
+const VERCEL_PROJECT_SLUG = process.env.VERCEL_PROJECT_SLUG || "dev-portfolio";
+// Matches only preview deployments of THIS specific project (e.g. dev-portfolio-abc123.vercel.app)
+const VERCEL_PREVIEW_PATTERN = new RegExp(
+  String.raw`^https://${VERCEL_PROJECT_SLUG}[a-z0-9\-]*\.vercel\.app$`,
+  "i"
+);
+
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
@@ -50,13 +60,15 @@ const corsOptions = {
       .filter(Boolean)
       .map((url) => url.replace(/\/$/, ""));
 
-    // Allow requests with no origin (mobile apps, curl, Postman)
+    // Allow requests with no origin (curl, Postman, same-origin server calls)
     if (!origin) return callback(null, true);
 
     const normalizedOrigin = origin.replace(/\/$/, "");
-    const isVercelPreview = origin.includes(".vercel.app");
 
-    if (allowedOrigins.includes(normalizedOrigin) || isVercelPreview) {
+    // Only allow preview deployments of THIS specific Vercel project
+    const isOwnVercelPreview = VERCEL_PREVIEW_PATTERN.test(normalizedOrigin);
+
+    if (allowedOrigins.includes(normalizedOrigin) || isOwnVercelPreview) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked request from: ${origin}`);
@@ -66,14 +78,20 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-Key"],
 };
 
 app.use(cors(corsOptions));
 
 // Body parser middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+// 2 MB global limit — enough for base64 image uploads (~400 KB) with headroom.
+// Tighter per-route overrides are applied where smaller inputs are expected.
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+
+// Trust the first hop of the reverse proxy (Render, etc.) so that
+// req.ip reflects the real client IP, making rate limiting effective.
+app.set("trust proxy", 1);
 
 // Apply general rate limiting to all routes
 app.use(generalRateLimiter);
@@ -84,7 +102,6 @@ app.get("/health", (req, res) => {
     success: true,
     message: "Server is running",
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
   });
 });
 
@@ -100,15 +117,6 @@ app.get("/", (req, res) => {
     success: true,
     message: "Portfolio Backend API",
     version: "1.0.0",
-    endpoints: {
-      health: "/health",
-      contact: "/api/contact",
-      contactStats: "/api/contact/stats",
-      newsletter: "/api/newsletter/subscribe",
-      newsletterStats: "/api/newsletter/stats",
-      chat: "/api/chat",
-      mlLog: "/api/ml-log",
-    },
   });
 });
 

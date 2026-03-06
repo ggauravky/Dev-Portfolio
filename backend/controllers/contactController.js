@@ -16,7 +16,6 @@ exports.submitContact = async (req, res) => {
     // Get client IP and user agent
     const ipAddress =
       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.connection.remoteAddress ||
       req.socket.remoteAddress ||
       req.ip ||
       "unknown";

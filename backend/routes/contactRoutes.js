@@ -6,13 +6,10 @@
 
 const express = require("express");
 const router = express.Router();
-const {
-  submitContact,
-  getAllContacts,
-  getContactStats,
-} = require("../controllers/contactController");
+const { submitContact, getAllContacts, getContactStats } = require("../controllers/contactController");
 const { contactValidationRules, validate } = require("../middleware/validator");
 const { contactRateLimiter } = require("../middleware/rateLimiter");
+const { requireAdminKey } = require("../middleware/adminAuth");
 
 // Public route - Submit contact form
 router.post(
@@ -23,8 +20,8 @@ router.post(
   submitContact
 );
 
-// Private routes (you can add authentication middleware later)
-router.get("/", getAllContacts);
-router.get("/stats", getContactStats);
+// Private routes — require ADMIN_KEY header (x-admin-key)
+router.get("/", requireAdminKey, getAllContacts);
+router.get("/stats", requireAdminKey, getContactStats);
 
 module.exports = router;

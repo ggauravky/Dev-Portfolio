@@ -45,7 +45,10 @@ exports.subscribe = async (req, res) => {
 
     // Get IP address and user agent
     const ipAddress =
-      req.headers["x-forwarded-for"] || req.socket.remoteAddress || "unknown";
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.socket.remoteAddress ||
+      req.ip ||
+      "unknown";
     const userAgent = req.headers["user-agent"] || "unknown";
 
     // Create new subscriber
