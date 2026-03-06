@@ -178,6 +178,39 @@
     display: none;
 }
 
+/* Error State */
+.stat-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    width: 100%;
+}
+
+.stat-error-icon {
+    font-size: 2rem;
+}
+
+.stat-error-text {
+    color: rgb(148, 163, 184);
+    font-size: 0.875rem;
+}
+
+.stat-error-link {
+    color: rgb(96, 165, 250);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.stat-error-link:hover {
+    color: rgb(147, 197, 253);
+}
+
 /* Stat Badge */
 .stat-badge {
     display: inline-flex;
@@ -208,6 +241,13 @@
 }
 
 /* Responsive Design */
+
+/* Laptop / Desktop (min-width: 1024px) */
+@media (min-width: 1024px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
 /* Tablet (768px - 1023px) */
 @media (max-width: 1023px) {
