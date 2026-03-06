@@ -6,6 +6,7 @@
 
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -74,12 +75,19 @@ function Navbar() {
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`relative px-3 xl:px-4 py-2.5 rounded-xl font-medium transition-all duration-300 text-sm xl:text-base group ${isActive(link.path)
-                                        ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/50 scale-105'
+                                    className={`relative px-3 xl:px-4 py-2.5 rounded-xl font-medium transition-colors duration-200 text-sm xl:text-base group ${isActive(link.path)
+                                        ? 'text-white'
                                         : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                                         }`}
                                 >
-                                    {link.name}
+                                    {isActive(link.path) && (
+                                        <motion.span
+                                            layoutId="nav-active-pill"
+                                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/50"
+                                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                                        />
+                                    )}
+                                    <span className="relative z-10">{link.name}</span>
                                     {!isActive(link.path) && (
                                         <>
                                             <span className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>

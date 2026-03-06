@@ -31,6 +31,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import PageTransition from './components/PageTransition'
 import SplashScreen from './components/SplashScreen'
 import CursorSpotlight from './components/CursorSpotlight'
+import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
 import { pingBackend } from './utils/backendPing'
 
@@ -184,6 +185,7 @@ function App() {
 
     return (
         <Router>
+            <ScrollProgress />
             <CursorSpotlight />
             <ScrollToTop />
             <Toaster

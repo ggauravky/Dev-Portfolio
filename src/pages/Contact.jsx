@@ -8,6 +8,8 @@
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 
+const CONTACT_EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
+
 /* ─── Data ──────────────────────────────────────────────────────── */
 const services = [
     {
@@ -150,6 +152,15 @@ function Contact() {
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
     const [loading, setLoading]   = useState(false)
     const [focused, setFocused]   = useState('')
+    const [copied, setCopied]     = useState(false)
+
+    const copyEmail = () => {
+        navigator.clipboard.writeText(CONTACT_EMAIL).then(() => {
+            setCopied(true)
+            toast.success('Email copied to clipboard!')
+            setTimeout(() => setCopied(false), 2000)
+        })
+    }
 
     const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value })
 
@@ -338,16 +349,37 @@ function Contact() {
                             {/* Direct contact */}
                             <div className="mt-5 pt-4 border-t border-slate-700/50">
                                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Direct contact</p>
-                                <a href="mailto:kumar.gaurav.yadav2007@gmail.com" className="flex items-center gap-2.5 group">
-                                    <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                                        <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                    <span className="text-cyan-400 text-xs font-medium group-hover:text-cyan-300 transition-colors break-all leading-snug">
-                                        kumar.gaurav.yadav2007@gmail.com
-                                    </span>
-                                </a>
+                                <div className="flex items-center gap-2">
+                                    <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-center gap-2.5 group min-w-0">
+                                        <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                                            <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                        <span className="text-cyan-400 text-xs font-medium group-hover:text-cyan-300 transition-colors break-all leading-snug">
+                                            {CONTACT_EMAIL}
+                                        </span>
+                                    </a>
+                                    <button
+                                        onClick={copyEmail}
+                                        title="Copy email address"
+                                        className={`shrink-0 w-7 h-7 rounded-lg border flex items-center justify-center transition-all duration-200 ${
+                                            copied
+                                                ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                                : 'bg-slate-700/40 border-slate-600/50 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 hover:bg-cyan-500/8'
+                                        }`}
+                                    >
+                                        {copied ? (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

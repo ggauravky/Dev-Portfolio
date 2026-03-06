@@ -76,14 +76,14 @@ export default function CursorSpotlight() {
                 position: 'fixed',
                 top: 0,
                 left: 0,
-                width: 700,
-                height: 700,
+                width: 900,
+                height: 900,
                 borderRadius: '50%',
                 pointerEvents: 'none',
                 zIndex: 0,
                 opacity: 0,
                 transition: 'opacity 0.6s ease',
-                background: 'radial-gradient(circle at center, rgba(99,102,241,0.13) 0%, rgba(139,92,246,0.09) 28%, rgba(6,182,212,0.05) 55%, transparent 72%)',
+                background: 'radial-gradient(circle at center, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.14) 28%, rgba(6,182,212,0.08) 55%, transparent 72%)',
                 // Only show on non-touch devices
                 // The @media query equivalent — we just hide via JS on touch at mount
             }}
