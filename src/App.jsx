@@ -5,7 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
 // ─── Copyright watermark — embedded in the compiled bundle ───────────────────
@@ -107,13 +107,32 @@ const FULL_SCREEN_ROUTES = ['/lab/gaurav-chatbot']
 function AppLayout({ children }) {
     const { pathname } = useLocation()
     const isFullScreen = FULL_SCREEN_ROUTES.includes(pathname)
+    const headerRef = useRef(null)
+    const [headerHeight, setHeaderHeight] = useState(0)
+
+    useEffect(() => {
+        if (isFullScreen || !headerRef.current) return
+        const el = headerRef.current
+        const update = () => setHeaderHeight(el.offsetHeight)
+        update()
+        const ro = new ResizeObserver(update)
+        ro.observe(el)
+        return () => ro.disconnect()
+    }, [isFullScreen])
+
     return (
         <div className="App">
-            {!isFullScreen && <AvailabilityBanner />}
-            {!isFullScreen && <Navbar />}
-            {children}
-            {!isFullScreen && <Footer />}
-            {!isFullScreen && <BackToTop />}
+            {!isFullScreen && (
+                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-50 w-full">
+                    <AvailabilityBanner />
+                    <Navbar />
+                </div>
+            )}
+            <div style={isFullScreen ? {} : { paddingTop: headerHeight || 0 }}>
+                {children}
+                {!isFullScreen && <Footer />}
+                {!isFullScreen && <BackToTop />}
+            </div>
         </div>
     )
 }

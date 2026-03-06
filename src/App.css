@@ -52,11 +52,12 @@ button, a {
   box-sizing: border-box;
 }
 
-/* GPU layer for sticky navbar — ensures backdrop-blur is composited
-   once and reused on each scroll tick instead of being re-rendered */
-nav.sticky, nav[class*="sticky"] {
+/* GPU layer for fixed site header — backdrop-blur is composited once and
+   reused on each scroll tick instead of being recalculated */
+#site-header {
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Hide cursor spotlight on touch/mobile devices */
