@@ -8,11 +8,7 @@
 
 /* Stats Container */
 .stats-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 3rem;
-    width: 100%;
+    /* Grid layout handled by Tailwind classes in JSX */
 }
 
 /* Stat Card */
@@ -242,20 +238,8 @@
 
 /* Responsive Design */
 
-/* Large screens (1024px+): spacing reset */
-@media (min-width: 1024px) {
-    .stats-container {
-        gap: 1.5rem;
-    }
-}
-
-/* Tablet adjustments (768px - 1023px): spacing tweaks only, no column override */
+/* Tablet adjustments (768px - 1023px): spacing tweaks only */
 @media (max-width: 1023px) {
-    .stats-container {
-        gap: 1.25rem;
-        margin-bottom: 2.5rem;
-    }
-
     .stat-card {
         padding: 1.25rem;
     }
@@ -269,14 +253,8 @@
     }
 }
 
-/* Mobile (max-width: 767px): collapse to single column */
+/* Mobile (max-width: 767px) */
 @media (max-width: 767px) {
-    .stats-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-
     .stat-card {
         padding: 1rem;
         border-radius: 1.25rem;
@@ -333,11 +311,6 @@
 
 /* Extra Small Mobile (max-width: 479px) */
 @media (max-width: 479px) {
-    .stats-container {
-        gap: 0.875rem;
-        margin-bottom: 1.5rem;
-    }
-
     .stat-card {
         padding: 0.875rem;
         border-radius: 1rem;
