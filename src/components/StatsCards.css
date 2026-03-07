@@ -9,7 +9,9 @@
 /* Stats Container */
 .stats-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    /* Mobile-first: single column. Explicit 2-col added via min-width breakpoints
+       below — avoids the auto-fit ambiguity that caused stacking in production. */
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-bottom: 3rem;
     width: 100%;
@@ -242,17 +244,24 @@
 
 /* Responsive Design */
 
-/* Laptop / Desktop (min-width: 1024px) */
-@media (min-width: 1024px) {
+/* Medium screens and up (640px+): side-by-side cards */
+@media (min-width: 640px) {
     .stats-container {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-/* Tablet (768px - 1023px) */
+/* Large screens (1024px+): keep 2 columns, reset any spacing as needed */
+@media (min-width: 1024px) {
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Tablet adjustments (768px - 1023px): spacing tweaks only, no column override */
 @media (max-width: 1023px) {
     .stats-container {
-        grid-template-columns: 1fr;
         gap: 1.25rem;
         margin-bottom: 2.5rem;
     }
