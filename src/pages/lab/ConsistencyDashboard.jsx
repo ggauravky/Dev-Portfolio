@@ -109,7 +109,7 @@ export default function ConsistencyDashboard() {
     const [copied, setCopied] = useState(false)
 
     const handleShare = async () => {
-        const text = `🔥 Check out my coding stats!\nGitHub: https://github.com/${GITHUB_USERNAME}\n⚡ LeetCode: https://leetcode.com/u/${LEETCODE_USERNAME}`
+        const text = `Check out my coding stats!\nGitHub: https://github.com/${GITHUB_USERNAME}\nLeetCode: https://leetcode.com/u/${LEETCODE_USERNAME}`
         try {
             await navigator.clipboard.writeText(text)
         } catch {
@@ -208,7 +208,7 @@ export default function ConsistencyDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
                     <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm">
                         <SectionHeading
-                            icon="🔥"
+                            icon={<svg className="w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.468 5.99 5.99 0 00-1.925 3.547 5.975 5.975 0 01-2.133-1.001A3.75 3.75 0 0012 18z" /></svg>}
                             title="Streak Stats"
                             href={`https://github.com/${GITHUB_USERNAME}`}
                             linkLabel="GitHub"
@@ -222,7 +222,7 @@ export default function ConsistencyDashboard() {
                     </div>
                     <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm">
                         <SectionHeading
-                            icon="📊"
+                            icon={<svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>}
                             title="GitHub Stats"
                             href={`https://github.com/${GITHUB_USERNAME}`}
                             linkLabel="GitHub"
@@ -243,7 +243,7 @@ export default function ConsistencyDashboard() {
                     {/* LeetCode — tall card with built-in heatmap */}
                     <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm">
                         <SectionHeading
-                            icon="⚡"
+                            icon={<svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>}
                             title="LeetCode"
                             href={`https://leetcode.com/u/${LEETCODE_USERNAME}`}
                             linkLabel="Profile"
@@ -259,7 +259,7 @@ export default function ConsistencyDashboard() {
                     {/* Top Languages */}
                     <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm">
                         <SectionHeading
-                            icon="🗂️"
+                            icon={<svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" /></svg>}
                             title="Top Languages"
                             href={`https://github.com/${GITHUB_USERNAME}?tab=repositories`}
                             linkLabel="Repos"
@@ -278,7 +278,7 @@ export default function ConsistencyDashboard() {
                     ═══════════════════════════════════════════════ */}
                 <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 mb-5 backdrop-blur-sm">
                     <SectionHeading
-                        icon="📈"
+                        icon={<svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>}
                         title="Contribution Activity"
                         subtitle="Last year"
                         href={`https://github.com/${GITHUB_USERNAME}?tab=overview`}

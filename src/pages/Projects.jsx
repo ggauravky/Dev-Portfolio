@@ -57,7 +57,7 @@ function Projects() {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="🔍 Search projects by name, tech stack, or description..."
+                            placeholder="Search projects by name, tech stack, or description..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-6 py-4 bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-2xl text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
@@ -93,7 +93,7 @@ function Projects() {
                 <div className="text-center mb-8 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                     <p className="text-slate-400">
                         {filteredProjects.length === 0 ? (
-                            <span className="text-red-400">No projects found matching your criteria 😔</span>
+                            <span className="text-red-400">No projects found matching your criteria</span>
                         ) : (
                             <span>
                                 Showing <span className="text-purple-400 font-semibold">{filteredProjects.length}</span>
@@ -107,7 +107,7 @@ function Projects() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {filteredProjects.length === 0 ? (
                         <div className="col-span-full text-center py-20">
-                            <div className="text-8xl mb-6">🔍</div>
+                            <div className="flex justify-center mb-6"><svg className="w-24 h-24 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" /></svg></div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Projects Found</h3>
                             <p className="text-slate-500 mb-8">Try adjusting your search or filters</p>
                             <button

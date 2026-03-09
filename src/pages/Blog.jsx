@@ -68,20 +68,20 @@ function Blog() {
             const data = await response.json()
 
             if (response.ok) {
-                toast.success(data.message || '🎉 Successfully subscribed! You\'ll receive updates about new blog posts.', {
+                toast.success(data.message || 'Successfully subscribed! You\'ll receive updates about new blog posts.', {
                     id: loadingToast,
                     duration: 5000,
                 })
                 setNewsletterEmail('')
             } else {
-                toast.error(data.message || '❌ Failed to subscribe. Please try again.', {
+                toast.error(data.message || 'Failed to subscribe. Please try again.', {
                     id: loadingToast,
                     duration: 5000,
                 })
             }
         } catch (error) {
             console.error('Newsletter subscription error:', error)
-            toast.error('❌ Network error. Please check your connection and try again.', {
+            toast.error('Network error. Please check your connection and try again.', {
                 id: loadingToast,
                 duration: 5000,
             })
@@ -132,7 +132,7 @@ function Blog() {
             case 'copy':
                 navigator.clipboard.writeText(blogUrl)
                     .then(() => {
-                        toast.success('🔗 Link copied to clipboard!', { duration: 3000 })
+                        toast.success('Link copied to clipboard!', { duration: 3000 })
                     })
                     .catch(() => {
                         toast.error('Failed to copy link', { duration: 3000 })
@@ -157,7 +157,7 @@ function Blog() {
                         My Blog
                     </h1>
                     <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-                        Thoughts, tutorials, and insights about web development, AI, and my coding journey 📝
+                        Thoughts, tutorials, and insights about web development, AI, and my coding journey
                     </p>
                 </div>
 
@@ -166,7 +166,7 @@ function Blog() {
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="🔍 Search blog posts..."
+                            placeholder="Search blog posts..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-6 py-4 bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-2xl text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
@@ -202,7 +202,7 @@ function Blog() {
                 <div className="text-center mb-8 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                     <p className="text-slate-400">
                         {filteredBlogs.length === 0 ? (
-                            <span className="text-red-400">No blog posts found 😔</span>
+                            <span className="text-red-400">No blog posts found</span>
                         ) : (
                             <span>
                                 Showing <span className="text-purple-400 font-semibold">{filteredBlogs.length}</span>
@@ -216,7 +216,9 @@ function Blog() {
                 <div>
                     {filteredBlogs.length === 0 ? (
                         <div className="col-span-full text-center py-20">
-                            <div className="text-8xl mb-6">📝</div>
+                            <div className="mb-6 flex justify-center">
+                                <svg className="w-20 h-20 text-slate-600" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                            </div>
                             <h3 className="text-2xl font-bold text-slate-400 mb-4">No Blog Posts Found</h3>
                             <p className="text-slate-500 mb-8">Try adjusting your search or filters</p>
                             <button
@@ -282,7 +284,9 @@ function Blog() {
 
                 {/* Newsletter Section */}
                 <div className="mt-20 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-cyan-600/20 backdrop-blur-sm border border-purple-500/30 rounded-3xl p-8 md:p-12 text-center animate-fadeIn">
-                    <div className="text-5xl mb-4">📬</div>
+                    <div className="mb-4 flex justify-center">
+                        <svg className="w-14 h-14 text-purple-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                    </div>
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
                         Stay Updated
                     </h2>

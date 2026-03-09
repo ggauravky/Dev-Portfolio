@@ -93,7 +93,7 @@ function Footer() {
                     </div>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm sm:text-base">
                         <p className="text-slate-400 flex items-center gap-2">
-                            <span className="text-blue-400">📍</span> Based in Lucknow, India 🇮🇳
+                            <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> Based in Lucknow, India
                         </p>
                         <span className="hidden sm:inline text-slate-600">|</span>
                         <p className="text-green-400 font-bold flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30">
@@ -109,7 +109,7 @@ function Footer() {
                 {/* Social Links - Enhanced Grid Layout */}
                 <div className="mb-20">
                     <h4 className="text-2xl sm:text-3xl font-bold text-center text-slate-200 mb-10 flex items-center justify-center gap-3">
-                        <span className="text-3xl">🌐</span>
+                        <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" /></svg>
                         Connect With Me
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
@@ -134,7 +134,7 @@ function Footer() {
                     {/* Quick Links */}
                     <div className="text-center md:text-left">
                         <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-8 flex items-center justify-center md:justify-start gap-2">
-                            <span className="text-2xl">🔗</span>
+                            <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                             Quick Navigation
                         </h4>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -154,7 +154,7 @@ function Footer() {
                     {/* CTA Section - Enhanced */}
                     <div className="text-center md:text-right">
                         <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-6 flex items-center justify-center md:justify-end gap-2">
-                            <span className="text-2xl">💬</span>
+                            <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
                             Let's Work Together
                         </h4>
                         <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
@@ -167,7 +167,7 @@ function Footer() {
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
                             <span className="relative z-10">Let's Talk</span>
-                            <span className="text-2xl relative z-10 group-hover:scale-125 transition-transform">💬</span>
+                            <svg className="w-5 h-5 relative z-10 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
                         </Link>
                     </div>
                 </div>
@@ -194,7 +194,7 @@ function Footer() {
                                 © {currentYear} <span className="font-bold text-blue-400">Gaurav Kumar Yadav</span>. All rights reserved.
                             </p>
                             <p className="text-slate-500 text-xs sm:text-sm">
-                                Built with ❤️ using React, Vite, Tailwind CSS & Node.js
+                                Built with <svg className="w-4 h-4 text-red-400 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> using React, Vite, Tailwind CSS &amp; Node.js
                             </p>
                         </div>
 

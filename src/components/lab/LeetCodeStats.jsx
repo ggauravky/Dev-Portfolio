@@ -253,8 +253,9 @@ function LeetCodeStats({ stats, isLoading = false }) {
                 <div className="grid grid-cols-3 gap-2 mb-5">
                     {stats.streak > 0 && (
                         <div className="text-center p-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-lg border border-orange-500/20">
-                            <div className="text-lg font-bold text-orange-400">
-                                🔥 <AnimatedNumber value={stats.streak} duration={800} delay={500} />
+                            <div className="text-lg font-bold text-orange-400 flex items-center gap-1">
+                                <svg className="w-4 h-4 text-orange-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.047 8.287 8.287 0 009 9.601a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 18a3.75 3.75 0 00.495-7.468 5.99 5.99 0 00-1.925 3.547 5.975 5.975 0 01-2.133-1A3.75 3.75 0 0012 18z" /></svg>
+                                <AnimatedNumber value={stats.streak} duration={800} delay={500} />
                             </div>
                             <div className="text-[10px] text-slate-500 uppercase tracking-wide">Day Streak</div>
                         </div>
@@ -343,7 +344,7 @@ function LeetCodeStats({ stats, isLoading = false }) {
                 <div className="px-5 py-3 bg-slate-800/80 border-t border-slate-700/30 flex items-center justify-between text-xs text-slate-500">
                     {stats.isFallback ? (
                         <span className="flex items-center gap-1">
-                            <span>⚠️</span>
+                            <svg className="w-3.5 h-3.5 text-yellow-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                             <span>Showing fallback data — API unavailable</span>
                         </span>
                     ) : (

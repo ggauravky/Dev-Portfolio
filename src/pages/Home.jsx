@@ -13,6 +13,7 @@ import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
 import StatsCards from '../components/StatsCards'
 import ScrollReveal from '../components/ScrollReveal'
+import TechIcon from '../components/TechIcon'
 
 function Home() {
     // Wake up backend server on component mount
@@ -112,12 +113,12 @@ function Home() {
                             {/* Status Info - Compact */}
                             <div className="flex flex-col gap-2">
                                 <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 text-sm text-slate-300">
-                                    <span className="text-lg">🎓</span>
-                                    <span>Student Developer from <span className="text-blue-400 font-semibold">Lucknow, India</span> 🇮🇳</span>
+                                    <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
+                                    <span>Student Developer from <span className="text-blue-400 font-semibold">Lucknow, India</span></span>
                                 </div>
                                 
                                 <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg w-fit mx-auto lg:mx-0">
-                                    <span className="text-lg">🚀</span>
+                                    <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56 5.84a14.98 14.98 0 00-2.58-5.96m0 0a14.98 14.98 0 00-5.96-2.58" /></svg>
                                     <span className="text-emerald-300 font-semibold text-sm">Open for Internships & Freelance</span>
                                 </div>
                             </div>
@@ -139,7 +140,7 @@ function Home() {
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
                                         <span>Contact Me</span>
-                                        <span className="text-lg leading-none">📧</span>
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                                     </span>
                                 </Link>
                             </div>
@@ -220,15 +221,15 @@ function Home() {
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             
                             <div className="relative z-10">
-                                <div className="text-6xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">👨‍💻</div>
+                                <svg className="w-16 h-16 mx-auto text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                                 <h3 className="text-3xl font-bold text-blue-400 mb-5 group-hover:text-blue-300 transition-colors">Who I Am</h3>
                                 <p className="text-slate-300 leading-relaxed text-base md:text-lg">
                                     I'm a <span className="text-blue-400 font-semibold">BCA 2nd year student</span> passionate about AI, Data Science, and Software Development. I love solving real-world problems with code and building innovative solutions that make a meaningful impact.
                                 </p>
                                 <div className="mt-6 flex flex-wrap gap-2">
-                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">🎓 Student</span>
-                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">💡 Problem Solver</span>
-                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">🚀 Innovator</span>
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">Student</span>
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">Problem Solver</span>
+                                    <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">Innovator</span>
                                 </div>
                             </div>
                         </div>
@@ -238,15 +239,15 @@ function Home() {
                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             
                             <div className="relative z-10">
-                                <div className="text-6xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">🚀</div>
+                                <svg className="w-16 h-16 mx-auto text-purple-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56 5.84a14.98 14.98 0 00-2.58-5.96m0 0a14.98 14.98 0 00-5.96-2.58" /></svg>
                                 <h3 className="text-3xl font-bold text-purple-400 mb-5 group-hover:text-purple-300 transition-colors">What I Do</h3>
                                 <p className="text-slate-300 leading-relaxed text-base md:text-lg">
                                     I specialize in <span className="text-purple-400 font-semibold">machine learning models</span>, building powerful Python applications, and creating modern, responsive web experiences using React and cutting-edge technologies.
                                 </p>
                                 <div className="mt-6 flex flex-wrap gap-2">
-                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">🤖 AI/ML</span>
-                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">🐍 Python</span>
-                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">⚛️ React</span>
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">AI/ML</span>
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">Python</span>
+                                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">React</span>
                                 </div>
                             </div>
                         </div>
@@ -302,7 +303,7 @@ function Home() {
                             
                             <div className="relative z-10">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">🤖</div>
+                                    <svg className="w-12 h-12 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
                                     <h3 className="text-2xl md:text-3xl font-bold text-blue-400 group-hover:text-blue-300 transition-colors">AI & Data Science</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
@@ -324,7 +325,7 @@ function Home() {
                             
                             <div className="relative z-10">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">💻</div>
+                                    <svg className="w-12 h-12 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" /></svg>
                                     <h3 className="text-2xl md:text-3xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors">Web Development</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
@@ -346,7 +347,7 @@ function Home() {
                             
                             <div className="relative z-10">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="text-5xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">🔤</div>
+                                    <svg className="w-12 h-12 text-cyan-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                                     <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">Languages</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
@@ -401,7 +402,8 @@ function Home() {
                                     <p className="text-slate-400 text-xs mb-3 line-clamp-2">{project.description}</p>
                                     <div className="flex flex-wrap gap-1 mb-3">
                                         {project.techStack.map((tech, index) => (
-                                            <span key={index} className="bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs">
+                                            <span key={index} className="inline-flex items-center gap-1 bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs">
+                                                <TechIcon name={tech} className="w-3 h-3 shrink-0" />
                                                 {tech}
                                             </span>
                                         ))}
@@ -446,7 +448,7 @@ function Home() {
                         <Link to="/projects" className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 border-2 border-transparent rounded-2xl hover:-translate-y-2 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-300 flex flex-col items-center justify-center text-center group p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div className="relative z-10">
-                                <div className="text-6xl mb-4 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">🚀</div>
+                                <svg className="w-14 h-14 mx-auto mb-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56 5.84a14.98 14.98 0 00-2.58-5.96m0 0a14.98 14.98 0 00-5.96-2.58" /></svg>
                                 <h3 className="text-2xl font-bold text-white mb-2">View All Projects</h3>
                                 <p className="text-blue-100 text-sm">See more of my work</p>
                             </div>
@@ -505,7 +507,7 @@ function Home() {
                         <Link to="/blog" className="relative overflow-hidden bg-gradient-to-br from-pink-500 via-purple-500 to-cyan-500 border-2 border-transparent rounded-2xl hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/40 transition-all duration-300 flex flex-col items-center justify-center text-center group p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             <div className="relative z-10">
-                                <div className="text-6xl mb-4 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300">📝</div>
+                                <svg className="w-14 h-14 mx-auto mb-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                                 <h3 className="text-2xl font-bold text-white mb-2">View All Blogs</h3>
                                 <p className="text-pink-100 text-sm">Read more articles</p>
                             </div>
@@ -527,17 +529,19 @@ function Home() {
                         Let's Work Together
                     </h2>
                     <p className="text-slate-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-                        Have a project in mind? Let's discuss how we can work together to bring your ideas to life. 💡
+                        Have a project in mind? Let's discuss how we can work together to bring your ideas to life.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-6 justify-center">
                         <Link to="/contact" className="group relative bg-gradient-to-r from-blue-500 to-purple-500 px-10 py-5 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 overflow-hidden">
                             <span className="relative z-10 flex items-center justify-center gap-2">
-                                Get In Touch <span className="text-2xl">📧</span>
+                                Get In Touch
+                                <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </Link>
                         <Link to="/links" className="group border-2 border-cyan-500 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-cyan-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/30 backdrop-blur-sm flex items-center justify-center gap-2">
-                            Social Links <span className="text-2xl group-hover:rotate-12 transition-transform">🔗</span>
+                            Social Links
+                            <svg className="w-5 h-5 shrink-0 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                         </Link>
                     </div>
                 </ScrollReveal>
