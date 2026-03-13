@@ -15,7 +15,9 @@ const useSEO = ({
     type = 'website',
     author,
     publishedTime,
-    tags
+    tags,
+    noindex = false,
+    additionalJsonLd = null
 }) => {
     const location = useLocation()
     const siteUrl = 'https://ggauravky.vercel.app'
@@ -64,19 +66,35 @@ const useSEO = ({
         if (description) updateOrCreateMeta('og:description', description)
         updateOrCreateMeta('og:url', fullUrl)
         updateOrCreateMeta('og:type', type)
+        updateOrCreateMeta('og:site_name', 'Gaurav Kumar Yadav - Developer Portfolio')
+        updateOrCreateMeta('og:locale', 'en_US')
         if (ogImage) updateOrCreateMeta('og:image', ogImage)
+        if (ogImage) updateOrCreateMeta('og:image:alt', title || 'Gaurav Kumar Yadav portfolio preview')
 
         // Set Twitter Card tags
         updateOrCreateMeta('twitter:card', 'summary_large_image', false)
         if (title) updateOrCreateMeta('twitter:title', title, false)
         if (description) updateOrCreateMeta('twitter:description', description, false)
         if (ogImage) updateOrCreateMeta('twitter:image', ogImage, false)
+        if (ogImage) updateOrCreateMeta('twitter:image:alt', title || 'Gaurav Kumar Yadav portfolio preview', false)
         updateOrCreateMeta('twitter:url', fullUrl, false)
+        updateOrCreateMeta('twitter:site', '@ggauravky', false)
+        updateOrCreateMeta('twitter:creator', '@ggauravky', false)
+
+        // Explicit robots control (index/follow by default)
+        updateOrCreateMeta(
+            'robots',
+            noindex
+                ? 'noindex, nofollow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+            false
+        )
 
         // Set article-specific tags for blog posts
         if (type === 'article') {
             if (author) updateOrCreateMeta('article:author', author)
             if (publishedTime) updateOrCreateMeta('article:published_time', publishedTime)
+            updateOrCreateMeta('article:modified_time', new Date().toISOString())
             if (tags && tags.length > 0) {
                 tags.forEach(tag => {
                     const tagMeta = document.createElement('meta')
@@ -137,6 +155,22 @@ const useSEO = ({
         }
 
         let structuredData = {}
+
+        const breadcrumbItems = location.pathname
+            .split('/')
+            .filter(Boolean)
+            .map((segment, index, arr) => {
+                const itemPath = `/${arr.slice(0, index + 1).join('/')}`
+                const name = segment
+                    .replaceAll(/-/g, ' ')
+                    .replaceAll(/\b\w/g, (char) => char.toUpperCase())
+                return {
+                    '@type': 'ListItem',
+                    position: index + 2,
+                    name,
+                    item: `${siteUrl}${itemPath}`
+                }
+            })
 
         if (type === 'article') {
             // Blog post schema - Google Rich Results compliant
@@ -225,7 +259,8 @@ const useSEO = ({
                                     position: 1,
                                     name: 'Home',
                                     item: siteUrl
-                                }
+                                },
+                                ...breadcrumbItems
                             ]
                         }
                     },
@@ -260,6 +295,19 @@ const useSEO = ({
             }
         }
 
+        if (additionalJsonLd) {
+            const extras = Array.isArray(additionalJsonLd) ? additionalJsonLd : [additionalJsonLd]
+
+            if (structuredData['@graph']) {
+                structuredData['@graph'].push(...extras)
+            } else {
+                structuredData = {
+                    '@context': 'https://schema.org',
+                    '@graph': [structuredData, ...extras]
+                }
+            }
+        }
+
         if (!jsonLdScript) {
             jsonLdScript = document.createElement('script')
             jsonLdScript.type = 'application/ld+json'
@@ -277,7 +325,7 @@ const useSEO = ({
                 document.querySelectorAll('meta[property="article:tag"]').forEach(tag => tag.remove())
             }
         }
-    }, [title, description, keywords, ogImage, location, type, author, publishedTime, tags, fullUrl, siteUrl])
+    }, [title, description, keywords, ogImage, location, type, author, publishedTime, tags, fullUrl, siteUrl, noindex, additionalJsonLd])
 }
 
 export default useSEO

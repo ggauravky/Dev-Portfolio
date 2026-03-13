@@ -86,6 +86,8 @@ function ProjectDetail() {
                 <LazyImage
                     src={project.image}
                     alt={project.title}
+                    sizes="100vw"
+                    fetchPriority="high"
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/70 to-slate-900/30"></div>
@@ -257,6 +259,7 @@ function ProjectDetail() {
                                             <LazyImage
                                                 src={src}
                                                 alt={`${project.title} screenshot ${i + 1}`}
+                                                sizes="(min-width: 640px) 50vw, 100vw"
                                                 className="w-full h-56 sm:h-64 object-cover hover:scale-105 transition-transform duration-500"
                                             />
                                         </div>
@@ -284,6 +287,7 @@ function ProjectDetail() {
                                         <LazyImage
                                             src={rel.image}
                                             alt={rel.title}
+                                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                             className="w-full h-full object-cover card-img-zoom"
                                         />
                                     </div>

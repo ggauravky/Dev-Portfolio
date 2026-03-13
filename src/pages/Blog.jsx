@@ -17,7 +17,17 @@ function Blog() {
         title: 'Blog - Gaurav Portfolio | Tech Articles, Python Tutorials & AI Insights',
         description: 'Read Gaurav Portfolio Blog! Discover tech insights, Python tutorials, AI/ML articles, Web Development guides, Data Science tips, and developer journey stories by Gaurav Kumar Yadav. Learn from real-world projects, coding tutorials, and industry best practices. Stay updated with the latest in technology.',
         keywords: 'Gaurav Portfolio Blog, Portfolio Blog, Tech Blog, Python Tutorials, AI ML Blog, Web Development Blog, Student Developer Blog, Coding Tips, Data Science Articles, Programming Guide, Developer Journey, Technology Articles, Coding Tutorials Blog',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        additionalJsonLd: {
+            '@type': 'ItemList',
+            name: 'Gaurav Kumar Yadav Blog Articles',
+            itemListElement: blogsData.map((blog, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: `https://ggauravky.vercel.app/blog/${blog.slug}`,
+                name: blog.title
+            }))
+        }
     })
 
     const [searchQuery, setSearchQuery] = useState('')
@@ -244,6 +254,8 @@ function Blog() {
                                         <LazyImage
                                             src={blog.image}
                                             alt={blog.title}
+                                            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                            fetchPriority={index < 2 ? 'high' : 'auto'}
                                             className="w-full h-full object-cover card-img-zoom"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>

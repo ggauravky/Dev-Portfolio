@@ -15,7 +15,17 @@ function Projects() {
         title: 'Projects - Gaurav Portfolio | Python, AI/ML & Full Stack Development Projects',
         description: 'Explore Gaurav Portfolio Projects! Student developer portfolio featuring innovative Python projects, AI/ML applications, Data Science tools, and Full Stack web applications by Gaurav Kumar Yadav. Projects include AI Video Editing platform, Real-Time Chat App, MERN stack applications, Data Analysis dashboards, and more. Portfolio showcasing real-world solutions. Open for internships and freelance work.',
         keywords: 'Gaurav Portfolio Projects, Portfolio Projects, Python Projects, AI ML Projects, Data Science Projects, Full Stack Projects, React Projects, Node.js Projects, Student Developer Portfolio, AI Video Editor, Web Applications, Internship Portfolio, Developer Projects, Portfolio Gallery',
-        ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png'
+        ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png',
+        additionalJsonLd: {
+            '@type': 'ItemList',
+            name: 'Gaurav Kumar Yadav Project Portfolio',
+            itemListElement: projectsData.map((project, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                url: `https://ggauravky.vercel.app/projects/${project.slug}`,
+                name: project.title
+            }))
+        }
     })
 
     const [searchQuery, setSearchQuery] = useState('')
@@ -132,6 +142,8 @@ function Projects() {
                                     <LazyImage
                                         src={project.image}
                                         alt={project.title}
+                                        sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                        fetchPriority={index < 2 ? 'high' : 'auto'}
                                         className="w-full h-full object-cover card-img-zoom"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent opacity-70"></div>

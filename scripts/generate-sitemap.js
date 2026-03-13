@@ -4,9 +4,9 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,10 +15,20 @@ const __dirname = path.dirname(__filename);
 const blogsDataPath = path.join(__dirname, "../src/data/blogsData.js");
 const blogsDataContent = fs.readFileSync(blogsDataPath, "utf-8");
 
+// Import project data
+const projectsDataPath = path.join(__dirname, "../src/data/projectsData.js");
+const projectsDataContent = fs.readFileSync(projectsDataPath, "utf-8");
+
 // Extract blog slugs from the file
 const slugMatches = blogsDataContent.match(/slug:\s*["']([^"']+)["']/g);
 const blogSlugs = slugMatches
   ? slugMatches.map((match) => match.match(/["']([^"']+)["']/)[1])
+  : [];
+
+// Extract project slugs from the file
+const projectSlugMatches = projectsDataContent.match(/slug:\s*["']([^"']+)["']/g);
+const projectSlugs = projectSlugMatches
+  ? projectSlugMatches.map((match) => match.match(/["']([^"']+)["']/)[1])
   : [];
 
 const SITE_URL = "https://ggauravky.vercel.app";
@@ -43,8 +53,15 @@ const blogPages = blogSlugs.map((slug) => ({
   changefreq: "monthly",
 }));
 
+// Generate project detail URLs
+const projectPages = projectSlugs.map((slug) => ({
+  path: `/projects/${slug}`,
+  priority: "0.8",
+  changefreq: "monthly",
+}));
+
 // Combine all pages
-const allPages = [...staticPages, ...blogPages];
+const allPages = [...staticPages, ...blogPages, ...projectPages];
 
 // Generate sitemap XML
 const generateSitemap = () => {
@@ -94,6 +111,7 @@ const writeSitemap = () => {
   console.log(`📊 Total URLs: ${allPages.length}`);
   console.log(`   - Static pages: ${staticPages.length}`);
   console.log(`   - Blog posts: ${blogPages.length}`);
+  console.log(`   - Project pages: ${projectPages.length}`);
 };
 
 // Run the script
