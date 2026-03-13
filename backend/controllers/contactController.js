@@ -5,11 +5,13 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const Contact = require("../models/Contact");
+const { logger } = require("../utils/logger");
 
 // @desc    Submit contact form
 // @route   POST /api/contact
 // @access  Public
 exports.submitContact = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const { name, email, subject, message } = req.body;
 
@@ -22,7 +24,7 @@ exports.submitContact = async (req, res) => {
 
     const userAgent = req.headers["user-agent"] || "unknown";
 
-    console.log(`📧 New contact submission from: ${email} (IP: ${ipAddress})`);
+    reqLogger.info({ email, ipAddress }, "New contact submission");
 
     // Create contact entry
     const contact = await Contact.create({
@@ -34,7 +36,7 @@ exports.submitContact = async (req, res) => {
       userAgent,
     });
 
-    console.log(`✅ Contact saved successfully: ID ${contact._id}`);
+    reqLogger.info({ contactId: contact._id }, "Contact saved successfully");
 
     res.status(201).json({
       success: true,
@@ -47,12 +49,12 @@ exports.submitContact = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("❌ Contact submission error:", error);
+    reqLogger.error({ err: error }, "Contact submission error");
 
     // Handle specific MongoDB errors
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((err) => err.message);
-      console.error("Validation errors:", messages);
+      reqLogger.warn({ messages }, "Contact validation errors");
       return res.status(400).json({
         success: false,
         message: "Validation error",
@@ -62,7 +64,7 @@ exports.submitContact = async (req, res) => {
 
     // Handle duplicate key errors
     if (error.code === 11000) {
-      console.error("Duplicate entry attempted:", error.keyValue);
+      reqLogger.warn({ keyValue: error.keyValue }, "Duplicate contact entry attempted");
       return res.status(409).json({
         success: false,
         message: "A message with similar details already exists.",
@@ -80,6 +82,7 @@ exports.submitContact = async (req, res) => {
 // @route   GET /api/contact
 // @access  Private (you can add authentication later)
 exports.getAllContacts = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const { status, limit = 50, page = 1 } = req.query;
 
@@ -88,10 +91,13 @@ exports.getAllContacts = async (req, res) => {
       query.status = status;
     }
 
+    const pageNumber = Number.parseInt(page, 10);
+    const limitNumber = Number.parseInt(limit, 10);
+
     const contacts = await Contact.find(query)
       .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .limit(limitNumber)
+      .skip((pageNumber - 1) * limitNumber);
 
     const total = await Contact.countDocuments(query);
 
@@ -99,12 +105,12 @@ exports.getAllContacts = async (req, res) => {
       success: true,
       count: contacts.length,
       total,
-      page: parseInt(page),
-      pages: Math.ceil(total / parseInt(limit)),
+      page: pageNumber,
+      pages: Math.ceil(total / limitNumber),
       data: contacts,
     });
   } catch (error) {
-    console.error("Get contacts error:", error);
+    reqLogger.error({ err: error }, "Get contacts error");
     res.status(500).json({
       success: false,
       message: "Failed to fetch contacts",
@@ -116,6 +122,7 @@ exports.getAllContacts = async (req, res) => {
 // @route   GET /api/contact/stats
 // @access  Private
 exports.getContactStats = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const totalContacts = await Contact.countDocuments();
     const unreadContacts = await Contact.countDocuments({ status: "unread" });
@@ -140,7 +147,7 @@ exports.getContactStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get stats error:", error);
+    reqLogger.error({ err: error }, "Get contact stats error");
     res.status(500).json({
       success: false,
       message: "Failed to fetch statistics",

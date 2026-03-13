@@ -11,12 +11,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Critical LCP image preload — tells browser to fetch hero image before JS boots -->
+    <!-- Soft hint for hero image; avoids preload warnings on routes that do not use it immediately -->
     <link
-      rel="preload"
+      rel="prefetch"
       as="image"
       href="/images/profile.jpg"
-      fetchpriority="high"
     />
 
     <!-- Sitemap discovery link -->

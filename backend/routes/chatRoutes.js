@@ -6,7 +6,7 @@
 
 const express = require("express");
 const router = express.Router();
-const { chat } = require("../controllers/chatController");
+const { chat, chatPrivacyPolicy } = require("../controllers/chatController");
 const { chatRateLimiter } = require("../middleware/rateLimiter");
 const { body, validationResult } = require("express-validator");
 
@@ -33,6 +33,7 @@ const validate = (req, res, next) => {
 };
 
 // POST /api/chat
+router.get("/privacy-policy", chatPrivacyPolicy);
 router.post("/", chatRateLimiter, chatValidation, validate, chat);
 
 module.exports = router;

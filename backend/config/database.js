@@ -5,6 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const mongoose = require("mongoose");
+const { logger } = require("../utils/logger");
 
 const connectDatabase = async (retries = 3) => {
   try {
@@ -16,36 +17,41 @@ const connectDatabase = async (retries = 3) => {
       family: 4, // Force IPv4 — fixes querySrv ECONNREFUSED on many networks
     });
 
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database Name: ${conn.connection.name}`);
+    logger.info(
+      {
+        host: conn.connection.host,
+        database: conn.connection.name,
+      },
+      "MongoDB connected"
+    );
 
     // Handle connection events
     mongoose.connection.on("error", (err) => {
-      console.error("❌ MongoDB connection error:", err.message);
+      logger.error({ err }, "MongoDB connection error");
     });
 
     mongoose.connection.on("disconnected", () => {
-      console.warn("⚠️  MongoDB disconnected. Attempting to reconnect...");
+      logger.warn("MongoDB disconnected. Attempting to reconnect");
     });
 
     mongoose.connection.on("reconnected", () => {
-      console.log("🔄 MongoDB reconnected successfully");
+      logger.info("MongoDB reconnected successfully");
     });
 
     return conn;
   } catch (error) {
-    console.error("❌ MongoDB connection failed:", error.message);
+    logger.error({ err: error }, "MongoDB connection failed");
 
     if (retries > 0) {
-      console.log(`🔄 Retrying connection... (${retries} attempts left)`);
+      logger.warn({ retries }, "Retrying MongoDB connection");
       await new Promise((resolve) => setTimeout(resolve, 5000));
       return connectDatabase(retries - 1);
     }
 
     // ⚠️  Non-fatal: log the failure but do NOT exit.
     // Routes that don't need MongoDB (e.g. /api/chat) will keep working.
-    console.error(
-      "⚠️  MongoDB unavailable. Server will run in limited mode (chat API still works)."
+    logger.warn(
+      "MongoDB unavailable. Server will run in limited mode (chat API still works)."
     );
     return null;
   }

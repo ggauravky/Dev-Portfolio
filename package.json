@@ -6,11 +6,13 @@
     "scripts": {
         "dev": "vite",
         "sync-chat-data": "node scripts/sync-chat-data.js",
-        "build": "node scripts/sync-chat-data.js && node scripts/generate-sitemap.js && vite build",
+        "generate:image-variants": "node scripts/generate-image-variants.js",
+        "build": "node scripts/sync-chat-data.js && node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && vite build",
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js"
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "@tensorflow-models/mobilenet": "^2.1.1",
         "@tensorflow/tfjs": "^4.22.0",
         "@vercel/analytics": "^1.6.1",
@@ -19,6 +21,9 @@
         "compromise": "^14.14.5",
         "framer-motion": "^12.34.3",
         "mongoose": "^8.9.5",
+        "pino": "^9.4.0",
+        "pino-http": "^10.2.0",
+        "pino-pretty": "^13.1.1",
         "prop-types": "^15.8.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
@@ -33,6 +38,7 @@
         "autoprefixer": "^10.4.23",
         "postcss": "^8.5.6",
         "rollup-plugin-visualizer": "^5.14.0",
+        "sharp": "^0.34.3",
         "tailwindcss": "^3.4.19",
         "vite": "^5.0.8",
         "vite-plugin-obfuscator": "^1.0.5"

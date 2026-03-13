@@ -21,7 +21,7 @@ const formatTime = (date) => {
  * role: 'user' → right-aligned blue/indigo bubble
  * role: 'ai'   → left-aligned dark bubble with G avatar
  */
-function ChatMessage({ role, content, timestamp }) {
+function ChatMessage({ role, content, timestamp = null }) {
     const isUser = role === 'user'
     const time = formatTime(timestamp)
 
@@ -66,10 +66,6 @@ ChatMessage.propTypes = {
     role: PropTypes.oneOf(['user', 'ai']).isRequired,
     content: PropTypes.string.isRequired,
     timestamp: PropTypes.instanceOf(Date),
-}
-
-ChatMessage.defaultProps = {
-    timestamp: null,
 }
 
 export default ChatMessage

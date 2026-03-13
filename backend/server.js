@@ -7,7 +7,7 @@
 // Force IPv4-first DNS resolution - fixes Node.js 18+ defaulting to IPv6 (::1),
 // which breaks MongoDB Atlas SRV lookups (querySrv ECONNREFUSED) and
 // causes EADDRINUSE on ::1 instead of 127.0.0.1.
-const dns = require("dns");
+const dns = require("node:dns");
 dns.setDefaultResultOrder("ipv4first");
 // Use Google & Cloudflare DNS directly - ISP/system DNS often blocks SRV queries
 // needed by MongoDB Atlas (mongodb+srv://) connection strings.
@@ -17,7 +17,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
-const path = require("path");
+const path = require("node:path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const connectDatabase = require("./config/database");
@@ -26,9 +26,14 @@ const newsletterRoutes = require("./routes/newsletterRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const mlLogRoutes = require("./routes/mlLogRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
+const { logger, requestLogger } = require("./utils/logger");
+const { initMonitoring, captureException } = require("./utils/monitoring");
+const { getRetentionPolicy } = require("../shared/chatPrivacy.cjs");
 
 // Initialize express app
 const app = express();
+initMonitoring();
+app.use(requestLogger);
 
 // Connect to MongoDB
 connectDatabase();
@@ -71,7 +76,7 @@ const corsOptions = {
     if (allowedOrigins.includes(normalizedOrigin) || isOwnVercelPreview) {
       callback(null, true);
     } else {
-      console.warn(`CORS blocked request from: ${origin}`);
+      logger.warn({ origin }, "CORS blocked request");
       callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
@@ -98,10 +103,15 @@ app.use(generalRateLimiter);
 
 // Health check route
 app.get("/health", (req, res) => {
+  const retentionPolicy = getRetentionPolicy();
   res.status(200).json({
     success: true,
     message: "Server is running",
     timestamp: new Date().toISOString(),
+    chatAnalytics: {
+      retentionDays: retentionPolicy.retentionDays,
+      policyEndpoint: "/api/chat/privacy-policy",
+    },
   });
 });
 
@@ -130,32 +140,42 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("Error:", err.stack);
+  const requestId = req.id || req.headers["x-request-id"];
+  logger.error({ err, requestId, path: req.originalUrl }, "Unhandled application error");
+  captureException(err, {
+    requestId,
+    method: req.method,
+    path: req.originalUrl,
+  });
 
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal server error",
+    requestId,
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
 // Start server
-const BASE_PORT = parseInt(process.env.PORT, 10) || 5000;
-const MAX_PORT_RETRIES = parseInt(process.env.PORT_RETRIES, 10) || 10;
+const BASE_PORT = Number.parseInt(process.env.PORT, 10) || 5000;
+const MAX_PORT_RETRIES = Number.parseInt(process.env.PORT_RETRIES, 10) || 10;
 // Use 127.0.0.1 explicitly in development to avoid IPv6 localhost issues.
 const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
 let server;
 
 const logServerInfo = (port) => {
-  console.log(
-    `\nServer running in ${
-      process.env.NODE_ENV || "development"
-    } mode on port ${port}`
+  logger.info(
+    {
+      mode: process.env.NODE_ENV || "development",
+      port,
+      host: HOST,
+      healthCheck: `http://localhost:${port}/health`,
+      contactApi: `http://localhost:${port}/api/contact`,
+    },
+    "Server started"
   );
-  console.log(`Health check: http://localhost:${port}/health`);
-  console.log(`Contact API: http://localhost:${port}/api/contact`);
   if (process.env.FRONTEND_URL) {
-    console.log(`Frontend URL: ${process.env.FRONTEND_URL}\n`);
+    logger.info({ frontendUrl: process.env.FRONTEND_URL }, "Frontend URL configured");
   }
 };
 
@@ -167,12 +187,12 @@ const startServer = (port, retriesLeft) => {
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE" && retriesLeft > 0) {
       const nextPort = port + 1;
-      console.warn(`Port ${port} is already in use on ${HOST}. Trying ${nextPort}...`);
+      logger.warn({ port, host: HOST, nextPort }, "Port already in use, retrying");
       startServer(nextPort, retriesLeft - 1);
       return;
     }
 
-    console.error("Server failed to start:", err.message);
+    logger.fatal({ err }, "Server failed to start");
     process.exit(1);
   });
 };
@@ -181,7 +201,8 @@ startServer(BASE_PORT, MAX_PORT_RETRIES);
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
-  console.error("Unhandled Rejection:", err.message);
+  logger.error({ err }, "Unhandled promise rejection");
+  captureException(err, { kind: "unhandledRejection" });
   // In development, log and continue rather than killing the server.
   // In production, shut down gracefully so the process manager can restart.
   if (process.env.NODE_ENV === "production") {
@@ -195,12 +216,12 @@ process.on("unhandledRejection", (err) => {
 
 // Handle SIGTERM
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received. Shutting down gracefully...");
+  logger.info("SIGTERM received. Shutting down gracefully");
   if (server) {
     server.close(() => {
-      console.log("Process terminated");
+      logger.info("Process terminated");
     });
   } else {
-    console.log("Process terminated");
+    logger.info("Process terminated");
   }
 });

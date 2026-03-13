@@ -5,6 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const mongoose = require("mongoose");
+const { RETENTION_SECONDS } = require("../../shared/chatPrivacy.cjs");
 
 const chatLogSchema = new mongoose.Schema(
   {
@@ -64,6 +65,15 @@ const chatLogSchema = new mongoose.Schema(
     },
 
     // ── Visitor identity ───────────────────────────────────────────
+    ipHash: {
+      type: String,
+      default: "unknown",
+      index: true,
+    },
+    userAgentHash: {
+      type: String,
+      default: "unknown",
+    },
     ipAddress: {
       type: String,
       default: "unknown",
@@ -107,7 +117,9 @@ const chatLogSchema = new mongoose.Schema(
 
 // Useful query indexes
 chatLogSchema.index({ createdAt: -1 });
+chatLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: RETENTION_SECONDS });
 chatLogSchema.index({ ipAddress: 1, createdAt: -1 });
+chatLogSchema.index({ ipHash: 1, createdAt: -1 });
 chatLogSchema.index({ country: 1 });
 chatLogSchema.index({ intentTag: 1 });
 
