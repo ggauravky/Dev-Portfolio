@@ -17,8 +17,7 @@ const chatValidation = [
     .notEmpty()
     .withMessage("Message cannot be empty")
     .isLength({ min: 1, max: 1000 })
-    .withMessage("Message must be between 1 and 1000 characters")
-    .escape(), // sanitize HTML entities
+    .withMessage("Message must be between 1 and 1000 characters"),
 ];
 
 const validate = (req, res, next) => {

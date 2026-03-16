@@ -6,6 +6,7 @@
 
 const MlLog = require("../models/MlLog");
 const cloudinary = require("../config/cloudinary");
+const { logger } = require("../utils/logger");
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const extractVisitorInfo = (req) => ({
@@ -23,6 +24,7 @@ const extractVisitorInfo = (req) => ({
 // @route   POST /api/ml-log/upload-image
 // @access  Public
 exports.uploadImage = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const body = req.body || {};
 
@@ -69,8 +71,13 @@ exports.uploadImage = async (req, res) => {
       ...visitor,
     });
 
-    console.log(
-      `[ML-IMAGE] saved _id=${logEntry._id} cloudinary=${uploadResult.public_id} label="${safeLabel}"`
+    reqLogger.info(
+      {
+        logId: logEntry._id,
+        cloudinaryPublicId: uploadResult.public_id,
+        label: safeLabel,
+      },
+      "ML image log saved"
     );
 
     return res.status(200).json({
@@ -79,7 +86,7 @@ exports.uploadImage = async (req, res) => {
       id: logEntry._id,
     });
   } catch (error) {
-    console.error("[ML-IMAGE] upload error:", error?.message || error);
+    reqLogger.error({ err: error }, "ML image upload error");
     return res.status(500).json({ success: false, message: "Image upload failed." });
   }
 };
@@ -88,6 +95,7 @@ exports.uploadImage = async (req, res) => {
 // @route   POST /api/ml-log
 // @access  Public
 exports.logMlUsage = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const body = req.body || {};
 
@@ -142,8 +150,16 @@ exports.logMlUsage = async (req, res) => {
       city,
     });
 
-    console.log(
-      `[ML-LOG] saved _id=${logEntry._id} demo=${safeDemoType} event=${safeEvent} label="${safeLabel}" country=${countryCode} city="${city}"`
+    reqLogger.info(
+      {
+        logId: logEntry._id,
+        demoType: safeDemoType,
+        event: safeEvent,
+        label: safeLabel,
+        countryCode,
+        city,
+      },
+      "ML usage log saved"
     );
 
     return res.status(200).json({
@@ -153,7 +169,7 @@ exports.logMlUsage = async (req, res) => {
       timestamp: logEntry.createdAt,
     });
   } catch (error) {
-    console.error("ML log endpoint error:", error?.message || error);
+    reqLogger.error({ err: error }, "ML log endpoint error");
     return res.status(500).json({
       success: false,
       message: "Failed to log ML usage",

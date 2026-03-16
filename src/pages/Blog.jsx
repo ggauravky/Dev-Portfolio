@@ -117,9 +117,8 @@ function Blog() {
 
     const handleShare = (platform, blog) => {
         const baseUrl = 'https://ggauravky.vercel.app'
-        const blogUrl = `${baseUrl}/blog`
+        const blogUrl = `${baseUrl}/blog/${blog.slug}`
         const title = encodeURIComponent(blog.title)
-        const text = encodeURIComponent(blog.excerpt)
 
         let shareUrl = ''
 
@@ -275,18 +274,27 @@ function Blog() {
                                         </h3>
                                         <p className="text-slate-400 mb-4 line-clamp-3">{blog.excerpt}</p>
                                         <div className="flex flex-wrap gap-2 mb-4">
-                                            {(blog.tags || []).slice(0, 3).map((tag, index) => (
-                                                <span key={index} className="bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-xs">
+                                            {(blog.tags || []).slice(0, 3).map((tag) => (
+                                                <span key={`${blog.id}-${tag}`} className="bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-xs">
                                                     {tag}
                                                 </span>
                                             ))}
                                         </div>
-                                        <Link
-                                            to={`/blog/${blog.slug}`}
-                                            className="block w-full bg-slate-700 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-lg transition-all duration-300 border border-slate-600 hover:border-cyan-500 hover:scale-105 text-center"
-                                        >
-                                            Read More →
-                                        </Link>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleReadMore(blog.id)}
+                                                className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium px-4 py-3 rounded-lg transition-all duration-300 border border-slate-600 text-center"
+                                            >
+                                                Quick Preview
+                                            </button>
+                                            <Link
+                                                to={`/blog/${blog.slug}`}
+                                                className="block w-full bg-slate-700 hover:bg-gradient-to-r hover:from-cyan-600 hover:to-blue-600 text-slate-300 hover:text-white font-medium px-4 py-3 rounded-lg transition-all duration-300 border border-slate-600 hover:border-cyan-500 hover:scale-105 text-center"
+                                            >
+                                                Read More →
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -330,11 +338,15 @@ function Blog() {
                 {selectedBlog && (
                     <div
                         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn"
-                        onClick={handleCloseModal}
                     >
+                        <button
+                            type="button"
+                            aria-label="Close preview"
+                            onClick={handleCloseModal}
+                            className="absolute inset-0"
+                        />
                         <div
-                            className="bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative animate-slideUp"
-                            onClick={(e) => e.stopPropagation()}
+                            className="bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative z-10 animate-slideUp"
                         >
                             {/* Close Button */}
                             <button
@@ -395,8 +407,8 @@ function Blog() {
 
                                 {/* Tags */}
                                 <div className="flex flex-wrap gap-2 mb-6">
-                                    {selectedBlog.tags.map((tag, index) => (
-                                        <span key={index} className="bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-sm">
+                                    {selectedBlog.tags.map((tag) => (
+                                        <span key={tag} className="bg-slate-700 text-slate-300 px-3 py-1 rounded-lg text-sm">
                                             #{tag}
                                         </span>
                                     ))}

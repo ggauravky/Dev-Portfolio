@@ -116,24 +116,41 @@ function GauravChatbot() {
                 const currentIndex = msgCountRef.current;
                 msgCountRef.current += 1;
 
-                const response = await fetch(`${API_URL}/api/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: trimmed,
-                        history: historySnapshot,
-                        sessionId: sessionIdRef.current,
-                        messageIndex: currentIndex,
-                    }),
-                    signal: AbortSignal.timeout(25000),
-                })
+                const controller = new AbortController()
+                const timeoutId =
+                    typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+                        ? null
+                        : setTimeout(() => controller.abort(), 25000)
+                const signal =
+                    typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+                        ? AbortSignal.timeout(25000)
+                        : controller.signal
+
+                let response
+                try {
+                    response = await fetch(`${API_URL}/api/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: trimmed,
+                            history: historySnapshot,
+                            sessionId: sessionIdRef.current,
+                            messageIndex: currentIndex,
+                        }),
+                        signal,
+                    })
+                } finally {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId)
+                    }
+                }
 
                 const data = await response.json()
                 if (!response.ok || !data.success) throw new Error(data.reply || 'Something went wrong.')
                 setMessages((prev) => [...prev, makeMsg('ai', data.reply)])
             } catch (err) {
                 setError(
-                    err.name === 'TimeoutError'
+                    err.name === 'TimeoutError' || err.name === 'AbortError'
                         ? 'Request timed out. Please try again.'
                         : err.message || 'Failed to reach the server.'
                 )

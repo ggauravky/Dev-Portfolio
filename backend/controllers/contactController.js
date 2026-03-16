@@ -91,8 +91,12 @@ exports.getAllContacts = async (req, res) => {
       query.status = status;
     }
 
-    const pageNumber = Number.parseInt(page, 10);
-    const limitNumber = Number.parseInt(limit, 10);
+    const rawPage = Number.parseInt(page, 10);
+    const rawLimit = Number.parseInt(limit, 10);
+    const pageNumber = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+    const limitNumber = Number.isFinite(rawLimit)
+      ? Math.min(Math.max(rawLimit, 1), 100)
+      : 50;
 
     const contacts = await Contact.find(query)
       .sort({ createdAt: -1 })

@@ -5,11 +5,13 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const Newsletter = require("../models/Newsletter");
+const { logger } = require("../utils/logger");
 
 // @desc    Subscribe to newsletter
 // @route   POST /api/newsletter/subscribe
 // @access  Public
 exports.subscribe = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const { email } = req.body;
 
@@ -68,7 +70,7 @@ exports.subscribe = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Newsletter subscription error:", error);
+    reqLogger.error({ err: error }, "Newsletter subscription error");
 
     // Handle duplicate key error (shouldn't happen due to check above, but just in case)
     if (error.code === 11000) {
@@ -103,6 +105,7 @@ exports.subscribe = async (req, res) => {
 // @route   POST /api/newsletter/unsubscribe
 // @access  Public
 exports.unsubscribe = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const { email } = req.body;
 
@@ -136,7 +139,7 @@ exports.unsubscribe = async (req, res) => {
       message: "Successfully unsubscribed from newsletter",
     });
   } catch (error) {
-    console.error("Newsletter unsubscribe error:", error);
+    reqLogger.error({ err: error }, "Newsletter unsubscribe error");
 
     res.status(500).json({
       success: false,
@@ -149,6 +152,7 @@ exports.unsubscribe = async (req, res) => {
 // @route   GET /api/newsletter/stats
 // @access  Public (or you can make it private)
 exports.getStats = async (req, res) => {
+  const reqLogger = req.log || logger;
   try {
     const totalSubscribers = await Newsletter.countDocuments({
       subscribed: true,
@@ -167,7 +171,7 @@ exports.getStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Newsletter stats error:", error);
+    reqLogger.error({ err: error }, "Newsletter stats error");
 
     res.status(500).json({
       success: false,

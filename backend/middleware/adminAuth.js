@@ -23,7 +23,7 @@ exports.requireAdminKey = (req, res, next) => {
     });
   }
 
-  const provided = req.headers["x-admin-key"] || req.query.key;
+  const provided = req.headers["x-admin-key"];
 
   // Constant-time comparison to prevent timing attacks
   if (!provided || provided.length !== adminKey.length || !constantTimeEqual(provided, adminKey)) {
