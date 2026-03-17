@@ -156,12 +156,12 @@ function BlogPost() {
             {/* Breadcrumb */}
             <div className="bg-slate-800/50 border-b border-slate-700">
                 <div className="max-w-4xl mx-auto px-4 py-4">
-                    <nav className="flex items-center gap-2 text-sm">
-                        <Link to="/" className="text-slate-400 hover:text-blue-400 transition-colors">Home</Link>
-                        <span className="text-slate-600">/</span>
-                        <Link to="/blog" className="text-slate-400 hover:text-blue-400 transition-colors">Blog</Link>
-                        <span className="text-slate-600">/</span>
-                        <span className="text-slate-300">{blog.title}</span>
+                    <nav className="flex flex-wrap items-center gap-2 text-sm leading-6">
+                        <Link to="/" className="inline-flex items-center text-slate-400 hover:text-blue-400 transition-colors">Home</Link>
+                        <span className="inline-flex items-center text-slate-600 leading-none select-none">/</span>
+                        <Link to="/blog" className="inline-flex items-center text-slate-400 hover:text-blue-400 transition-colors">Blog</Link>
+                        <span className="inline-flex items-center text-slate-600 leading-none select-none">/</span>
+                        <span className="inline-flex items-center min-w-0 text-slate-300 break-words">{blog.title}</span>
                     </nav>
                 </div>
             </div>
