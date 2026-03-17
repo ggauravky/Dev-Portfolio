@@ -193,7 +193,7 @@ function Links() {
                             </div>
                         </div>
                         <a
-                            href="/resume.pdf"
+                            href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-cyan-500/30 whitespace-nowrap"

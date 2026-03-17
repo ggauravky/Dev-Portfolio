@@ -100,8 +100,9 @@ function Navbar() {
 
                         {/* Desktop Resume button */}
                         <a
-                            href="/resume.pdf"
-                            download
+                            href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/40 hover:shadow-cyan-500/60 hover:scale-105 text-sm xl:text-base cursor-pointer whitespace-nowrap group relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -201,8 +202,9 @@ function Navbar() {
                 {/* ── Resume + footer (pinned to bottom) ── */}
                 <div className="shrink-0 px-4 pt-4 pb-8 border-t border-slate-700/50 space-y-3">
                     <a
-                        href="/resume.pdf"
-                        download
+                        href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={closeMenu}
                         className="flex items-center justify-center gap-2.5 w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-base rounded-2xl transition-all duration-300 shadow-lg shadow-cyan-500/30 active:scale-95"
                     >
