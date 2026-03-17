@@ -96,12 +96,12 @@ function About() {
                         </div>
                         <div className="space-y-4 text-slate-300 text-base sm:text-lg leading-relaxed">
                             <p>
-                                Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student from
-                                <span className="text-green-400 font-semibold"> Lucknow, India</span> with a passion for
-                                <span className="text-purple-400"> Python Development</span>,
-                                <span className="text-cyan-400"> Data Science</span>,
-                                <span className="text-blue-400"> AI/Machine Learning</span>, and
-                                <span className="text-pink-400"> Full Stack Web Development</span>.
+                                Hi! I'm <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA 2nd year student from{' '}
+                                <span className="text-green-400 font-semibold">Lucknow, India</span> with a passion for{' '}
+                                <span className="text-purple-400">Python Development</span>,{' '}
+                                <span className="text-cyan-400">Data Science</span>,{' '}
+                                <span className="text-blue-400">AI/Machine Learning</span>, and{' '}
+                                <span className="text-pink-400">Full Stack Web Development</span>.
                             </p>
                             <p>
                                 I'm currently pursuing <span className="text-purple-400 font-semibold">AI & Data Science certification from IIT Mandi × Masai School</span>,
@@ -109,8 +109,9 @@ function About() {
                                 not just copying tutorials.
                             </p>
                             <p>
-                                I'm actively seeking <span className="text-green-400 font-semibold">internships, entry-level positions, and freelance opportunities</span>
-                                where I can apply my skills in Python, AI/ML, Data Analysis, and Full Stack Development. I'm particularly interested in
+                                I'm actively seeking{' '}
+                                <span className="text-green-400 font-semibold">internships, entry-level positions, and freelance opportunities</span>{' '}
+                                where I can apply my skills in Python, AI/ML, Data Analysis, and Full Stack Development. I'm particularly interested in{' '}
                                 <span className="text-blue-400"> startups, early-stage tech companies, and agencies</span> where I can learn and contribute meaningfully.
                             </p>
                         </div>
@@ -144,8 +145,8 @@ function About() {
                                 <h2 className="text-2xl font-bold text-cyan-400">Future Vision</h2>
                             </div>
                             <p className="text-slate-300 text-lg leading-relaxed">
-                                In 3-5 years, I see myself working as a
-                                <span className="text-cyan-400 font-semibold"> Data Scientist / AI Engineer</span>,
+                                In 3-5 years, I see myself working as a{' '}
+                                <span className="text-cyan-400 font-semibold">Data Scientist / AI Engineer</span>,
                                 building impactful tech products and contributing to real-world problem solving.
                             </p>
                         </div>
@@ -222,8 +223,8 @@ function About() {
                             <div>
                                 <p className="mb-4 leading-relaxed">
                                     When I'm not coding, I enjoy <span className="text-cyan-400 font-semibold">exploring new tech trends</span>,
-                                    experimenting with <span className="text-purple-400 font-semibold">AI tools</span>,
-                                    <span className="text-blue-400 font-semibold"> content creation</span>, and
+                                    experimenting with <span className="text-purple-400 font-semibold">AI tools</span>,{' '}
+                                    <span className="text-blue-400 font-semibold">content creation</span>, and
                                     sometimes casual <span className="text-cyan-400 font-semibold">gaming</span>.
                                 </p>
                             </div>
@@ -256,10 +257,11 @@ function About() {
                                 <h2 className="text-2xl font-bold text-purple-400">Proud Of</h2>
                             </div>
                             <p className="text-slate-300 text-lg leading-relaxed">
-                                Building multiple <span className="text-cyan-400 font-semibold">full-stack, Python, and AI projects</span>
-                                while maintaining long learning streaks on
-                                <span className="text-purple-400 font-semibold"> GitHub</span> and
-                                <span className="text-blue-400 font-semibold"> LinkedIn</span>.
+                                Building multiple{' '}
+                                <span className="text-cyan-400 font-semibold">full-stack, Python, and AI projects</span>{' '}
+                                while maintaining long learning streaks on{' '}
+                                <span className="text-purple-400 font-semibold">GitHub</span> and{' '}
+                                <span className="text-blue-400 font-semibold">LinkedIn</span>.
                             </p>
                         </div>
                     </div>

@@ -59,7 +59,7 @@ function BlogPost() {
     // Calculate reading time (words per minute = 200)
     const calculateReadingTime = (content) => {
         if (!content) return 0
-        const words = content.replace(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length
+        const words = content.replaceAll(/<[^>]*>/g, '').split(/\s+/).filter(w => w.length > 0).length
         const minutes = Math.ceil(words / 200)
         return minutes
     }
@@ -75,7 +75,7 @@ function BlogPost() {
     // Copy link to clipboard with toast notification
     const handleCopyLink = async () => {
         try {
-            const url = window.location.href
+            const url = globalThis.location?.href || ''
             await navigator.clipboard.writeText(url)
             toast.success('Link copied to clipboard!')
         } catch (err) {
@@ -86,8 +86,9 @@ function BlogPost() {
 
     // Generate share URL with proper encoding
     const getShareUrl = () => {
-        if (typeof window === 'undefined') return ''
-        return encodeURIComponent(window.location.href)
+        const href = globalThis.location?.href
+        if (!href) return ''
+        return encodeURIComponent(href)
     }
 
     const getShareText = () => {
@@ -151,7 +152,7 @@ function BlogPost() {
     const readingTime = calculateReadingTime(blog.content)
 
     return (
-        <div className="bg-slate-900 min-h-screen">
+        <div className="blog-post-page bg-slate-900 min-h-screen">
             {/* Breadcrumb */}
             <div className="bg-slate-800/50 border-b border-slate-700">
                 <div className="max-w-4xl mx-auto px-4 py-4">
@@ -211,9 +212,9 @@ function BlogPost() {
 
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 mt-6">
-                        {blog.tags.map((tag, idx) => (
+                        {blog.tags.map((tag) => (
                             <span
-                                key={idx}
+                                key={tag}
                                 className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-sm hover:bg-slate-700 transition-colors"
                             >
                                 #{tag}

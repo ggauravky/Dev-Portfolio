@@ -6,11 +6,6 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Stats Container */
-.stats-container {
-    /* Grid layout handled by Tailwind classes in JSX */
-}
-
 /* Stat Card */
 .stat-card {
     position: relative;
@@ -61,7 +56,18 @@
 
 .stat-icon {
     font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: transform 0.3s ease;
+}
+
+.stat-icon svg {
+    width: 100%;
+    height: 100%;
 }
 
 .stat-card:hover .stat-icon {
@@ -188,6 +194,17 @@
 
 .stat-error-icon {
     font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-error-icon svg {
+    width: 100%;
+    height: 100%;
 }
 
 .stat-error-text {
@@ -218,7 +235,7 @@
     border-radius: 9999px;
     font-size: 0.875rem;
     font-weight: 600;
-    color: rgb(52, 211, 153);
+    color: rgb(6, 78, 59);
     transition: all 0.3s ease;
 }
 
@@ -250,6 +267,8 @@
 
     .stat-icon {
         font-size: 1.75rem;
+        width: 1.75rem;
+        height: 1.75rem;
     }
 }
 
@@ -275,6 +294,8 @@
 
     .stat-icon {
         font-size: 1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
     }
 
     .stat-title {

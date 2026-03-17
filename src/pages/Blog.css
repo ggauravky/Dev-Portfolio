@@ -86,20 +86,24 @@
 }
 
 /* Custom scrollbar for the page */
-::-webkit-scrollbar {
+.blog-page ::-webkit-scrollbar,
+.blog-post-page ::-webkit-scrollbar {
   width: 10px;
 }
 
-::-webkit-scrollbar-track {
+.blog-page ::-webkit-scrollbar-track,
+.blog-post-page ::-webkit-scrollbar-track {
   background: #1e293b;
 }
 
-::-webkit-scrollbar-thumb {
+.blog-page ::-webkit-scrollbar-thumb,
+.blog-post-page ::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #9333ea 0%, #06b6d4 100%);
   border-radius: 5px;
 }
 
-::-webkit-scrollbar-thumb:hover {
+.blog-page ::-webkit-scrollbar-thumb:hover,
+.blog-post-page ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #a855f7 0%, #22d3ee 100%);
 }
 
@@ -151,18 +155,21 @@
   }
 
   /* Adjust text sizes for mobile */
-  h1 {
+  .blog-page h1,
+  .blog-post-page h1 {
     font-size: 2rem !important;
     line-height: 1.2;
     margin-bottom: 1rem;
   }
 
-  h2 {
+  .blog-page h2,
+  .blog-post-page h2 {
     font-size: 1.5rem !important;
     line-height: 1.3;
   }
 
-  h3 {
+  .blog-page h3,
+  .blog-post-page h3 {
     font-size: 1.15rem !important;
     line-height: 1.4;
   }
@@ -191,15 +198,18 @@
     padding: 0 0.5rem;
   }
 
-  h1 {
+  .blog-page h1,
+  .blog-post-page h1 {
     font-size: 1.75rem !important;
   }
 
-  h2 {
+  .blog-page h2,
+  .blog-post-page h2 {
     font-size: 1.35rem !important;
   }
 
-  h3 {
+  .blog-page h3,
+  .blog-post-page h3 {
     font-size: 1.05rem !important;
   }
 
@@ -211,10 +221,6 @@
     padding: 0.4rem 0.75rem;
     font-size: 0.75rem;
   }
-  h1 {
-    font-size: 2rem !important;
-  }
-
   /* Adjust card image height */
   .blog-card-image {
     height: 10rem;
@@ -234,15 +240,20 @@
 }
 
 /* Smooth transitions for interactive elements */
-button,
-a,
-input {
+.blog-page button,
+.blog-page a,
+.blog-page input,
+.blog-post-page button,
+.blog-post-page a,
+.blog-post-page input {
   transition: all 0.3s ease;
 }
 
 /* Focus states for accessibility */
-input:focus,
-button:focus {
+.blog-page input:focus,
+.blog-page button:focus,
+.blog-post-page input:focus,
+.blog-post-page button:focus {
   outline: 2px solid #9333ea;
   outline-offset: 2px;
 }
