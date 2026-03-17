@@ -1,0 +1,130 @@
+/* Scoped styles for blog detail page to avoid cross-page CSS chunk order issues */
+
+.blog-post-page .blog-post-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #a78bfa;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.blog-post-page .blog-post-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+}
+
+.blog-post-page .blog-post-content p {
+  color: #cbd5e1;
+  line-height: 1.8;
+  margin-bottom: 1rem;
+}
+
+.blog-post-page .blog-post-content ul {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.blog-post-page .blog-post-content ul li {
+  color: #cbd5e1;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+  line-height: 1.7;
+}
+
+.blog-post-page .blog-post-content ul li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: #22d3ee;
+  font-weight: 700;
+}
+
+.blog-post-page .blog-post-content ol {
+  counter-reset: item;
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.blog-post-page .blog-post-content ol li {
+  color: #cbd5e1;
+  padding-left: 2rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+  line-height: 1.7;
+  counter-increment: item;
+}
+
+.blog-post-page .blog-post-content ol li::before {
+  content: counter(item) ".";
+  position: absolute;
+  left: 0;
+  color: #22d3ee;
+  font-weight: 700;
+}
+
+.blog-post-page .blog-post-content strong {
+  color: #e0e7ff;
+  font-weight: 600;
+}
+
+.blog-post-page .blog-post-content em {
+  color: #a5b4fc;
+  font-style: italic;
+}
+
+.blog-post-page .blog-post-content hr {
+  border: 0;
+  border-top: 2px solid #334155;
+  margin: 2rem 0;
+  opacity: 0.5;
+}
+
+.blog-post-page .blog-post-content code {
+  background-color: #1e293b;
+  color: #22d3ee;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  font-family: "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.blog-post-page .blog-post-content a {
+  color: #22d3ee;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.blog-post-page .blog-post-content a:hover {
+  color: #67e8f9;
+}
+
+.blog-post-page .blog-post-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .blog-post-page .blog-post-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .blog-post-page .blog-post-content h3 {
+    font-size: 1.25rem;
+  }
+
+  .blog-post-page .blog-post-content p,
+  .blog-post-page .blog-post-content li {
+    font-size: 0.95rem;
+  }
+}

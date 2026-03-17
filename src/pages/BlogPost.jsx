@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
-import './Blog.css'
+import './BlogPost.css'
 
 function BlogPost() {
     const { slug } = useParams()
@@ -264,7 +264,7 @@ function BlogPost() {
 
                 {/* Blog Content */}
                 <div
-                    className="blog-content prose prose-invert prose-lg max-w-none mb-12"
+                    className="blog-post-content max-w-none mb-12"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
 
@@ -312,7 +312,7 @@ function BlogPost() {
                                         <h3 className="text-lg font-bold text-white mt-2 mb-2 group-hover:text-blue-400 transition-colors line-clamp-2">
                                             {relatedBlog.title}
                                         </h3>
-                                        <p className="text-slate-400 text-sm line-clamp-2">{relatedBlog.excerpt}</p>
+                                        <p className="text-slate-400 text-sm blog-post-clamp-2">{relatedBlog.excerpt}</p>
                                         <div className="flex items-center gap-2 mt-4 text-slate-500 text-xs">
                                             <span>{relatedBlog.date}</span>
                                         </div>
