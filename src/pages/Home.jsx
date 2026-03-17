@@ -43,7 +43,7 @@ function Home() {
     const featuredBlogs = useMemo(() => blogsData.filter(blog => blog.featured), [])
 
     return (
-        <div className="bg-slate-900 overflow-x-hidden w-full">
+        <div className="home-page bg-slate-900 overflow-x-hidden w-full">
             {/* Hero Section */}
             <section className="hero-section relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10 lg:pt-14 lg:pb-0 overflow-hidden w-full">
                 {/* Subtle Animated Background */}
@@ -66,7 +66,7 @@ function Home() {
                                 <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                                </span>
+                                </span>{' '}
                                 Welcome to my portfolio
                             </span>
                             
@@ -268,7 +268,7 @@ function Home() {
 
                     <div className="text-center mt-12 animate-fadeIn">
                         <Link to="/about" className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/50">
-                            Learn More About Me
+                            <span>Learn More About Me</span>
                             <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
@@ -307,8 +307,8 @@ function Home() {
                                     <h3 className="text-2xl md:text-3xl font-bold text-blue-400 group-hover:text-blue-300 transition-colors">AI & Data Science</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {skills.ai.map((skill, index) => (
-                                        <span key={index} className="bg-blue-500/20 border border-blue-500/40 text-blue-300 px-4 py-2.5 rounded-xl hover:bg-blue-500/40 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                    {skills.ai.map((skill) => (
+                                        <span key={skill} className="bg-blue-500/20 border border-blue-500/40 text-blue-300 px-4 py-2.5 rounded-xl hover:bg-blue-500/40 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/50 transition-all duration-300 cursor-default font-medium text-sm">
                                             {skill}
                                         </span>
                                     ))}
@@ -329,8 +329,8 @@ function Home() {
                                     <h3 className="text-2xl md:text-3xl font-bold text-purple-400 group-hover:text-purple-300 transition-colors">Web Development</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {skills.web.map((skill, index) => (
-                                        <span key={index} className="bg-purple-500/20 border border-purple-500/40 text-purple-300 px-4 py-2.5 rounded-xl hover:bg-purple-500/40 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                    {skills.web.map((skill) => (
+                                        <span key={skill} className="bg-purple-500/20 border border-purple-500/40 text-purple-300 px-4 py-2.5 rounded-xl hover:bg-purple-500/40 hover:scale-110 hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 cursor-default font-medium text-sm">
                                             {skill}
                                         </span>
                                     ))}
@@ -351,8 +351,8 @@ function Home() {
                                     <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">Languages</h3>
                                 </div>
                                 <div className="flex flex-wrap gap-3">
-                                    {skills.languages.map((skill, index) => (
-                                        <span key={index} className="bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 px-4 py-2.5 rounded-xl hover:bg-cyan-500/40 hover:scale-110 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 cursor-default font-medium text-sm">
+                                    {skills.languages.map((skill) => (
+                                        <span key={skill} className="bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 px-4 py-2.5 rounded-xl hover:bg-cyan-500/40 hover:scale-110 hover:shadow-lg hover:shadow-cyan-500/50 transition-all duration-300 cursor-default font-medium text-sm">
                                             {skill}
                                         </span>
                                     ))}
@@ -366,7 +366,7 @@ function Home() {
 
                     <div className="text-center mt-16 animate-fadeIn">
                         <Link to="/skills" className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/50">
-                            View All Skills & Expertise
+                            <span>View All Skills & Expertise</span>
                             <span className="text-xl group-hover:translate-x-2 transition-transform duration-300">→</span>
                         </Link>
                     </div>
@@ -401,8 +401,8 @@ function Home() {
                                     <h3 className="text-lg font-semibold mb-2 text-blue-300 group-hover:text-blue-400 transition-colors">{project.title}</h3>
                                     <p className="text-slate-400 text-xs mb-3 line-clamp-2">{project.description}</p>
                                     <div className="flex flex-wrap gap-1 mb-3">
-                                        {project.techStack.map((tech, index) => (
-                                            <span key={index} className="inline-flex items-center gap-1 bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs">
+                                        {project.techStack.map((tech) => (
+                                            <span key={`${project.id}-${tech}`} className="inline-flex items-center gap-1 bg-slate-700 text-slate-300 px-2 py-1 rounded text-xs">
                                                 <TechIcon name={tech} className="w-3 h-3 shrink-0" />
                                                 {tech}
                                             </span>

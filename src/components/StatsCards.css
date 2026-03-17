@@ -108,11 +108,13 @@
 .stat-image-wrapper {
     position: relative;
     width: 100%;
+    aspect-ratio: 16 / 9;
     border-radius: 1rem;
     overflow: hidden;
     background: rgba(15, 23, 42, 0.5);
     margin-bottom: 1rem;
     min-height: 200px;
+    max-height: 260px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -120,9 +122,11 @@
 
 .stat-image {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     border-radius: 0.75rem;
+    object-fit: contain;
+    object-position: center;
     opacity: 0;
     transition: opacity 0.6s ease;
 }
