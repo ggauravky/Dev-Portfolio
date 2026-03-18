@@ -297,8 +297,8 @@ function NotFound() {
                                 Projects
                             </Link>
                             <span className="text-slate-600">•</span>
-                            <Link to="/links" className="text-green-400 hover:text-green-300 underline decoration-green-400/30 hover:decoration-green-300 transition-all hover:scale-110 inline-block">
-                                Social Links
+                            <Link to="/contact" className="text-green-400 hover:text-green-300 underline decoration-green-400/30 hover:decoration-green-300 transition-all hover:scale-110 inline-block">
+                                Contact & Platforms
                             </Link>
                         </div>
                     </div>

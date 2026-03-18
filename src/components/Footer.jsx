@@ -15,6 +15,7 @@ function Footer() {
             { name: 'Home', path: '/' },
             { name: 'About', path: '/about' },
             { name: 'Projects', path: '/projects' },
+            { name: 'Services', path: '/services' },
             { name: 'Blog', path: '/blog' },
             { name: 'Skills', path: '/skills' },
             { name: 'Contact', path: '/contact' }
@@ -39,7 +40,8 @@ function Footer() {
         ],
         legal: [
             { name: 'Privacy Policy', path: '/privacy' },
-            { name: 'Terms of Service', path: '/terms' }
+            { name: 'Terms of Service', path: '/terms' },
+            { name: 'Refund Policy', path: '/refund' }
         ]
     }
 
@@ -100,7 +102,7 @@ function Footer() {
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>
+                            </span>{' '}
                             Open for Internships & Freelance
                         </p>
                     </div>
@@ -113,9 +115,9 @@ function Footer() {
                         Connect With Me
                     </h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto">
-                        {footerLinks.social.map((link, index) => (
+                        {footerLinks.social.map((link) => (
                             <a
-                                key={index}
+                                key={link.name}
                                 href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -138,9 +140,9 @@ function Footer() {
                             Quick Navigation
                         </h4>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {footerLinks.quickLinks.map((link, index) => (
+                            {footerLinks.quickLinks.map((link) => (
                                 <Link
-                                    key={index}
+                                    key={link.path}
                                     to={link.path}
                                     className="group text-slate-400 hover:text-blue-400 transition-all duration-300 text-sm sm:text-base hover:translate-x-1 inline-block font-medium relative"
                                 >
@@ -177,9 +179,9 @@ function Footer() {
                     <div className="flex flex-col items-center gap-6 text-center">
                         {/* Legal Links */}
                         <div className="flex flex-wrap gap-6 justify-center text-sm sm:text-base">
-                            {footerLinks.legal.map((link, index) => (
+                            {footerLinks.legal.map((link) => (
                                 <Link
-                                    key={index}
+                                    key={link.path}
                                     to={link.path}
                                     className="text-slate-400 hover:text-blue-400 transition-all duration-200 hover:scale-105 font-medium"
                                 >

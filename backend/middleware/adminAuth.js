@@ -26,7 +26,7 @@ exports.requireAdminKey = (req, res, next) => {
   const provided = req.headers["x-admin-key"];
 
   // Constant-time comparison to prevent timing attacks
-  if (!provided || provided.length !== adminKey.length || !constantTimeEqual(provided, adminKey)) {
+  if (!provided?.length || provided.length !== adminKey.length || !constantTimeEqual(provided, adminKey)) {
     return res.status(401).json({
       success: false,
       message: "Unauthorized.",

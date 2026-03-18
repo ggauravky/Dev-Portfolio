@@ -539,8 +539,8 @@ function Home() {
                             </span>
                             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </Link>
-                        <Link to="/links" className="group border-2 border-cyan-500 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-cyan-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/30 backdrop-blur-sm flex items-center justify-center gap-2">
-                            Social Links
+                        <Link to="/contact" className="group border-2 border-cyan-500 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-cyan-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/30 backdrop-blur-sm flex items-center justify-center gap-2">
+                            All Platforms
                             <svg className="w-5 h-5 shrink-0 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                         </Link>
                     </div>

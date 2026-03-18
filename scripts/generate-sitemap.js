@@ -39,11 +39,21 @@ const staticPages = [
   { path: "/about", priority: "0.8", changefreq: "monthly" },
   { path: "/skills", priority: "0.8", changefreq: "monthly" },
   { path: "/projects", priority: "0.9", changefreq: "weekly" },
+  { path: "/services", priority: "0.9", changefreq: "weekly" },
+  { path: "/booknow", priority: "0.8", changefreq: "weekly" },
+  { path: "/mentorship", priority: "0.8", changefreq: "weekly" },
+  { path: "/resume-review", priority: "0.8", changefreq: "weekly" },
+  { path: "/debugging-help", priority: "0.8", changefreq: "weekly" },
+  { path: "/portfolio-review", priority: "0.8", changefreq: "weekly" },
+  { path: "/frontend-development", priority: "0.8", changefreq: "weekly" },
+  { path: "/backend-development", priority: "0.8", changefreq: "weekly" },
+  { path: "/full-stack-development", priority: "0.8", changefreq: "weekly" },
+  { path: "/ai-data-science-guidance", priority: "0.8", changefreq: "weekly" },
   { path: "/blog", priority: "0.9", changefreq: "daily" },
   { path: "/contact", priority: "0.8", changefreq: "monthly" },
-  { path: "/links", priority: "0.6", changefreq: "monthly" },
   { path: "/privacy", priority: "0.3", changefreq: "yearly" },
   { path: "/terms", priority: "0.3", changefreq: "yearly" },
+  { path: "/refund", priority: "0.3", changefreq: "yearly" },
 ];
 
 // Generate blog post URLs

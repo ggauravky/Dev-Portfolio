@@ -57,3 +57,15 @@ exports.chatRateLimiter = rateLimit({
     });
   },
 });
+
+// Payment route limiter to reduce abuse on order creation and verification
+exports.paymentRateLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: parsePositiveInt(process.env.PAYMENT_RATE_LIMIT_MAX, 15),
+  message: {
+    success: false,
+    message: "Too many payment requests. Please try again shortly.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

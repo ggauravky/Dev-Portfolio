@@ -25,6 +25,7 @@ const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const mlLogRoutes = require("./routes/mlLogRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
@@ -120,6 +121,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ml-log", mlLogRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Root route
 app.get("/", (req, res) => {

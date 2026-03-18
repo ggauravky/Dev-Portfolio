@@ -6,6 +6,50 @@
 
 const { body, validationResult } = require("express-validator");
 
+const getMinBookingDate = () => {
+  const minDate = new Date();
+  minDate.setHours(0, 0, 0, 0);
+  minDate.setDate(minDate.getDate() + 2);
+  return minDate;
+};
+
+const bookingDetailValidationRules = [
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage("Phone number must be a valid 10-digit Indian mobile number"),
+
+  body("preferredDate")
+    .notEmpty()
+    .withMessage("Preferred date is required")
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage("Preferred date must be a valid date in YYYY-MM-DD format")
+    .custom((value) => {
+      const selectedDate = new Date(value);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate < getMinBookingDate()) {
+        throw new Error("Preferred date must be at least 2 days from today");
+      }
+      return true;
+    }),
+
+  body("preferredTime")
+    .trim()
+    .notEmpty()
+    .withMessage("Preferred time is required")
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage("Preferred time must be in HH:MM format"),
+
+  body("projectBrief")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 1200 })
+    .withMessage("Project brief cannot exceed 1200 characters"),
+];
+
 // Validation rules for contact form
 exports.contactValidationRules = [
   body("name")
@@ -14,7 +58,7 @@ exports.contactValidationRules = [
     .withMessage("Name is required")
     .isLength({ min: 2, max: 100 })
     .withMessage("Name must be between 2 and 100 characters")
-    .matches(/^[a-zA-Z\u00C0-\u017F\s'-\.]+$/)
+    .matches(/^[a-zA-Z\u00C0-\u017F\s'-.]+$/)
     .withMessage(
       "Name can only contain letters, spaces, hyphens, apostrophes, and dots"
     ),
@@ -40,6 +84,79 @@ exports.contactValidationRules = [
     .withMessage("Message is required")
     .isLength({ min: 10, max: 2000 })
     .withMessage("Message must be between 10 and 2000 characters"),
+];
+
+exports.paymentCreateOrderValidationRules = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Name must be between 2 and 80 characters"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+
+  body("service")
+    .trim()
+    .notEmpty()
+    .withMessage("Service is required")
+    .isLength({ min: 3, max: 60 })
+    .withMessage("Service is invalid"),
+
+  ...bookingDetailValidationRules,
+];
+
+exports.paymentVerifyValidationRules = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Name must be between 2 and 80 characters"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+
+  body("service")
+    .trim()
+    .notEmpty()
+    .withMessage("Service is required")
+    .isLength({ min: 3, max: 60 })
+    .withMessage("Service is invalid"),
+
+  ...bookingDetailValidationRules,
+
+  body("amount")
+    .notEmpty()
+    .withMessage("Amount is required")
+    .isInt({ min: 1 })
+    .withMessage("Amount must be a valid integer"),
+
+  body("razorpay_order_id")
+    .trim()
+    .notEmpty()
+    .withMessage("Order ID is required"),
+
+  body("razorpay_payment_id")
+    .trim()
+    .notEmpty()
+    .withMessage("Payment ID is required"),
+
+  body("razorpay_signature")
+    .trim()
+    .notEmpty()
+    .withMessage("Payment signature is required"),
 ];
 
 exports.validate = (req, res, next) => {

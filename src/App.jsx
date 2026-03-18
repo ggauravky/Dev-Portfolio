@@ -7,6 +7,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import PropTypes from 'prop-types'
 
 // ─── Copyright watermark — embedded in the compiled bundle ───────────────────
 // Visible in DevTools Console to anyone who inspects the running app.
@@ -49,13 +50,16 @@ const Blog     = lazy(() => _blogChunk)
 const Projects = lazy(() => _projectsChunk)
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
+const Services = lazy(() => import('./pages/Services'))
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
+const BookNow = lazy(() => import('./pages/BookNow'))
 const Lab = lazy(() => import('./pages/Lab'))
 const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
 const MlDemos = lazy(() => import('./pages/lab/MlDemos'))
 const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
-const Links = lazy(() => import('./pages/Links'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
+const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
@@ -83,6 +87,10 @@ function R({ children }) {
     )
 }
 
+R.propTypes = {
+    children: PropTypes.node.isRequired,
+}
+
 function ScrollToTop() {
     const { pathname, hash } = useLocation()
 
@@ -103,11 +111,11 @@ function ScrollToTop() {
 }
 
 // Routes that should render without Navbar / Footer (full-screen layouts)
-const FULL_SCREEN_ROUTES = ['/lab/gaurav-chatbot']
+const FULL_SCREEN_ROUTES = new Set(['/lab/gaurav-chatbot'])
 
 function AppLayout({ children }) {
     const { pathname } = useLocation()
-    const isFullScreen = FULL_SCREEN_ROUTES.includes(pathname)
+    const isFullScreen = FULL_SCREEN_ROUTES.has(pathname)
     const headerRef = useRef(null)
     const [headerHeight, setHeaderHeight] = useState(0)
 
@@ -138,6 +146,10 @@ function AppLayout({ children }) {
     )
 }
 
+AppLayout.propTypes = {
+    children: PropTypes.node.isRequired,
+}
+
 function AnimatedRoutes() {
     const location = useLocation()
     return (
@@ -154,11 +166,22 @@ function AnimatedRoutes() {
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
                 <Route path="/blog"                       element={<R><Blog /></R>} />
                 <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
+                <Route path="/services"                   element={<R><Services /></R>} />
+                <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
+                <Route path="/booknow"                    element={<R><BookNow /></R>} />
+                <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
+                <Route path="/resume-review"              element={<R><ServiceDetail forcedSlug="resume-review" /></R>} />
+                <Route path="/debugging-help"             element={<R><ServiceDetail forcedSlug="debugging-help" /></R>} />
+                <Route path="/portfolio-review"           element={<R><ServiceDetail forcedSlug="portfolio-review" /></R>} />
+                <Route path="/frontend-development"       element={<R><ServiceDetail forcedSlug="frontend-development" /></R>} />
+                <Route path="/backend-development"        element={<R><ServiceDetail forcedSlug="backend-development" /></R>} />
+                <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
+                <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
                 <Route path="/contact"                    element={<R><Contact /></R>} />
-                <Route path="/links"                      element={<R><Links /></R>} />
                 <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />
                 <Route path="/terms"                      element={<R><Terms /></R>} />
+                <Route path="/refund"                     element={<R><Refund /></R>} />
                 <Route path="*"                           element={<R><NotFound /></R>} />
             </Routes>
         </AnimatePresence>
