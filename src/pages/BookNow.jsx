@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { createPaymentOrder, loadRazorpayScript, verifyPayment } from '../services/payment'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
+import { downloadBookingPdf, downloadGreetingCard, formatDateLabel, formatTimeLabel } from '../utils/bookingArtifacts'
 
 const getMinBookDate = () => {
     const date = new Date()
@@ -44,6 +45,8 @@ function BookNow() {
         projectBrief: '',
     })
     const [paying, setPaying] = useState(false)
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+    const [bookingSummary, setBookingSummary] = useState(null)
 
     const currentService = useMemo(
         () => servicesData.find((service) => service.slug === form.service) || selectedService,
@@ -95,13 +98,26 @@ function BookNow() {
                 },
                 handler: async (response) => {
                     try {
-                        await verifyPayment({
+                        const verifyResponse = await verifyPayment({
                             ...payload,
                             amount: orderResponse.data.amount,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         })
+
+                        setBookingSummary({
+                            bookingId: verifyResponse?.data?.bookingId || `BK-${Date.now()}`,
+                            name: payload.name,
+                            email: payload.email,
+                            serviceTitle: verifyResponse?.data?.service || currentService.title,
+                            amount: verifyResponse?.data?.amount || currentService.amount,
+                            preferredDate: payload.preferredDate,
+                            preferredTime: payload.preferredTime,
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                        })
+                        setShowSuccessPopup(true)
 
                         toast.success('Payment successful. Your booking is confirmed.', { id: loadingToast, duration: 5000 })
                         setForm({
@@ -142,6 +158,24 @@ function BookNow() {
                 duration: 6000,
             })
             setPaying(false)
+        }
+    }
+
+    const handleDownloadPdf = async () => {
+        if (!bookingSummary) return
+        try {
+            await downloadBookingPdf(bookingSummary)
+        } catch {
+            toast.error('Unable to generate PDF right now. Please try again.')
+        }
+    }
+
+    const handleDownloadCard = () => {
+        if (!bookingSummary) return
+        try {
+            downloadGreetingCard(bookingSummary)
+        } catch {
+            toast.error('Unable to generate greeting card right now. Please try again.')
         }
     }
 
@@ -318,6 +352,69 @@ function BookNow() {
                     </aside>
                 </div>
             </div>
+
+            {showSuccessPopup && bookingSummary ? (
+                <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 sm:p-6">
+                    <button
+                        type="button"
+                        aria-label="Close success popup"
+                        onClick={() => setShowSuccessPopup(false)}
+                        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+                    />
+
+                    <div className="relative w-full max-w-2xl rounded-3xl border border-cyan-500/25 bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 p-6 sm:p-8 shadow-2xl shadow-black/60">
+                        <div className="absolute -top-12 -right-10 h-36 w-36 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
+                        <div className="absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-blue-500/20 blur-3xl pointer-events-none" />
+
+                        <div className="relative z-10">
+                            <div className="flex items-start justify-between gap-4 mb-5">
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.2em] text-cyan-300 font-semibold">Payment Success</p>
+                                    <h3 className="text-2xl sm:text-3xl font-black text-slate-100 mt-2">You are enrolled successfully</h3>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSuccessPopup(false)}
+                                    className="h-9 w-9 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            <div className="rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4 sm:p-5">
+                                <p className="text-slate-100 text-lg font-semibold">{bookingSummary.serviceTitle}</p>
+                                <div className="grid sm:grid-cols-2 gap-3 mt-4 text-sm">
+                                    <p className="text-slate-300">Booking ID: <span className="text-cyan-300 font-semibold">{bookingSummary.bookingId}</span></p>
+                                    <p className="text-slate-300">Amount Paid: <span className="text-cyan-300 font-semibold">INR {bookingSummary.amount}</span></p>
+                                    <p className="text-slate-300">Preferred Date: <span className="text-blue-300 font-semibold">{formatDateLabel(bookingSummary.preferredDate)}</span></p>
+                                    <p className="text-slate-300">Preferred Time: <span className="text-blue-300 font-semibold">{formatTimeLabel(bookingSummary.preferredTime)}</span></p>
+                                </div>
+                            </div>
+
+                            <div className="mt-5 grid sm:grid-cols-2 gap-3.5">
+                                <button
+                                    type="button"
+                                    onClick={handleDownloadPdf}
+                                    className="inline-flex items-center justify-center rounded-xl px-4 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    Download Booking PDF
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleDownloadCard}
+                                    className="inline-flex items-center justify-center rounded-xl px-4 py-3 font-semibold text-slate-100 border border-slate-600 hover:border-cyan-400/50 hover:text-cyan-300 transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    Download Greeting Card
+                                </button>
+                            </div>
+
+                            <p className="mt-4 text-xs text-slate-400">
+                                Keep these files for future reference. Need any changes in schedule? Reach out from Contact page.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     )
 }
