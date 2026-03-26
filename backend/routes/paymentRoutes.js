@@ -15,6 +15,22 @@ const {
 
 const router = express.Router();
 
+const isPaymentGatewayEnabled = () =>
+  String(process.env.PAYMENT_GATEWAY_ENABLED || "false").trim().toLowerCase() === "true";
+
+const blockIfGatewayDisabled = (req, res, next) => {
+  if (isPaymentGatewayEnabled()) {
+    return next();
+  }
+
+  return res.status(503).json({
+    success: false,
+    message: "Payment gateway is under construction. Please try again later.",
+  });
+};
+
+router.use(blockIfGatewayDisabled);
+
 router.post("/create-order", paymentRateLimiter, paymentCreateOrderValidationRules, validate, createOrder);
 router.post("/verify", paymentRateLimiter, paymentVerifyValidationRules, validate, verifyPayment);
 

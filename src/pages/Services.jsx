@@ -14,8 +14,8 @@ import { servicesData } from '../data/servicesData'
 function Services() {
     useSEO({
         title: 'Services - Work With Me | Gaurav Kumar Yadav',
-        description: 'Book mentorship, resume review, debugging help, portfolio review, and full stack development services with secure Razorpay checkout.',
-        keywords: 'developer services, mentorship, resume review, debugging help, portfolio review, full stack development, Razorpay booking',
+        description: 'Book mentorship, resume review, debugging help, portfolio review, and full stack development services.',
+        keywords: 'developer services, mentorship, resume review, debugging help, portfolio review, full stack development',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
@@ -61,13 +61,13 @@ function Services() {
                             Build With Confidence
                         </h1>
                         <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl">
-                            Real services, transparent pricing, secure Razorpay checkout, and delivery-focused execution.
+                            Real services, transparent pricing, and delivery-focused execution.
                             Explore every service in detail before booking.
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3">
                             <Link
-                                to="/booknow?service=fullstack-development"
+                                to="/payment-under-construction?service=fullstack-development"
                                 className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
                             >
                                 Book Full Stack Service
@@ -106,7 +106,7 @@ function Services() {
                                 </div>
                                 <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
                                     <p className="text-slate-400 text-xs uppercase tracking-widest">Secure Checkout</p>
-                                    <p className="text-2xl font-bold text-purple-300 mt-2">Razorpay</p>
+                                    <p className="text-2xl font-bold text-purple-300 mt-2">Updating</p>
                                 </div>
                                 <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
                                     <p className="text-slate-400 text-xs uppercase tracking-widest">Service Pages</p>
@@ -168,7 +168,7 @@ function Services() {
                             </div>
                             <div className="rounded-2xl border border-emerald-500/20 bg-slate-900/55 p-4 sm:p-5">
                                 <p className="text-emerald-300 text-sm font-bold uppercase tracking-widest mb-2">Secure Process</p>
-                                <p className="text-slate-200 text-sm sm:text-base">Razorpay payment flow, backend validation, and proper booking records in MongoDB.</p>
+                                <p className="text-slate-200 text-sm sm:text-base">Booking flow and delivery communication are being upgraded with reliability in mind.</p>
                             </div>
                         </div>
                     </div>
@@ -211,8 +211,8 @@ function Services() {
 
                                 <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
                                     <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
-                                        <p className="text-cyan-300 font-semibold text-sm mb-1">Razorpay secured</p>
-                                        <p className="text-slate-300 text-sm">Secure payments via Razorpay checkout with encrypted processing.</p>
+                                        <p className="text-cyan-300 font-semibold text-sm mb-1">Gateway Upgrade</p>
+                                        <p className="text-slate-300 text-sm">Payment gateway is currently under construction for a smoother launch.</p>
                                     </div>
                                     <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
                                         <p className="text-blue-300 font-semibold text-sm mb-1">Card data safety</p>
@@ -254,7 +254,7 @@ function Services() {
 
                         <div className="relative z-10 mt-5 flex items-center justify-center lg:justify-start gap-2 text-[11px] sm:text-xs text-slate-400">
                             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                            <span>Secure payment + minimal data handling + verifiable public work</span>
+                            <span>Gateway update + minimal data handling + verifiable public work</span>
                         </div>
                     </div>
                 </ScrollReveal>
@@ -268,7 +268,7 @@ function Services() {
                             Choose any service and review full details before booking. Premium quality, clean delivery, and practical outcomes.
                         </p>
                         <Link
-                            to="/booknow?service=fullstack-development"
+                            to="/payment-under-construction?service=fullstack-development"
                             className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
                         >
                             <span>Book Now</span>

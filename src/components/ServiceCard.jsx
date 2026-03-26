@@ -28,7 +28,7 @@ function ServiceCard({ service, featured = false }) {
             </div>
 
             <p className="text-cyan-300 font-bold text-2xl sm:text-3xl mb-4">{service.priceLabel}</p>
-            <p className="text-slate-400 text-xs mb-4">Secure Razorpay checkout</p>
+            <p className="text-slate-400 text-xs mb-4">Booking gateway update in progress</p>
 
             <ul className="space-y-2.5 mb-6">
                 {service.features.map((feature) => (
@@ -48,7 +48,7 @@ function ServiceCard({ service, featured = false }) {
                 </Link>
 
                 <Link
-                    to={`/booknow?service=${service.slug}`}
+                    to={`/payment-under-construction?service=${service.slug}`}
                     className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-sm sm:text-base text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     <span>Book Now</span>

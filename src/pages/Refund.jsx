@@ -11,7 +11,7 @@ function Refund() {
     useSEO({
         title: 'Refund Policy - Gaurav Kumar Yadav Services',
         description: 'Refund policy for mentorship, review, debugging, and development services booked through this portfolio.',
-        keywords: 'refund policy, cancellation policy, developer services, payment policy, Razorpay payments',
+        keywords: 'refund policy, cancellation policy, developer services, payment policy',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
@@ -70,7 +70,7 @@ function Refund() {
                     <section className="space-y-3 sm:space-y-4">
                         <h2 className="text-xl sm:text-2xl font-bold text-orange-400">Payment Security Note</h2>
                         <p className="text-slate-300">
-                            Payments are processed via Razorpay. This website does not store card or UPI PIN details.
+                            Payment gateway is currently under construction. No card or UPI PIN data is stored on this website.
                         </p>
                     </section>
                 </div>
