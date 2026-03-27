@@ -80,7 +80,7 @@ function Services() {
                             </Link>
                         </div>
 
-                        <div className="flex flex-wrap justify-center gap-2.5 pt-3 max-w-2xl mx-auto">
+                        <div className="flex flex-wrap justify-start gap-2.5 pt-3 max-w-3xl">
                             {allServices.map((service) => (
                                 <Link
                                     key={service.slug}
@@ -109,7 +109,7 @@ function Services() {
                                      <p className="text-2xl font-bold text-purple-300 mt-2">Cashfree</p>
                                 </div>
                                 <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
-                                    <p className="text-slate-400 text-xs uppercase tracking-widest">Service Pages</p>
+                                    <p className="text-slate-400 text-xs uppercase tracking-widest">View Details</p>
                                     <p className="text-2xl font-bold text-emerald-300 mt-2">8 Detailed</p>
                                 </div>
                             </div>

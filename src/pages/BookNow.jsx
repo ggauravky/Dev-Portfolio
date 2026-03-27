@@ -312,10 +312,27 @@ function BookNow() {
                     </Link>
                 </div>
 
+                <div className="mb-6 flex flex-wrap items-center gap-2.5">
+                    <span className="inline-flex items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-300">
+                        Secure Checkout
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                        Instant Booking Confirmation
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                        Invitation + Calendar Download
+                    </span>
+                </div>
+
                 <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
                     <section className="lg:col-span-3 rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-900 p-6 sm:p-8">
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-100">Book a Service</h1>
                         <p className="text-slate-400 mt-2">Fill details and continue with secure Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.</p>
+
+                        <div className="mt-4 rounded-xl border border-slate-700/80 bg-slate-900/45 px-4 py-3">
+                            <p className="text-xs text-slate-400 uppercase tracking-wider">Step 1</p>
+                            <p className="text-sm text-slate-200 mt-1">Share your details and preferred schedule to create a secure payment order.</p>
+                        </div>
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
@@ -436,6 +453,7 @@ function BookNow() {
                     </section>
 
                     <aside className="lg:col-span-2 rounded-3xl border border-cyan-500/20 bg-slate-800/65 p-6 sm:p-7 h-fit sticky top-28">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-300">Booking Summary</p>
                         <h2 className="text-xl sm:text-2xl font-bold text-slate-100">{currentService.title}</h2>
                         <p className="text-cyan-300 text-2xl font-extrabold mt-3">{currentService.priceLabel}</p>
                         <p className="text-xs text-slate-400 mt-2">Gateway status: live via Cashfree</p>

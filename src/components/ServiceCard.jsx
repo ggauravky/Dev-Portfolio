@@ -30,6 +30,8 @@ function ServiceCard({ service, featured = false }) {
             <p className="text-cyan-300 font-bold text-2xl sm:text-3xl mb-4">{service.priceLabel}</p>
             <p className="text-slate-400 text-xs mb-4">Secure checkout via Cashfree (UPI, cards, netbanking, wallets)</p>
 
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-4">{service.summary}</p>
+
             <ul className="space-y-2.5 mb-6">
                 {service.features.map((feature) => (
                     <li key={feature} className="text-slate-300 text-sm sm:text-base flex items-start gap-2">
@@ -39,12 +41,22 @@ function ServiceCard({ service, featured = false }) {
                 ))}
             </ul>
 
+            <div className="mb-5 rounded-xl border border-slate-700/80 bg-slate-900/45 p-3">
+                <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">In View Details</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Deliverables</span>
+                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Best For</span>
+                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Timeline</span>
+                </div>
+            </div>
+
             <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <Link
                     to={service.path}
                     className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-sm sm:text-base text-slate-200 border border-slate-700 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
                 >
-                    View Details
+                    <span>View Details</span>
+                    <span>{'->'}</span>
                 </Link>
 
                 <Link
@@ -64,6 +76,7 @@ ServiceCard.propTypes = {
         slug: PropTypes.string,
         path: PropTypes.string.isRequired,
         title: PropTypes.string.isRequired,
+        summary: PropTypes.string,
         priceLabel: PropTypes.string.isRequired,
         features: PropTypes.arrayOf(PropTypes.string).isRequired,
         badge: PropTypes.string,
