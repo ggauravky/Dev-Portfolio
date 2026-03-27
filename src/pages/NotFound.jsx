@@ -39,8 +39,8 @@ function NotFound() {
         const handleMouseMove = (e) => {
             setMousePosition({ x: e.clientX, y: e.clientY })
         }
-        window.addEventListener('mousemove', handleMouseMove)
-        return () => window.removeEventListener('mousemove', handleMouseMove)
+        globalThis.addEventListener('mousemove', handleMouseMove)
+        return () => globalThis.removeEventListener('mousemove', handleMouseMove)
     }, [])
 
     // Countdown timer
@@ -49,7 +49,7 @@ function NotFound() {
             const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
             return () => clearTimeout(timer)
         } else if (countdown === 0 && !easterEggFound) {
-            window.location.href = '/'
+            globalThis.location.href = '/'
         }
     }, [countdown, easterEggFound])
 
@@ -79,8 +79,8 @@ function NotFound() {
             }
         }
 
-        window.addEventListener('keydown', handleKeyPress)
-        return () => window.removeEventListener('keydown', handleKeyPress)
+        globalThis.addEventListener('keydown', handleKeyPress)
+        return () => globalThis.removeEventListener('keydown', handleKeyPress)
     }, [konami])
 
     // Calculate eye position based on mouse
@@ -88,7 +88,7 @@ function NotFound() {
         const dx = mousePosition.x - eyeX
         const dy = mousePosition.y - eyeY
         const angle = Math.atan2(dy, dx)
-        const distance = Math.min(8, Math.sqrt(dx * dx + dy * dy) / 50)
+        const distance = Math.min(8, Math.hypot(dx, dy) / 50)
         return {
             x: Math.cos(angle) * distance,
             y: Math.sin(angle) * distance
@@ -106,8 +106,9 @@ function NotFound() {
     }
 
     // Safe window check for SSR compatibility
-    const centerX = typeof window !== 'undefined' ? window.innerWidth / 2 : 400
-    const centerY = typeof window !== 'undefined' ? window.innerHeight / 2 : 300
+    const browserWindow = globalThis.window
+    const centerX = browserWindow ? browserWindow.innerWidth / 2 : 400
+    const centerY = browserWindow ? browserWindow.innerHeight / 2 : 300
 
     const leftEye = calculateEyePosition(centerX - 50, centerY - 50)
     const rightEye = calculateEyePosition(centerX + 50, centerY - 50)
@@ -138,15 +139,17 @@ function NotFound() {
 
                 {/* 404 with Eyes */}
                 <div className="mb-8 relative">
-                    <h1
+                    <button
+                        type="button"
                         onClick={handle404Click}
-                        className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none cursor-pointer hover:scale-105 transition-transform duration-300"
+                        className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none cursor-pointer hover:scale-105 transition-transform duration-300 bg-transparent border-0 p-0"
                         title="Click me 5 times 😉"
+                        aria-label="Interactive 404 heading"
                     >
-                        4
+                        {'4'}
                         <span className="relative inline-block">
                             <span className="relative">
-                                0
+                                {'0'}
                                 {/* Eyes */}
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     {/* Left Eye */}
@@ -174,8 +177,8 @@ function NotFound() {
                                 </div>
                             </span>
                         </span>
-                        4
-                    </h1>
+                        {'4'}
+                    </button>
 
                     {/* Glitch Effect Text */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -278,6 +281,7 @@ function NotFound() {
                     <div className="mt-12 pt-8 border-t border-slate-800/50">
                         <p className="text-slate-400 mb-4 flex items-center justify-center gap-2">
                             <span className="text-2xl">🔗</span>
+                            {' '}
                             Maybe you were looking for:
                         </p>
                         <div className="flex flex-wrap justify-center gap-3">
@@ -324,7 +328,7 @@ function NotFound() {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes glitch {
                     0%, 100% { 
                         transform: translate(0); 

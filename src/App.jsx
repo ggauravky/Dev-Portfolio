@@ -194,6 +194,19 @@ function App() {
     // Show splash screen only once per browser session
     const [appReady, setAppReady] = useState(() => !!sessionStorage.getItem('splashShown'))
 
+    // Optional one-time home reload during splash for first-visit visual reset.
+    useEffect(() => {
+        if (appReady) return
+
+        const isHomeRoute = globalThis.location?.pathname === '/'
+        const alreadyReloaded = sessionStorage.getItem('homeSplashReloaded')
+
+        if (isHomeRoute && !alreadyReloaded) {
+            sessionStorage.setItem('homeSplashReloaded', '1')
+            globalThis.location.reload()
+        }
+    }, [appReady])
+
     const handleSplashDone = () => {
         sessionStorage.setItem('splashShown', '1')
         setAppReady(true)
