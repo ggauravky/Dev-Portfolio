@@ -77,10 +77,10 @@ function About() {
                 <div className="mb-8 sm:mb-12 animate-fadeIn">
                     <div className="text-center mb-6 sm:mb-8">
                         <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2">
-                            My Coding Stats
+                            Performance Snapshot
                         </h3>
                         <p className="text-slate-400 text-sm md:text-base">
-                            Consistency is key - Track my journey through numbers
+                            Live coding momentum from GitHub and LeetCode
                         </p>
                     </div>
                     <StatsCards />
