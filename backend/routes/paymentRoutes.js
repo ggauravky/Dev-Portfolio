@@ -16,7 +16,7 @@ const {
 const router = express.Router();
 
 const isPaymentGatewayEnabled = () =>
-  String(process.env.PAYMENT_GATEWAY_ENABLED || "false").trim().toLowerCase() === "true";
+  String(process.env.PAYMENT_GATEWAY_ENABLED || "true").trim().toLowerCase() === "true";
 
 const blockIfGatewayDisabled = (req, res, next) => {
   if (isPaymentGatewayEnabled()) {

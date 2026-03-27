@@ -41,8 +41,8 @@ function ServiceDetail({ forcedSlug = '' }) {
 
     useSEO({
         title: `${service.title} - Gaurav Kumar Yadav Services`,
-        description: `${service.summary} Pricing: ${service.priceLabel}. Booking gateway update in progress.`,
-        keywords: `${service.title}, developer service, ${service.category}, booking update`,
+        description: `${service.summary} Pricing: ${service.priceLabel}. Secure checkout via Cashfree with UPI, cards, and netbanking.`,
+        keywords: `${service.title}, developer service, ${service.category}, secure checkout, cashfree`,
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
@@ -90,10 +90,10 @@ function ServiceDetail({ forcedSlug = '' }) {
                         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-5 sm:p-6">
                             <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">Pricing</p>
                             <p className="text-2xl sm:text-3xl font-extrabold text-cyan-300">{service.priceLabel}</p>
-                            <p className="text-xs text-slate-400 mt-3">Payment gateway is temporarily under construction.</p>
+                            <p className="text-xs text-slate-400 mt-3">Secure checkout via Cashfree. Supports UPI, cards, and netbanking.</p>
                             <div className="mt-5 flex flex-col gap-3">
                                 <Link
-                                    to={`/payment-under-construction?service=${service.slug}`}
+                                    to={`/booknow?service=${service.slug}`}
                                     className="inline-flex justify-center items-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.02]"
                                 >
                                     Book This Service
@@ -150,7 +150,7 @@ function ServiceDetail({ forcedSlug = '' }) {
                     </p>
                     <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                         <Link
-                            to={`/payment-under-construction?service=${service.slug}`}
+                            to={`/booknow?service=${service.slug}`}
                             className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
                         >
                             Book This Service

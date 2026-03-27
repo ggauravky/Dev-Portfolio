@@ -113,12 +113,12 @@ exports.paymentCreateOrderValidationRules = [
 ];
 
 exports.paymentVerifyValidationRules = [
-  body("name")
+  body("orderId")
     .trim()
     .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 80 })
-    .withMessage("Name must be between 2 and 80 characters"),
+    .withMessage("Order ID is required")
+    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
+    .withMessage("Order ID format is invalid"),
 
   body("email")
     .trim()
@@ -127,36 +127,6 @@ exports.paymentVerifyValidationRules = [
     .isEmail()
     .withMessage("Please provide a valid email address")
     .normalizeEmail(),
-
-  body("service")
-    .trim()
-    .notEmpty()
-    .withMessage("Service is required")
-    .isLength({ min: 3, max: 60 })
-    .withMessage("Service is invalid"),
-
-  ...bookingDetailValidationRules,
-
-  body("amount")
-    .notEmpty()
-    .withMessage("Amount is required")
-    .isInt({ min: 1 })
-    .withMessage("Amount must be a valid integer"),
-
-  body("razorpay_order_id")
-    .trim()
-    .notEmpty()
-    .withMessage("Order ID is required"),
-
-  body("razorpay_payment_id")
-    .trim()
-    .notEmpty()
-    .withMessage("Payment ID is required"),
-
-  body("razorpay_signature")
-    .trim()
-    .notEmpty()
-    .withMessage("Payment signature is required"),
 ];
 
 exports.validate = (req, res, next) => {

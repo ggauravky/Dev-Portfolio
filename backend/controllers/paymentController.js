@@ -4,8 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { createHmac, timingSafeEqual } = require("node:crypto");
-const Razorpay = require("razorpay");
+const { randomBytes } = require("node:crypto");
 const Booking = require("../models/Booking");
 const { logger } = require("../utils/logger");
 
@@ -21,23 +20,79 @@ const SERVICE_CATALOG = {
 };
 
 const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
+const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
+const CASHFREE_TIMEOUT_MS = Number.parseInt(process.env.CASHFREE_TIMEOUT_MS, 10) || 12000;
 
-const getRazorpayClient = () => {
-  const keyId = String(process.env.RAZORPAY_KEY_ID || "").trim();
-  const keySecret = String(process.env.RAZORPAY_KEY_SECRET || "").trim();
+const getCashfreeBaseUrl = () => {
+  const mode = String(process.env.CASHFREE_ENV || "SANDBOX").trim().toUpperCase();
+  return mode === "PRODUCTION"
+    ? "https://api.cashfree.com"
+    : "https://sandbox.cashfree.com";
+};
 
-  if (!keyId || !keySecret) {
-    const configError = new Error("Razorpay keys are missing in environment variables");
+const getCashfreeConfig = () => {
+  const appId = String(process.env.CASHFREE_APP_ID || "").trim();
+  const secretKey = String(process.env.CASHFREE_SECRET_KEY || "").trim();
+
+  if (!appId || !secretKey) {
+    const configError = new Error("Cashfree credentials are missing in environment variables");
     configError.code = PAYMENT_CONFIG_ERROR_CODE;
     throw configError;
   }
 
   return {
-    keyId,
-    keySecret,
-    client: new Razorpay({ key_id: keyId, key_secret: keySecret }),
+    appId,
+    secretKey,
+    baseUrl: getCashfreeBaseUrl(),
   };
 };
+
+const callCashfreeApi = async ({ method, endpoint, body, config }) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), CASHFREE_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${config.baseUrl}${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-version": CASHFREE_API_VERSION,
+        "x-client-id": config.appId,
+        "x-client-secret": config.secretKey,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+
+    let json = null;
+    try {
+      json = await response.json();
+    } catch {
+      json = null;
+    }
+
+    if (!response.ok) {
+      const err = new Error(
+        json?.message || json?.error_description || `Cashfree API error: ${response.status}`
+      );
+      err.statusCode = response.status;
+      err.response = json;
+      throw err;
+    }
+
+    return json;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const toCustomerId = (email) =>
+  `cust_${String(email || "")
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]/g, "")
+    .slice(0, 24)}_${Date.now().toString(36)}`;
+
+const createOrderId = () => `svc_${Date.now()}_${randomBytes(3).toString("hex")}`;
 
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
 
@@ -46,27 +101,27 @@ const mapGatewayError = (error, fallbackMessage) => {
     return {
       status: 503,
       message:
-        "Payment service is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend .env.",
+          "Payment service is not configured. Set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in backend .env.",
       logLevel: "warn",
     };
   }
 
-  const razorpayStatus =
+  const gatewayStatus =
     Number(error?.statusCode) ||
     Number(error?.response?.status) ||
     Number(error?.error?.status_code);
 
-  if (Number.isFinite(razorpayStatus)) {
-    if (razorpayStatus === 401 || razorpayStatus === 403) {
+  if (Number.isFinite(gatewayStatus)) {
+    if (gatewayStatus === 401 || gatewayStatus === 403) {
       return {
         status: 502,
         message:
-          "Payment gateway authentication failed. Verify Razorpay key ID and secret for the correct mode.",
+          "Payment gateway authentication failed. Verify Cashfree app ID and secret for the correct mode.",
         logLevel: "error",
       };
     }
 
-    if (razorpayStatus >= 400 && razorpayStatus < 500) {
+    if (gatewayStatus >= 400 && gatewayStatus < 500) {
       return {
         status: 400,
         message: "Payment request was rejected by gateway. Please retry with valid details.",
@@ -102,45 +157,80 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const { keyId, client } = getRazorpayClient();
+    const config = getCashfreeConfig();
 
-    const amountInPaise = selectedService.amount * 100;
-    const receipt = `svc_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const serviceSlug = String(service || "").trim();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const orderId = createOrderId();
 
-    const order = await client.orders.create({
-      amount: amountInPaise,
-      currency: "INR",
-      receipt,
-      notes: {
-        customer_name: String(name || "").trim(),
-        customer_email: String(email || "").trim().toLowerCase(),
-        customer_phone: String(phone || "").trim(),
-        service_slug: String(service || "").trim(),
-        preferred_date: String(preferredDate || "").trim(),
-        preferred_time: String(preferredTime || "").trim(),
-        project_brief: String(projectBrief || "").trim().slice(0, 500),
+    const frontendUrl = String(process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
+
+    const order = await callCashfreeApi({
+      method: "POST",
+      endpoint: "/pg/orders",
+      config,
+      body: {
+        order_id: orderId,
+        order_amount: selectedService.amount,
+        order_currency: "INR",
+        order_note: `${selectedService.title} booking`,
+        customer_details: {
+          customer_id: toCustomerId(normalizedEmail),
+          customer_name: String(name || "").trim(),
+          customer_email: normalizedEmail,
+          customer_phone: String(phone || "").trim(),
+        },
+        order_tags: {
+          service_slug: serviceSlug,
+          preferred_date: String(preferredDate || "").trim(),
+          preferred_time: String(preferredTime || "").trim(),
+        },
+        ...(frontendUrl
+          ? {
+              order_meta: {
+                return_url: `${frontendUrl}/booknow`,
+              },
+            }
+          : {}),
       },
+    });
+
+    await Booking.create({
+      name: String(name || "").trim(),
+      email: normalizedEmail,
+      phone: String(phone || "").trim(),
+      serviceSlug,
+      service: selectedService.title,
+      preferredDate: new Date(preferredDate),
+      preferredTime: String(preferredTime || "").trim(),
+      projectBrief: String(projectBrief || "").trim(),
+      amount: selectedService.amount,
+      orderId,
+      paymentProvider: "cashfree",
+      paymentStatus: "created",
+      date: new Date(),
     });
 
     reqLogger.info(
       {
-        orderId: order.id,
-        amountInPaise,
+        orderId,
+        amount: selectedService.amount,
         service,
         preferredDate,
         preferredTime,
       },
-      "Razorpay order created"
+      "Cashfree order created"
     );
 
     return res.status(201).json({
       success: true,
       message: "Order created successfully",
       data: {
-        orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        keyId,
+        orderId,
+        amount: selectedService.amount,
+        currency: "INR",
+        paymentSessionId: order.payment_session_id,
+        environment: String(process.env.CASHFREE_ENV || "SANDBOX").trim().toLowerCase(),
         serviceTitle: selectedService.title,
       },
     });
@@ -166,98 +256,129 @@ exports.verifyPayment = async (req, res) => {
   const reqLogger = req.log || logger;
 
   try {
-    const {
-      name,
-      email,
-      phone,
-      service,
-      preferredDate,
-      preferredTime,
-      projectBrief,
-      amount,
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = req.body;
+    const { orderId, email } = req.body;
+    const normalizedOrderId = String(orderId || "").trim();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    const selectedService = getService(service);
-    if (!selectedService) {
+    const draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
+    if (!draftBooking) {
       return res.status(400).json({
         success: false,
-        message: "Selected service is invalid",
+        message: "Payment order not found",
       });
     }
 
-    if (Number(amount) !== selectedService.amount * 100) {
-      return res.status(400).json({
+    if (String(draftBooking.email || "").toLowerCase() !== normalizedEmail) {
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+        },
+        "Payment verification rejected due to email mismatch"
+      );
+
+      return res.status(403).json({
         success: false,
-        message: "Payment amount mismatch",
+        message: "Verification details do not match this order",
       });
     }
 
-    const { keySecret, client } = getRazorpayClient();
+    if (draftBooking.paymentStatus === "paid") {
+      return res.status(200).json({
+        success: true,
+        message: "Payment already verified",
+        data: {
+          bookingId: draftBooking._id,
+          service: draftBooking.service,
+          amount: draftBooking.amount,
+        },
+      });
+    }
 
-    const razorpayOrder = await client.orders.fetch(String(razorpay_order_id));
-    if (!razorpayOrder?.id) {
+    const selectedService = getService(draftBooking.serviceSlug);
+    if (!selectedService || selectedService?.amount !== draftBooking.amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking details mismatch",
+      });
+    }
+
+    const config = getCashfreeConfig();
+
+    const cashfreeOrder = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}`,
+      config,
+    });
+
+    if (!cashfreeOrder?.order_id) {
       return res.status(400).json({
         success: false,
         message: "Unable to validate payment order details",
       });
     }
 
-    if (Number(razorpayOrder.amount) !== selectedService.amount * 100) {
+    if (Number(cashfreeOrder.order_amount) !== selectedService.amount) {
       return res.status(400).json({
         success: false,
         message: "Order amount does not match selected service",
       });
     }
 
-    if (String(razorpayOrder.currency || "").toUpperCase() !== "INR") {
+    if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
       return res.status(400).json({
         success: false,
         message: "Order currency is invalid",
       });
     }
 
-    const orderServiceSlug = String(razorpayOrder.notes?.service_slug || "").trim();
-    if (orderServiceSlug && orderServiceSlug !== String(service || "").trim()) {
+    const orderServiceSlug = String(cashfreeOrder.order_tags?.service_slug || "").trim();
+    if (orderServiceSlug && orderServiceSlug !== draftBooking.serviceSlug) {
       return res.status(400).json({
         success: false,
         message: "Order service does not match selected service",
       });
     }
 
-    const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const paymentList = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}/payments`,
+      config,
+    });
 
-    const expectedSignature = createHmac("sha256", keySecret)
-      .update(payload)
-      .digest("hex");
+    const successfulPayment = (Array.isArray(paymentList) ? paymentList : []).find(
+      (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
+    );
 
-    const expected = Buffer.from(expectedSignature, "utf8");
-    const received = Buffer.from(String(razorpay_signature), "utf8");
+    if (!successfulPayment) {
+      await Booking.updateOne(
+        { _id: draftBooking._id },
+        {
+          $set: {
+            paymentStatus: String(cashfreeOrder.order_status || "").toLowerCase() || "pending",
+          },
+        }
+      );
 
-    if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
-      reqLogger.warn({ razorpay_order_id, razorpay_payment_id }, "Invalid payment signature");
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "Payment signature verification failed",
+        message: "Payment is not completed yet",
       });
     }
 
-    const booking = await Booking.create({
-      name: String(name || "").trim(),
-      email: String(email || "").trim().toLowerCase(),
-      phone: String(phone || "").trim(),
-      serviceSlug: String(service || "").trim(),
-      service: selectedService.title,
-      preferredDate: new Date(preferredDate),
-      preferredTime: String(preferredTime || "").trim(),
-      projectBrief: String(projectBrief || "").trim(),
-      amount: selectedService.amount,
-      paymentId: String(razorpay_payment_id),
-      orderId: String(razorpay_order_id),
-      date: new Date(),
-    });
+    const booking = await Booking.findOneAndUpdate(
+      { _id: draftBooking._id },
+      {
+        $set: {
+          paymentStatus: "paid",
+          paymentId:
+            String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
+            `cf_${normalizedOrderId}`,
+          paymentProvider: "cashfree",
+          paidAt: new Date(),
+        },
+      },
+      { new: true }
+    );
 
     reqLogger.info(
       {

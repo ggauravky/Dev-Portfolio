@@ -63,8 +63,9 @@ const bookingSchema = new mongoose.Schema(
     },
     paymentId: {
       type: String,
-      required: [true, "Payment ID is required"],
+      required: false,
       trim: true,
+      sparse: true,
       unique: true,
       index: true,
     },
@@ -72,6 +73,24 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, "Order ID is required"],
       trim: true,
+      unique: true,
+      index: true,
+    },
+    paymentProvider: {
+      type: String,
+      trim: true,
+      enum: ["cashfree", "razorpay"],
+      default: "cashfree",
+    },
+    paymentStatus: {
+      type: String,
+      trim: true,
+      enum: ["created", "pending", "paid", "failed"],
+      default: "created",
+      index: true,
+    },
+    paidAt: {
+      type: Date,
     },
     date: {
       type: Date,

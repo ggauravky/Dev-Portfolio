@@ -4,10 +4,12 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
+import { createCashfreeOrder, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
 
 const getMinBookDate = () => {
     const date = new Date()
@@ -26,8 +28,8 @@ function BookNow() {
 
     useSEO({
         title: `Book Now - ${selectedService.title} | Gaurav Kumar Yadav`,
-        description: 'Booking request form. Payment gateway is currently under construction.',
-        keywords: 'book service, booking request, payment under construction',
+        description: 'Secure service booking with Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.',
+        keywords: 'book service, cashfree payment, secure checkout, upi payment',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
@@ -42,6 +44,10 @@ function BookNow() {
         preferredTime: '10:00',
         projectBrief: '',
     })
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [paymentSuccess, setPaymentSuccess] = useState(null)
+
+    const pendingOrderKey = 'pendingCashfreeOrder'
 
     const currentService = useMemo(
         () => servicesData.find((service) => service.slug === form.service) || selectedService,
@@ -53,15 +59,244 @@ function BookNow() {
         setForm((prev) => ({ ...prev, [name]: value }))
     }
 
+    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+    const downloadBlob = (content, filename, mimeType) => {
+        const blob = new Blob([content], { type: mimeType })
+        const url = URL.createObjectURL(blob)
+        const link = globalThis.document.createElement('a')
+        link.href = url
+        link.download = filename
+        globalThis.document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+    }
+
+    const formatDateForDisplay = (dateString) => {
+        const value = new Date(dateString)
+        if (Number.isNaN(value.getTime())) {
+            return dateString
+        }
+        return value.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        })
+    }
+
+    const escapeHtml = (value) =>
+        String(value || '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;')
+
+    const downloadInvitationCard = (details) => {
+                const safeName = escapeHtml(details.name)
+                const safeService = escapeHtml(details.service)
+                const safeDate = escapeHtml(formatDateForDisplay(details.preferredDate))
+                const safeTime = escapeHtml(details.preferredTime)
+                const safeAmount = escapeHtml(details.amount)
+                const safeOrderId = escapeHtml(details.orderId)
+                const safePaymentId = escapeHtml(details.paymentId)
+                const safeEmail = escapeHtml(details.email)
+                const safeBrief = escapeHtml(details.projectBrief || 'Not provided')
+
+        const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Booking Invitation</title>
+    <style>
+      body { font-family: Arial, sans-serif; background:#0f172a; color:#e2e8f0; padding:20px; }
+      .card { max-width:620px; margin:0 auto; border:1px solid #334155; border-radius:16px; padding:24px; background:#111827; }
+      h1 { color:#22d3ee; margin:0 0 10px 0; }
+      p { margin:8px 0; line-height:1.5; }
+      .meta { color:#94a3b8; font-size:14px; }
+      .tag { display:inline-block; padding:6px 12px; border-radius:999px; background:#0f2740; color:#7dd3fc; border:1px solid #164e63; font-size:12px; margin-bottom:16px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="tag">Booking Confirmed</div>
+            <h1>${safeService}</h1>
+            <p>Hi ${safeName}, your booking request has been confirmed successfully.</p>
+            <p><strong>Date:</strong> ${safeDate}</p>
+            <p><strong>Time:</strong> ${safeTime}</p>
+            <p><strong>Amount Paid:</strong> INR ${safeAmount}</p>
+            <p><strong>Order ID:</strong> ${safeOrderId}</p>
+            <p><strong>Payment ID:</strong> ${safePaymentId}</p>
+            <p><strong>Email:</strong> ${safeEmail}</p>
+            <p class="meta">Project Brief: ${safeBrief}</p>
+      <p class="meta">Thanks for booking with Gaurav Kumar Yadav.</p>
+    </div>
+  </body>
+</html>`
+
+        downloadBlob(html, `booking-invitation-${details.orderId}.html`, 'text/html;charset=utf-8')
+    }
+
+    const downloadCalendarInvite = (details) => {
+        const [hours, minutes] = String(details.preferredTime || '10:00').split(':').map((value) => Number.parseInt(value, 10) || 0)
+        const start = new Date(details.preferredDate)
+        start.setHours(hours, minutes, 0, 0)
+        const end = new Date(start.getTime() + 60 * 60 * 1000)
+
+        const toUtc = (value) =>
+            value
+                .toISOString()
+                .replaceAll('-', '')
+                .replaceAll(':', '')
+                .replaceAll('.000', '')
+
+        const ics = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Gaurav Kumar Yadav//Service Booking//EN',
+            'BEGIN:VEVENT',
+            `UID:${details.orderId}@ggauravky.vercel.app`,
+            `DTSTAMP:${toUtc(new Date())}`,
+            `DTSTART:${toUtc(start)}`,
+            `DTEND:${toUtc(end)}`,
+            `SUMMARY:${details.service} - Booking Session`,
+            `DESCRIPTION:Booking ID ${details.orderId} | Payment ID ${details.paymentId}`,
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ].join('\r\n')
+
+        downloadBlob(ics, `booking-calendar-${details.orderId}.ics`, 'text/calendar;charset=utf-8')
+    }
+
+    const finalizeOrderVerification = async (orderId, pendingDetails, options = {}) => {
+        const { silent = false } = options
+
+        for (let attempt = 0; attempt < 5; attempt += 1) {
+            try {
+                const verification = await verifyCashfreePayment(orderId, pendingDetails.email)
+                const mergedDetails = {
+                    ...pendingDetails,
+                    bookingId: verification.bookingId,
+                    amount: verification.amount,
+                    service: verification.service,
+                    paymentId: pendingDetails.paymentId || `cf_${orderId}`,
+                }
+                setPaymentSuccess(mergedDetails)
+                sessionStorage.removeItem(pendingOrderKey)
+                if (!silent) {
+                    toast.success('Payment verified and booking confirmed')
+                }
+                return true
+            } catch (error) {
+                const message = String(error?.message || '')
+                if (/not completed yet/i.test(message) && attempt < 4) {
+                    await pause(1800)
+                    continue
+                }
+
+                if (!silent) {
+                    toast.error(message || 'Payment verification failed')
+                }
+                return false
+            }
+        }
+
+        if (!silent) {
+            toast.error('Payment verification timed out. Please contact support with your order ID.')
+        }
+        return false
+    }
+
+    const copyConfirmationSummary = async (details) => {
+        const summary = [
+            'Booking Confirmation',
+            `Service: ${details.service}`,
+            `Date: ${formatDateForDisplay(details.preferredDate)}`,
+            `Time: ${details.preferredTime}`,
+            `Order ID: ${details.orderId}`,
+            `Booking ID: ${details.bookingId}`,
+            `Payment ID: ${details.paymentId}`,
+            `Amount Paid: INR ${details.amount}`,
+        ].join('\n')
+
+        try {
+            await navigator.clipboard.writeText(summary)
+            toast.success('Booking details copied')
+        } catch {
+            toast.error('Unable to copy details on this browser')
+        }
+    }
+
+    useEffect(() => {
+        const pendingOrderRaw = sessionStorage.getItem(pendingOrderKey)
+        if (!pendingOrderRaw) {
+            return
+        }
+
+        let pending = null
+        try {
+            pending = JSON.parse(pendingOrderRaw)
+        } catch {
+            pending = null
+        }
+
+        if (!pending?.orderId) {
+            sessionStorage.removeItem(pendingOrderKey)
+            return
+        }
+
+        finalizeOrderVerification(pending.orderId, pending, { silent: true })
+    }, [])
+
     const handleSubmit = (event) => {
         event.preventDefault()
-        const search = new URLSearchParams({
-            service: currentService.slug,
-            name: form.name,
-            date: form.preferredDate,
-            time: form.preferredTime,
-        })
-        navigate(`/payment-under-construction?${search.toString()}`)
+
+        const runCheckout = async () => {
+            setIsSubmitting(true)
+
+            try {
+                const order = await createCashfreeOrder({
+                    ...form,
+                    service: currentService.slug,
+                })
+
+                const pending = {
+                    orderId: order.orderId,
+                    paymentId: '',
+                    name: form.name,
+                    email: form.email,
+                    service: order.serviceTitle,
+                    preferredDate: form.preferredDate,
+                    preferredTime: form.preferredTime,
+                    projectBrief: form.projectBrief,
+                    amount: currentService.amount,
+                }
+                sessionStorage.setItem(pendingOrderKey, JSON.stringify(pending))
+
+                const checkoutResult = await openCashfreeCheckout({
+                    paymentSessionId: order.paymentSessionId,
+                    environment: order.environment,
+                })
+
+                if (checkoutResult?.error) {
+                    throw new Error(checkoutResult.error.message || 'Payment was cancelled or failed')
+                }
+
+                if (checkoutResult?.paymentDetails?.cf_payment_id) {
+                    pending.paymentId = String(checkoutResult.paymentDetails.cf_payment_id)
+                    sessionStorage.setItem(pendingOrderKey, JSON.stringify(pending))
+                }
+
+                await finalizeOrderVerification(order.orderId, pending)
+            } catch (error) {
+                toast.error(error?.message || 'Unable to start secure checkout')
+            } finally {
+                setIsSubmitting(false)
+            }
+        }
+
+        runCheckout()
     }
 
     return (
@@ -80,7 +315,7 @@ function BookNow() {
                 <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
                     <section className="lg:col-span-3 rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-900 p-6 sm:p-8">
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-100">Book a Service</h1>
-                        <p className="text-slate-400 mt-2">Fill details and continue. Payment gateway is currently under construction.</p>
+                        <p className="text-slate-400 mt-2">Fill details and continue with secure Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.</p>
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
@@ -192,9 +427,10 @@ function BookNow() {
 
                             <button
                                 type="submit"
+                                disabled={isSubmitting}
                                 className="w-full rounded-xl px-5 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.01]"
                             >
-                                Proceed to Payment Gateway
+                                {isSubmitting ? 'Starting Secure Checkout...' : 'Proceed to Secure Checkout'}
                             </button>
                         </form>
                     </section>
@@ -202,7 +438,7 @@ function BookNow() {
                     <aside className="lg:col-span-2 rounded-3xl border border-cyan-500/20 bg-slate-800/65 p-6 sm:p-7 h-fit sticky top-28">
                         <h2 className="text-xl sm:text-2xl font-bold text-slate-100">{currentService.title}</h2>
                         <p className="text-cyan-300 text-2xl font-extrabold mt-3">{currentService.priceLabel}</p>
-                        <p className="text-xs text-slate-400 mt-2">Gateway status: under construction</p>
+                        <p className="text-xs text-slate-400 mt-2">Gateway status: live via Cashfree</p>
 
                         <ul className="mt-5 space-y-3">
                             {currentService.features.slice(0, 3).map((item) => (
@@ -216,9 +452,9 @@ function BookNow() {
                         <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/60 p-4">
                             <p className="text-sm text-slate-200">Current update</p>
                             <ul className="mt-2 space-y-2 text-xs text-slate-400">
-                                <li>Payment gateway integration is paused</li>
-                                <li>You will be redirected to an under construction page</li>
-                                <li>Use Contact page for direct updates</li>
+                                <li>Server-side order creation and verification enabled</li>
+                                <li>Supports UPI, cards, netbanking, wallets, and pay later</li>
+                                <li>No card or UPI PIN data is stored on this website</li>
                             </ul>
                         </div>
 
@@ -232,6 +468,95 @@ function BookNow() {
                         </div>
                     </aside>
                 </div>
+
+                {paymentSuccess ? (
+                    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm px-4 py-8 overflow-y-auto">
+                        <div className="relative max-w-2xl mx-auto overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8">
+                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-emerald-500/20 blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-cyan-500/20 blur-3xl" />
+
+                            <div className="relative">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest uppercase text-emerald-200">
+                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-200">OK</span>
+                                    <span>Payment Confirmed</span>
+                                </div>
+
+                                <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100">Your Booking Is Confirmed</h2>
+                                <p className="mt-2 text-slate-300 text-sm sm:text-base">
+                                    Payment verification is complete. Save your invitation and calendar file to keep session details handy.
+                                </p>
+
+                                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
+                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Service</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-100">{paymentSuccess.service}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
+                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Session Date</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-100">{formatDateForDisplay(paymentSuccess.preferredDate)}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
+                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Session Time</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-100">{paymentSuccess.preferredTime}</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300">
+                                    <p><span className="text-slate-400">Order ID:</span> {paymentSuccess.orderId}</p>
+                                    <p><span className="text-slate-400">Booking ID:</span> {paymentSuccess.bookingId}</p>
+                                    <p><span className="text-slate-400">Payment ID:</span> {paymentSuccess.paymentId}</p>
+                                </div>
+
+                                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadInvitationCard(paymentSuccess)}
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                    >
+                                        Download Invitation Pass
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadCalendarInvite(paymentSuccess)}
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                    >
+                                        Download Calendar File
+                                    </button>
+                                </div>
+
+                                <div className="mt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => copyConfirmationSummary(paymentSuccess)}
+                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors"
+                                    >
+                                        Copy Booking Details
+                                    </button>
+                                </div>
+
+                                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setPaymentSuccess(null)
+                                            setForm((prev) => ({ ...prev, projectBrief: '' }))
+                                        }}
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/services')}
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                                    >
+                                        Explore More Services
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : null}
             </div>
         </div>
     )
