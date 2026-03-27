@@ -122,6 +122,25 @@ const toCustomerId = (email) =>
     .slice(0, 24)}_${Date.now().toString(36)}`;
 
 const createOrderId = () => `svc_${Date.now()}_${randomBytes(3).toString("hex")}`;
+const createPendingPaymentId = (orderId) => `pending_${String(orderId || "").trim()}`;
+
+const normalizeIndianPhone = (value) => {
+  const digits = String(value || "").replace(/\D/g, "");
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+};
+
+const normalizePreferredDate = (value) => {
+  const raw = String(value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    return raw;
+  }
+  return new Date().toISOString().slice(0, 10);
+};
+
+const normalizePreferredTime = (value) => {
+  const raw = String(value || "").trim();
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(raw) ? raw : "10:00";
+};
 
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
 
@@ -157,6 +176,14 @@ const mapGatewayError = (error, fallbackMessage) => {
       status: 502,
       message: "Payment gateway network is temporarily unavailable. Please try again shortly.",
       logLevel: "error",
+    };
+  }
+
+  if (Number(error?.code) === 11000) {
+    return {
+      status: 409,
+      message: "A booking conflict occurred while creating payment order. Please retry once.",
+      logLevel: "warn",
     };
   }
 
@@ -249,21 +276,45 @@ exports.createOrder = async (req, res) => {
       },
     });
 
-    await Booking.create({
-      name: String(name || "").trim(),
-      email: normalizedEmail,
-      phone: String(phone || "").trim(),
-      serviceSlug,
-      service: selectedService.title,
-      preferredDate: new Date(preferredDate),
-      preferredTime: String(preferredTime || "").trim(),
-      projectBrief: String(projectBrief || "").trim(),
-      amount: selectedService.amount,
-      orderId,
-      paymentProvider: "cashfree",
-      paymentStatus: "created",
-      date: new Date(),
-    });
+    try {
+      await Booking.findOneAndUpdate(
+        { orderId },
+        {
+          $set: {
+            name: String(name || "").trim(),
+            email: normalizedEmail,
+            phone: normalizeIndianPhone(phone),
+            serviceSlug,
+            service: selectedService.title,
+            preferredDate: new Date(preferredDate),
+            preferredTime: normalizePreferredTime(preferredTime),
+            projectBrief: String(projectBrief || "").trim(),
+            amount: selectedService.amount,
+            paymentProvider: "cashfree",
+            paymentStatus: "created",
+            // Keep a unique placeholder to avoid legacy non-sparse paymentId index conflicts.
+            paymentId: createPendingPaymentId(orderId),
+            date: new Date(),
+          },
+          $setOnInsert: {
+            orderId,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          runValidators: true,
+        }
+      );
+    } catch (dbError) {
+      reqLogger.warn(
+        {
+          err: dbError,
+          orderId,
+        },
+        "Draft booking persistence failed during create-order; continuing with gateway order"
+      );
+    }
 
     reqLogger.info(
       {
@@ -314,29 +365,9 @@ exports.verifyPayment = async (req, res) => {
     const normalizedOrderId = String(orderId || "").trim();
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    const draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
-    if (!draftBooking) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment order not found",
-      });
-    }
+    let draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
 
-    if (String(draftBooking.email || "").toLowerCase() !== normalizedEmail) {
-      reqLogger.warn(
-        {
-          orderId: normalizedOrderId,
-        },
-        "Payment verification rejected due to email mismatch"
-      );
-
-      return res.status(403).json({
-        success: false,
-        message: "Verification details do not match this order",
-      });
-    }
-
-    if (draftBooking.paymentStatus === "paid") {
+    if (draftBooking?.paymentStatus === "paid") {
       return res.status(200).json({
         success: true,
         message: "Payment already verified",
@@ -345,14 +376,6 @@ exports.verifyPayment = async (req, res) => {
           service: draftBooking.service,
           amount: draftBooking.amount,
         },
-      });
-    }
-
-    const selectedService = getService(draftBooking.serviceSlug);
-    if (!selectedService || selectedService?.amount !== draftBooking.amount) {
-      return res.status(400).json({
-        success: false,
-        message: "Booking details mismatch",
       });
     }
 
@@ -371,6 +394,33 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
+    const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
+      .trim()
+      .toLowerCase();
+
+    if (orderEmail && orderEmail !== normalizedEmail) {
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+        },
+        "Payment verification rejected due to email mismatch"
+      );
+
+      return res.status(403).json({
+        success: false,
+        message: "Verification details do not match this order",
+      });
+    }
+
+    const orderServiceSlug = String(cashfreeOrder.order_tags?.service_slug || "").trim();
+    const selectedService = getService(draftBooking?.serviceSlug || orderServiceSlug);
+    if (!selectedService) {
+      return res.status(400).json({
+        success: false,
+        message: "Order service is invalid",
+      });
+    }
+
     if (Number(cashfreeOrder.order_amount) !== selectedService.amount) {
       return res.status(400).json({
         success: false,
@@ -385,12 +435,49 @@ exports.verifyPayment = async (req, res) => {
       });
     }
 
-    const orderServiceSlug = String(cashfreeOrder.order_tags?.service_slug || "").trim();
-    if (orderServiceSlug && orderServiceSlug !== draftBooking.serviceSlug) {
+    if (draftBooking && selectedService?.amount !== draftBooking.amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking details mismatch",
+      });
+    }
+
+    if (draftBooking && orderServiceSlug && orderServiceSlug !== draftBooking.serviceSlug) {
       return res.status(400).json({
         success: false,
         message: "Order service does not match selected service",
       });
+    }
+
+    if (!draftBooking) {
+      draftBooking = await Booking.findOneAndUpdate(
+        { orderId: normalizedOrderId },
+        {
+          $set: {
+            name: String(cashfreeOrder.customer_details?.customer_name || "Customer").trim() || "Customer",
+            email: orderEmail || normalizedEmail,
+            phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
+            serviceSlug: orderServiceSlug,
+            service: selectedService.title,
+            preferredDate: new Date(normalizePreferredDate(cashfreeOrder.order_tags?.preferred_date)),
+            preferredTime: normalizePreferredTime(cashfreeOrder.order_tags?.preferred_time),
+            projectBrief: "",
+            amount: selectedService.amount,
+            paymentProvider: "cashfree",
+            paymentStatus: String(cashfreeOrder.order_status || "created").toLowerCase() || "created",
+            paymentId: createPendingPaymentId(normalizedOrderId),
+            date: new Date(),
+          },
+          $setOnInsert: {
+            orderId: normalizedOrderId,
+          },
+        },
+        {
+          new: true,
+          upsert: true,
+          runValidators: true,
+        }
+      );
     }
 
     const paymentList = await callCashfreeApi({
@@ -405,7 +492,7 @@ exports.verifyPayment = async (req, res) => {
 
     if (!successfulPayment) {
       await Booking.updateOne(
-        { _id: draftBooking._id },
+        { orderId: normalizedOrderId },
         {
           $set: {
             paymentStatus: String(cashfreeOrder.order_status || "").toLowerCase() || "pending",
@@ -420,7 +507,7 @@ exports.verifyPayment = async (req, res) => {
     }
 
     const booking = await Booking.findOneAndUpdate(
-      { _id: draftBooking._id },
+      { orderId: normalizedOrderId },
       {
         $set: {
           paymentStatus: "paid",
