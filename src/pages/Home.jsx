@@ -11,7 +11,6 @@ import { blogsData } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
-import StatsCards from '../components/StatsCards'
 import ScrollReveal from '../components/ScrollReveal'
 import TechIcon from '../components/TechIcon'
 
@@ -257,13 +256,57 @@ function Home() {
                     <div className="mt-16 mb-12 animate-fadeIn">
                         <div className="text-center mb-8">
                             <h3 className="text-2xl md:text-3xl font-bold text-transparent bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text mb-2">
-                                Coding Journey
+                                Coding Consistency Showcase
                             </h3>
                             <p className="text-slate-400 text-sm md:text-base">
-                                Consistent practice & problem-solving every day
+                                Live cards from your public profiles
                             </p>
                         </div>
-                        <StatsCards />
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <a
+                                href="https://github.com/ggauravky"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group rounded-2xl border border-slate-800 bg-slate-900/70 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10"
+                                aria-label="Open GitHub profile"
+                            >
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-cyan-300">GitHub Streak</h3>
+                                    <span className="text-sm text-slate-400 group-hover:text-cyan-300">Open ↗</span>
+                                </div>
+                                <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-2">
+                                    <img
+                                        src="https://streak-stats.demolab.com/?user=ggauravky&theme=dark&hide_border=true"
+                                        alt="GitHub streak stats for ggauravky"
+                                        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                </div>
+                            </a>
+
+                            <a
+                                href="https://leetcode.com/u/gauravky/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group rounded-2xl border border-slate-800 bg-slate-900/70 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10"
+                                aria-label="Open LeetCode profile"
+                            >
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-blue-300">LeetCode Stats</h3>
+                                    <span className="text-sm text-slate-400 group-hover:text-blue-300">Open ↗</span>
+                                </div>
+                                <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-2">
+                                    <img
+                                        src="https://leetcard.jacoblin.cool/gauravky?theme=dark&ext=heatmap"
+                                        alt="LeetCode stats for gauravky"
+                                        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.02]"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                </div>
+                            </a>
+                        </div>
                     </div>
 
                     <div className="text-center mt-12 animate-fadeIn">
