@@ -22,6 +22,34 @@ const SERVICE_CATALOG = {
 const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
 const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
 const CASHFREE_TIMEOUT_MS = Number.parseInt(process.env.CASHFREE_TIMEOUT_MS, 10) || 12000;
+let cachedFetch = typeof globalThis.fetch === "function" ? globalThis.fetch : null;
+
+const getFetchClient = async () => {
+  if (typeof cachedFetch === "function") {
+    return cachedFetch;
+  }
+
+  try {
+    const undici = await import("undici");
+    if (typeof undici.fetch === "function") {
+      cachedFetch = undici.fetch;
+      return cachedFetch;
+    }
+  } catch (error) {
+    const fetchError = new Error(
+      "No fetch implementation found. Upgrade Node.js to 18+ or install undici."
+    );
+    fetchError.code = "PAYMENT_FETCH_UNAVAILABLE";
+    fetchError.cause = error;
+    throw fetchError;
+  }
+
+  const fetchError = new Error(
+    "No fetch implementation found. Upgrade Node.js to 18+ or install undici."
+  );
+  fetchError.code = "PAYMENT_FETCH_UNAVAILABLE";
+  throw fetchError;
+};
 
 const getCashfreeBaseUrl = () => {
   const mode = String(process.env.CASHFREE_ENV || "SANDBOX").trim().toUpperCase();
@@ -48,11 +76,12 @@ const getCashfreeConfig = () => {
 };
 
 const callCashfreeApi = async ({ method, endpoint, body, config }) => {
+  const fetchClient = await getFetchClient();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CASHFREE_TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${config.baseUrl}${endpoint}`, {
+    const response = await fetchClient(`${config.baseUrl}${endpoint}`, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -103,6 +132,31 @@ const mapGatewayError = (error, fallbackMessage) => {
       message:
           "Payment service is not configured. Set CASHFREE_APP_ID and CASHFREE_SECRET_KEY in backend .env.",
       logLevel: "warn",
+    };
+  }
+
+  if (error?.code === "PAYMENT_FETCH_UNAVAILABLE") {
+    return {
+      status: 503,
+      message:
+        "Payment service runtime is not ready. Upgrade Node.js to 18+ on server and redeploy.",
+      logLevel: "error",
+    };
+  }
+
+  if (error?.name === "AbortError") {
+    return {
+      status: 504,
+      message: "Payment gateway timed out. Please retry in a moment.",
+      logLevel: "warn",
+    };
+  }
+
+  if (typeof error?.message === "string" && /fetch failed|network|socket|ECONN|ENOTFOUND/i.test(error.message)) {
+    return {
+      status: 502,
+      message: "Payment gateway network is temporarily unavailable. Please try again shortly.",
+      logLevel: "error",
     };
   }
 
