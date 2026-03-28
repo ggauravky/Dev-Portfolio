@@ -91,6 +91,12 @@ function ServiceDetail({ forcedSlug = '' }) {
                             <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">Pricing</p>
                             <p className="text-2xl sm:text-3xl font-extrabold text-cyan-300">{service.priceLabel}</p>
                             <p className="text-xs text-slate-400 mt-3">Secure checkout via Cashfree. Supports UPI, cards, and netbanking.</p>
+
+                            <div className="mt-4 grid grid-cols-1 gap-2">
+                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">No card or UPI PIN stored on this portfolio</div>
+                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Verification done on backend before confirmation</div>
+                            </div>
+
                             <div className="mt-5 flex flex-col gap-3">
                                 <Link
                                     to={`/booknow?service=${service.slug}`}
@@ -117,6 +123,21 @@ function ServiceDetail({ forcedSlug = '' }) {
                     </div>
                 </section>
 
+                <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 sm:mb-10">
+                    <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 p-4">
+                        <p className="text-[11px] uppercase tracking-widest text-slate-500">Step 1</p>
+                        <p className="text-sm text-slate-200 mt-1">Review full service details and confirm fit</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 p-4">
+                        <p className="text-[11px] uppercase tracking-widest text-slate-500">Step 2</p>
+                        <p className="text-sm text-slate-200 mt-1">Book securely with your preferred schedule</p>
+                    </div>
+                    <div className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 p-4">
+                        <p className="text-[11px] uppercase tracking-widest text-cyan-300">Step 3</p>
+                        <p className="text-sm text-cyan-100 mt-1">Get confirmation and start execution quickly</p>
+                    </div>
+                </section>
+
                 <section className="grid md:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
                     <SectionCard title="What You Get" items={service.deliverables} />
                     <SectionCard title="Core Features" items={service.features} />
@@ -131,6 +152,7 @@ function ServiceDetail({ forcedSlug = '' }) {
                             <li className="flex gap-2.5"><span className="text-cyan-400">01</span><span>Scope confirmation before execution</span></li>
                             <li className="flex gap-2.5"><span className="text-cyan-400">02</span><span>Transparent communication and status updates</span></li>
                             <li className="flex gap-2.5"><span className="text-cyan-400">03</span><span>Delivery focused on production quality</span></li>
+                            <li className="flex gap-2.5"><span className="text-cyan-400">04</span><span>Clear handover, notes, and actionable next steps</span></li>
                         </ul>
                         <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 sm:p-5">
                             <p className="text-sm text-slate-300 leading-relaxed">
@@ -139,6 +161,10 @@ function ServiceDetail({ forcedSlug = '' }) {
                             <p className="text-xs text-slate-400 mt-3">
                                 For confidence, check my work quality in the Projects section and public repositories before booking.
                             </p>
+                            <div className="mt-4 grid grid-cols-1 gap-2">
+                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Data is used only for booking and delivery communication</div>
+                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Payment confirmation is verified before service is marked booked</div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -148,7 +174,7 @@ function ServiceDetail({ forcedSlug = '' }) {
                     <p className="text-slate-300 max-w-2xl mx-auto">
                         Go to the Services page and book securely. If you want to evaluate my experience first, explore projects and GitHub profile.
                     </p>
-                    <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
                         <Link
                             to={`/booknow?service=${service.slug}`}
                             className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"

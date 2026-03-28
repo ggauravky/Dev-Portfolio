@@ -65,9 +65,9 @@ function Services() {
                             Explore every service in detail before booking.
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="grid w-full gap-3 sm:w-auto sm:inline-grid sm:grid-cols-2">
                             <Link
-                                    to="/booknow?service=fullstack-development"
+                                to="/booknow?service=fullstack-development"
                                 className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
                             >
                                 Book Full Stack Service
@@ -78,24 +78,33 @@ function Services() {
                             >
                                 Open Support Jar
                             </Link>
-                            <Link
-                                to="/projects"
-                                className="px-6 py-3 rounded-xl font-semibold text-slate-200 border border-slate-700 hover:border-cyan-500/50 hover:text-cyan-300 transition-colors"
-                            >
-                                See Live Projects
-                            </Link>
                         </div>
 
-                        <div className="flex flex-wrap justify-start gap-2.5 pt-3 max-w-3xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <div className="rounded-xl border border-slate-700/80 bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-300">
+                                Clear scope before payment
+                            </div>
+                            <div className="rounded-xl border border-slate-700/80 bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-300">
+                                Mobile-friendly delivery updates
+                            </div>
+                            <div className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-3.5 py-2.5 text-xs text-cyan-200">
+                                Secure checkout via Cashfree
+                            </div>
+                        </div>
+
+                        <div className="pt-2 max-w-3xl">
+                            <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Jump to service</p>
+                            <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                             {allServices.map((service) => (
                                 <Link
                                     key={service.slug}
                                     to={service.path}
-                                    className="inline-flex items-center justify-center text-xs leading-none px-3 py-2 rounded-full border border-slate-700/70 bg-slate-800/65 text-slate-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-0.5"
+                                    className="inline-flex shrink-0 items-center justify-center whitespace-nowrap text-xs leading-none px-3 py-2 rounded-full border border-slate-700/70 bg-slate-800/65 text-slate-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-0.5"
                                 >
                                     {service.title}
                                 </Link>
                             ))}
+                            </div>
                         </div>
                     </ScrollReveal>
 
@@ -273,13 +282,21 @@ function Services() {
                         <p className="text-slate-300 mt-3 max-w-2xl mx-auto">
                             Choose any service and review full details before booking. Premium quality, clean delivery, and practical outcomes.
                         </p>
-                        <Link
-                            to="/booknow?service=fullstack-development"
-                            className="mt-6 inline-flex items-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
-                        >
-                            <span>Book Now</span>
-                            <span>→</span>
-                        </Link>
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+                            <Link
+                                to="/booknow?service=fullstack-development"
+                                className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
+                            >
+                                <span>Book Now</span>
+                                <span>→</span>
+                            </Link>
+                            <Link
+                                to="/support"
+                                className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300"
+                            >
+                                Open Support Jar
+                            </Link>
+                        </div>
                     </div>
                 </ScrollReveal>
             </section>

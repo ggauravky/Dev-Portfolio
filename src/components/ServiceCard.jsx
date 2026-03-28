@@ -18,10 +18,10 @@ function ServiceCard({ service, featured = false }) {
         >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(120%_90%_at_0%_0%,rgba(34,211,238,0.14),transparent)]" />
 
-            <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                 <h3 className="text-xl sm:text-2xl font-bold text-slate-100 leading-tight">{service.title}</h3>
                 {service.badge ? (
-                    <span className="shrink-0 text-xs font-semibold text-cyan-300 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                    <span className="w-fit shrink-0 text-xs font-semibold text-cyan-300 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30">
                         {service.badge}
                     </span>
                 ) : null}
