@@ -65,29 +65,29 @@ function Services() {
                             Explore every service in detail before booking.
                         </p>
 
-                        <div className="grid w-full gap-3 sm:w-auto sm:inline-grid sm:grid-cols-2">
+                        <div className="flex flex-wrap items-center gap-2.5">
                             <Link
                                 to="/booknow?service=fullstack-development"
-                                className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
+                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
                             >
                                 Book Full Stack Service
                             </Link>
                             <Link
                                 to="/support"
-                                className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300 hover:scale-105"
+                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
                             >
                                 Open Support Jar
                             </Link>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                            <div className="rounded-xl border border-slate-700/80 bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-300">
+                        <div className="flex flex-wrap gap-2">
+                            <div className="rounded-full border border-slate-700/80 bg-slate-800/60 px-3 py-1.5 text-[11px] text-slate-300">
                                 Clear scope before payment
                             </div>
-                            <div className="rounded-xl border border-slate-700/80 bg-slate-800/60 px-3.5 py-2.5 text-xs text-slate-300">
+                            <div className="rounded-full border border-slate-700/80 bg-slate-800/60 px-3 py-1.5 text-[11px] text-slate-300">
                                 Mobile-friendly delivery updates
                             </div>
-                            <div className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-3.5 py-2.5 text-xs text-cyan-200">
+                            <div className="rounded-full border border-cyan-500/35 bg-cyan-500/10 px-3 py-1.5 text-[11px] text-cyan-200">
                                 Secure checkout via Cashfree
                             </div>
                         </div>
