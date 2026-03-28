@@ -16,6 +16,7 @@ export const servicesData = [
     badge: 'Starter Friendly',
     summary:
       '1:1 mentorship to remove confusion, build a strong roadmap, and grow with consistent execution.',
+    outcomePromise: 'Get a role-focused 30-day roadmap and next-step clarity within 24-48 hours.',
     features: [
       'Personalized roadmap based on your current level',
       'Weekly action plan with realistic milestones',
@@ -36,6 +37,37 @@ export const servicesData = [
       'Students preparing for internship applications',
       'Developers stuck in tutorial loop',
     ],
+    whoThisIsFor: [
+      'Developers who are confused about what to learn next',
+      'Students preparing for internship and first-job interviews',
+      'Learners needing accountability and realistic execution',
+    ],
+    expectedResults: [
+      'Clear priority stack for the next 30 days',
+      'A practical weekly action plan to avoid random learning',
+      'Faster interview readiness with focused preparation',
+    ],
+    exactDeliverables: [
+      '1:1 mentoring session with recorded action notes',
+      '30-day roadmap mapped to your target role',
+      'Curated resources linked to your current level',
+    ],
+    deliveryWindow: 'Session within 24-48 hours after booking; roadmap shared same day.',
+    supportLevel: 'Email follow-up support for 3 days',
+    comparisonDeliverable: 'Roadmap + action plan',
+    proofArtifact: {
+      type: 'github',
+      label: 'View public project proof',
+      url: 'https://github.com/ggauravky',
+      summary: 'Review public repositories to validate consistency and execution quality.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'One focused mentoring session, 30-day roadmap, and actionable task list.' },
+      { question: 'What is not included?', answer: 'Long-term weekly coaching, mock interviews, or full resume rewrite are not included in this plan.' },
+      { question: 'Revisions?', answer: 'One roadmap adjustment is available within 48 hours if your goal scope was shared correctly.' },
+      { question: 'Delivery window?', answer: 'Session in 24-48 hours, written roadmap delivered on the same day.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule is allowed before session start. Refunds are only for missed delivery from my side.' },
+    ],
     timeline: 'Session within 24-48 hours after booking',
   },
   {
@@ -49,6 +81,7 @@ export const servicesData = [
     badge: 'Most Useful',
     summary:
       'ATS-aware, recruiter-friendly resume feedback focused on getting interviews for real roles.',
+    outcomePromise: 'Resume review with line-by-line edits and priority fixes in 24 hours.',
     features: [
       'ATS formatting improvements',
       'Stronger project impact statements',
@@ -69,6 +102,37 @@ export const servicesData = [
       'Developers with low response rate from applications',
       'Anyone needing a clean and credible resume',
     ],
+    whoThisIsFor: [
+      'Students and freshers with low interview callbacks',
+      'Developers applying for frontend, backend, or full stack roles',
+      'Candidates with cluttered or generic resumes',
+    ],
+    expectedResults: [
+      'Sharper role-aligned resume structure',
+      'Better ATS readability and keyword alignment',
+      'Improved shortlist potential with stronger project bullets',
+    ],
+    exactDeliverables: [
+      'Line-by-line feedback on your current resume',
+      'Suggested rewrite examples for key sections',
+      'Priority checklist for immediate improvement',
+    ],
+    deliveryWindow: 'Initial detailed review within 24 hours.',
+    supportLevel: 'One clarification round within 48 hours',
+    comparisonDeliverable: 'Line-by-line resume review',
+    proofArtifact: {
+      type: 'github',
+      label: 'See portfolio and role-fit projects',
+      url: 'https://github.com/ggauravky',
+      summary: 'Public projects show the quality standard used while framing project bullet points.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Detailed resume audit, line edits, and role-specific improvement checklist.' },
+      { question: 'What is not included?', answer: 'LinkedIn optimization, cover-letter writing, and interview coaching are not part of this package.' },
+      { question: 'Revisions?', answer: 'One revision pass is available when updates are submitted within 48 hours.' },
+      { question: 'Delivery window?', answer: 'Review report is delivered within 24 hours for standard queue.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule is available before review starts. Refunds are only for non-delivery from my side.' },
+    ],
     timeline: 'Initial feedback in 24 hours',
   },
   {
@@ -82,6 +146,7 @@ export const servicesData = [
     badge: 'Fast Turnaround',
     summary:
       'Practical debugging support to identify root cause quickly and fix the issue with clean code.',
+    outcomePromise: 'Root-cause summary + fix checklist delivered on same day for most issues.',
     features: [
       'Root-cause analysis instead of trial-and-error patches',
       'Fix + explanation of why the bug happened',
@@ -102,6 +167,37 @@ export const servicesData = [
       'API, deployment, and integration bugs',
       'Students during project deadlines',
     ],
+    whoThisIsFor: [
+      'Developers blocked by production or integration bugs',
+      'Students facing submission deadlines with unresolved issues',
+      'Teams needing quick diagnosis before patching',
+    ],
+    expectedResults: [
+      'Clear root cause instead of guesswork',
+      'Practical fix path with verification steps',
+      'Lower chance of recurrence with preventive notes',
+    ],
+    exactDeliverables: [
+      'Root-cause diagnosis summary',
+      'Fix recommendation or patch guidance',
+      'Post-fix validation checklist',
+    ],
+    deliveryWindow: 'Same-day support in most cases after intake review.',
+    supportLevel: 'Quick follow-up for the same issue within 24 hours',
+    comparisonDeliverable: 'Root-cause + fix checklist',
+    proofArtifact: {
+      type: 'github',
+      label: 'Review debugging-oriented repositories',
+      url: 'https://github.com/ggauravky',
+      summary: 'Inspect real project code, architecture, and issue-solving patterns in public repos.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Issue triage, root-cause analysis, and fix guidance with verification checklist.' },
+      { question: 'What is not included?', answer: 'Complete feature rebuilds, unrelated bug bundles, and long-term maintenance are excluded.' },
+      { question: 'Revisions?', answer: 'One focused follow-up on the same bug context is included within 24 hours.' },
+      { question: 'Delivery window?', answer: 'Most debugging cases receive first actionable response on the same day.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule available before diagnosis starts. Refunds apply only when no analysis is delivered.' },
+    ],
     timeline: 'Same-day support in most cases',
   },
   {
@@ -115,6 +211,7 @@ export const servicesData = [
     badge: 'Visibility Boost',
     summary:
       'Improve your portfolio quality, narrative, and trust signals so recruiters and clients take you seriously.',
+    outcomePromise: 'Get a conversion-focused portfolio action plan within 24-48 hours.',
     features: [
       'UI/UX and readability improvements',
       'Project storytelling and impact framing',
@@ -135,6 +232,37 @@ export const servicesData = [
       'Developers planning internship/job switch',
       'Freelancers building credibility online',
     ],
+    whoThisIsFor: [
+      'Developers whose portfolio gets low recruiter engagement',
+      'Fresher candidates preparing for placement drives',
+      'Freelancers who need stronger trust signals',
+    ],
+    expectedResults: [
+      'Cleaner information hierarchy and credibility flow',
+      'Stronger project storytelling and impact communication',
+      'Actionable improvement list for next portfolio version',
+    ],
+    exactDeliverables: [
+      'Portfolio audit report with priority levels',
+      'Section-by-section improvement suggestions',
+      'Trust and conversion checklist',
+    ],
+    deliveryWindow: 'Review delivered within 24-48 hours.',
+    supportLevel: 'One post-review clarification round',
+    comparisonDeliverable: 'Audit report + redesign actions',
+    proofArtifact: {
+      type: 'github',
+      label: 'Open portfolio-related repositories',
+      url: 'https://github.com/ggauravky',
+      summary: 'Use public code and deployed project references to validate design and implementation depth.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Portfolio UX review, narrative improvement guidance, and trust-signal recommendations.' },
+      { question: 'What is not included?', answer: 'Full redesign coding, custom copywriting, and SEO implementation are not included.' },
+      { question: 'Revisions?', answer: 'One revision round on recommendations is included if requested within 48 hours.' },
+      { question: 'Delivery window?', answer: 'Detailed portfolio review report is delivered within 24-48 hours.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule before review start is allowed. Refunds apply only in non-delivery scenarios.' },
+    ],
     timeline: 'Review delivered within 24-48 hours',
   },
   {
@@ -148,6 +276,7 @@ export const servicesData = [
     badge: 'Client Favorite',
     summary:
       'Modern, responsive frontend experiences with clean component architecture and performance-focused implementation.',
+    outcomePromise: 'Production-ready responsive frontend modules with clear handover in 3-5 days for basic scope.',
     features: [
       'React and Tailwind development',
       'Responsive layout and interaction design',
@@ -168,6 +297,37 @@ export const servicesData = [
       'Dashboards and admin interfaces',
       'MVP frontend for startups',
     ],
+    whoThisIsFor: [
+      'Founders needing a polished MVP frontend quickly',
+      'Teams with backend ready but frontend pending',
+      'Developers requiring component-level UI delivery',
+    ],
+    expectedResults: [
+      'Responsive frontend that works cleanly across devices',
+      'Reusable component structure for faster iterations',
+      'Better perceived quality and usability for users',
+    ],
+    exactDeliverables: [
+      'Frontend implementation for agreed pages/modules',
+      'Reusable components and project structure',
+      'Deployment support and handover notes',
+    ],
+    deliveryWindow: 'Basic agreed scope delivered in 3-5 days.',
+    supportLevel: 'Bug-fix support window after initial delivery',
+    comparisonDeliverable: 'Responsive frontend module delivery',
+    proofArtifact: {
+      type: 'github',
+      label: 'See frontend delivery examples',
+      url: 'https://github.com/ggauravky',
+      summary: 'Check code quality, component structure, and deployment readiness in live repositories.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Responsive UI build, component architecture, and deployment-ready handover for agreed scope.' },
+      { question: 'What is not included?', answer: 'Backend APIs, copywriting, and unlimited new pages are excluded from base pricing.' },
+      { question: 'Revisions?', answer: 'One structured revision pass is included for approved scope items.' },
+      { question: 'Delivery window?', answer: 'Basic scope is usually delivered in 3-5 days based on complexity.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule before development starts is allowed. Refunds are limited to non-delivery cases.' },
+    ],
     timeline: 'Basic scope in 3-5 days',
   },
   {
@@ -181,6 +341,7 @@ export const servicesData = [
     badge: 'Secure APIs',
     summary:
       'Reliable backend systems with API design, authentication, validation, and production-focused architecture.',
+    outcomePromise: 'Ship secure API modules with validation and logging baseline in 3-6 days.',
     features: [
       'REST API development with Node.js and Express',
       'Database modeling and integration',
@@ -201,6 +362,37 @@ export const servicesData = [
       'MVP API development',
       'System cleanup and hardening',
     ],
+    whoThisIsFor: [
+      'Teams needing reliable API setup for product launches',
+      'Developers upgrading insecure or unstructured backend code',
+      'MVPs requiring fast, maintainable backend delivery',
+    ],
+    expectedResults: [
+      'Cleaner API contract and predictable request handling',
+      'Safer backend behavior with validation and rate limiting',
+      'Faster iteration with structured data models',
+    ],
+    exactDeliverables: [
+      'API endpoint implementation for agreed scope',
+      'Database model and integration setup',
+      'Baseline logging and error-handling structure',
+    ],
+    deliveryWindow: 'Core API module delivered in 3-6 days.',
+    supportLevel: 'Stability check support after first delivery',
+    comparisonDeliverable: 'API module + secure baseline',
+    proofArtifact: {
+      type: 'github',
+      label: 'Inspect backend architecture samples',
+      url: 'https://github.com/ggauravky',
+      summary: 'Review endpoint design, data models, and security patterns in production-style repos.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'API development, database integration, and secure backend baseline for agreed modules.' },
+      { question: 'What is not included?', answer: 'Third-party paid service costs, hosting bills, and full product maintenance are excluded.' },
+      { question: 'Revisions?', answer: 'One revision pass is included for defined API scope and accepted requirements.' },
+      { question: 'Delivery window?', answer: 'Core modules are typically delivered in 3-6 days depending on scope.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule before coding starts is allowed. Refunds apply only when agreed delivery is missed.' },
+    ],
     timeline: 'Core API module in 3-6 days',
   },
   {
@@ -214,6 +406,7 @@ export const servicesData = [
     badge: 'Premium Delivery',
     summary:
       'End-to-end development from UI to APIs with practical product thinking, deployment support, and production readiness.',
+    outcomePromise: 'Receive a functional full-stack scope with phased milestones and deployment support.',
     features: [
       'Frontend + backend integration',
       'Authentication and protected workflows',
@@ -234,6 +427,37 @@ export const servicesData = [
       'Freelance product builds',
       'Portfolio-grade full stack projects',
     ],
+    whoThisIsFor: [
+      'Founders building MVPs with tight timelines',
+      'Clients needing one owner across frontend and backend',
+      'Teams wanting launch-ready product scope',
+    ],
+    expectedResults: [
+      'Integrated frontend-backend product flow',
+      'Authentication and protected workflows configured correctly',
+      'Clear deployment and handover path for launch',
+    ],
+    exactDeliverables: [
+      'Agreed end-to-end feature scope implementation',
+      'Structured codebase with handover documentation',
+      'Launch support with QA checklist',
+    ],
+    deliveryWindow: 'Delivered in milestone phases based on approved scope.',
+    supportLevel: 'Milestone review support across delivery cycle',
+    comparisonDeliverable: 'End-to-end MVP scope',
+    proofArtifact: {
+      type: 'github',
+      label: 'Open full stack project proof',
+      url: 'https://github.com/ggauravky',
+      summary: 'Check real full stack repositories and architecture decisions before booking.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Frontend + backend implementation for agreed MVP scope with milestone-based delivery.' },
+      { question: 'What is not included?', answer: 'Unlimited new features, external vendor subscriptions, and long-term support retainers are excluded.' },
+      { question: 'Revisions?', answer: 'One structured revision round per milestone is included for agreed scope.' },
+      { question: 'Delivery window?', answer: 'Delivery is milestone-based; exact dates depend on final feature scope.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule is possible before milestone start. Refunds are only for undelivered committed milestones.' },
+    ],
     timeline: 'Delivery in phased milestones',
   },
   {
@@ -247,6 +471,7 @@ export const servicesData = [
     badge: 'High Demand',
     summary:
       'Applied guidance for ML and data science projects including roadmap, experimentation, and practical implementation strategy.',
+    outcomePromise: 'Get a practical execution plan and experiment strategy within 48 hours.',
     features: [
       'Problem framing and approach selection',
       'Dataset and experiment strategy',
@@ -266,6 +491,37 @@ export const servicesData = [
       'Students building major projects',
       'Beginner ML engineers seeking direction',
       'Teams evaluating practical AI implementation',
+    ],
+    whoThisIsFor: [
+      'Students with ML project deadlines and unclear direction',
+      'Early-stage ML engineers needing practical guidance',
+      'Teams validating AI feasibility before deeper investment',
+    ],
+    expectedResults: [
+      'Better problem framing and metric alignment',
+      'Cleaner experimentation roadmap with fewer dead-ends',
+      'Actionable improvement direction for model iterations',
+    ],
+    exactDeliverables: [
+      'Project execution plan with milestones',
+      'Experiment checklist and metric strategy',
+      'Implementation structure recommendations',
+    ],
+    deliveryWindow: 'Guidance call and execution plan delivered within 48 hours.',
+    supportLevel: 'One follow-up clarification for experiment direction',
+    comparisonDeliverable: 'Execution plan + experiment map',
+    proofArtifact: {
+      type: 'github',
+      label: 'Review AI and data project references',
+      url: 'https://github.com/ggauravky',
+      summary: 'Public repositories show project structure and practical implementation standards.',
+    },
+    pricingFaq: [
+      { question: 'What is included?', answer: 'Guidance call, problem framing support, and practical execution roadmap for your project.' },
+      { question: 'What is not included?', answer: 'Full model training service, dataset labeling operations, and production ML hosting are excluded.' },
+      { question: 'Revisions?', answer: 'One refinement round on the provided plan is included within 48 hours.' },
+      { question: 'Delivery window?', answer: 'Guidance and written plan are shared within 48 hours for standard queue.' },
+      { question: 'Refund or reschedule?', answer: 'Reschedule before call start is allowed. Refunds are only for non-delivery of committed plan.' },
     ],
     timeline: 'Guidance call and plan within 48 hours',
   },

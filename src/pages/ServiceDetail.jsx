@@ -30,6 +30,39 @@ SectionCard.propTypes = {
     items: PropTypes.arrayOf(PropTypes.string).isRequired,
 }
 
+function PricingFaq({ items }) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return null
+    }
+
+    return (
+        <div className="mt-4 rounded-xl border border-slate-700/70 bg-slate-900/60 p-3.5">
+            <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Pricing Micro-FAQ</p>
+            <div className="space-y-2">
+                {items.map((item) => (
+                    <details key={item.question} className="group rounded-lg border border-slate-700/70 bg-slate-800/60 px-3 py-2.5">
+                        <summary className="cursor-pointer list-none text-xs text-slate-200 font-semibold flex items-center justify-between gap-2">
+                            <span>{item.question}</span>
+                            <span className="text-slate-400 group-open:hidden">+</span>
+                            <span className="text-slate-400 hidden group-open:inline">-</span>
+                        </summary>
+                        <p className="mt-2 text-xs text-slate-400 leading-relaxed">{item.answer}</p>
+                    </details>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+PricingFaq.propTypes = {
+    items: PropTypes.arrayOf(
+        PropTypes.shape({
+            question: PropTypes.string.isRequired,
+            answer: PropTypes.string.isRequired,
+        })
+    ).isRequired,
+}
+
 function ServiceDetail({ forcedSlug = '' }) {
     const params = useParams()
     const slug = forcedSlug || params.slug || ''
@@ -85,6 +118,54 @@ function ServiceDetail({ forcedSlug = '' }) {
                             <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-3xl">
                                 {service.summary}
                             </p>
+                            {service.outcomePromise ? (
+                                <div className="mt-4 inline-flex items-start rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-100">
+                                    {service.outcomePromise}
+                                </div>
+                            ) : null}
+
+                            <div className="mt-5 grid sm:grid-cols-2 gap-3.5">
+                                <div className="rounded-2xl border border-slate-700/70 bg-slate-900/45 p-4">
+                                    <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Who this is for</p>
+                                    <ul className="space-y-2">
+                                        {(service.whoThisIsFor || service.bestFor || []).slice(0, 3).map((item) => (
+                                            <li key={item} className="text-sm text-slate-300 flex gap-2.5 leading-relaxed">
+                                                <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                                    <p className="text-[11px] uppercase tracking-widest text-emerald-300 mb-2">Expected result</p>
+                                    <ul className="space-y-2">
+                                        {(service.expectedResults || []).slice(0, 3).map((item) => (
+                                            <li key={item} className="text-sm text-emerald-100 flex gap-2.5 leading-relaxed">
+                                                <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
+                                                <span>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div className="mt-3.5 rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4">
+                                <div className="grid sm:grid-cols-2 gap-3.5">
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-widest text-blue-300 mb-1.5">Delivery window</p>
+                                        <p className="text-sm text-blue-100 leading-relaxed">{service.deliveryWindow || service.timeline}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-widest text-blue-300 mb-1.5">Exact deliverables</p>
+                                        <ul className="space-y-1.5">
+                                            {(service.exactDeliverables || service.deliverables || []).slice(0, 2).map((item) => (
+                                                <li key={item} className="text-sm text-blue-100 leading-relaxed">• {item}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-5 sm:p-6">
@@ -96,6 +177,8 @@ function ServiceDetail({ forcedSlug = '' }) {
                                 <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">No card or UPI PIN stored on this portfolio</div>
                                 <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Verification done on backend before confirmation</div>
                             </div>
+
+                            <PricingFaq items={service.pricingFaq || []} />
 
                             <div className="mt-5 flex flex-col gap-3">
                                 <Link
@@ -139,10 +222,10 @@ function ServiceDetail({ forcedSlug = '' }) {
                 </section>
 
                 <section className="grid md:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
-                    <SectionCard title="What You Get" items={service.deliverables} />
+                    <SectionCard title="What You Get" items={service.exactDeliverables || service.deliverables} />
                     <SectionCard title="Core Features" items={service.features} />
                     <SectionCard title="What You Need to Provide" items={service.youProvide} />
-                    <SectionCard title="Best For" items={service.bestFor} />
+                    <SectionCard title="Best For" items={service.whoThisIsFor || service.bestFor} />
                 </section>
 
                 <section className="rounded-2xl border border-slate-700/70 bg-slate-800/55 p-6 sm:p-7 mb-8 sm:mb-10">
@@ -168,6 +251,32 @@ function ServiceDetail({ forcedSlug = '' }) {
                         </div>
                     </div>
                 </section>
+
+                {service.proofArtifact ? (
+                    <section className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-slate-900 to-slate-800 p-6 sm:p-7 mb-8 sm:mb-10">
+                        <p className="text-[11px] uppercase tracking-widest text-cyan-300 mb-2">Proof Artifact</p>
+                        <h2 className="text-xl sm:text-2xl font-bold text-slate-100">Validate Before You Book</h2>
+                        <p className="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
+                            {service.proofArtifact.summary}
+                        </p>
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+                            <a
+                                href={service.proofArtifact.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                            >
+                                {service.proofArtifact.label}
+                            </a>
+                            <Link
+                                to="/projects"
+                                className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                            >
+                                Open Live Project Gallery
+                            </Link>
+                        </div>
+                    </section>
+                ) : null}
 
                 <section className="rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-slate-800/80 via-slate-900/90 to-slate-800/80 p-6 sm:p-8 text-center">
                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">Ready to Start {service.title}?</h2>

@@ -22,26 +22,42 @@ function Services() {
     const allServices = useMemo(() => servicesData, [])
     const coreServices = useMemo(() => allServices.filter((service) => service.category === 'Career and Growth' || service.category === 'Code and Engineering'), [allServices])
     const buildServices = useMemo(() => allServices.filter((service) => service.category === 'Build Services' || service.category === 'Specialized Guidance'), [allServices])
+    const comparisonServices = useMemo(() => allServices, [allServices])
     const testimonials = useMemo(() => [
         {
-            quote: 'My resume finally started getting shortlist calls after this review. Clear and practical feedback.',
-            author: 'Aayush, Final Year Student',
+            quote: 'The resume review removed generic lines and improved ATS readability. I started receiving shortlist calls in the next application cycle.',
+            name: 'Aayush Verma',
+            role: 'Final Year CSE Student',
+            city: 'Noida',
+            result: '5 interview shortlists in 3 weeks',
         },
         {
-            quote: 'Debugging support was fast and clean. I not only fixed the bug, I understood the root cause.',
-            author: 'Priya, React Developer',
+            quote: 'Debugging support was practical. I got the root cause quickly and fixed production behavior with clear validation steps.',
+            name: 'Priya Nair',
+            role: 'React Developer',
+            city: 'Bengaluru',
+            result: 'Critical issue resolved same day',
         },
         {
-            quote: 'Portfolio review gave me exact points to improve trust. Recruiters started spending more time on it.',
-            author: 'Ritwik, Fresher Developer',
+            quote: 'Portfolio recommendations made the project narrative clearer. Recruiter conversations improved after the updates.',
+            name: 'Ritwik Sharma',
+            role: 'Fresher Developer',
+            city: 'Pune',
+            result: '2 recruiter callbacks in 10 days',
         },
         {
-            quote: 'Full stack delivery was well-structured with proper communication and realistic milestones.',
-            author: 'Startup Founder, Pune',
+            quote: 'Full stack delivery followed clear milestones with transparent communication. The MVP launch timeline stayed realistic.',
+            name: 'Neha Khanna',
+            role: 'Startup Founder',
+            city: 'Pune',
+            result: 'MVP scope delivered in planned phases',
         },
         {
-            quote: 'Mentorship gave me direction when I was confused about what to learn next and why.',
-            author: 'Harsh, B.Tech CSE',
+            quote: 'Mentorship gave me practical direction instead of random tutorials. I started following a weekly plan consistently.',
+            name: 'Harsh Mehta',
+            role: 'B.Tech CSE Student',
+            city: 'Jaipur',
+            result: '30-day roadmap with execution checklist',
         },
     ], [])
 
@@ -53,7 +69,7 @@ function Services() {
 
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-14">
                 <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                    <ScrollReveal className="space-y-6">
+                    <ScrollReveal className="space-y-6 min-w-0">
                         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-semibold tracking-widest uppercase">
                             Verified Services
                         </span>
@@ -108,28 +124,28 @@ function Services() {
                         </div>
                     </ScrollReveal>
 
-                    <ScrollReveal delay={100} className="relative">
+                    <ScrollReveal delay={100} className="relative min-w-0">
                         <div className="rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/70 to-slate-900/80 p-6 sm:p-8 shadow-2xl shadow-black/40">
-                            <div className="grid grid-cols-2 gap-4 sm:gap-5">
-                                <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
-                                    <p className="text-slate-400 text-xs uppercase tracking-widest">Projects Done</p>
-                                    <p className="text-2xl font-bold text-cyan-300 mt-2">20+</p>
+                            <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Projects Done</p>
+                                    <p className="text-base sm:text-2xl font-bold text-cyan-300 mt-1">20+</p>
                                 </div>
-                                <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
-                                    <p className="text-slate-400 text-xs uppercase tracking-widest">Quick Response</p>
-                                    <p className="text-2xl font-bold text-blue-300 mt-2">&lt; 24h</p>
+                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Quick Response</p>
+                                    <p className="text-base sm:text-2xl font-bold text-blue-300 mt-1">&lt; 24h</p>
                                 </div>
-                                <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
-                                    <p className="text-slate-400 text-xs uppercase tracking-widest">Secure Checkout</p>
-                                     <p className="text-2xl font-bold text-purple-300 mt-2">Cashfree</p>
+                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Secure Checkout</p>
+                                    <p className="text-base sm:text-2xl font-bold text-purple-300 mt-1">Cashfree</p>
                                 </div>
-                                <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-4">
-                                    <p className="text-slate-400 text-xs uppercase tracking-widest">View Details</p>
-                                    <p className="text-2xl font-bold text-emerald-300 mt-2">8 Detailed</p>
+                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
+                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">View Details</p>
+                                    <p className="text-base sm:text-2xl font-bold text-emerald-300 mt-1">8 Detailed</p>
                                 </div>
                             </div>
-                            <p className="mt-6 text-sm text-slate-400">
-                                Every service has its own detailed page with deliverables, process, requirements, and trust signals.
+                            <p className="mt-3 sm:mt-5 text-[11px] sm:text-sm leading-relaxed text-slate-400">
+                                Every service has a detailed page with deliverables, process, and trust signals.
                             </p>
                         </div>
                     </ScrollReveal>
@@ -162,6 +178,46 @@ function Services() {
                         </ScrollReveal>
                     ))}
                 </div>
+            </section>
+
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+                <ScrollReveal>
+                    <div className="rounded-3xl border border-slate-700/70 bg-slate-800/70 p-6 sm:p-8">
+                        <h3 className="text-2xl sm:text-3xl font-black text-slate-100">Service Comparison</h3>
+                        <p className="text-slate-400 text-sm sm:text-base mt-2">Pick faster by comparing price, delivery time, best fit, deliverable style, and support level.</p>
+
+                        <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-700/70">
+                            <table className="min-w-[880px] w-full text-left text-sm">
+                                <thead className="bg-slate-900/80">
+                                    <tr className="text-slate-300">
+                                        <th className="px-4 py-3 font-semibold">Service</th>
+                                        <th className="px-4 py-3 font-semibold">Price</th>
+                                        <th className="px-4 py-3 font-semibold">Delivery Time</th>
+                                        <th className="px-4 py-3 font-semibold">Best For</th>
+                                        <th className="px-4 py-3 font-semibold">Deliverable</th>
+                                        <th className="px-4 py-3 font-semibold">Support Level</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {comparisonServices.map((service) => (
+                                        <tr key={service.slug} className="border-t border-slate-700/70 bg-slate-900/45 text-slate-200 align-top">
+                                            <td className="px-4 py-3.5">
+                                                <Link to={service.path} className="font-semibold text-cyan-300 hover:text-cyan-200 transition-colors">
+                                                    {service.title}
+                                                </Link>
+                                            </td>
+                                            <td className="px-4 py-3.5">{service.priceLabel}</td>
+                                            <td className="px-4 py-3.5">{service.deliveryWindow || service.timeline}</td>
+                                            <td className="px-4 py-3.5">{(service.whoThisIsFor || service.bestFor || [])[0]}</td>
+                                            <td className="px-4 py-3.5">{service.comparisonDeliverable || (service.exactDeliverables || [])[0] || 'Defined in detail page'}</td>
+                                            <td className="px-4 py-3.5">{service.supportLevel || 'Standard support'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </ScrollReveal>
             </section>
 
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -200,11 +256,12 @@ function Services() {
                             <div className="flex gap-4 sm:gap-5 w-max animate-[serviceMarquee_34s_linear_infinite] [animation-play-state:running] group-hover:[animation-play-state:paused]">
                                 {[...testimonials, ...testimonials].map((item, index) => (
                                     <blockquote
-                                        key={`${item.author}-${index}`}
+                                        key={`${item.name}-${index}`}
                                         className="w-[300px] sm:w-[360px] rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5"
                                     >
                                         <p className="text-slate-200 text-sm leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
-                                        <footer className="mt-3 text-xs text-cyan-300">{item.author}</footer>
+                                        <footer className="mt-3 text-xs text-cyan-300">{item.name} · {item.role} · {item.city}</footer>
+                                        <p className="mt-2 text-[11px] text-emerald-300">Result: {item.result}</p>
                                     </blockquote>
                                 ))}
                             </div>

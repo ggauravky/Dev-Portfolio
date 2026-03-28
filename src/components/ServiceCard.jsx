@@ -30,6 +30,13 @@ function ServiceCard({ service, featured = false }) {
             <p className="text-cyan-300 font-bold text-2xl sm:text-3xl mb-4">{service.priceLabel}</p>
             <p className="text-slate-400 text-xs mb-4">Secure checkout via Cashfree (UPI, cards, netbanking, wallets)</p>
 
+            {service.outcomePromise ? (
+                <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
+                    <p className="text-[11px] uppercase tracking-widest text-emerald-300 mb-1">Expected Outcome</p>
+                    <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">{service.outcomePromise}</p>
+                </div>
+            ) : null}
+
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-4">{service.summary}</p>
 
             <ul className="space-y-2.5 mb-6">
@@ -79,6 +86,7 @@ ServiceCard.propTypes = {
         summary: PropTypes.string,
         priceLabel: PropTypes.string.isRequired,
         features: PropTypes.arrayOf(PropTypes.string).isRequired,
+        outcomePromise: PropTypes.string,
         badge: PropTypes.string,
     }).isRequired,
     featured: PropTypes.bool,
