@@ -6,6 +6,7 @@
 
 const { randomBytes } = require("node:crypto");
 const Booking = require("../models/Booking");
+const SupportPayment = require("../models/SupportPayment");
 const { logger } = require("../utils/logger");
 
 const SERVICE_CATALOG = {
@@ -124,8 +125,10 @@ const toCustomerId = (email) =>
 const createOrderId = () => `svc_${Date.now()}_${randomBytes(3).toString("hex")}`;
 const createPendingPaymentId = (orderId) => `pending_${String(orderId || "").trim()}`;
 
+const isDatabaseReady = () => Number(Booking?.db?.readyState || 0) === 1;
+
 const normalizeIndianPhone = (value) => {
-  const digits = String(value || "").replace(/\D/g, "");
+  const digits = String(value || "").replaceAll(/\D/g, "");
   return digits.length >= 10 ? digits.slice(-10) : digits;
 };
 
@@ -226,6 +229,13 @@ const mapGatewayError = (error, fallbackMessage) => {
 
 exports.createOrder = async (req, res) => {
   const reqLogger = req.log || logger;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
 
   try {
     const { name, email, phone, service, preferredDate, preferredTime, projectBrief } = req.body;
@@ -360,6 +370,13 @@ exports.createOrder = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   const reqLogger = req.log || logger;
 
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
   try {
     const { orderId, email } = req.body;
     const normalizedOrderId = String(orderId || "").trim();
@@ -450,7 +467,7 @@ exports.verifyPayment = async (req, res) => {
     }
 
     if (!draftBooking) {
-      draftBooking = await Booking.findOneAndUpdate(
+      await Booking.findOneAndUpdate(
         { orderId: normalizedOrderId },
         {
           $set: {
@@ -491,18 +508,28 @@ exports.verifyPayment = async (req, res) => {
     );
 
     if (!successfulPayment) {
+      const failedPayment = (Array.isArray(paymentList) ? paymentList : []).find((payment) =>
+        ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
+          String(payment.payment_status || "").toUpperCase()
+        )
+      );
+
       await Booking.updateOne(
         { orderId: normalizedOrderId },
         {
           $set: {
-            paymentStatus: String(cashfreeOrder.order_status || "").toLowerCase() || "pending",
+            paymentStatus: failedPayment
+              ? "failed"
+              : String(cashfreeOrder.order_status || "").toLowerCase() || "pending",
           },
         }
       );
 
       return res.status(409).json({
         success: false,
-        message: "Payment is not completed yet",
+        message: failedPayment
+          ? "Payment was not completed. If amount was deducted, gateway will auto-reconcile."
+          : "Payment is not completed yet",
       });
     }
 
@@ -548,6 +575,301 @@ exports.verifyPayment = async (req, res) => {
         upstreamStatus: error?.statusCode || error?.response?.status,
       },
       "Payment verification failed"
+    );
+
+    return res.status(mapped.status).json({
+      success: false,
+      message: mapped.message,
+    });
+  }
+};
+
+exports.createSupportOrder = async (req, res) => {
+  const reqLogger = req.log || logger;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const { name, email, phone, amount, message } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedAmount = Number.parseInt(amount, 10);
+    const orderId = createOrderId();
+    const config = getCashfreeConfig();
+    const frontendUrl = String(process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
+
+    const order = await callCashfreeApi({
+      method: "POST",
+      endpoint: "/pg/orders",
+      config,
+      body: {
+        order_id: orderId,
+        order_amount: normalizedAmount,
+        order_currency: "INR",
+        order_note: "Direct support contribution",
+        customer_details: {
+          customer_id: toCustomerId(normalizedEmail),
+          customer_name: String(name || "").trim(),
+          customer_email: normalizedEmail,
+          customer_phone: normalizeIndianPhone(phone),
+        },
+        order_tags: {
+          support_type: "direct_support",
+          contributor_note: String(message || "").trim().slice(0, 120),
+        },
+        ...(frontendUrl
+          ? {
+              order_meta: {
+                return_url: `${frontendUrl}/support`,
+              },
+            }
+          : {}),
+      },
+    });
+
+    await SupportPayment.findOneAndUpdate(
+      { orderId },
+      {
+        $set: {
+          contributorName: String(name || "").trim(),
+          email: normalizedEmail,
+          phone: normalizeIndianPhone(phone),
+          amount: normalizedAmount,
+          message: String(message || "").trim(),
+          paymentStatus: "created",
+          paymentProvider: "cashfree",
+          paymentId: createPendingPaymentId(orderId),
+        },
+        $setOnInsert: {
+          orderId,
+        },
+      },
+      {
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    reqLogger.info(
+      {
+        orderId,
+        amount: normalizedAmount,
+      },
+      "Support order created"
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Support order created successfully",
+      data: {
+        orderId,
+        amount: normalizedAmount,
+        currency: "INR",
+        paymentSessionId: order.payment_session_id,
+        environment: String(process.env.CASHFREE_ENV || "SANDBOX").trim().toLowerCase(),
+        purpose: "Support Jar",
+      },
+    });
+  } catch (error) {
+    const mapped = mapGatewayError(error, "Unable to create support order");
+    reqLogger[mapped.logLevel](
+      {
+        err: error,
+        paymentCode: error?.code,
+        upstreamStatus: error?.statusCode || error?.response?.status,
+      },
+      "Create support order failed"
+    );
+
+    return res.status(mapped.status).json({
+      success: false,
+      message: mapped.message,
+    });
+  }
+};
+
+exports.verifySupportPayment = async (req, res) => {
+  const reqLogger = req.log || logger;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const { orderId, email } = req.body;
+    const normalizedOrderId = String(orderId || "").trim();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const config = getCashfreeConfig();
+    const supportRecord = await SupportPayment.findOne({ orderId: normalizedOrderId });
+
+    if (supportRecord?.paymentStatus === "paid") {
+      return res.status(200).json({
+        success: true,
+        message: "Support payment already verified",
+        data: {
+          orderId: normalizedOrderId,
+          amount: supportRecord.amount,
+          contributorName: supportRecord.contributorName,
+          paymentId: supportRecord.paymentId,
+        },
+      });
+    }
+
+    const cashfreeOrder = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}`,
+      config,
+    });
+
+    if (!cashfreeOrder?.order_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Unable to validate support order",
+      });
+    }
+
+    const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
+      .trim()
+      .toLowerCase();
+
+    if (orderEmail && orderEmail !== normalizedEmail) {
+      return res.status(403).json({
+        success: false,
+        message: "Verification details do not match this support order",
+      });
+    }
+
+    const orderAmount = Number(cashfreeOrder.order_amount);
+    if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Support amount is invalid",
+      });
+    }
+
+    if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
+      return res.status(400).json({
+        success: false,
+        message: "Order currency is invalid",
+      });
+    }
+
+    const paymentList = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}/payments`,
+      config,
+    });
+
+    const successfulPayment = (Array.isArray(paymentList) ? paymentList : []).find(
+      (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
+    );
+
+    if (!successfulPayment) {
+      const failedPayment = (Array.isArray(paymentList) ? paymentList : []).find((payment) =>
+        ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
+          String(payment.payment_status || "").toUpperCase()
+        )
+      );
+
+      const nextStatus = failedPayment ? "failed" : "pending";
+      await SupportPayment.findOneAndUpdate(
+        { orderId: normalizedOrderId },
+        {
+          $set: {
+            contributorName:
+              String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
+              "Supporter",
+            email: orderEmail || normalizedEmail,
+            phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
+            amount: orderAmount,
+            paymentStatus: nextStatus,
+            paymentProvider: "cashfree",
+            message: supportRecord?.message || "",
+            paymentId: createPendingPaymentId(normalizedOrderId),
+          },
+          $setOnInsert: {
+            orderId: normalizedOrderId,
+          },
+        },
+        {
+          upsert: true,
+          runValidators: true,
+        }
+      );
+
+      return res.status(409).json({
+        success: false,
+        message: failedPayment
+          ? "Payment was not completed. If amount was deducted, it will be auto-reconciled by gateway."
+          : "Payment is not completed yet",
+      });
+    }
+
+    const resolvedPaymentId =
+      String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
+      `cf_${normalizedOrderId}`;
+
+    await SupportPayment.findOneAndUpdate(
+      { orderId: normalizedOrderId },
+      {
+        $set: {
+          contributorName:
+            String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
+            "Supporter",
+          email: orderEmail || normalizedEmail,
+          phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
+          amount: orderAmount,
+          paymentStatus: "paid",
+          paymentProvider: "cashfree",
+          paymentId: resolvedPaymentId,
+          paidAt: new Date(),
+        },
+        $setOnInsert: {
+          orderId: normalizedOrderId,
+        },
+      },
+      {
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    reqLogger.info(
+      {
+        orderId: normalizedOrderId,
+        amount: orderAmount,
+        paymentId: resolvedPaymentId,
+      },
+      "Support payment verified"
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Support payment verified",
+      data: {
+        orderId: normalizedOrderId,
+        amount: orderAmount,
+        contributorName: String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
+          "Supporter",
+        paymentId: resolvedPaymentId,
+      },
+    });
+  } catch (error) {
+    const mapped = mapGatewayError(error, "Unable to verify support payment");
+    reqLogger[mapped.logLevel](
+      {
+        err: error,
+        paymentCode: error?.code,
+        upstreamStatus: error?.statusCode || error?.response?.status,
+      },
+      "Support payment verification failed"
     );
 
     return res.status(mapped.status).json({

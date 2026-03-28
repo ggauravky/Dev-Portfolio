@@ -129,6 +129,59 @@ exports.paymentVerifyValidationRules = [
     .normalizeEmail(),
 ];
 
+exports.supportCreateOrderValidationRules = [
+  body("name")
+    .trim()
+    .notEmpty()
+    .withMessage("Name is required")
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Name must be between 2 and 80 characters"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+
+  body("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage("Phone number must be a valid 10-digit Indian mobile number"),
+
+  body("amount")
+    .notEmpty()
+    .withMessage("Amount is required")
+    .isInt({ min: 1, max: 100000 })
+    .withMessage("Amount must be between INR 1 and INR 100000"),
+
+  body("message")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 300 })
+    .withMessage("Message cannot exceed 300 characters"),
+];
+
+exports.supportVerifyValidationRules = [
+  body("orderId")
+    .trim()
+    .notEmpty()
+    .withMessage("Order ID is required")
+    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
+    .withMessage("Order ID format is invalid"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+];
+
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);
 

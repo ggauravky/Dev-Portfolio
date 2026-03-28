@@ -73,6 +73,12 @@ function Services() {
                                 Book Full Stack Service
                             </Link>
                             <Link
+                                to="/support"
+                                className="px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300 hover:scale-105"
+                            >
+                                Open Support Jar
+                            </Link>
+                            <Link
                                 to="/projects"
                                 className="px-6 py-3 rounded-xl font-semibold text-slate-200 border border-slate-700 hover:border-cyan-500/50 hover:text-cyan-300 transition-colors"
                             >

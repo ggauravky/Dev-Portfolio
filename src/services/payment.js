@@ -49,6 +49,32 @@ export const verifyCashfreePayment = async (orderId, email) => {
     return data.data
 }
 
+export const createSupportOrder = async (payload) => {
+    const response = await fetch(`${API_URL}/api/payment/create-support-order`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+
+    const data = await assertResponse(response)
+    return data.data
+}
+
+export const verifySupportPayment = async (orderId, email) => {
+    const response = await fetch(`${API_URL}/api/payment/verify-support`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId, email }),
+    })
+
+    const data = await assertResponse(response)
+    return data.data
+}
+
 export const loadCashfreeSdk = () =>
     new Promise((resolve, reject) => {
         if (!globalThis.document) {

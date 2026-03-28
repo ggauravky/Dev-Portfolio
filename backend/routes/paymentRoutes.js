@@ -5,11 +5,18 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const express = require("express");
-const { createOrder, verifyPayment } = require("../controllers/paymentController");
+const {
+  createOrder,
+  verifyPayment,
+  createSupportOrder,
+  verifySupportPayment,
+} = require("../controllers/paymentController");
 const { paymentRateLimiter } = require("../middleware/rateLimiter");
 const {
   paymentCreateOrderValidationRules,
   paymentVerifyValidationRules,
+  supportCreateOrderValidationRules,
+  supportVerifyValidationRules,
   validate,
 } = require("../middleware/validator");
 
@@ -33,5 +40,19 @@ router.use(blockIfGatewayDisabled);
 
 router.post("/create-order", paymentRateLimiter, paymentCreateOrderValidationRules, validate, createOrder);
 router.post("/verify", paymentRateLimiter, paymentVerifyValidationRules, validate, verifyPayment);
+router.post(
+  "/create-support-order",
+  paymentRateLimiter,
+  supportCreateOrderValidationRules,
+  validate,
+  createSupportOrder
+);
+router.post(
+  "/verify-support",
+  paymentRateLimiter,
+  supportVerifyValidationRules,
+  validate,
+  verifySupportPayment
+);
 
 module.exports = router;

@@ -46,6 +46,7 @@ function BookNow() {
     })
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [paymentSuccess, setPaymentSuccess] = useState(null)
+    const [paymentFailure, setPaymentFailure] = useState('')
 
     const pendingOrderKey = 'pendingCashfreeOrder'
 
@@ -60,6 +61,7 @@ function BookNow() {
     }
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+    const isTerminalPaymentFailure = (message) => /not completed|cancelled|failed|dropped|expired/i.test(String(message || ''))
 
     const downloadBlob = (content, filename, mimeType) => {
         const blob = new Blob([content], { type: mimeType })
@@ -183,6 +185,7 @@ function BookNow() {
                     paymentId: pendingDetails.paymentId || `cf_${orderId}`,
                 }
                 setPaymentSuccess(mergedDetails)
+                setPaymentFailure('')
                 sessionStorage.removeItem(pendingOrderKey)
                 if (!silent) {
                     toast.success('Payment verified and booking confirmed')
@@ -197,6 +200,10 @@ function BookNow() {
 
                 if (!silent) {
                     toast.error(message || 'Payment verification failed')
+                }
+                if (isTerminalPaymentFailure(message)) {
+                    setPaymentFailure(message || 'Payment was not completed. No booking has been confirmed yet.')
+                    sessionStorage.removeItem(pendingOrderKey)
                 }
                 return false
             }
@@ -254,6 +261,7 @@ function BookNow() {
 
         const runCheckout = async () => {
             setIsSubmitting(true)
+            setPaymentFailure('')
 
             try {
                 const order = await createCashfreeOrder({
@@ -280,7 +288,9 @@ function BookNow() {
                 })
 
                 if (checkoutResult?.error) {
-                    throw new Error(checkoutResult.error.message || 'Payment was cancelled or failed')
+                    throw new Error(
+                        `Payment was not completed. ${checkoutResult.error.message || 'Checkout was cancelled or failed.'} No booking has been confirmed yet.`
+                    )
                 }
 
                 if (checkoutResult?.paymentDetails?.cf_payment_id) {
@@ -290,7 +300,12 @@ function BookNow() {
 
                 await finalizeOrderVerification(order.orderId, pending)
             } catch (error) {
-                toast.error(error?.message || 'Unable to start secure checkout')
+                const message = error?.message || 'Unable to start secure checkout'
+                setPaymentFailure(message)
+                if (isTerminalPaymentFailure(message)) {
+                    sessionStorage.removeItem(pendingOrderKey)
+                }
+                toast.error(message)
             } finally {
                 setIsSubmitting(false)
             }
@@ -333,6 +348,12 @@ function BookNow() {
                             <p className="text-xs text-slate-400 uppercase tracking-wider">Step 1</p>
                             <p className="text-sm text-slate-200 mt-1">Share your details and preferred schedule to create a secure payment order.</p>
                         </div>
+
+                        {paymentFailure ? (
+                            <div className="mt-4 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                                {paymentFailure}
+                            </div>
+                        ) : null}
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
@@ -477,6 +498,9 @@ function BookNow() {
                         </div>
 
                         <div className="mt-5 grid grid-cols-1 gap-2.5">
+                            <Link to="/support" className="rounded-xl border border-cyan-500/35 px-4 py-2.5 text-sm text-cyan-200 hover:border-cyan-400 hover:text-cyan-100 transition-colors text-center bg-cyan-500/5">
+                                Support Jar (Any Amount)
+                            </Link>
                             <Link to="/projects" className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors text-center">
                                 See Projects
                             </Link>
