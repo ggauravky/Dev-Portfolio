@@ -8,6 +8,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
 import { getServiceBySlug } from '../data/servicesData'
+import StickyMobileCTA from '../components/StickyMobileCTA'
 
 function SectionCard({ title, items }) {
     return (
@@ -68,16 +69,26 @@ function ServiceDetail({ forcedSlug = '' }) {
     const slug = forcedSlug || params.slug || ''
     const service = getServiceBySlug(slug)
 
+    const seoTitle = service
+        ? `${service.title} - Gaurav Kumar Yadav Services`
+        : 'Services - Gaurav Kumar Yadav'
+    const seoDescription = service
+        ? `${service.summary} Pricing: ${service.priceLabel}. Secure checkout via Cashfree with UPI, cards, and netbanking.`
+        : 'Explore development services with secure checkout and fast delivery.'
+    const seoKeywords = service
+        ? `${service.title}, developer service, ${service.category}, secure checkout, cashfree`
+        : 'developer services, secure checkout, cashfree'
+
+    useSEO({
+        title: seoTitle,
+        description: seoDescription,
+        keywords: seoKeywords,
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+    })
+
     if (!service) {
         return <Navigate to="/services" replace />
     }
-
-    useSEO({
-        title: `${service.title} - Gaurav Kumar Yadav Services`,
-        description: `${service.summary} Pricing: ${service.priceLabel}. Secure checkout via Cashfree with UPI, cards, and netbanking.`,
-        keywords: `${service.title}, developer service, ${service.category}, secure checkout, cashfree`,
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
-    })
 
     return (
         <div className="min-h-screen bg-slate-900 relative overflow-hidden">
@@ -298,6 +309,15 @@ function ServiceDetail({ forcedSlug = '' }) {
                         </Link>
                     </div>
                 </section>
+
+                <StickyMobileCTA
+                    badge="Primary Action"
+                    title={`Book ${service.title}`}
+                    primaryLabel="Book Service"
+                    primaryTo={`/booknow?service=${service.slug}`}
+                    secondaryLabel="Start a Conversation"
+                    secondaryTo="/contact"
+                />
             </div>
         </div>
     )

@@ -56,9 +56,6 @@ const BookNow = lazy(() => import('./pages/BookNow'))
 const Support = lazy(() => import('./pages/Support'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
-const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
-const MlDemos = lazy(() => import('./pages/lab/MlDemos'))
-const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Refund = lazy(() => import('./pages/Refund'))
@@ -113,7 +110,11 @@ function ScrollToTop() {
 }
 
 // Routes that should render without Navbar / Footer (full-screen layouts)
-const FULL_SCREEN_ROUTES = new Set(['/lab/gaurav-chatbot'])
+const FULL_SCREEN_ROUTES = new Set([
+    '/lab/gaurav-chatbot',
+    '/lab/ml-demos',
+    '/lab/consistency-dashboard',
+])
 
 function AppLayout({ children }) {
     const { pathname } = useLocation()
@@ -160,9 +161,9 @@ function AnimatedRoutes() {
                 <Route path="/"                           element={<R><Home /></R>} />
                 <Route path="/about"                      element={<R><About /></R>} />
                 <Route path="/lab"                        element={<R><Lab /></R>} />
-                <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
-                <Route path="/lab/ml-demos"               element={<R><MlDemos /></R>} />
-                <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
+                <Route path="/lab/gaurav-chatbot"         element={<R><UnderConstruction variant="lab-chatbot" /></R>} />
+                <Route path="/lab/ml-demos"               element={<R><UnderConstruction variant="lab-ml" /></R>} />
+                <Route path="/lab/consistency-dashboard"  element={<R><UnderConstruction variant="lab-consistency" /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />
                 <Route path="/projects"                   element={<R><Projects /></R>} />
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
@@ -172,7 +173,7 @@ function AnimatedRoutes() {
                 <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
                 <Route path="/booknow"                    element={<R><BookNow /></R>} />
                 <Route path="/support"                    element={<R><Support /></R>} />
-                <Route path="/payment-under-construction" element={<R><UnderConstruction /></R>} />
+                <Route path="/payment-under-construction" element={<R><UnderConstruction variant="payment" /></R>} />
                 <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
                 <Route path="/resume-review"              element={<R><ServiceDetail forcedSlug="resume-review" /></R>} />
                 <Route path="/debugging-help"             element={<R><ServiceDetail forcedSlug="debugging-help" /></R>} />

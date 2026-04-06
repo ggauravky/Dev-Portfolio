@@ -32,6 +32,7 @@ function Blog() {
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
+    const [sortBy, setSortBy] = useState('newest')
     const [newsletterEmail, setNewsletterEmail] = useState('')
     const [newsletterLoading, setNewsletterLoading] = useState(false)
 
@@ -42,9 +43,14 @@ function Blog() {
         content: undefined // Remove heavy content from list view
     })), [])
 
+    const getReadTimeMinutes = (readTime) => {
+        const match = /(\d+)/.exec(String(readTime || ''))
+        return match ? Number.parseInt(match[1], 10) : 0
+    }
+
     // Filter blogs based on search and category
     const filteredBlogs = useMemo(() => {
-        return blogs.filter(blog => {
+        const filtered = blogs.filter(blog => {
             const matchesSearch =
                 (blog.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                 (blog.excerpt || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,7 +60,50 @@ function Blog() {
 
             return matchesSearch && matchesCategory
         })
-    }, [searchQuery, selectedCategory])
+
+        const sorted = [...filtered]
+
+        switch (sortBy) {
+            case 'oldest':
+                sorted.sort((a, b) => new Date(a.publishedDate || a.date).getTime() - new Date(b.publishedDate || b.date).getTime())
+                break
+            case 'quick-read':
+                sorted.sort((a, b) => getReadTimeMinutes(a.readTime) - getReadTimeMinutes(b.readTime))
+                break
+            case 'deep-dive':
+                sorted.sort((a, b) => getReadTimeMinutes(b.readTime) - getReadTimeMinutes(a.readTime))
+                break
+            case 'featured':
+                sorted.sort((a, b) => (Number(Boolean(b.featured)) - Number(Boolean(a.featured))) || (new Date(b.publishedDate || b.date).getTime() - new Date(a.publishedDate || a.date).getTime()))
+                break
+            case 'newest':
+            default:
+                sorted.sort((a, b) => new Date(b.publishedDate || b.date).getTime() - new Date(a.publishedDate || a.date).getTime())
+                break
+        }
+
+        return sorted
+    }, [searchQuery, selectedCategory, sortBy, blogs])
+
+    const recommendedBlogs = useMemo(() => {
+        const scoped = blogs.filter((blog) => selectedCategory === 'All' || blog.category === selectedCategory)
+        return [...scoped]
+            .sort((a, b) => (Number(Boolean(b.featured)) - Number(Boolean(a.featured))) || (new Date(b.publishedDate || b.date).getTime() - new Date(a.publishedDate || a.date).getTime()))
+            .slice(0, 3)
+    }, [blogs, selectedCategory])
+
+    const trendingTags = useMemo(() => {
+        const count = {}
+        filteredBlogs.forEach((blog) => {
+            ;(blog.tags || []).forEach((tag) => {
+                count[tag] = (count[tag] || 0) + 1
+            })
+        })
+        return Object.entries(count)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6)
+            .map(([tag]) => tag)
+    }, [filteredBlogs])
 
     const handleNewsletterSubscribe = async (e) => {
         e.preventDefault()
@@ -153,6 +202,39 @@ function Blog() {
                     ))}
                 </div>
 
+                <div className="max-w-xs mx-auto mb-8 animate-slideUp" style={{ animationDelay: '0.15s' }}>
+                    <label htmlFor="blog-sort" className="block text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2 text-center">Sort Posts</label>
+                    <select
+                        id="blog-sort"
+                        value={sortBy}
+                        onChange={(event) => setSortBy(event.target.value)}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500"
+                    >
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="featured">Featured First</option>
+                        <option value="quick-read">Quick Reads</option>
+                        <option value="deep-dive">Deep Dives</option>
+                    </select>
+                </div>
+
+                {trendingTags.length > 0 ? (
+                    <div className="mb-8 animate-fadeIn" style={{ animationDelay: '0.18s' }}>
+                        <p className="text-xs uppercase tracking-widest text-slate-500 text-center mb-2">Trending Topics</p>
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {trendingTags.map((tag) => (
+                                <button
+                                    key={`trending-${tag}`}
+                                    onClick={() => setSearchQuery(tag)}
+                                    className="px-3 py-1.5 rounded-full text-xs font-semibold border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-300"
+                                >
+                                    #{tag}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+
                 {/* Results Count */}
                 <div className="text-center mb-8 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                     <p className="text-slate-400">
@@ -237,6 +319,47 @@ function Blog() {
                             ))}
                         </div>
                     )}
+                </div>
+
+                {recommendedBlogs.length > 0 ? (
+                    <div className="mt-14 animate-fadeIn" style={{ animationDelay: '0.45s' }}>
+                        <div className="flex items-center justify-between gap-3 mb-5">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-100">Recommended Reads</h2>
+                            <span className="text-xs text-slate-500 uppercase tracking-widest">Discovery</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {recommendedBlogs.map((blog) => (
+                                <Link
+                                    key={`recommended-${blog.id}`}
+                                    to={`/blog/${blog.slug}`}
+                                    className="group rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4 hover:border-cyan-500/40 hover:-translate-y-1 transition-all duration-300"
+                                >
+                                    <p className="text-xs text-cyan-300 uppercase tracking-wider">{blog.category}</p>
+                                    <p className="mt-2 text-base font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors line-clamp-2">{blog.title}</p>
+                                    <p className="mt-2 text-sm text-slate-400 line-clamp-2">{blog.excerpt}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+
+                <div className="mt-14 rounded-3xl border border-slate-700/70 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 p-7 sm:p-8 text-center animate-fadeIn" style={{ animationDelay: '0.5s' }}>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-100">Need Help Building Similar Work?</h2>
+                    <p className="mt-2 text-slate-300 max-w-2xl mx-auto">Move from reading to execution with focused implementation help.</p>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                        <Link
+                            to="/services"
+                            className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                        >
+                            Book Service
+                        </Link>
+                        <Link
+                            to="/contact"
+                            className="inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/50 hover:text-cyan-300 transition-all duration-300"
+                        >
+                            Start a Conversation
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Newsletter Section */}

@@ -7,6 +7,7 @@
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
+import StickyMobileCTA from '../components/StickyMobileCTA'
 
 const CONTACT_EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
 
@@ -260,7 +261,7 @@ function Contact() {
                 </div>
 
                 {/* Proper message form */}
-                <section className="mb-12 sm:mb-14">
+                <section id="contact-form" className="mb-12 sm:mb-14">
                         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-9 hover:border-slate-600/60 transition-colors duration-300">
 
                             <div className="mb-7">
@@ -466,6 +467,15 @@ function Contact() {
                         ))}
                     </div>
                 </section>
+
+                <StickyMobileCTA
+                    badge="Primary Action"
+                    title="Start a conversation now"
+                    primaryLabel="Start a Conversation"
+                    primaryTo="/contact#contact-form"
+                    secondaryLabel="Book Service"
+                    secondaryTo="/services"
+                />
             </div>
         </div>
     )

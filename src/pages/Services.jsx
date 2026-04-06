@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
 import ScrollReveal from '../components/ScrollReveal'
 import ServiceCard from '../components/ServiceCard'
+import TrustStrip from '../components/TrustStrip'
+import StickyMobileCTA from '../components/StickyMobileCTA'
 import { servicesData } from '../data/servicesData'
 
 function Services() {
@@ -86,7 +88,7 @@ function Services() {
                                 to="/booknow?service=fullstack-development"
                                 className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
                             >
-                                Book Full Stack Service
+                                Book Service
                             </Link>
                             <Link
                                 to="/support"
@@ -150,6 +152,10 @@ function Services() {
                         </div>
                     </ScrollReveal>
                 </div>
+            </section>
+
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 sm:pb-4">
+                <TrustStrip variant="services" />
             </section>
 
             <section id="core-services" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -357,6 +363,15 @@ function Services() {
                     </div>
                 </ScrollReveal>
             </section>
+
+            <StickyMobileCTA
+                badge="Primary Action"
+                title="Ready to book your service?"
+                primaryLabel="Book Service"
+                primaryTo="/booknow?service=fullstack-development"
+                secondaryLabel="Start a Conversation"
+                secondaryTo="/contact"
+            />
 
             <style>{`
                 @keyframes serviceMarquee {

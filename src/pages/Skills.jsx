@@ -5,6 +5,8 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useState } from 'react'
+import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
 import TechIcon from '../components/TechIcon'
 import './Skills.css'
@@ -64,6 +66,11 @@ const CategoryIcon = ({ title, className = 'w-7 h-7' }) => {
         ),
     }
     return icons[title] ?? null
+}
+
+CategoryIcon.propTypes = {
+    title: PropTypes.string.isRequired,
+    className: PropTypes.string,
 }
 
 function Skills() {
@@ -280,7 +287,7 @@ function Skills() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {skillCategories[activeTab].map((category, index) => (
                         <div
-                            key={index}
+                            key={category.title}
                             className={`skill-card group bg-gradient-to-br ${colorClasses[category.color].bg} backdrop-blur-md p-6 sm:p-8 rounded-3xl border-2 ${colorClasses[category.color].border} ${colorClasses[category.color].hover} transition-all duration-500 hover:shadow-2xl animate-slideUp hover:-translate-y-2`}
                             style={{ animationDelay: `${index * 0.1}s` }}
                         >
@@ -298,7 +305,7 @@ function Skills() {
                             <div className="flex flex-wrap gap-2 sm:gap-3">
                                 {category.skills.map((skill, skillIndex) => (
                                     <span
-                                        key={skillIndex}
+                                        key={`${category.title}-${skill}`}
                                         className={`skill-badge inline-flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all duration-300 cursor-default ${colorClasses[category.color].badge} hover:scale-110 hover:shadow-lg whitespace-nowrap`}
                                         style={{ 
                                             animationDelay: `${(index * 0.1) + (skillIndex * 0.05)}s` 
@@ -352,12 +359,20 @@ function Skills() {
                         <p className="text-slate-300 text-lg mb-6 max-w-2xl mx-auto">
                             Always learning, always growing. Check out my projects to see these skills in action!
                         </p>
-                        <a
-                            href="/projects"
-                            className="inline-block px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/50"
-                        >
-                            View My Projects →
-                        </a>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            <Link
+                                to="/services"
+                                className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/50"
+                            >
+                                Book Service
+                            </Link>
+                            <Link
+                                to="/contact"
+                                className="inline-flex items-center justify-center px-8 py-4 border border-slate-600 hover:border-cyan-500/50 rounded-full font-semibold text-slate-200 hover:text-cyan-300 transition-all duration-300"
+                            >
+                                Start a Conversation
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

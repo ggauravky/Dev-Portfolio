@@ -10,6 +10,8 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
 import { createCashfreeOrder, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
+import TrustStrip from '../components/TrustStrip'
+import StickyMobileCTA from '../components/StickyMobileCTA'
 
 const getMinBookDate = () => {
     const date = new Date()
@@ -171,41 +173,60 @@ function BookNow() {
         downloadBlob(ics, `booking-calendar-${details.orderId}.ics`, 'text/calendar;charset=utf-8')
     }
 
+    const applyVerifiedOrder = (orderId, pendingDetails, verification, silent) => {
+        const mergedDetails = {
+            ...pendingDetails,
+            bookingId: verification.bookingId,
+            amount: verification.amount,
+            service: verification.service,
+            paymentId: pendingDetails.paymentId || `cf_${orderId}`,
+        }
+
+        setPaymentSuccess(mergedDetails)
+        setPaymentFailure('')
+        sessionStorage.removeItem(pendingOrderKey)
+
+        if (!silent) {
+            toast.success('Payment verified and booking confirmed')
+        }
+
+        return true
+    }
+
+    const handleOrderVerificationError = async (error, attempt, silent) => {
+        const message = String(error?.message || '')
+        const shouldRetry = /not completed yet/i.test(message) && attempt < 4
+
+        if (shouldRetry) {
+            await pause(1800)
+            return { shouldRetry: true, result: false }
+        }
+
+        if (!silent) {
+            toast.error(message || 'Payment verification failed')
+        }
+
+        if (isTerminalPaymentFailure(message)) {
+            setPaymentFailure(message || 'Payment was not completed. No booking has been confirmed yet.')
+            sessionStorage.removeItem(pendingOrderKey)
+        }
+
+        return { shouldRetry: false, result: false }
+    }
+
     const finalizeOrderVerification = async (orderId, pendingDetails, options = {}) => {
         const { silent = false } = options
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
                 const verification = await verifyCashfreePayment(orderId, pendingDetails.email)
-                const mergedDetails = {
-                    ...pendingDetails,
-                    bookingId: verification.bookingId,
-                    amount: verification.amount,
-                    service: verification.service,
-                    paymentId: pendingDetails.paymentId || `cf_${orderId}`,
-                }
-                setPaymentSuccess(mergedDetails)
-                setPaymentFailure('')
-                sessionStorage.removeItem(pendingOrderKey)
-                if (!silent) {
-                    toast.success('Payment verified and booking confirmed')
-                }
-                return true
+                return applyVerifiedOrder(orderId, pendingDetails, verification, silent)
             } catch (error) {
-                const message = String(error?.message || '')
-                if (/not completed yet/i.test(message) && attempt < 4) {
-                    await pause(1800)
+                const outcome = await handleOrderVerificationError(error, attempt, silent)
+                if (outcome.shouldRetry) {
                     continue
                 }
-
-                if (!silent) {
-                    toast.error(message || 'Payment verification failed')
-                }
-                if (isTerminalPaymentFailure(message)) {
-                    setPaymentFailure(message || 'Payment was not completed. No booking has been confirmed yet.')
-                    sessionStorage.removeItem(pendingOrderKey)
-                }
-                return false
+                return outcome.result
             }
         }
 
@@ -510,6 +531,19 @@ function BookNow() {
                         </div>
                     </aside>
                 </div>
+
+                <section className="mt-8 sm:mt-10">
+                    <TrustStrip variant="booknow" />
+                </section>
+
+                <StickyMobileCTA
+                    badge="Need Help Booking"
+                    title="Start a conversation before checkout"
+                    primaryLabel="Start a Conversation"
+                    primaryTo="/contact"
+                    secondaryLabel="View Services"
+                    secondaryTo="/services"
+                />
 
                 {paymentSuccess ? (
                     <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm px-4 py-8 overflow-y-auto">

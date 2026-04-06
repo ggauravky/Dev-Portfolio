@@ -30,10 +30,11 @@ function Projects() {
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
+    const [sortBy, setSortBy] = useState('featured')
 
     // Filter projects based on search and category
     const filteredProjects = useMemo(() => {
-        return projectsData.filter(project => {
+        const filtered = projectsData.filter(project => {
             const matchesSearch =
                 project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -43,7 +44,33 @@ function Projects() {
 
             return matchesSearch && matchesCategory
         })
-    }, [searchQuery, selectedCategory])
+
+        const sorted = [...filtered]
+
+        switch (sortBy) {
+            case 'newest':
+                sorted.sort((a, b) => b.id - a.id)
+                break
+            case 'alphabetical':
+                sorted.sort((a, b) => a.title.localeCompare(b.title))
+                break
+            case 'tech-depth':
+                sorted.sort((a, b) => b.techStack.length - a.techStack.length)
+                break
+            case 'featured':
+            default:
+                sorted.sort((a, b) => (Number(Boolean(b.featured)) - Number(Boolean(a.featured))) || (b.id - a.id))
+                break
+        }
+
+        return sorted
+    }, [searchQuery, selectedCategory, sortBy])
+
+    const recommendedProjects = useMemo(() => {
+        const scoped = projectsData.filter((project) => selectedCategory === 'All' || project.categories.includes(selectedCategory))
+        const sorted = [...scoped].sort((a, b) => (Number(Boolean(b.featured)) - Number(Boolean(a.featured))) || (b.id - a.id))
+        return sorted.slice(0, 3)
+    }, [selectedCategory])
 
     return (
         <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
@@ -99,6 +126,21 @@ function Projects() {
                     ))}
                 </div>
 
+                <div className="max-w-xs mx-auto mb-8 animate-slideUp" style={{ animationDelay: '0.15s' }}>
+                    <label htmlFor="projects-sort" className="block text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2 text-center">Sort Projects</label>
+                    <select
+                        id="projects-sort"
+                        value={sortBy}
+                        onChange={(event) => setSortBy(event.target.value)}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500"
+                    >
+                        <option value="featured">Featured First</option>
+                        <option value="newest">Newest First</option>
+                        <option value="alphabetical">Alphabetical</option>
+                        <option value="tech-depth">Most Tech Stack Depth</option>
+                    </select>
+                </div>
+
                 {/* Results Count */}
                 <div className="text-center mb-8 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
                     <p className="text-slate-400">
@@ -150,8 +192,8 @@ function Projects() {
 
                                     {/* Category Badges — show first 2 to avoid overflow-hidden clipping */}
                                     <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end">
-                                        {project.categories.slice(0, 2).map((category, i) => (
-                                            <span key={i} className="px-3 py-1 bg-purple-600/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full border border-purple-400/50 whitespace-nowrap">
+                                        {project.categories.slice(0, 2).map((category) => (
+                                            <span key={`${project.id}-cat-${category}`} className="px-3 py-1 bg-purple-600/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full border border-purple-400/50 whitespace-nowrap">
                                                 {category}
                                             </span>
                                         ))}
@@ -174,9 +216,9 @@ function Projects() {
 
                                     {/* Tech Stack */}
                                     <div className="flex flex-wrap gap-2 mb-6">
-                                        {project.techStack.map((tech, i) => (
+                                        {project.techStack.map((tech) => (
                                             <span
-                                                key={i}
+                                                key={`${project.id}-tech-${tech}`}
                                                 className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-sm border border-slate-700/50 hover:border-purple-500/50 hover:text-purple-400 transition-all duration-200"
                                             >
                                                 {tech}
@@ -234,27 +276,52 @@ function Projects() {
                     )}
                 </div>
 
+                {recommendedProjects.length > 0 ? (
+                    <div className="mt-14 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
+                        <div className="flex items-center justify-between gap-3 mb-5">
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-100">Recommended to Explore Next</h2>
+                            <span className="text-xs text-slate-500 uppercase tracking-widest">Discovery</span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {recommendedProjects.map((project) => (
+                                <Link
+                                    key={`recommended-${project.id}`}
+                                    to={`/projects/${project.slug}`}
+                                    className="group rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4 hover:border-cyan-500/40 hover:-translate-y-1 transition-all duration-300"
+                                >
+                                    <p className="text-xs text-cyan-300 uppercase tracking-wider">{(project.categories || [])[0] || 'Project'}</p>
+                                    <p className="mt-2 text-base font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors">{project.title}</p>
+                                    <p className="mt-2 text-sm text-slate-400 line-clamp-2">{project.description}</p>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
+
                 {/* Call to Action */}
                 {filteredProjects.length > 0 && (
                     <div className="mt-16 text-center animate-fadeIn" style={{ animationDelay: '0.8s' }}>
                         <div className="bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-cyan-600/20 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-600/50">
                             <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                                Want to see more?
+                                Want Similar Delivery for Your Project?
                             </h3>
                             <p className="text-slate-300 text-lg mb-6 max-w-2xl mx-auto">
-                                Check out my GitHub for more projects and contributions!
+                                Move from inspiration to execution with a focused build plan.
                             </p>
-                            <a
-                                href="https://github.com/ggauravky"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/50"
-                            >
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                </svg>
-                                View GitHub Profile
-                            </a>
+                            <div className="flex flex-wrap items-center justify-center gap-3">
+                                <Link
+                                    to="/services"
+                                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/50"
+                                >
+                                    Book Service
+                                </Link>
+                                <Link
+                                    to="/contact"
+                                    className="inline-flex items-center gap-2 px-8 py-4 border border-slate-600 hover:border-cyan-500/50 rounded-full font-semibold text-slate-100 hover:text-cyan-300 transition-all duration-300"
+                                >
+                                    Start a Conversation
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}

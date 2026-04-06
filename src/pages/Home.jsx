@@ -123,14 +123,23 @@ function Home() {
                             </div>
 
                             {/* CTA Buttons */}
-                            <div className="flex flex-row gap-3 pt-2 justify-center lg:justify-start">
+                            <div className="flex flex-wrap gap-3 pt-2 justify-center lg:justify-start">
                                 <Link 
-                                    to="/projects" 
+                                    to="/services" 
                                     className="group relative px-6 py-3 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-xl font-bold text-sm sm:text-base hover:from-blue-500 hover:via-purple-500 hover:to-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/40 text-center overflow-hidden inline-flex items-center justify-center"
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                        <span>View Projects</span>
+                                        <span>Book Service</span>
                                         <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                                    </span>
+                                </Link>
+                                <Link 
+                                    to="/projects" 
+                                    className="group relative px-6 py-3 border-2 border-purple-500/35 rounded-xl font-bold text-sm sm:text-base hover:bg-purple-500/10 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/20 text-center backdrop-blur-sm hover:border-purple-400/60 inline-flex items-center justify-center"
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                        <span>View Projects</span>
+                                        <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
                                     </span>
                                 </Link>
                                 <Link 

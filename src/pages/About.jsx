@@ -4,6 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
 
 const focusAreas = [
@@ -201,18 +202,18 @@ function About() {
                         I am currently available for internships, freelance opportunities, and entry-level developer roles where I can contribute and keep growing.
                     </p>
                     <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                        <a
-                            href="/projects"
+                        <Link
+                            to="/contact"
                             className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-transform duration-300 hover:scale-105"
                         >
-                            View Projects
-                        </a>
-                        <a
-                            href="/contact"
+                            Start a Conversation
+                        </Link>
+                        <Link
+                            to="/services"
                             className="rounded-full border border-slate-700 bg-slate-800 px-6 py-2.5 text-sm font-semibold text-slate-200 transition-colors duration-300 hover:border-cyan-500/40 hover:text-cyan-300"
                         >
-                            Contact Me
-                        </a>
+                            Book Service
+                        </Link>
                     </div>
                 </section>
             </div>

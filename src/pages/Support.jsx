@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { createSupportOrder, openCashfreeCheckout, verifySupportPayment } from '../services/payment'
+import TrustStrip from '../components/TrustStrip'
 
 const quickAmounts = [49, 99, 199, 499, 999, 1999]
 
@@ -85,41 +86,60 @@ function Support() {
                 downloadBlob(html, `support-receipt-${details.orderId}.html`, 'text/html;charset=utf-8')
         }
 
+    const applyVerifiedSupport = (pendingDetails, verification, silent) => {
+        const merged = {
+            ...pendingDetails,
+            amount: verification.amount,
+            contributorName: verification.contributorName,
+            paymentId: verification.paymentId,
+        }
+
+        setSupportSuccess(merged)
+        setPaymentFailure('')
+        sessionStorage.removeItem(pendingSupportKey)
+        setThankYouNote('Thank you for helping me grow. Your support means a lot!')
+
+        if (!silent) {
+            toast.success('Support payment verified. Thank you!')
+        }
+
+        return true
+    }
+
+    const handleSupportVerificationError = async (error, attempt, silent) => {
+        const message = String(error?.message || '')
+        const shouldRetry = /not completed yet/i.test(message) && attempt < 4
+
+        if (shouldRetry) {
+            await pause(1500)
+            return { shouldRetry: true, result: false }
+        }
+
+        if (!silent) {
+            toast.error(message || 'Unable to verify support payment')
+        }
+
+        if (isTerminalPaymentFailure(message)) {
+            setPaymentFailure(message || 'Payment was not completed. No support amount has been confirmed.')
+            sessionStorage.removeItem(pendingSupportKey)
+        }
+
+        return { shouldRetry: false, result: false }
+    }
+
     const finalizeSupportVerification = async (orderId, pendingDetails, options = {}) => {
         const { silent = false } = options
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
                 const verification = await verifySupportPayment(orderId, pendingDetails.email)
-                const merged = {
-                    ...pendingDetails,
-                    amount: verification.amount,
-                    contributorName: verification.contributorName,
-                    paymentId: verification.paymentId,
-                }
-                setSupportSuccess(merged)
-                setPaymentFailure('')
-                sessionStorage.removeItem(pendingSupportKey)
-                setThankYouNote('Thank you for helping me grow. Your support means a lot!')
-                if (!silent) {
-                    toast.success('Support payment verified. Thank you!')
-                }
-                return true
+                return applyVerifiedSupport(pendingDetails, verification, silent)
             } catch (error) {
-                const message = String(error?.message || '')
-                if (/not completed yet/i.test(message) && attempt < 4) {
-                    await pause(1500)
+                const outcome = await handleSupportVerificationError(error, attempt, silent)
+                if (outcome.shouldRetry) {
                     continue
                 }
-
-                if (!silent) {
-                    toast.error(message || 'Unable to verify support payment')
-                }
-                if (isTerminalPaymentFailure(message)) {
-                    setPaymentFailure(message || 'Payment was not completed. No support amount has been confirmed.')
-                    sessionStorage.removeItem(pendingSupportKey)
-                }
-                return false
+                return outcome.result
             }
         }
 
@@ -416,6 +436,10 @@ function Support() {
                         </div>
                     </aside>
                 </div>
+
+                <section className="mt-8 sm:mt-10">
+                    <TrustStrip variant="support" />
+                </section>
 
                 {supportSuccess ? (
                     <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm px-4 py-8 overflow-y-auto">
