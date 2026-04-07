@@ -4,13 +4,18 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
+import { eventsData } from '../data/eventsData'
 import LazyImage from '../components/LazyImage'
+import EventRecordCard from '../components/EventRecordCard'
 import './Blog.css'
+
+const INITIAL_VISIBLE_BLOGS = 5
+const BLOGS_LOAD_STEP = 3
 
 function Blog() {
     useSEO({
@@ -33,6 +38,7 @@ function Blog() {
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('All')
     const [sortBy, setSortBy] = useState('newest')
+    const [visibleBlogsCount, setVisibleBlogsCount] = useState(INITIAL_VISIBLE_BLOGS)
     const [newsletterEmail, setNewsletterEmail] = useState('')
     const [newsletterLoading, setNewsletterLoading] = useState(false)
 
@@ -104,6 +110,38 @@ function Blog() {
             .slice(0, 6)
             .map(([tag]) => tag)
     }, [filteredBlogs])
+
+    const visibleBlogs = useMemo(
+        () => filteredBlogs.slice(0, visibleBlogsCount),
+        [filteredBlogs, visibleBlogsCount]
+    )
+
+    const sortedEvents = useMemo(() => {
+        return [...eventsData].sort((a, b) => {
+            const aTime = new Date(a.date || '').getTime()
+            const bTime = new Date(b.date || '').getTime()
+
+            if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
+                return 0
+            }
+
+            return bTime - aTime
+        })
+    }, [])
+
+    const remainingBlogsCount = Math.max(filteredBlogs.length - visibleBlogs.length, 0)
+    const nextLoadCount = Math.min(BLOGS_LOAD_STEP, remainingBlogsCount)
+
+    useEffect(() => {
+        setVisibleBlogsCount(INITIAL_VISIBLE_BLOGS)
+    }, [searchQuery, selectedCategory, sortBy])
+
+    const handleLoadMoreBlogs = () => {
+        setVisibleBlogsCount((previousCount) => {
+            const nextCount = previousCount + BLOGS_LOAD_STEP
+            return Math.min(nextCount, filteredBlogs.length)
+        })
+    }
 
     const handleNewsletterSubscribe = async (e) => {
         e.preventDefault()
@@ -242,7 +280,7 @@ function Blog() {
                             <span className="text-red-400">No blog posts found</span>
                         ) : (
                             <span>
-                                Showing <span className="text-purple-400 font-semibold">{filteredBlogs.length}</span>
+                                Showing <span className="text-purple-400 font-semibold">{visibleBlogs.length}</span> of <span className="text-cyan-300 font-semibold">{filteredBlogs.length}</span>
                                 {filteredBlogs.length === 1 ? ' post' : ' posts'}
                             </span>
                         )}
@@ -270,7 +308,7 @@ function Blog() {
                         </div>
                     ) : (
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredBlogs.map((blog, index) => (
+                            {visibleBlogs.map((blog, index) => (
                                 <div
                                     key={blog.id}
                                     className="group bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-cyan-500/50 hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 animate-slideUp"
@@ -321,6 +359,18 @@ function Blog() {
                     )}
                 </div>
 
+                {remainingBlogsCount > 0 ? (
+                    <div className="mt-8 text-center animate-fadeIn" style={{ animationDelay: '0.35s' }}>
+                        <button
+                            type="button"
+                            onClick={handleLoadMoreBlogs}
+                            className="inline-flex items-center justify-center rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-6 py-3 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all duration-300"
+                        >
+                            Load {nextLoadCount} More {nextLoadCount === 1 ? 'Post' : 'Posts'}
+                        </button>
+                    </div>
+                ) : null}
+
                 {recommendedBlogs.length > 0 ? (
                     <div className="mt-14 animate-fadeIn" style={{ animationDelay: '0.45s' }}>
                         <div className="flex items-center justify-between gap-3 mb-5">
@@ -342,6 +392,40 @@ function Blog() {
                         </div>
                     </div>
                 ) : null}
+
+                <section className="mt-14 rounded-3xl border border-slate-700/70 bg-slate-800/45 backdrop-blur-sm p-6 sm:p-8 animate-fadeIn" style={{ animationDelay: '0.48s' }}>
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <div>
+                            <p className="text-xs uppercase tracking-widest text-cyan-300">Attendance Record</p>
+                            <h2 className="text-2xl md:text-3xl font-bold text-slate-100 mt-1">Hackathons and Events</h2>
+                        </div>
+                        <span className="text-xs text-slate-500 uppercase tracking-widest">{sortedEvents.length} Logged</span>
+                    </div>
+
+                    <p className="text-slate-400 text-sm sm:text-base mb-5">
+                        This section tracks hackathons, competitions, and technical events attended over time.
+                    </p>
+
+                    {sortedEvents.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-slate-600 bg-slate-900/50 p-6 text-center">
+                            <div className="mx-auto mb-3 w-12 h-12 rounded-xl border border-slate-700 bg-slate-800/70 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.7} stroke="currentColor" aria-hidden="true">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 6.75h6.75M8.625 12h6.75m-6.75 5.25h6.75M6 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75z" />
+                                </svg>
+                            </div>
+                            <p className="text-slate-200 font-semibold">No events added yet</p>
+                            <p className="text-sm text-slate-500 mt-1">New hackathon and event attendance records will appear here.</p>
+                        </div>
+                    ) : (
+                        <div className={sortedEvents.length === 1 ? 'max-w-5xl mx-auto' : ''}>
+                            <div className={`grid grid-cols-1 gap-5 ${sortedEvents.length > 1 ? 'md:grid-cols-2' : ''}`}>
+                                {sortedEvents.map((event, index) => (
+                                    <EventRecordCard key={event.id} event={event} index={index} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </section>
 
                 <div className="mt-14 rounded-3xl border border-slate-700/70 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 p-7 sm:p-8 text-center animate-fadeIn" style={{ animationDelay: '0.5s' }}>
                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-100">Need Help Building Similar Work?</h2>
