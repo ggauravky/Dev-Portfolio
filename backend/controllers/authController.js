@@ -8,6 +8,11 @@ const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { logger } = require("../utils/logger");
 const {
+  sendWelcomeEmail,
+  sendWelcomeBackEmail,
+  shouldSendWelcomeBackEmail,
+} = require("../utils/email");
+const {
   AUTH_COOKIE_NAME,
   issueSessionToken,
   getSessionCookieOptions,
@@ -43,6 +48,140 @@ const buildUserPayload = (user) => ({
 
 const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
 const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
+
+const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
+  const now = new Date();
+
+  if (type === "welcome") {
+    await User.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          lastWelcomeEmailAt: now,
+          lastLoginEmailType: "welcome",
+          lastLoginEmailProviderId: String(providerId || ""),
+        },
+        $inc: {
+          welcomeEmailSentCount: 1,
+        },
+      }
+    );
+
+    return;
+  }
+
+  await User.updateOne(
+    { _id: userId },
+    {
+      $set: {
+        lastWelcomeBackEmailAt: now,
+        lastLoginEmailType: "welcome_back",
+        lastLoginEmailProviderId: String(providerId || ""),
+      },
+      $inc: {
+        welcomeBackEmailSentCount: 1,
+      },
+    }
+  );
+};
+
+const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
+  const userSnapshot = {
+    _id: String(user._id),
+    id: String(user._id),
+    email: user.email,
+    name: user.name,
+    givenName: user.givenName,
+    familyName: user.familyName,
+    picture: user.picture,
+    lastWelcomeBackEmailAt: user.lastWelcomeBackEmailAt,
+  };
+
+  setImmediate(async () => {
+    try {
+      if (isNewUser) {
+        const result = await sendWelcomeEmail({
+          user: userSnapshot,
+        });
+
+        if (!result.sent) {
+          if (!result.skipped) {
+            reqLogger.warn(
+              {
+                userId: userSnapshot._id,
+                reason: result.reason,
+                error: result.error,
+              },
+              "Welcome email was not delivered"
+            );
+          }
+          return;
+        }
+
+        await markLifecycleEmailSent({
+          userId: userSnapshot._id,
+          type: "welcome",
+          providerId: result.providerId,
+        });
+
+        reqLogger.info(
+          {
+            userId: userSnapshot._id,
+            emailId: result.providerId,
+            idempotencyKey: result.idempotencyKey,
+          },
+          "Welcome email sent"
+        );
+        return;
+      }
+
+      if (!shouldSendWelcomeBackEmail(userSnapshot)) {
+        reqLogger.debug(
+          {
+            userId: userSnapshot._id,
+          },
+          "Welcome-back email skipped due to daily limit"
+        );
+        return;
+      }
+
+      const result = await sendWelcomeBackEmail({
+        user: userSnapshot,
+      });
+
+      if (!result.sent) {
+        if (!result.skipped) {
+          reqLogger.warn(
+            {
+              userId: userSnapshot._id,
+              reason: result.reason,
+              error: result.error,
+            },
+            "Welcome-back email was not delivered"
+          );
+        }
+        return;
+      }
+
+      await markLifecycleEmailSent({
+        userId: userSnapshot._id,
+        type: "welcome_back",
+        providerId: result.providerId,
+      });
+
+      reqLogger.info(
+        {
+          userId: userSnapshot._id,
+          emailId: result.providerId,
+          idempotencyKey: result.idempotencyKey,
+        },
+        "Welcome-back email sent"
+      );
+    } catch (error) {
+      reqLogger.error({ err: error, userId: userSnapshot._id }, "Lifecycle email processing failed");
+    }
+  });
+};
 
 exports.getPublicAuthConfig = async (req, res) => {
   return res.status(200).json({
@@ -98,9 +237,12 @@ exports.googleSignIn = async (req, res) => {
     const emailVerified = payload.email_verified !== false;
     const picture = normalizeText(payload.picture, 2048);
 
-    let user = await User.findOne({
+    const existingUser = await User.findOne({
       $or: [{ googleId: payload.sub }, { email: normalizedEmail }],
     });
+
+    const isNewUser = !existingUser;
+    let user = existingUser;
 
     if (user) {
       user.googleId = payload.sub;
@@ -133,6 +275,12 @@ exports.googleSignIn = async (req, res) => {
     });
 
     res.cookie(AUTH_COOKIE_NAME, sessionToken, getSessionCookieOptions());
+
+    scheduleLifecycleLoginEmail({
+      user,
+      isNewUser,
+      reqLogger,
+    });
 
     return res.status(200).json({
       success: true,

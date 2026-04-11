@@ -63,6 +63,35 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    lastWelcomeEmailAt: {
+      type: Date,
+      default: null,
+    },
+    lastWelcomeBackEmailAt: {
+      type: Date,
+      default: null,
+    },
+    welcomeEmailSentCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    welcomeBackEmailSentCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    lastLoginEmailType: {
+      type: String,
+      enum: ["none", "welcome", "welcome_back"],
+      default: "none",
+    },
+    lastLoginEmailProviderId: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 200,
+    },
   },
   {
     timestamps: true,

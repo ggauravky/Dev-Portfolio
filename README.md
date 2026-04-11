@@ -114,6 +114,14 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=5
 CHAT_RATE_LIMIT_MAX=30
 
+# Login lifecycle emails via Resend
+RESEND_ENABLED=true
+RESEND_API_KEY=re_your_resend_api_key
+RESEND_FROM_EMAIL=Gaurav Kumar <hello@your-verified-domain.com>
+RESEND_REPLY_TO=support@your-verified-domain.com
+EMAIL_APP_NAME=Gaurav Kumar Portfolio
+EMAIL_SUPPORT_URL=https://your-app-name.vercel.app/contact
+
 # Observability (optional)
 LOG_LEVEL=debug
 SENTRY_DSN=
