@@ -71,6 +71,14 @@ const supportPaymentSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
+    ipAddress: {
+      type: String,
+      default: "unknown",
+    },
+    userAgent: {
+      type: String,
+      default: "unknown",
+    },
   },
   {
     timestamps: true,

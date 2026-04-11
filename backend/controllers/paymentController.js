@@ -132,6 +132,27 @@ const normalizeIndianPhone = (value) => {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 };
 
+const isValidIndianPhone = (value) => /^[6-9]\d{9}$/.test(String(value || "").trim());
+
+const resolvePhone = (...values) => {
+  for (const value of values) {
+    const normalized = normalizeIndianPhone(value);
+    if (isValidIndianPhone(normalized)) {
+      return normalized;
+    }
+  }
+  return "";
+};
+
+const getRequestClientMeta = (req) => ({
+  ipAddress:
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    req.ip ||
+    "unknown",
+  userAgent: req.headers["user-agent"] || "unknown",
+});
+
 const normalizePreferredDate = (value) => {
   const raw = String(value || "").trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
@@ -146,6 +167,252 @@ const normalizePreferredTime = (value) => {
 };
 
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
+
+const normalizeGatewayPaymentStatus = (value) => {
+  const status = String(value || "").trim().toLowerCase();
+
+  if (["paid", "success", "successful"].includes(status)) {
+    return "paid";
+  }
+
+  if (["failed", "cancelled", "canceled", "user_dropped", "expired"].includes(status)) {
+    return "failed";
+  }
+
+  if (["pending", "active", "processing"].includes(status)) {
+    return "pending";
+  }
+
+  return "created";
+};
+
+const toPaymentArray = (paymentList) => (Array.isArray(paymentList) ? paymentList : []);
+
+const findSuccessfulPayment = (paymentList) =>
+  toPaymentArray(paymentList).find(
+    (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
+  );
+
+const findFailedPayment = (paymentList) =>
+  toPaymentArray(paymentList).find((payment) =>
+    ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
+      String(payment.payment_status || "").toUpperCase()
+    )
+  );
+
+const buildBookingVerificationContext = ({
+  draftBooking,
+  cashfreeOrder,
+  normalizedEmail,
+  normalizedOrderId,
+  ipAddress,
+  userAgent,
+  reqLogger,
+}) => {
+  if (!cashfreeOrder?.order_id) {
+    return {
+      error: {
+        status: 400,
+        message: "Unable to validate payment order details",
+      },
+    };
+  }
+
+  const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
+    .trim()
+    .toLowerCase();
+
+  if (orderEmail && orderEmail !== normalizedEmail) {
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+      },
+      "Payment verification rejected due to email mismatch"
+    );
+
+    return {
+      error: {
+        status: 403,
+        message: "Verification details do not match this order",
+      },
+    };
+  }
+
+  const orderServiceSlug = String(cashfreeOrder.order_tags?.service_slug || "").trim();
+  const resolvedServiceSlug = draftBooking?.serviceSlug || orderServiceSlug;
+  const selectedService = getService(resolvedServiceSlug);
+
+  if (!selectedService) {
+    return {
+      error: {
+        status: 400,
+        message: "Order service is invalid",
+      },
+    };
+  }
+
+  if (Number(cashfreeOrder.order_amount) !== selectedService.amount) {
+    return {
+      error: {
+        status: 400,
+        message: "Order amount does not match selected service",
+      },
+    };
+  }
+
+  if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
+    return {
+      error: {
+        status: 400,
+        message: "Order currency is invalid",
+      },
+    };
+  }
+
+  if (draftBooking && selectedService.amount !== draftBooking.amount) {
+    return {
+      error: {
+        status: 400,
+        message: "Booking details mismatch",
+      },
+    };
+  }
+
+  if (draftBooking && orderServiceSlug && orderServiceSlug !== draftBooking.serviceSlug) {
+    return {
+      error: {
+        status: 400,
+        message: "Order service does not match selected service",
+      },
+    };
+  }
+
+  const resolvedPhone = resolvePhone(
+    draftBooking?.phone,
+    cashfreeOrder.customer_details?.customer_phone
+  );
+
+  if (!resolvedPhone) {
+    return {
+      error: {
+        status: 400,
+        message: "Order phone details are invalid",
+      },
+    };
+  }
+
+  const customerName =
+    String(cashfreeOrder.customer_details?.customer_name || draftBooking?.name || "Customer").trim() ||
+    "Customer";
+  const preferredDateValue =
+    draftBooking?.preferredDate || new Date(normalizePreferredDate(cashfreeOrder.order_tags?.preferred_date));
+  const preferredTimeValue =
+    draftBooking?.preferredTime || normalizePreferredTime(cashfreeOrder.order_tags?.preferred_time);
+
+  return {
+    bookingInsertBase: {
+      orderId: normalizedOrderId,
+      name: customerName,
+      email: orderEmail || normalizedEmail,
+      phone: resolvedPhone,
+      serviceSlug: resolvedServiceSlug,
+      service: selectedService.title,
+      preferredDate: preferredDateValue,
+      preferredTime: preferredTimeValue,
+      projectBrief: draftBooking?.projectBrief || "",
+      amount: selectedService.amount,
+      ipAddress,
+      userAgent,
+      date: new Date(),
+    },
+    gatewayOrderStatus: normalizeGatewayPaymentStatus(cashfreeOrder.order_status),
+  };
+};
+
+const buildSupportVerificationContext = ({
+  supportRecord,
+  cashfreeOrder,
+  normalizedEmail,
+  normalizedOrderId,
+  ipAddress,
+  userAgent,
+}) => {
+  if (!cashfreeOrder?.order_id) {
+    return {
+      error: {
+        status: 400,
+        message: "Unable to validate support order",
+      },
+    };
+  }
+
+  const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
+    .trim()
+    .toLowerCase();
+
+  if (orderEmail && orderEmail !== normalizedEmail) {
+    return {
+      error: {
+        status: 403,
+        message: "Verification details do not match this support order",
+      },
+    };
+  }
+
+  const orderAmount = Number(cashfreeOrder.order_amount);
+
+  if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+    return {
+      error: {
+        status: 400,
+        message: "Support amount is invalid",
+      },
+    };
+  }
+
+  if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
+    return {
+      error: {
+        status: 400,
+        message: "Order currency is invalid",
+      },
+    };
+  }
+
+  const resolvedSupportPhone = resolvePhone(
+    supportRecord?.phone,
+    cashfreeOrder.customer_details?.customer_phone
+  );
+
+  if (!resolvedSupportPhone) {
+    return {
+      error: {
+        status: 400,
+        message: "Support order phone details are invalid",
+      },
+    };
+  }
+
+  const contributorName =
+    String(cashfreeOrder.customer_details?.customer_name || supportRecord?.contributorName || "Supporter").trim() ||
+    "Supporter";
+
+  return {
+    contributorName,
+    orderAmount,
+    supportInsertBase: {
+      orderId: normalizedOrderId,
+      contributorName,
+      email: orderEmail || normalizedEmail,
+      phone: resolvedSupportPhone,
+      amount: orderAmount,
+      message: supportRecord?.message || "",
+      ipAddress,
+      userAgent,
+    },
+    gatewayOrderStatus: normalizeGatewayPaymentStatus(cashfreeOrder.order_status),
+  };
+};
 
 const mapGatewayError = (error, fallbackMessage) => {
   if (error?.code === PAYMENT_CONFIG_ERROR_CODE) {
@@ -239,6 +506,7 @@ exports.createOrder = async (req, res) => {
 
   try {
     const { name, email, phone, service, preferredDate, preferredTime, projectBrief } = req.body;
+    const { ipAddress, userAgent } = getRequestClientMeta(req);
     const selectedService = getService(service);
 
     if (!selectedService) {
@@ -304,6 +572,8 @@ exports.createOrder = async (req, res) => {
             paymentStatus: "created",
             // Keep a unique placeholder to avoid legacy non-sparse paymentId index conflicts.
             paymentId: createPendingPaymentId(orderId),
+            ipAddress,
+            userAgent,
             date: new Date(),
           },
           $setOnInsert: {
@@ -379,6 +649,7 @@ exports.verifyPayment = async (req, res) => {
 
   try {
     const { orderId, email } = req.body;
+    const { ipAddress, userAgent } = getRequestClientMeta(req);
     const normalizedOrderId = String(orderId || "").trim();
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
@@ -404,98 +675,40 @@ exports.verifyPayment = async (req, res) => {
       config,
     });
 
-    if (!cashfreeOrder?.order_id) {
-      return res.status(400).json({
+    const verificationContext = buildBookingVerificationContext({
+      draftBooking,
+      cashfreeOrder,
+      normalizedEmail,
+      normalizedOrderId,
+      ipAddress,
+      userAgent,
+      reqLogger,
+    });
+
+    if (verificationContext.error) {
+      return res.status(verificationContext.error.status).json({
         success: false,
-        message: "Unable to validate payment order details",
+        message: verificationContext.error.message,
       });
     }
 
-    const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
-      .trim()
-      .toLowerCase();
+    const { bookingInsertBase, gatewayOrderStatus } = verificationContext;
 
-    if (orderEmail && orderEmail !== normalizedEmail) {
-      reqLogger.warn(
-        {
-          orderId: normalizedOrderId,
+    await Booking.findOneAndUpdate(
+      { orderId: normalizedOrderId },
+      {
+        $setOnInsert: {
+          ...bookingInsertBase,
+          paymentProvider: "cashfree",
+          paymentStatus: gatewayOrderStatus,
+          paymentId: createPendingPaymentId(normalizedOrderId),
         },
-        "Payment verification rejected due to email mismatch"
-      );
-
-      return res.status(403).json({
-        success: false,
-        message: "Verification details do not match this order",
-      });
-    }
-
-    const orderServiceSlug = String(cashfreeOrder.order_tags?.service_slug || "").trim();
-    const selectedService = getService(draftBooking?.serviceSlug || orderServiceSlug);
-    if (!selectedService) {
-      return res.status(400).json({
-        success: false,
-        message: "Order service is invalid",
-      });
-    }
-
-    if (Number(cashfreeOrder.order_amount) !== selectedService.amount) {
-      return res.status(400).json({
-        success: false,
-        message: "Order amount does not match selected service",
-      });
-    }
-
-    if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
-      return res.status(400).json({
-        success: false,
-        message: "Order currency is invalid",
-      });
-    }
-
-    if (draftBooking && selectedService?.amount !== draftBooking.amount) {
-      return res.status(400).json({
-        success: false,
-        message: "Booking details mismatch",
-      });
-    }
-
-    if (draftBooking && orderServiceSlug && orderServiceSlug !== draftBooking.serviceSlug) {
-      return res.status(400).json({
-        success: false,
-        message: "Order service does not match selected service",
-      });
-    }
-
-    if (!draftBooking) {
-      await Booking.findOneAndUpdate(
-        { orderId: normalizedOrderId },
-        {
-          $set: {
-            name: String(cashfreeOrder.customer_details?.customer_name || "Customer").trim() || "Customer",
-            email: orderEmail || normalizedEmail,
-            phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
-            serviceSlug: orderServiceSlug,
-            service: selectedService.title,
-            preferredDate: new Date(normalizePreferredDate(cashfreeOrder.order_tags?.preferred_date)),
-            preferredTime: normalizePreferredTime(cashfreeOrder.order_tags?.preferred_time),
-            projectBrief: "",
-            amount: selectedService.amount,
-            paymentProvider: "cashfree",
-            paymentStatus: String(cashfreeOrder.order_status || "created").toLowerCase() || "created",
-            paymentId: createPendingPaymentId(normalizedOrderId),
-            date: new Date(),
-          },
-          $setOnInsert: {
-            orderId: normalizedOrderId,
-          },
-        },
-        {
-          new: true,
-          upsert: true,
-          runValidators: true,
-        }
-      );
-    }
+      },
+      {
+        upsert: true,
+        runValidators: true,
+      }
+    );
 
     const paymentList = await callCashfreeApi({
       method: "GET",
@@ -503,25 +716,28 @@ exports.verifyPayment = async (req, res) => {
       config,
     });
 
-    const successfulPayment = (Array.isArray(paymentList) ? paymentList : []).find(
-      (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
-    );
+    const successfulPayment = findSuccessfulPayment(paymentList);
 
     if (!successfulPayment) {
-      const failedPayment = (Array.isArray(paymentList) ? paymentList : []).find((payment) =>
-        ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
-          String(payment.payment_status || "").toUpperCase()
-        )
-      );
+      const failedPayment = findFailedPayment(paymentList);
+      let nextStatus = gatewayOrderStatus;
+      if (failedPayment) {
+        nextStatus = "failed";
+      } else if (gatewayOrderStatus === "failed") {
+        nextStatus = "pending";
+      }
 
       await Booking.updateOne(
         { orderId: normalizedOrderId },
         {
           $set: {
-            paymentStatus: failedPayment
-              ? "failed"
-              : String(cashfreeOrder.order_status || "").toLowerCase() || "pending",
+            paymentStatus: nextStatus,
           },
+          $setOnInsert: bookingInsertBase,
+        },
+        {
+          upsert: true,
+          runValidators: true,
         }
       );
 
@@ -544,8 +760,13 @@ exports.verifyPayment = async (req, res) => {
           paymentProvider: "cashfree",
           paidAt: new Date(),
         },
+        $setOnInsert: bookingInsertBase,
       },
-      { new: true }
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
     );
 
     reqLogger.info(
@@ -596,8 +817,17 @@ exports.createSupportOrder = async (req, res) => {
 
   try {
     const { name, email, phone, amount, message } = req.body;
+    const { ipAddress, userAgent } = getRequestClientMeta(req);
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const normalizedAmount = Number.parseInt(amount, 10);
+
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount < 1 || normalizedAmount > 100000) {
+      return res.status(400).json({
+        success: false,
+        message: "Support amount is invalid",
+      });
+    }
+
     const orderId = createOrderId();
     const config = getCashfreeConfig();
     const frontendUrl = String(process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
@@ -631,28 +861,40 @@ exports.createSupportOrder = async (req, res) => {
       },
     });
 
-    await SupportPayment.findOneAndUpdate(
-      { orderId },
-      {
-        $set: {
-          contributorName: String(name || "").trim(),
-          email: normalizedEmail,
-          phone: normalizeIndianPhone(phone),
-          amount: normalizedAmount,
-          message: String(message || "").trim(),
-          paymentStatus: "created",
-          paymentProvider: "cashfree",
-          paymentId: createPendingPaymentId(orderId),
+    try {
+      await SupportPayment.findOneAndUpdate(
+        { orderId },
+        {
+          $set: {
+            contributorName: String(name || "").trim(),
+            email: normalizedEmail,
+            phone: normalizeIndianPhone(phone),
+            amount: normalizedAmount,
+            message: String(message || "").trim(),
+            paymentStatus: "created",
+            paymentProvider: "cashfree",
+            paymentId: createPendingPaymentId(orderId),
+            ipAddress,
+            userAgent,
+          },
+          $setOnInsert: {
+            orderId,
+          },
         },
-        $setOnInsert: {
+        {
+          upsert: true,
+          runValidators: true,
+        }
+      );
+    } catch (dbError) {
+      reqLogger.warn(
+        {
+          err: dbError,
           orderId,
         },
-      },
-      {
-        upsert: true,
-        runValidators: true,
-      }
-    );
+        "Support draft persistence failed during create-support-order; continuing with gateway order"
+      );
+    }
 
     reqLogger.info(
       {
@@ -704,6 +946,7 @@ exports.verifySupportPayment = async (req, res) => {
 
   try {
     const { orderId, email } = req.body;
+    const { ipAddress, userAgent } = getRequestClientMeta(req);
     const normalizedOrderId = String(orderId || "").trim();
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const config = getCashfreeConfig();
@@ -728,38 +971,23 @@ exports.verifySupportPayment = async (req, res) => {
       config,
     });
 
-    if (!cashfreeOrder?.order_id) {
-      return res.status(400).json({
+    const verificationContext = buildSupportVerificationContext({
+      supportRecord,
+      cashfreeOrder,
+      normalizedEmail,
+      normalizedOrderId,
+      ipAddress,
+      userAgent,
+    });
+
+    if (verificationContext.error) {
+      return res.status(verificationContext.error.status).json({
         success: false,
-        message: "Unable to validate support order",
+        message: verificationContext.error.message,
       });
     }
 
-    const orderEmail = String(cashfreeOrder.customer_details?.customer_email || "")
-      .trim()
-      .toLowerCase();
-
-    if (orderEmail && orderEmail !== normalizedEmail) {
-      return res.status(403).json({
-        success: false,
-        message: "Verification details do not match this support order",
-      });
-    }
-
-    const orderAmount = Number(cashfreeOrder.order_amount);
-    if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Support amount is invalid",
-      });
-    }
-
-    if (String(cashfreeOrder.order_currency || "").toUpperCase() !== "INR") {
-      return res.status(400).json({
-        success: false,
-        message: "Order currency is invalid",
-      });
-    }
+    const { contributorName, orderAmount, supportInsertBase, gatewayOrderStatus } = verificationContext;
 
     const paymentList = await callCashfreeApi({
       method: "GET",
@@ -767,35 +995,28 @@ exports.verifySupportPayment = async (req, res) => {
       config,
     });
 
-    const successfulPayment = (Array.isArray(paymentList) ? paymentList : []).find(
-      (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
-    );
+    const successfulPayment = findSuccessfulPayment(paymentList);
 
     if (!successfulPayment) {
-      const failedPayment = (Array.isArray(paymentList) ? paymentList : []).find((payment) =>
-        ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
-          String(payment.payment_status || "").toUpperCase()
-        )
-      );
+      const failedPayment = findFailedPayment(paymentList);
 
-      const nextStatus = failedPayment ? "failed" : "pending";
+      let nextStatus = gatewayOrderStatus;
+      if (failedPayment) {
+        nextStatus = "failed";
+      } else if (gatewayOrderStatus === "failed") {
+        nextStatus = "pending";
+      }
       await SupportPayment.findOneAndUpdate(
         { orderId: normalizedOrderId },
         {
           $set: {
-            contributorName:
-              String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
-              "Supporter",
-            email: orderEmail || normalizedEmail,
-            phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
-            amount: orderAmount,
+            ...supportInsertBase,
             paymentStatus: nextStatus,
             paymentProvider: "cashfree",
-            message: supportRecord?.message || "",
             paymentId: createPendingPaymentId(normalizedOrderId),
           },
           $setOnInsert: {
-            orderId: normalizedOrderId,
+            ...supportInsertBase,
           },
         },
         {
@@ -820,19 +1041,14 @@ exports.verifySupportPayment = async (req, res) => {
       { orderId: normalizedOrderId },
       {
         $set: {
-          contributorName:
-            String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
-            "Supporter",
-          email: orderEmail || normalizedEmail,
-          phone: normalizeIndianPhone(cashfreeOrder.customer_details?.customer_phone),
-          amount: orderAmount,
+          ...supportInsertBase,
           paymentStatus: "paid",
           paymentProvider: "cashfree",
           paymentId: resolvedPaymentId,
           paidAt: new Date(),
         },
         $setOnInsert: {
-          orderId: normalizedOrderId,
+          ...supportInsertBase,
         },
       },
       {
@@ -856,8 +1072,7 @@ exports.verifySupportPayment = async (req, res) => {
       data: {
         orderId: normalizedOrderId,
         amount: orderAmount,
-        contributorName: String(cashfreeOrder.customer_details?.customer_name || "Supporter").trim() ||
-          "Supporter",
+        contributorName,
         paymentId: resolvedPaymentId,
       },
     });

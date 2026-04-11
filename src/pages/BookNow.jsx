@@ -59,6 +59,13 @@ function BookNow() {
 
     const handleChange = (event) => {
         const { name, value } = event.target
+
+        if (name === 'phone') {
+            const digitsOnly = value.replaceAll(/\D/g, '').slice(0, 10)
+            setForm((prev) => ({ ...prev, phone: digitsOnly }))
+            return
+        }
+
         setForm((prev) => ({ ...prev, [name]: value }))
     }
 
@@ -285,6 +292,10 @@ function BookNow() {
             setPaymentFailure('')
 
             try {
+                if (!/^[6-9]\d{9}$/.test(String(form.phone || '').trim())) {
+                    throw new Error('Phone must be a valid 10-digit Indian mobile number')
+                }
+
                 const order = await createCashfreeOrder({
                     ...form,
                     service: currentService.slug,
@@ -416,7 +427,11 @@ function BookNow() {
                                         type="tel"
                                         value={form.phone}
                                         onChange={handleChange}
-                                        maxLength={15}
+                                        minLength={10}
+                                        maxLength={10}
+                                        inputMode="numeric"
+                                        pattern="[6-9][0-9]{9}"
+                                        autoComplete="tel-national"
                                         required
                                         placeholder="10-digit number"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"

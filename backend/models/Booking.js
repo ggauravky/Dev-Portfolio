@@ -92,6 +92,14 @@ const bookingSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
+    ipAddress: {
+      type: String,
+      default: "unknown",
+    },
+    userAgent: {
+      type: String,
+      default: "unknown",
+    },
     date: {
       type: Date,
       default: Date.now,

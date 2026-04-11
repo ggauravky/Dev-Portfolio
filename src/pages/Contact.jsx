@@ -10,6 +10,7 @@ import useSEO from '../hooks/useSEO'
 import StickyMobileCTA from '../components/StickyMobileCTA'
 
 const CONTACT_EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
+const CONTACT_MESSAGE_LIMIT = 2000
 
 /* ─── Data ──────────────────────────────────────────────────────── */
 const majorPlatforms = [
@@ -336,15 +337,15 @@ function Contact() {
                                         <label htmlFor="message" className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                             Message <span className="text-rose-400 normal-case font-normal tracking-normal text-[13px] leading-none">*</span>
                                         </label>
-                                        <span className={`text-xs tabular-nums font-medium transition-colors ${formData.message.length > 900 ? 'text-rose-400' : 'text-slate-600'}`}>
-                                            {formData.message.length}&thinsp;/&thinsp;1000
+                                        <span className={`text-xs tabular-nums font-medium transition-colors ${formData.message.length > 1800 ? 'text-rose-400' : 'text-slate-600'}`}>
+                                            {formData.message.length}&thinsp;/&thinsp;{CONTACT_MESSAGE_LIMIT}
                                         </span>
                                     </div>
                                     <div className={fieldClass('message')}>
                                         <textarea
                                             id="message" name="message"
                                             rows="7"
-                                            maxLength={1000}
+                                            maxLength={CONTACT_MESSAGE_LIMIT}
                                             value={formData.message}
                                             onChange={handleChange}
                                             onFocus={() => setFocused('message')}
