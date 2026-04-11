@@ -6,6 +6,7 @@
 
 const express = require("express");
 const {
+  getPublicAuthConfig,
   googleSignIn,
   getCurrentSession,
   logout,
@@ -15,6 +16,7 @@ const { attachOptionalUser } = require("../middleware/auth");
 
 const router = express.Router();
 
+router.get("/config", authRateLimiter, getPublicAuthConfig);
 router.post("/google", authRateLimiter, googleSignIn);
 router.get("/me", attachOptionalUser, getCurrentSession);
 router.post("/logout", attachOptionalUser, logout);

@@ -41,6 +41,16 @@ const buildUserPayload = (user) => ({
   picture: user.picture,
 });
 
+exports.getPublicAuthConfig = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Auth config fetched",
+    data: {
+      googleClientId: getGoogleClientId(),
+    },
+  });
+};
+
 exports.googleSignIn = async (req, res) => {
   const reqLogger = req.log || logger;
 

@@ -88,6 +88,7 @@ Root .env:
 
 ```env
 VITE_API_URL=http://localhost:5000
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_web_client_id.apps.googleusercontent.com
 ```
 
 Backend .env:
@@ -145,7 +146,7 @@ npm run preview
 Frontend (Vercel):
 
 1. Import repository in Vercel
-2. Set root env vars (VITE_API_URL)
+2. Set root env vars (VITE_API_URL, VITE_GOOGLE_CLIENT_ID)
 3. Deploy from main branch
 
 Backend (Render):

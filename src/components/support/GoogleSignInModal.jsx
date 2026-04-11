@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
+import { fetchPublicAuthConfig } from '../../services/auth'
 
 let googleScriptPromise = null
 
@@ -41,6 +42,20 @@ const loadGoogleScript = () => {
     return googleScriptPromise
 }
 
+const resolveGoogleClientId = async () => {
+    const envClientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim()
+    if (envClientId) {
+        return envClientId
+    }
+
+    try {
+        const config = await fetchPublicAuthConfig()
+        return String(config?.googleClientId || '').trim()
+    } catch {
+        return ''
+    }
+}
+
 function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
     const buttonContainerRef = useRef(null)
     const isMountedRef = useRef(false)
@@ -71,16 +86,17 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
             return
         }
 
-        const clientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim()
-        if (!clientId) {
-            toast.error('Google Sign-In is not configured yet')
-            onClose()
-            return
-        }
-
         const renderGoogleButton = async () => {
             try {
                 setIsReady(false)
+                const clientId = await resolveGoogleClientId()
+
+                if (!clientId) {
+                    toast.error('Google Sign-In is not configured yet')
+                    onClose()
+                    return
+                }
+
                 await loadGoogleScript()
 
                 if (!isMountedRef.current || !buttonContainerRef.current || !globalThis.window.google?.accounts?.id) {

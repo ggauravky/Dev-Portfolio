@@ -1,4 +1,5 @@
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
+let cachedAuthConfig = null
 
 const parseJsonSafe = async (response) => {
     try {
@@ -43,6 +44,19 @@ export const signInWithGoogleCredential = async (credential) => {
         method: 'POST',
         body: JSON.stringify({ credential }),
     })
+}
+
+export const fetchPublicAuthConfig = async () => {
+    if (cachedAuthConfig) {
+        return cachedAuthConfig
+    }
+
+    const data = await requestAuthApi('/api/auth/config', {
+        method: 'GET',
+    })
+
+    cachedAuthConfig = data || {}
+    return cachedAuthConfig
 }
 
 export const logoutSession = async () => {
