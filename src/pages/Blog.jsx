@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
 import { eventsData } from '../data/eventsData'
+import { fetchSupportCounts } from '../services/blogSupport'
 import LazyImage from '../components/LazyImage'
 import EventRecordCard from '../components/EventRecordCard'
 import './Blog.css'
@@ -41,6 +42,7 @@ function Blog() {
     const [visibleBlogsCount, setVisibleBlogsCount] = useState(INITIAL_VISIBLE_BLOGS)
     const [newsletterEmail, setNewsletterEmail] = useState('')
     const [newsletterLoading, setNewsletterLoading] = useState(false)
+    const [supportCounts, setSupportCounts] = useState({})
 
     // Optimize: Only load blog metadata, not full content
     const blogs = useMemo(() => blogsData.map(blog => ({
@@ -131,6 +133,19 @@ function Blog() {
 
     const remainingBlogsCount = Math.max(filteredBlogs.length - visibleBlogs.length, 0)
     const nextLoadCount = Math.min(BLOGS_LOAD_STEP, remainingBlogsCount)
+
+    useEffect(() => {
+        const loadSupportCounts = async () => {
+            try {
+                const data = await fetchSupportCounts(blogs.map((blog) => blog.slug))
+                setSupportCounts(data.counts || {})
+            } catch {
+                setSupportCounts({})
+            }
+        }
+
+        loadSupportCounts()
+    }, [blogs])
 
     useEffect(() => {
         setVisibleBlogsCount(INITIAL_VISIBLE_BLOGS)
@@ -335,6 +350,9 @@ function Blog() {
                                             <span>•</span>
                                             <span className="text-cyan-400">{blog.category}</span>
                                         </div>
+                                        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-rose-300">
+                                            ❤️ {Number(supportCounts[blog.slug] || 0)} {Number(supportCounts[blog.slug] || 0) === 1 ? 'supporter' : 'supporters'}
+                                        </p>
                                         <h3 className="text-xl font-semibold mb-3 text-blue-300 group-hover:text-blue-400 transition-colors line-clamp-2">
                                             {blog.title}
                                         </h3>
@@ -387,6 +405,9 @@ function Blog() {
                                     <p className="text-xs text-cyan-300 uppercase tracking-wider">{blog.category}</p>
                                     <p className="mt-2 text-base font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors line-clamp-2">{blog.title}</p>
                                     <p className="mt-2 text-sm text-slate-400 line-clamp-2">{blog.excerpt}</p>
+                                    <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-rose-300">
+                                        ❤️ {Number(supportCounts[blog.slug] || 0)} {Number(supportCounts[blog.slug] || 0) === 1 ? 'supporter' : 'supporters'}
+                                    </p>
                                 </Link>
                             ))}
                         </div>

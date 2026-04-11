@@ -16,6 +16,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
 const path = require("node:path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
@@ -26,6 +27,8 @@ const newsletterRoutes = require("./routes/newsletterRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const mlLogRoutes = require("./routes/mlLogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const authRoutes = require("./routes/authRoutes");
+const blogSupportRoutes = require("./routes/blogSupportRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
@@ -94,6 +97,7 @@ app.use(cors(corsOptions));
 // Tighter per-route overrides are applied where smaller inputs are expected.
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(cookieParser());
 
 // Trust the first hop of the reverse proxy (Render, etc.) so that
 // req.ip reflects the real client IP, making rate limiting effective.
@@ -122,6 +126,8 @@ app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ml-log", mlLogRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/blog", blogSupportRoutes);
 
 // Root route
 app.get("/", (req, res) => {

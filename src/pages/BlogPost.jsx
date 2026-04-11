@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
+import SupportButton from '../components/support/SupportButton'
 import './BlogPost.css'
 
 function BlogPost() {
@@ -260,6 +261,14 @@ function BlogPost() {
                         </svg>
                         Copy Link
                     </button>
+                </div>
+
+                <div className="mb-8">
+                    <SupportButton
+                        slug={blog.slug}
+                        title={blog.title}
+                        content={blog.content}
+                    />
                 </div>
 
                 {/* Blog Content */}

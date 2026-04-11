@@ -4,7 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { body, validationResult } = require("express-validator");
+const { body, query, validationResult } = require("express-validator");
 
 const getMinBookingDate = () => {
   const minDate = new Date();
@@ -180,6 +180,36 @@ exports.supportVerifyValidationRules = [
     .isEmail()
     .withMessage("Please provide a valid email address")
     .normalizeEmail(),
+];
+
+exports.blogSupportValidationRules = [
+  body("slug")
+    .trim()
+    .notEmpty()
+    .withMessage("Blog slug is required")
+    .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .withMessage("Blog slug format is invalid"),
+
+  body("title")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 220 })
+    .withMessage("Blog title cannot exceed 220 characters"),
+
+  body("content")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 120000 })
+    .withMessage("Blog content is too large"),
+];
+
+exports.blogSupportStatusValidationRules = [
+  query("slug")
+    .trim()
+    .notEmpty()
+    .withMessage("Blog slug is required")
+    .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .withMessage("Blog slug format is invalid"),
 ];
 
 exports.validate = (req, res, next) => {

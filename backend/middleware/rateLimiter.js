@@ -69,3 +69,27 @@ exports.paymentRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// Auth route limiter to prevent Google sign-in abuse
+exports.authRateLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: parsePositiveInt(process.env.AUTH_RATE_LIMIT_MAX, 20),
+  message: {
+    success: false,
+    message: "Too many authentication attempts. Please try again shortly.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Blog support limiter to protect support endpoints from spam clicks
+exports.blogSupportRateLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: parsePositiveInt(process.env.BLOG_SUPPORT_RATE_LIMIT_MAX, 80),
+  message: {
+    success: false,
+    message: "Too many support requests. Please wait and try again.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

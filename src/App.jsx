@@ -62,6 +62,7 @@ const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+const MySupports = lazy(() => import('./pages/MySupports'))
 
 // Per-route loading fallback — keeps loading state isolated per route
 // so AnimatePresence exit animations are never interrupted by a Suspense bubble
@@ -183,6 +184,7 @@ function AnimatedRoutes() {
                 <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
                 <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
                 <Route path="/contact"                    element={<R><Contact /></R>} />
+                <Route path="/my-supports"                element={<R><MySupports /></R>} />
                 <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />
                 <Route path="/terms"                      element={<R><Terms /></R>} />

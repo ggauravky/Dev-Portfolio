@@ -5,13 +5,120 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
+import useAuth from '../hooks/useAuth'
+
+const getProfileInitial = (user) => String(user?.name || user?.email || 'U').slice(0, 1)
+
+const renderDesktopProfileMenu = ({
+    user,
+    isProfileMenuOpen,
+    profileMenuRef,
+    setIsProfileMenuOpen,
+    handleLogout,
+}) => (
+    <div ref={profileMenuRef} className="relative hidden lg:block ml-2">
+        <button
+            type="button"
+            onClick={() => setIsProfileMenuOpen((previous) => !previous)}
+            className="group inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/70 px-2.5 py-2 text-slate-200 hover:border-cyan-400/50 hover:text-white transition-colors"
+            aria-label="Open profile menu"
+        >
+            {user.picture ? (
+                <img
+                    src={user.picture}
+                    alt={user.name || 'User'}
+                    className="h-8 w-8 rounded-full border border-slate-600 object-cover"
+                    referrerPolicy="no-referrer"
+                />
+            ) : (
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-xs font-bold uppercase">
+                    {getProfileInitial(user)}
+                </span>
+            )}
+            <svg className={`h-4 w-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+            </svg>
+        </button>
+
+        {isProfileMenuOpen ? (
+            <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-700/80 bg-slate-900/95 p-2 shadow-xl shadow-black/40">
+                <div className="px-3 pb-2 pt-1 border-b border-slate-700/60 mb-2">
+                    <p className="text-sm font-semibold text-slate-100 truncate">{user.name || 'Google User'}</p>
+                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                </div>
+                <Link
+                    to="/my-supports"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 transition-colors"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                >
+                    <span>❤️</span>
+                    <span>My supports</span>
+                </Link>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-200 hover:bg-rose-500/10 transition-colors"
+                >
+                    <span>↩</span>
+                    <span>Logout</span>
+                </button>
+            </div>
+        ) : null}
+    </div>
+)
+
+const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
+    <div className="rounded-2xl border border-slate-700/70 bg-slate-800/70 p-3">
+        <div className="flex items-center gap-3">
+            {user.picture ? (
+                <img
+                    src={user.picture}
+                    alt={user.name || 'User'}
+                    className="h-10 w-10 rounded-full border border-slate-600 object-cover"
+                    referrerPolicy="no-referrer"
+                />
+            ) : (
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-sm font-bold uppercase text-slate-200">
+                    {getProfileInitial(user)}
+                </span>
+            )}
+            <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-100 truncate">{user.name || 'Google User'}</p>
+                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+            </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link
+                to="/my-supports"
+                onClick={closeMenu}
+                className="inline-flex items-center justify-center rounded-xl border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200"
+            >
+                My supports
+            </Link>
+            <button
+                type="button"
+                onClick={async () => {
+                    await handleLogout()
+                    closeMenu()
+                }}
+                className="inline-flex items-center justify-center rounded-xl border border-rose-400/35 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200"
+            >
+                Logout
+            </button>
+        </div>
+    </div>
+)
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
+    const profileMenuRef = useRef(null)
     const location = useLocation()
+    const { user, isAuthenticated, signOut } = useAuth()
 
     const navLinks = useMemo(() => [
         { path: '/', name: 'Home', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg> },
@@ -42,7 +149,33 @@ function Navbar() {
 
     useEffect(() => {
         closeMenu()
+        setIsProfileMenuOpen(false)
     }, [location, closeMenu])
+
+    useEffect(() => {
+        if (!isProfileMenuOpen) {
+            return undefined
+        }
+
+        const handleClickOutside = (event) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+                setIsProfileMenuOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [isProfileMenuOpen])
+
+    const handleLogout = useCallback(async () => {
+        try {
+            await signOut()
+            setIsProfileMenuOpen(false)
+            toast.success('Logged out successfully')
+        } catch (error) {
+            toast.error(error?.message || 'Unable to logout right now')
+        }
+    }, [signOut])
 
     return (
         <>
@@ -111,6 +244,16 @@ function Navbar() {
                             </svg>
                             <span className="relative z-10">Resume</span>
                         </a>
+
+                        {isAuthenticated && user
+                            ? renderDesktopProfileMenu({
+                                user,
+                                isProfileMenuOpen,
+                                profileMenuRef,
+                                setIsProfileMenuOpen,
+                                handleLogout,
+                            })
+                            : null}
 
                         {/* Hamburger — mobile only */}
                         <button
@@ -201,6 +344,8 @@ function Navbar() {
 
                 {/* ── Resume + footer (pinned to bottom) ── */}
                 <div className="shrink-0 px-4 pt-4 pb-8 border-t border-slate-700/50 space-y-3">
+                    {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
+
                     <a
                         href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
                         target="_blank"
