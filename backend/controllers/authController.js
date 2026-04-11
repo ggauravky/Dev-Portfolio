@@ -41,6 +41,9 @@ const buildUserPayload = (user) => ({
   picture: user.picture,
 });
 
+const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
+const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
+
 exports.getPublicAuthConfig = async (req, res) => {
   return res.status(200).json({
     success: true,
@@ -86,9 +89,14 @@ exports.googleSignIn = async (req, res) => {
       });
     }
 
-    const normalizedEmail = String(payload.email).trim().toLowerCase();
-    const userName = String(payload.name || normalizedEmail.split("@")[0] || "User").trim();
-    const picture = String(payload.picture || "").trim();
+    const normalizedEmail = normalizeText(payload.email, 320).toLowerCase();
+    const fallbackUserName = normalizedEmail.split("@")[0] || "User";
+    const userName = normalizeText(payload.name || fallbackUserName, 120) || "User";
+    const givenName = normalizeText(payload.given_name, 80);
+    const familyName = normalizeText(payload.family_name, 80);
+    const locale = normalizeLocale(payload.locale);
+    const emailVerified = payload.email_verified !== false;
+    const picture = normalizeText(payload.picture, 2048);
 
     let user = await User.findOne({
       $or: [{ googleId: payload.sub }, { email: normalizedEmail }],
@@ -98,6 +106,10 @@ exports.googleSignIn = async (req, res) => {
       user.googleId = payload.sub;
       user.email = normalizedEmail;
       user.name = userName;
+      user.givenName = givenName;
+      user.familyName = familyName;
+      user.locale = locale;
+      user.emailVerified = emailVerified;
       user.picture = picture;
       user.lastLoginAt = new Date();
       await user.save();
@@ -106,6 +118,10 @@ exports.googleSignIn = async (req, res) => {
         googleId: payload.sub,
         email: normalizedEmail,
         name: userName,
+        givenName,
+        familyName,
+        locale,
+        emailVerified,
         picture,
         lastLoginAt: new Date(),
       });

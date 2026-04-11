@@ -20,6 +20,42 @@ const supportSchema = new mongoose.Schema(
       required: [true, "Blog post ID is required"],
       index: true,
     },
+    supporterSnapshot: {
+      name: {
+        type: String,
+        trim: true,
+        default: "",
+        maxlength: 120,
+      },
+      email: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: "",
+        maxlength: 320,
+      },
+      picture: {
+        type: String,
+        trim: true,
+        default: "",
+        maxlength: 2048,
+      },
+    },
+    blogSnapshot: {
+      slug: {
+        type: String,
+        trim: true,
+        lowercase: true,
+        default: "",
+        maxlength: 180,
+      },
+      title: {
+        type: String,
+        trim: true,
+        default: "",
+        maxlength: 220,
+      },
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

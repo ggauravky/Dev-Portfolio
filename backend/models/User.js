@@ -30,6 +30,30 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: 120,
     },
+    givenName: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 80,
+    },
+    familyName: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 80,
+    },
+    emailVerified: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    locale: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: "",
+      maxlength: 20,
+    },
     picture: {
       type: String,
       trim: true,

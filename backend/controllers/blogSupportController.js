@@ -11,6 +11,9 @@ const { logger } = require("../utils/logger");
 const normalizeSlug = (value) => String(value || "").trim().toLowerCase();
 const normalizeTitle = (value) => String(value || "").trim().slice(0, 220);
 const normalizeContent = (value) => String(value || "").trim().slice(0, 120000);
+const normalizeName = (value) => String(value || "").trim().slice(0, 120);
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase().slice(0, 320);
+const normalizePicture = (value) => String(value || "").trim().slice(0, 2048);
 
 const buildFallbackTitle = (slug) =>
   String(slug || "blog-post")
@@ -129,6 +132,15 @@ exports.supportBlogPost = async (req, res) => {
   try {
     const { slug, title, content } = req.body;
     const blogPost = await ensureBlogPostExists({ slug, title, content });
+    const supporterSnapshot = {
+      name: normalizeName(req.authUser?.name),
+      email: normalizeEmail(req.authUser?.email),
+      picture: normalizePicture(req.authUser?.picture),
+    };
+    const blogSnapshot = {
+      slug: normalizeSlug(blogPost.slug),
+      title: normalizeTitle(blogPost.title),
+    };
 
     let alreadySupported = false;
 
@@ -139,6 +151,10 @@ exports.supportBlogPost = async (req, res) => {
           blogPostId: blogPost._id,
         },
         {
+          $set: {
+            supporterSnapshot,
+            blogSnapshot,
+          },
           $setOnInsert: {
             userId: req.authUser.id,
             blogPostId: blogPost._id,
@@ -197,17 +213,28 @@ exports.getMySupports = async (req, res) => {
       .lean();
 
     const items = supports
-      .filter((record) => record.blogPostId)
-      .map((record) => ({
-        id: String(record._id),
-        createdAt: record.createdAt,
-        blog: {
-          id: String(record.blogPostId._id),
-          title: record.blogPostId.title,
-          slug: record.blogPostId.slug,
-          supportCount: Number(record.blogPostId.supportCount || 0),
-        },
-      }));
+      .map((record) => {
+        const liveBlog = record.blogPostId || null;
+        const fallbackSlug = normalizeSlug(record.blogSnapshot?.slug);
+        const fallbackTitle = normalizeTitle(record.blogSnapshot?.title) || "Blog Post";
+
+        const resolvedSlug = liveBlog?.slug || fallbackSlug;
+        if (!resolvedSlug) {
+          return null;
+        }
+
+        return {
+          id: String(record._id),
+          createdAt: record.createdAt,
+          blog: {
+            id: liveBlog?._id ? String(liveBlog._id) : String(record.blogPostId || ""),
+            title: liveBlog?.title || fallbackTitle,
+            slug: resolvedSlug,
+            supportCount: Number(liveBlog?.supportCount || 0),
+          },
+        };
+      })
+      .filter(Boolean);
 
     return res.status(200).json({
       success: true,
