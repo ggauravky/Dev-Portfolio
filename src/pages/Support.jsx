@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
-import { createSupportOrder, openCashfreeCheckout, verifySupportPayment } from '../services/payment'
+import { createSupportOrder, fetchSupportReceiptPdf, openCashfreeCheckout, verifySupportPayment } from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
 
 const quickAmounts = [49, 99, 199, 499, 999, 1999]
@@ -32,6 +32,8 @@ function Support() {
     const [supportSuccess, setSupportSuccess] = useState(null)
     const [thankYouNote, setThankYouNote] = useState('')
     const [paymentFailure, setPaymentFailure] = useState('')
+    const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
+    const [receiptDownloadError, setReceiptDownloadError] = useState('')
 
     const pendingSupportKey = 'pendingSupportOrder'
 
@@ -55,24 +57,35 @@ function Support() {
             return true
         }
 
-        return /not completed yet|processing|temporarily unavailable|timed out|timeout|network|gateway|reconcil|unable to verify support payment|try again shortly/i.test(text)
+        return /not completed yet|processing|finaliz|temporarily unavailable|timed out|timeout|network|gateway|reconcil|unable to verify support payment|try again shortly/i.test(text)
     }
     const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
 
-        const downloadBlob = (content, filename, mimeType) => {
-                const blob = new Blob([content], { type: mimeType })
-                const url = URL.createObjectURL(blob)
-                const link = globalThis.document.createElement('a')
-                link.href = url
-                link.download = filename
-                globalThis.document.body.appendChild(link)
-                link.click()
-                link.remove()
-                URL.revokeObjectURL(url)
-        }
+    const saveBlobAsFile = (blob, filename) => {
+        const url = URL.createObjectURL(blob)
+        const link = globalThis.document.createElement('a')
+        link.href = url
+        link.download = filename
+        globalThis.document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+    }
 
-        const downloadSupportReceipt = (details) => {
-                const html = `<!doctype html>
+    const downloadBlob = (content, filename, mimeType) => {
+        const blob = new Blob([content], { type: mimeType })
+        const url = URL.createObjectURL(blob)
+        const link = globalThis.document.createElement('a')
+        link.href = url
+        link.download = filename
+        globalThis.document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+    }
+
+    const downloadSupportReceipt = (details) => {
+        const html = `<!doctype html>
 <html>
     <head>
         <meta charset="utf-8" />
@@ -99,8 +112,48 @@ function Support() {
     </body>
 </html>`
 
-                downloadBlob(html, `support-receipt-${details.orderId}.html`, 'text/html;charset=utf-8')
+        downloadBlob(html, `support-receipt-${details.orderId}.html`, 'text/html;charset=utf-8')
+    }
+
+    const downloadSupportReceiptPdf = async (details, options = {}) => {
+        const { silent = false, auto = false } = options
+
+        if (!details?.orderId || !details?.email) {
+            if (!silent) {
+                toast.error('Receipt details are incomplete for PDF download')
+            }
+            return false
         }
+
+        setIsDownloadingReceipt(true)
+
+        try {
+            const blob = await fetchSupportReceiptPdf(details.orderId, details.email)
+            saveBlobAsFile(blob, `support-receipt-${details.orderId}.pdf`)
+            setReceiptDownloadError('')
+
+            if (!silent) {
+                toast.success('Support receipt PDF downloaded')
+            }
+
+            return true
+        } catch (error) {
+            const message = String(error?.message || 'Unable to download support receipt PDF')
+            setReceiptDownloadError(
+                auto
+                    ? 'Automatic PDF download was blocked. Use the button below to download your receipt.'
+                    : message
+            )
+
+            if (!silent) {
+                toast.error(message)
+            }
+
+            return false
+        } finally {
+            setIsDownloadingReceipt(false)
+        }
+    }
 
     const applyVerifiedSupport = (pendingDetails, verification, silent) => {
         const merged = {
@@ -108,16 +161,20 @@ function Support() {
             amount: verification.amount,
             contributorName: verification.contributorName,
             paymentId: verification.paymentId,
+            emailDispatchQueued: Boolean(verification.emailDispatchQueued),
         }
 
         setSupportSuccess(merged)
         setPaymentFailure('')
+        setReceiptDownloadError('')
         sessionStorage.removeItem(pendingSupportKey)
         setThankYouNote('Thank you for helping me grow. Your support means a lot!')
 
         if (!silent) {
             toast.success('Support payment verified. Thank you!')
         }
+
+        void downloadSupportReceiptPdf(merged, { silent: true, auto: true })
 
         return true
     }
@@ -493,6 +550,9 @@ function Support() {
                                 <p className="mt-2 text-slate-300 text-sm sm:text-base">
                                     Your contribution has been received successfully.
                                 </p>
+                                <p className="mt-2 text-xs text-slate-400">
+                                    Your PDF receipt download starts automatically. A copy is also sent to your email.
+                                </p>
 
                                 <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">
                                     <p><span className="text-slate-400">Name:</span> {supportSuccess.contributorName || supportSuccess.contributor}</p>
@@ -504,18 +564,36 @@ function Support() {
                                 <div className="mt-4">
                                     <button
                                         type="button"
-                                        onClick={() => downloadSupportReceipt(supportSuccess)}
+                                        disabled={isDownloadingReceipt}
+                                        onClick={() => downloadSupportReceiptPdf(supportSuccess)}
                                         className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
                                     >
-                                        Download Support Receipt
+                                        {isDownloadingReceipt ? 'Downloading PDF Receipt...' : 'Download Support Receipt PDF'}
                                     </button>
                                 </div>
+
+                                <div className="mt-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => downloadSupportReceipt(supportSuccess)}
+                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                    >
+                                        Download HTML Backup Receipt
+                                    </button>
+                                </div>
+
+                                {receiptDownloadError ? (
+                                    <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                        {receiptDownloadError}
+                                    </div>
+                                ) : null}
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setSupportSuccess(null)
+                                            setReceiptDownloadError('')
                                             setForm((prev) => ({ ...prev, message: '' }))
                                         }}
                                         className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"

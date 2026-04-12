@@ -10,6 +10,8 @@ const {
   verifyPayment,
   createSupportOrder,
   verifySupportPayment,
+  downloadServiceReceipt,
+  downloadSupportReceipt,
 } = require("../controllers/paymentController");
 const { paymentRateLimiter } = require("../middleware/rateLimiter");
 const {
@@ -17,6 +19,7 @@ const {
   paymentVerifyValidationRules,
   supportCreateOrderValidationRules,
   supportVerifyValidationRules,
+  paymentReceiptValidationRules,
   validate,
 } = require("../middleware/validator");
 
@@ -53,6 +56,20 @@ router.post(
   supportVerifyValidationRules,
   validate,
   verifySupportPayment
+);
+router.get(
+  "/receipt/service/:orderId",
+  paymentRateLimiter,
+  paymentReceiptValidationRules,
+  validate,
+  downloadServiceReceipt
+);
+router.get(
+  "/receipt/support/:orderId",
+  paymentRateLimiter,
+  paymentReceiptValidationRules,
+  validate,
+  downloadSupportReceipt
 );
 
 module.exports = router;

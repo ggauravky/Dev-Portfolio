@@ -9,7 +9,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
-import { createCashfreeOrder, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
+import { createCashfreeOrder, fetchServiceReceiptPdf, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
 
@@ -49,6 +49,8 @@ function BookNow() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [paymentSuccess, setPaymentSuccess] = useState(null)
     const [paymentFailure, setPaymentFailure] = useState('')
+    const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
+    const [receiptDownloadError, setReceiptDownloadError] = useState('')
 
     const pendingOrderKey = 'pendingCashfreeOrder'
 
@@ -70,7 +72,27 @@ function BookNow() {
     }
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-    const isTerminalPaymentFailure = (message) => /not completed|cancelled|failed|dropped|expired/i.test(String(message || ''))
+    const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
+    const isTransientVerificationFailure = (message, statusCode) => {
+        const text = String(message || '')
+        if ([429, 500, 502, 503, 504].includes(Number(statusCode))) {
+            return true
+        }
+
+        return /not completed yet|processing|finaliz|temporarily unavailable|timed out|timeout|network|gateway|reconcil|unable to verify payment|try again shortly/i.test(text)
+    }
+    const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
+
+    const saveBlobAsFile = (blob, filename) => {
+        const url = URL.createObjectURL(blob)
+        const link = globalThis.document.createElement('a')
+        link.href = url
+        link.download = filename
+        globalThis.document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+    }
 
     const downloadBlob = (content, filename, mimeType) => {
         const blob = new Blob([content], { type: mimeType })
@@ -82,6 +104,46 @@ function BookNow() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
+    }
+
+    const downloadServiceReceiptPdf = async (details, options = {}) => {
+        const { silent = false, auto = false } = options
+
+        if (!details?.orderId || !details?.email) {
+            if (!silent) {
+                toast.error('Receipt details are incomplete for PDF download')
+            }
+            return false
+        }
+
+        setIsDownloadingReceipt(true)
+
+        try {
+            const blob = await fetchServiceReceiptPdf(details.orderId, details.email)
+            saveBlobAsFile(blob, `service-confirmation-${details.orderId}.pdf`)
+            setReceiptDownloadError('')
+
+            if (!silent) {
+                toast.success('Service confirmation PDF downloaded')
+            }
+
+            return true
+        } catch (error) {
+            const message = String(error?.message || 'Unable to download service confirmation PDF')
+            setReceiptDownloadError(
+                auto
+                    ? 'Automatic PDF download was blocked. Use the button below to download your confirmation PDF.'
+                    : message
+            )
+
+            if (!silent) {
+                toast.error(message)
+            }
+
+            return false
+        } finally {
+            setIsDownloadingReceipt(false)
+        }
     }
 
     const formatDateForDisplay = (dateString) => {
@@ -186,36 +248,61 @@ function BookNow() {
             bookingId: verification.bookingId,
             amount: verification.amount,
             service: verification.service,
-            paymentId: pendingDetails.paymentId || `cf_${orderId}`,
+            paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${orderId}`,
+            emailDispatchQueued: Boolean(verification.emailDispatchQueued),
         }
 
         setPaymentSuccess(mergedDetails)
         setPaymentFailure('')
+        setReceiptDownloadError('')
         sessionStorage.removeItem(pendingOrderKey)
 
         if (!silent) {
             toast.success('Payment verified and booking confirmed')
         }
 
+        void downloadServiceReceiptPdf(mergedDetails, { silent: true, auto: true })
+
         return true
     }
 
     const handleOrderVerificationError = async (error, attempt, silent) => {
         const message = String(error?.message || '')
-        const shouldRetry = /not completed yet/i.test(message) && attempt < 4
+        const statusCode = Number(error?.status)
+        const transientFailure = isTransientVerificationFailure(message, statusCode)
+        const shouldRetry = transientFailure && attempt < 4
 
         if (shouldRetry) {
-            await pause(1800)
+            await pause(getRetryDelay(attempt))
             return { shouldRetry: true, result: false }
-        }
-
-        if (!silent) {
-            toast.error(message || 'Payment verification failed')
         }
 
         if (isTerminalPaymentFailure(message)) {
             setPaymentFailure(message || 'Payment was not completed. No booking has been confirmed yet.')
             sessionStorage.removeItem(pendingOrderKey)
+
+            if (!silent) {
+                toast.error(message || 'Payment was not completed. No booking has been confirmed yet.')
+            }
+
+            return { shouldRetry: false, result: false }
+        }
+
+        if (transientFailure) {
+            const pendingMessage = 'Payment is still processing on gateway. Please wait a moment and retry with the same email.'
+            setPaymentFailure(pendingMessage)
+
+            if (!silent) {
+                toast.error(pendingMessage)
+            }
+
+            return { shouldRetry: false, result: false }
+        }
+
+        setPaymentFailure(message || 'Payment verification failed')
+
+        if (!silent) {
+            toast.error(message || 'Payment verification failed')
         }
 
         return { shouldRetry: false, result: false }
@@ -576,6 +663,9 @@ function BookNow() {
                                 <p className="mt-2 text-slate-300 text-sm sm:text-base">
                                     Payment verification is complete. Save your invitation and calendar file to keep session details handy.
                                 </p>
+                                <p className="mt-2 text-xs text-slate-400">
+                                    Your confirmation PDF starts downloading automatically. A copy is also sent to your email.
+                                </p>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                                     <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
@@ -598,11 +688,19 @@ function BookNow() {
                                     <p><span className="text-slate-400">Payment ID:</span> {paymentSuccess.paymentId}</p>
                                 </div>
 
-                                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                                    <button
+                                        type="button"
+                                        disabled={isDownloadingReceipt}
+                                        onClick={() => downloadServiceReceiptPdf(paymentSuccess)}
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                    >
+                                        {isDownloadingReceipt ? 'Downloading PDF...' : 'Download Confirmation PDF'}
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => downloadInvitationCard(paymentSuccess)}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
                                     >
                                         Download Invitation Pass
                                     </button>
@@ -614,6 +712,12 @@ function BookNow() {
                                         Download Calendar File
                                     </button>
                                 </div>
+
+                                {receiptDownloadError ? (
+                                    <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                        {receiptDownloadError}
+                                    </div>
+                                ) : null}
 
                                 <div className="mt-3">
                                     <button
@@ -630,6 +734,7 @@ function BookNow() {
                                         type="button"
                                         onClick={() => {
                                             setPaymentSuccess(null)
+                                            setReceiptDownloadError('')
                                             setForm((prev) => ({ ...prev, projectBrief: '' }))
                                         }}
                                         className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"

@@ -4,7 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { body, query, validationResult } = require("express-validator");
+const { body, query, param, validationResult } = require("express-validator");
 
 const getMinBookingDate = () => {
   const minDate = new Date();
@@ -174,6 +174,23 @@ exports.supportVerifyValidationRules = [
     .withMessage("Order ID format is invalid"),
 
   body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+];
+
+exports.paymentReceiptValidationRules = [
+  param("orderId")
+    .trim()
+    .notEmpty()
+    .withMessage("Order ID is required")
+    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
+    .withMessage("Order ID format is invalid"),
+
+  query("email")
     .trim()
     .notEmpty()
     .withMessage("Email is required")

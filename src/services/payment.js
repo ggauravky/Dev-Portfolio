@@ -78,6 +78,47 @@ export const verifySupportPayment = async (orderId, email) => {
     return data.data
 }
 
+const assertBlobResponse = async (response) => {
+    if (!response.ok) {
+        let data = null
+
+        try {
+            data = await response.json()
+        } catch {
+            data = null
+        }
+
+        const error = new Error(data?.message || 'Unable to download receipt PDF')
+        error.status = response.status
+        error.payload = data
+        throw error
+    }
+
+    return response.blob()
+}
+
+export const fetchServiceReceiptPdf = async (orderId, email) => {
+    const response = await fetch(
+        `${API_URL}/api/payment/receipt/service/${encodeURIComponent(String(orderId || '').trim())}?email=${encodeURIComponent(String(email || '').trim())}`,
+        {
+            method: 'GET',
+        }
+    )
+
+    return assertBlobResponse(response)
+}
+
+export const fetchSupportReceiptPdf = async (orderId, email) => {
+    const response = await fetch(
+        `${API_URL}/api/payment/receipt/support/${encodeURIComponent(String(orderId || '').trim())}?email=${encodeURIComponent(String(email || '').trim())}`,
+        {
+            method: 'GET',
+        }
+    )
+
+    return assertBlobResponse(response)
+}
+
 export const loadCashfreeSdk = () =>
     new Promise((resolve, reject) => {
         if (!globalThis.document) {

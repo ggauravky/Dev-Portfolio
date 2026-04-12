@@ -184,39 +184,124 @@ const toSafeText = (value, maxLength, fallback = "") => {
   return truncated || fallback;
 };
 
+const normalizeEmailAddress = (value) => String(value || "").trim().toLowerCase();
+const isMatchingEmail = (left, right) => normalizeEmailAddress(left) === normalizeEmailAddress(right);
+
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
 
-const normalizeGatewayPaymentStatus = (value) => {
-  const status = String(value || "").trim().toLowerCase();
+const normalizePaymentStatusToken = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replaceAll(/[\s-]+/g, "_");
 
-  if (["paid", "success", "successful"].includes(status)) {
+const isSuccessfulPaymentToken = (token) =>
+  [
+    "success",
+    "successful",
+    "paid",
+    "captured",
+    "completed",
+    "settled",
+    "settlement_successful",
+    "charge_success",
+  ].includes(token);
+
+const isFailedPaymentToken = (token) =>
+  [
+    "failed",
+    "cancelled",
+    "canceled",
+    "user_dropped",
+    "expired",
+    "declined",
+    "rejected",
+    "voided",
+    "charge_failed",
+  ].includes(token);
+
+const extractPaymentStatusToken = (payment) =>
+  normalizePaymentStatusToken(
+    payment?.payment_status ||
+      payment?.paymentStatus ||
+      payment?.status ||
+      payment?.payment_details?.payment_status ||
+      payment?.payment_details?.status ||
+      ""
+  );
+
+const normalizeGatewayPaymentStatus = (value) => {
+  const status = normalizePaymentStatusToken(value);
+
+  if (isSuccessfulPaymentToken(status)) {
     return "paid";
   }
 
-  if (["failed", "cancelled", "canceled", "user_dropped", "expired"].includes(status)) {
+  if (isFailedPaymentToken(status)) {
     return "failed";
   }
 
-  if (["pending", "active", "processing"].includes(status)) {
+  if (["pending", "active", "processing", "in_progress", "initiated"].includes(status)) {
     return "pending";
   }
 
   return "created";
 };
 
-const toPaymentArray = (paymentList) => (Array.isArray(paymentList) ? paymentList : []);
+const toPaymentArray = (paymentList) => {
+  if (Array.isArray(paymentList)) {
+    return paymentList;
+  }
+
+  if (!paymentList || typeof paymentList !== "object") {
+    return [];
+  }
+
+  const candidates = [
+    paymentList.payments,
+    paymentList.data,
+    paymentList.items,
+    paymentList.results,
+    paymentList.payment_list,
+    paymentList.data?.payments,
+    paymentList.data?.items,
+    paymentList.result?.payments,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate;
+    }
+  }
+
+  const hasPaymentMarker = [
+    "payment_status",
+    "paymentStatus",
+    "status",
+    "cf_payment_id",
+    "payment_id",
+    "paymentId",
+    "id",
+  ].some((key) => Object.hasOwn(paymentList, key));
+
+  return hasPaymentMarker ? [paymentList] : [];
+};
+
+const resolveGatewayPaymentId = (payment, orderId) =>
+  String(
+    payment?.cf_payment_id ||
+      payment?.payment_id ||
+      payment?.cfPaymentId ||
+      payment?.paymentId ||
+      payment?.id ||
+      ""
+  ).trim() || `cf_${String(orderId || "").trim()}`;
 
 const findSuccessfulPayment = (paymentList) =>
-  toPaymentArray(paymentList).find(
-    (payment) => String(payment.payment_status || "").toUpperCase() === "SUCCESS"
-  );
+  toPaymentArray(paymentList).find((payment) => isSuccessfulPaymentToken(extractPaymentStatusToken(payment)));
 
 const findFailedPayment = (paymentList) =>
-  toPaymentArray(paymentList).find((payment) =>
-    ["FAILED", "CANCELLED", "USER_DROPPED", "EXPIRED"].includes(
-      String(payment.payment_status || "").toUpperCase()
-    )
-  );
+  toPaymentArray(paymentList).find((payment) => isFailedPaymentToken(extractPaymentStatusToken(payment)));
 
 const buildBookingVerificationContext = ({
   draftBooking,
@@ -914,6 +999,9 @@ exports.verifyPayment = async (req, res) => {
           bookingId: draftBooking._id,
           service: draftBooking.service,
           amount: draftBooking.amount,
+          orderId: normalizedOrderId,
+          paymentId: draftBooking.paymentId,
+          emailDispatchQueued: true,
         },
       });
     }
@@ -976,6 +1064,8 @@ exports.verifyPayment = async (req, res) => {
         nextStatus = "failed";
       } else if (gatewayOrderStatus === "failed") {
         nextStatus = "pending";
+      } else if (gatewayOrderStatus === "paid") {
+        nextStatus = "pending";
       }
 
       await Booking.updateOne(
@@ -992,11 +1082,15 @@ exports.verifyPayment = async (req, res) => {
         }
       );
 
+      const pendingMessage = gatewayOrderStatus === "paid"
+        ? "Payment is being finalized by gateway. Please retry in a few seconds."
+        : "Payment is not completed yet";
+
       return res.status(409).json({
         success: false,
         message: failedPayment
           ? "Payment was not completed. If amount was deducted, gateway will auto-reconcile."
-          : "Payment is not completed yet",
+          : pendingMessage,
       });
     }
 
@@ -1005,9 +1099,7 @@ exports.verifyPayment = async (req, res) => {
       {
         $set: {
           paymentStatus: "paid",
-          paymentId:
-            String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
-            `cf_${normalizedOrderId}`,
+          paymentId: resolveGatewayPaymentId(successfulPayment, normalizedOrderId),
           paymentProvider: "cashfree",
           paidAt: new Date(),
         },
@@ -1041,6 +1133,9 @@ exports.verifyPayment = async (req, res) => {
         bookingId: booking._id,
         service: booking.service,
         amount: booking.amount,
+        orderId: normalizedOrderId,
+        paymentId: booking.paymentId,
+        emailDispatchQueued: true,
       },
     });
   } catch (error) {
@@ -1221,6 +1316,7 @@ exports.verifySupportPayment = async (req, res) => {
           amount: supportRecord.amount,
           contributorName: supportRecord.contributorName,
           paymentId: supportRecord.paymentId,
+          emailDispatchQueued: true,
         },
       });
     }
@@ -1265,6 +1361,8 @@ exports.verifySupportPayment = async (req, res) => {
         nextStatus = "failed";
       } else if (gatewayOrderStatus === "failed") {
         nextStatus = "pending";
+      } else if (gatewayOrderStatus === "paid") {
+        nextStatus = "pending";
       }
       await SupportPayment.findOneAndUpdate(
         { orderId: normalizedOrderId },
@@ -1285,17 +1383,19 @@ exports.verifySupportPayment = async (req, res) => {
         }
       );
 
+      const pendingMessage = gatewayOrderStatus === "paid"
+        ? "Payment is being finalized by gateway. Please retry in a few seconds."
+        : "Payment is not completed yet";
+
       return res.status(409).json({
         success: false,
         message: failedPayment
           ? "Payment was not completed. If amount was deducted, it will be auto-reconciled by gateway."
-          : "Payment is not completed yet",
+          : pendingMessage,
       });
     }
 
-    const resolvedPaymentId =
-      String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
-      `cf_${normalizedOrderId}`;
+    const resolvedPaymentId = resolveGatewayPaymentId(successfulPayment, normalizedOrderId);
 
     const conflictingPayment = await SupportPayment.findOne({
       paymentId: resolvedPaymentId,
@@ -1364,6 +1464,7 @@ exports.verifySupportPayment = async (req, res) => {
         amount: orderAmount,
         contributorName,
         paymentId: resolvedPaymentId,
+        emailDispatchQueued: true,
       },
     });
   } catch (error) {
@@ -1384,6 +1485,146 @@ exports.verifySupportPayment = async (req, res) => {
     return res.status(mapped.status).json({
       success: false,
       message: mapped.message,
+    });
+  }
+};
+
+exports.downloadServiceReceipt = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const normalizedOrderId = String(req.params?.orderId || "").trim();
+  const normalizedEmail = normalizeEmailAddress(req.query?.email);
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const booking = await Booking.findOne({ orderId: normalizedOrderId }).lean();
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found for receipt download",
+      });
+    }
+
+    if (!isMatchingEmail(booking.email, normalizedEmail)) {
+      return res.status(403).json({
+        success: false,
+        message: "Receipt access is not allowed for this email",
+      });
+    }
+
+    if (booking.paymentStatus !== "paid") {
+      return res.status(409).json({
+        success: false,
+        message: "Receipt is available only after payment confirmation",
+      });
+    }
+
+    const attachment = await generateServiceConfirmationPdf({ booking });
+    const contentBase64 = String(attachment?.contentBase64 || "").trim();
+
+    if (!contentBase64) {
+      return res.status(503).json({
+        success: false,
+        message: "Unable to generate service confirmation PDF right now",
+      });
+    }
+
+    const filename = String(attachment?.name || `service-confirmation-${normalizedOrderId}.pdf`);
+    const buffer = Buffer.from(contentBase64, "base64");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "private, max-age=300");
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Service receipt download failed"
+    );
+
+    return res.status(503).json({
+      success: false,
+      message: "Unable to generate service confirmation PDF. Please retry in a moment.",
+    });
+  }
+};
+
+exports.downloadSupportReceipt = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const normalizedOrderId = String(req.params?.orderId || "").trim();
+  const normalizedEmail = normalizeEmailAddress(req.query?.email);
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const supportPayment = await SupportPayment.findOne({ orderId: normalizedOrderId }).lean();
+
+    if (!supportPayment) {
+      return res.status(404).json({
+        success: false,
+        message: "Support receipt not found",
+      });
+    }
+
+    if (!isMatchingEmail(supportPayment.email, normalizedEmail)) {
+      return res.status(403).json({
+        success: false,
+        message: "Receipt access is not allowed for this email",
+      });
+    }
+
+    if (supportPayment.paymentStatus !== "paid") {
+      return res.status(409).json({
+        success: false,
+        message: "Receipt is available only after payment confirmation",
+      });
+    }
+
+    const attachment = await generateSupportReceiptPdf({ supportPayment });
+    const contentBase64 = String(attachment?.contentBase64 || "").trim();
+
+    if (!contentBase64) {
+      return res.status(503).json({
+        success: false,
+        message: "Unable to generate support receipt PDF right now",
+      });
+    }
+
+    const filename = String(attachment?.name || `support-receipt-${normalizedOrderId}.pdf`);
+    const buffer = Buffer.from(contentBase64, "base64");
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "private, max-age=300");
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Support receipt download failed"
+    );
+
+    return res.status(503).json({
+      success: false,
+      message: "Unable to generate support receipt PDF. Please retry in a moment.",
     });
   }
 };
