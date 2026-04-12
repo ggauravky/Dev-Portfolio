@@ -566,7 +566,9 @@ function Support() {
                                     Your contribution has been received successfully.
                                 </p>
                                 <p className="mt-2 text-xs text-slate-400">
-                                    Your PDF receipt download starts automatically. A copy is also sent to your email.
+                                    {supportSuccess.emailDispatchQueued
+                                        ? 'Your PDF receipt download starts automatically. A copy is also sent to your email.'
+                                        : 'Your PDF receipt download starts automatically. Email delivery is temporarily unavailable, so please keep the downloaded receipt.'}
                                 </p>
 
                                 <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">

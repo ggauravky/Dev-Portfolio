@@ -853,6 +853,7 @@ const sendSupportThankYouEmail = async ({ supportPayment, attachments = [] }) =>
 
 module.exports = {
   ONE_DAY_MS,
+  isBrevoConfigured,
   shouldSendWelcomeBackEmail,
   sendWelcomeEmail,
   sendWelcomeBackEmail,

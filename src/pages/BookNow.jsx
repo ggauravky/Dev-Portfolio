@@ -380,7 +380,7 @@ function BookNow() {
             pending = null
         }
 
-        if (!pending?.orderId) {
+        if (!pending?.orderId || !pending?.email) {
             sessionStorage.removeItem(pendingOrderKey)
             return
         }
@@ -681,7 +681,9 @@ function BookNow() {
                                     Payment verification is complete. Save your invitation and calendar file to keep session details handy.
                                 </p>
                                 <p className="mt-2 text-xs text-slate-400">
-                                    Your confirmation PDF starts downloading automatically. A copy is also sent to your email.
+                                    {paymentSuccess.emailDispatchQueued
+                                        ? 'Your confirmation PDF starts downloading automatically. A copy is also sent to your email.'
+                                        : 'Your confirmation PDF starts downloading automatically. Email delivery is temporarily unavailable, so please keep the downloaded files.'}
                                 </p>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
