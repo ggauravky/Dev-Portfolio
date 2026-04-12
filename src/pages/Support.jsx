@@ -48,7 +48,16 @@ function Support() {
     }
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-    const isTerminalPaymentFailure = (message) => /not completed|cancelled|failed|dropped|expired/i.test(String(message || ''))
+    const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
+    const isTransientVerificationFailure = (message, statusCode) => {
+        const text = String(message || '')
+        if ([429, 500, 502, 503, 504].includes(Number(statusCode))) {
+            return true
+        }
+
+        return /not completed yet|processing|temporarily unavailable|timed out|timeout|network|gateway|reconcil|unable to verify support payment|try again shortly/i.test(text)
+    }
+    const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
 
         const downloadBlob = (content, filename, mimeType) => {
                 const blob = new Blob([content], { type: mimeType })
@@ -115,20 +124,36 @@ function Support() {
 
     const handleSupportVerificationError = async (error, attempt, silent) => {
         const message = String(error?.message || '')
-        const shouldRetry = /not completed yet/i.test(message) && attempt < 4
+        const statusCode = Number(error?.status)
+        const transientFailure = isTransientVerificationFailure(message, statusCode)
+        const shouldRetry = transientFailure && attempt < 4
 
         if (shouldRetry) {
-            await pause(1500)
+            await pause(getRetryDelay(attempt))
             return { shouldRetry: true, result: false }
-        }
-
-        if (!silent) {
-            toast.error(message || 'Unable to verify support payment')
         }
 
         if (isTerminalPaymentFailure(message)) {
             setPaymentFailure(message || 'Payment was not completed. No support amount has been confirmed.')
             sessionStorage.removeItem(pendingSupportKey)
+            if (!silent) {
+                toast.error(message || 'Payment was not completed. No support amount has been confirmed.')
+            }
+            return { shouldRetry: false, result: false }
+        }
+
+        if (transientFailure) {
+            const pendingMessage = 'Payment is still processing on gateway. Please wait a moment and retry with the same email.'
+            setPaymentFailure(pendingMessage)
+            if (!silent) {
+                toast.error(pendingMessage)
+            }
+            return { shouldRetry: false, result: false }
+        }
+
+        setPaymentFailure(message || 'Unable to verify support payment')
+        if (!silent) {
+            toast.error(message || 'Unable to verify support payment')
         }
 
         return { shouldRetry: false, result: false }

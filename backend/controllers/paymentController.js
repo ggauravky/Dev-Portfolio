@@ -174,6 +174,16 @@ const normalizePreferredTime = (value) => {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(raw) ? raw : "10:00";
 };
 
+const toSafeText = (value, maxLength, fallback = "") => {
+  const normalized = String(value == null ? "" : value)
+    .replaceAll(/\s+/g, " ")
+    .trim();
+  const truncated = Number.isFinite(maxLength) && maxLength > 0
+    ? normalized.slice(0, maxLength)
+    : normalized;
+  return truncated || fallback;
+};
+
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
 
 const normalizeGatewayPaymentStatus = (value) => {
@@ -401,9 +411,11 @@ const buildSupportVerificationContext = ({
     };
   }
 
-  const contributorName =
-    String(cashfreeOrder.customer_details?.customer_name || supportRecord?.contributorName || "Supporter").trim() ||
-    "Supporter";
+  const contributorName = toSafeText(
+    cashfreeOrder.customer_details?.customer_name || supportRecord?.contributorName,
+    80,
+    "Supporter"
+  );
 
   return {
     contributorName,
@@ -414,7 +426,7 @@ const buildSupportVerificationContext = ({
       email: orderEmail || normalizedEmail,
       phone: resolvedSupportPhone,
       amount: orderAmount,
-      message: supportRecord?.message || "",
+      message: toSafeText(supportRecord?.message, 300, ""),
       ipAddress,
       userAgent,
     },
@@ -460,7 +472,24 @@ const mapGatewayError = (error, fallbackMessage) => {
   if (Number(error?.code) === 11000) {
     return {
       status: 409,
-      message: "A booking conflict occurred while creating payment order. Please retry once.",
+      message: "A payment record conflict occurred. Please retry once with the same order details.",
+      logLevel: "warn",
+    };
+  }
+
+  if (error?.name === "ValidationError") {
+    const validationMessage = Object.values(error.errors || {})[0]?.message;
+    return {
+      status: 400,
+      message: validationMessage || "Payment details are invalid. Please refresh and try again.",
+      logLevel: "warn",
+    };
+  }
+
+  if (error?.name === "CastError") {
+    return {
+      status: 400,
+      message: "Payment request contains invalid identifiers. Please retry from checkout.",
       logLevel: "warn",
     };
   }
@@ -1163,6 +1192,8 @@ exports.createSupportOrder = async (req, res) => {
 
 exports.verifySupportPayment = async (req, res) => {
   const reqLogger = req.log || logger;
+  const normalizedOrderId = String(req.body?.orderId || "").trim();
+  const normalizedEmail = String(req.body?.email || "").trim().toLowerCase();
 
   if (!isDatabaseReady()) {
     return res.status(503).json({
@@ -1172,10 +1203,7 @@ exports.verifySupportPayment = async (req, res) => {
   }
 
   try {
-    const { orderId, email } = req.body;
     const { ipAddress, userAgent } = getRequestClientMeta(req);
-    const normalizedOrderId = String(orderId || "").trim();
-    const normalizedEmail = String(email || "").trim().toLowerCase();
     const config = getCashfreeConfig();
     const supportRecord = await SupportPayment.findOne({ orderId: normalizedOrderId });
 
@@ -1269,6 +1297,30 @@ exports.verifySupportPayment = async (req, res) => {
       String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
       `cf_${normalizedOrderId}`;
 
+    const conflictingPayment = await SupportPayment.findOne({
+      paymentId: resolvedPaymentId,
+      orderId: { $ne: normalizedOrderId },
+    })
+      .select("orderId paymentStatus")
+      .lean();
+
+    if (conflictingPayment) {
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+          paymentId: resolvedPaymentId,
+          conflictingOrderId: conflictingPayment.orderId,
+          conflictingStatus: conflictingPayment.paymentStatus,
+        },
+        "Support payment verification rejected due to payment-id conflict"
+      );
+
+      return res.status(409).json({
+        success: false,
+        message: "Payment confirmation is still reconciling. Please retry with the same email in a moment.",
+      });
+    }
+
     const savedSupportPayment = await SupportPayment.findOneAndUpdate(
       { orderId: normalizedOrderId },
       {
@@ -1319,7 +1371,11 @@ exports.verifySupportPayment = async (req, res) => {
     reqLogger[mapped.logLevel](
       {
         err: error,
+        orderId: normalizedOrderId,
+        email: normalizedEmail,
         paymentCode: error?.code,
+        errorName: error?.name,
+        mongoCode: error?.code,
         upstreamStatus: error?.statusCode || error?.response?.status,
       },
       "Support payment verification failed"

@@ -17,7 +17,10 @@ const assertResponse = async (response) => {
     }
 
     if (!response.ok || !data?.success) {
-        throw new Error(data?.message || 'Payment request failed')
+        const error = new Error(data?.message || 'Payment request failed')
+        error.status = response.status
+        error.payload = data
+        throw error
     }
 
     return data

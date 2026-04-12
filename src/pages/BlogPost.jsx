@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import SupportButton from '../components/support/SupportButton'
+import './Blog.css'
 import './BlogPost.css'
 
 function BlogPost() {
