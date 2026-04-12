@@ -51,13 +51,18 @@ function Support() {
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
     const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
-    const isTransientVerificationFailure = (message, statusCode) => {
+    const classifyVerificationFailure = (message, statusCode) => {
         const text = String(message || '')
-        if ([429, 500, 502, 503, 504].includes(Number(statusCode))) {
-            return true
-        }
+        const normalizedStatus = Number(statusCode)
+        const isPendingGatewayState = /not completed yet|processing|finaliz|reconcil/i.test(text)
+        const isRetryableServerState =
+            [429, 500, 502, 503, 504].includes(normalizedStatus) ||
+            /temporarily unavailable|timed out|timeout|network|gateway|try again shortly/i.test(text)
 
-        return /not completed yet|processing|finaliz|temporarily unavailable|timed out|timeout|network|gateway|reconcil|unable to verify support payment|try again shortly/i.test(text)
+        return {
+            isPendingGatewayState,
+            isRetryable: isPendingGatewayState || isRetryableServerState,
+        }
     }
     const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
 
@@ -182,8 +187,8 @@ function Support() {
     const handleSupportVerificationError = async (error, attempt, silent) => {
         const message = String(error?.message || '')
         const statusCode = Number(error?.status)
-        const transientFailure = isTransientVerificationFailure(message, statusCode)
-        const shouldRetry = transientFailure && attempt < 4
+        const failure = classifyVerificationFailure(message, statusCode)
+        const shouldRetry = failure.isRetryable && attempt < 4
 
         if (shouldRetry) {
             await pause(getRetryDelay(attempt))
@@ -199,11 +204,21 @@ function Support() {
             return { shouldRetry: false, result: false }
         }
 
-        if (transientFailure) {
+        if (failure.isPendingGatewayState) {
             const pendingMessage = 'Payment is still processing on gateway. Please wait a moment and retry with the same email.'
             setPaymentFailure(pendingMessage)
             if (!silent) {
                 toast.error(pendingMessage)
+            }
+            return { shouldRetry: false, result: false }
+        }
+
+        if (failure.isRetryable) {
+            const retryableServerMessage =
+                'Payment was captured but verification is temporarily unavailable on server. Please retry shortly with the same email, or contact support with your order ID.'
+            setPaymentFailure(retryableServerMessage)
+            if (!silent) {
+                toast.error(retryableServerMessage)
             }
             return { shouldRetry: false, result: false }
         }

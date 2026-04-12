@@ -282,7 +282,7 @@ const toPaymentArray = (paymentList) => {
     "payment_id",
     "paymentId",
     "id",
-  ].some((key) => Object.hasOwn(paymentList, key));
+  ].some((key) => Object.keys(paymentList).includes(key));
 
   return hasPaymentMarker ? [paymentList] : [];
 };
@@ -296,6 +296,49 @@ const resolveGatewayPaymentId = (payment, orderId) =>
       payment?.id ||
       ""
   ).trim() || `cf_${String(orderId || "").trim()}`;
+
+const summarizePaymentListForLogs = (paymentList) => {
+  const payments = toPaymentArray(paymentList);
+  const topLevelKeys = paymentList && typeof paymentList === "object"
+    ? Object.keys(paymentList).slice(0, 8)
+    : [];
+
+  return {
+    isArrayPayload: Array.isArray(paymentList),
+    extractedCount: payments.length,
+    topLevelKeys,
+    statusesPreview: payments.slice(0, 5).map((payment) => extractPaymentStatusToken(payment) || "unknown"),
+  };
+};
+
+const findGatewayPaidFallbackPayment = (paymentList, gatewayOrderStatus) => {
+  if (gatewayOrderStatus !== "paid") {
+    return null;
+  }
+
+  const payments = toPaymentArray(paymentList);
+  if (!payments.length) {
+    return null;
+  }
+
+  const explicitFailed = payments.find((payment) => isFailedPaymentToken(extractPaymentStatusToken(payment)));
+  if (explicitFailed) {
+    return null;
+  }
+
+  const paymentWithId = payments.find((payment) =>
+    String(
+      payment?.cf_payment_id ||
+      payment?.payment_id ||
+      payment?.cfPaymentId ||
+      payment?.paymentId ||
+      payment?.id ||
+      ""
+    ).trim()
+  );
+
+  return paymentWithId || payments[0] || null;
+};
 
 const findSuccessfulPayment = (paymentList) =>
   toPaymentArray(paymentList).find((payment) => isSuccessfulPaymentToken(extractPaymentStatusToken(payment)));
@@ -1055,7 +1098,9 @@ exports.verifyPayment = async (req, res) => {
       config,
     });
 
-    const successfulPayment = findSuccessfulPayment(paymentList);
+    const successfulPayment =
+      findSuccessfulPayment(paymentList) ||
+      findGatewayPaidFallbackPayment(paymentList, gatewayOrderStatus);
 
     if (!successfulPayment) {
       const failedPayment = findFailedPayment(paymentList);
@@ -1085,6 +1130,15 @@ exports.verifyPayment = async (req, res) => {
       const pendingMessage = gatewayOrderStatus === "paid"
         ? "Payment is being finalized by gateway. Please retry in a few seconds."
         : "Payment is not completed yet";
+
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+          gatewayOrderStatus,
+          paymentListSummary: summarizePaymentListForLogs(paymentList),
+        },
+        "Service payment verification pending because no successful payment marker was found"
+      );
 
       return res.status(409).json({
         success: false,
@@ -1351,7 +1405,9 @@ exports.verifySupportPayment = async (req, res) => {
       config,
     });
 
-    const successfulPayment = findSuccessfulPayment(paymentList);
+    const successfulPayment =
+      findSuccessfulPayment(paymentList) ||
+      findGatewayPaidFallbackPayment(paymentList, gatewayOrderStatus);
 
     if (!successfulPayment) {
       const failedPayment = findFailedPayment(paymentList);
@@ -1386,6 +1442,15 @@ exports.verifySupportPayment = async (req, res) => {
       const pendingMessage = gatewayOrderStatus === "paid"
         ? "Payment is being finalized by gateway. Please retry in a few seconds."
         : "Payment is not completed yet";
+
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+          gatewayOrderStatus,
+          paymentListSummary: summarizePaymentListForLogs(paymentList),
+        },
+        "Support payment verification pending because no successful payment marker was found"
+      );
 
       return res.status(409).json({
         success: false,
