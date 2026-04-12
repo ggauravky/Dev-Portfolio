@@ -33,20 +33,77 @@ const clearSessionCookie = (res) => {
   res.clearCookie(AUTH_COOKIE_NAME, getClearCookieOptions());
 };
 
+const setAnonymousUser = (req) => {
+  req.authUser = null;
+  return null;
+};
+
+const rejectIfRequired = (res, required, status, message) => {
+  if (!required) {
+    return null;
+  }
+
+  return res.status(status).json({
+    success: false,
+    message,
+  });
+};
+
+const handleMissingToken = (req, res, required) => {
+  const rejection = rejectIfRequired(res, required, 401, "Please sign in first");
+  if (rejection) {
+    return rejection;
+  }
+
+  return setAnonymousUser(req);
+};
+
+const buildAuthUser = (user) => ({
+  id: String(user._id),
+  name: user.name,
+  email: user.email,
+  picture: user.picture,
+});
+
+const handleMissingUser = (req, res, required) => {
+  clearSessionCookie(res);
+  const rejection = rejectIfRequired(res, required, 401, "Session is invalid. Please sign in again");
+  if (rejection) {
+    return rejection;
+  }
+
+  return setAnonymousUser(req);
+};
+
+const handleTokenError = (req, res, required, error) => {
+  const isConfigError = error?.code === "AUTH_CONFIG_MISSING";
+
+  if (!isConfigError) {
+    clearSessionCookie(res);
+  }
+
+  if (required) {
+    return res.status(isConfigError ? 503 : 401).json({
+      success: false,
+      message: isConfigError
+        ? "Authentication service is not configured"
+        : "Session expired. Please sign in again",
+    });
+  }
+
+  if (!isConfigError) {
+    logger.warn({ err: error }, "Optional auth token validation failed");
+  }
+
+  return setAnonymousUser(req);
+};
+
 const attachUserFromToken = async (req, res, options = {}) => {
   const { required = false } = options;
   const token = readSessionToken(req);
 
   if (!token) {
-    if (required) {
-      return res.status(401).json({
-        success: false,
-        message: "Please sign in first",
-      });
-    }
-
-    req.authUser = null;
-    return null;
+    return handleMissingToken(req, res, required);
   }
 
   try {
@@ -54,53 +111,14 @@ const attachUserFromToken = async (req, res, options = {}) => {
     const user = await User.findById(payload.uid).select("_id name email picture");
 
     if (!user) {
-      clearSessionCookie(res);
-      if (required) {
-        return res.status(401).json({
-          success: false,
-          message: "Session is invalid. Please sign in again",
-        });
-      }
-
-      req.authUser = null;
-      return null;
+      return handleMissingUser(req, res, required);
     }
 
-    req.authUser = {
-      id: String(user._id),
-      name: user.name,
-      email: user.email,
-      picture: user.picture,
-    };
+    req.authUser = buildAuthUser(user);
 
     return null;
   } catch (error) {
-    const isConfigError = error?.code === "AUTH_CONFIG_MISSING";
-
-    if (!isConfigError) {
-      clearSessionCookie(res);
-    }
-
-    if (required) {
-      if (isConfigError) {
-        return res.status(503).json({
-          success: false,
-          message: "Authentication service is not configured",
-        });
-      }
-
-      return res.status(401).json({
-        success: false,
-        message: "Session expired. Please sign in again",
-      });
-    }
-
-    if (!isConfigError) {
-      logger.warn({ err: error }, "Optional auth token validation failed");
-    }
-
-    req.authUser = null;
-    return null;
+    return handleTokenError(req, res, required, error);
   }
 };
 

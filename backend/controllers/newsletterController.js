@@ -6,6 +6,39 @@
 
 const Newsletter = require("../models/Newsletter");
 const { logger } = require("../utils/logger");
+const { sendNewsletterThankYouEmail } = require("../utils/email");
+
+const scheduleNewsletterThankYouEmail = ({ email, reqLogger }) => {
+  setImmediate(async () => {
+    try {
+      const result = await sendNewsletterThankYouEmail({ email });
+
+      if (!result.sent && !result.skipped) {
+        reqLogger.warn(
+          {
+            email,
+            reason: result.reason,
+            error: result.error,
+          },
+          "Newsletter thank-you email was not delivered"
+        );
+        return;
+      }
+
+      if (result.sent) {
+        reqLogger.info(
+          {
+            email,
+            emailId: result.messageId || result.providerId,
+          },
+          "Newsletter thank-you email sent"
+        );
+      }
+    } catch (error) {
+      reqLogger.error({ err: error, email }, "Newsletter thank-you email processing failed");
+    }
+  });
+};
 
 // @desc    Subscribe to newsletter
 // @route   POST /api/newsletter/subscribe
@@ -37,6 +70,10 @@ exports.subscribe = async (req, res) => {
 
       // If previously unsubscribed, resubscribe
       await existingSubscriber.resubscribe();
+      scheduleNewsletterThankYouEmail({
+        email: existingSubscriber.email,
+        reqLogger,
+      });
 
       return res.status(200).json({
         success: true,
@@ -58,6 +95,11 @@ exports.subscribe = async (req, res) => {
       email,
       ipAddress,
       userAgent,
+    });
+
+    scheduleNewsletterThankYouEmail({
+      email: subscriber.email,
+      reqLogger,
     });
 
     res.status(201).json({

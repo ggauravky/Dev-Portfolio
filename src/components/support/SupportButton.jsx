@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { fetchSupportStatus, supportBlogPost } from '../../services/blogSupport'
@@ -171,6 +172,12 @@ function SupportButton({ slug, title, content = '' }) {
             ) : null}
         </>
     )
+}
+
+SupportButton.propTypes = {
+    slug: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    content: PropTypes.string,
 }
 
 export default SupportButton

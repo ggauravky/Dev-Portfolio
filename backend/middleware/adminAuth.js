@@ -4,6 +4,8 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+const crypto = require("node:crypto");
+
 /**
  * Simple static API-key guard for private/admin routes.
  * Set ADMIN_KEY in your .env (backend) and pass it in the
@@ -23,10 +25,10 @@ exports.requireAdminKey = (req, res, next) => {
     });
   }
 
-  const provided = req.headers["x-admin-key"];
+  const provided = String(req.headers["x-admin-key"] || "");
 
-  // Constant-time comparison to prevent timing attacks
-  if (!provided?.length || provided.length !== adminKey.length || !constantTimeEqual(provided, adminKey)) {
+  // Constant-time comparison to prevent timing attacks.
+  if (!provided.length || !constantTimeEqual(provided, adminKey)) {
     return res.status(401).json({
       success: false,
       message: "Unauthorized.",
@@ -37,14 +39,22 @@ exports.requireAdminKey = (req, res, next) => {
 };
 
 /**
- * Simple constant-time string comparison to mitigate timing attacks on the
- * admin key check.  Not cryptographic but sufficient for a static string match.
+ * Constant-time string comparison using fixed-length buffers.
  */
 function constantTimeEqual(a, b) {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= (a.codePointAt(i) ?? 0) ^ (b.codePointAt(i) ?? 0);
+  const left = Buffer.from(String(a || ""), "utf8");
+  const right = Buffer.from(String(b || ""), "utf8");
+  const maxLength = Math.max(left.length, right.length);
+
+  if (maxLength === 0) {
+    return false;
   }
-  return result === 0;
+
+  const leftPadded = Buffer.alloc(maxLength);
+  const rightPadded = Buffer.alloc(maxLength);
+  left.copy(leftPadded);
+  right.copy(rightPadded);
+
+  const isEqual = crypto.timingSafeEqual(leftPadded, rightPadded);
+  return isEqual && left.length === right.length;
 }

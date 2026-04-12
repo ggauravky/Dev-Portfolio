@@ -8,6 +8,14 @@ const { randomBytes } = require("node:crypto");
 const Booking = require("../models/Booking");
 const SupportPayment = require("../models/SupportPayment");
 const { logger } = require("../utils/logger");
+const {
+  sendServiceBookingConfirmationEmail,
+  sendSupportThankYouEmail,
+} = require("../utils/email");
+const {
+  generateServiceConfirmationPdf,
+  generateSupportReceiptPdf,
+} = require("../utils/pdfGenerator");
 
 const SERVICE_CATALOG = {
   mentorship: { title: "Mentorship", amount: 49 },
@@ -494,6 +502,215 @@ const mapGatewayError = (error, fallbackMessage) => {
   };
 };
 
+const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
+  const normalizedBookingId = String(bookingId || "").trim();
+  if (!normalizedBookingId) {
+    return;
+  }
+
+  setImmediate(async () => {
+    try {
+      const booking = await Booking.findById(normalizedBookingId).lean();
+      if (booking?.paymentStatus !== "paid" || booking?.confirmationEmailSentAt) {
+        return;
+      }
+
+      let attachment = null;
+      try {
+        attachment = await generateServiceConfirmationPdf({ booking });
+      } catch (pdfError) {
+        reqLogger.warn(
+          {
+            err: pdfError,
+            bookingId: normalizedBookingId,
+          },
+          "Service confirmation PDF generation failed; sending email without attachment"
+        );
+      }
+
+      const result = await sendServiceBookingConfirmationEmail({
+        booking,
+        attachments: attachment ? [attachment] : [],
+      });
+
+      if (!result.customer?.sent) {
+        await Booking.updateOne(
+          { _id: normalizedBookingId },
+          {
+            $set: {
+              confirmationEmailLastAttemptAt: new Date(),
+              confirmationEmailError: String(result.customer?.reason || "send_failed"),
+            },
+          }
+        );
+
+        if (!result.customer?.skipped) {
+          reqLogger.warn(
+            {
+              bookingId: normalizedBookingId,
+              reason: result.customer?.reason,
+              error: result.customer?.error,
+            },
+            "Service confirmation email was not delivered"
+          );
+        }
+        return;
+      }
+
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            confirmationEmailSentAt: new Date(),
+            confirmationEmailRecipient: String(booking.email || "").toLowerCase(),
+            confirmationEmailMessageId: String(
+              result.customer?.messageId || result.customer?.providerId || ""
+            ),
+            confirmationEmailAdminMessageId: String(
+              result.admin?.messageId || result.admin?.providerId || ""
+            ),
+            confirmationEmailLastAttemptAt: new Date(),
+            confirmationEmailError: "",
+          },
+        }
+      );
+
+      reqLogger.info(
+        {
+          bookingId: normalizedBookingId,
+          customerEmailId: result.customer?.messageId || result.customer?.providerId,
+          adminEmailSent: Boolean(result.admin?.sent),
+          adminEmailId: result.admin?.messageId || result.admin?.providerId,
+        },
+        "Service confirmation email delivered"
+      );
+    } catch (error) {
+      reqLogger.error(
+        {
+          err: error,
+          bookingId: normalizedBookingId,
+        },
+        "Service confirmation email processing failed"
+      );
+
+      try {
+        await Booking.updateOne(
+          { _id: normalizedBookingId },
+          {
+            $set: {
+              confirmationEmailLastAttemptAt: new Date(),
+              confirmationEmailError: "processing_failed",
+            },
+          }
+        );
+      } catch {
+        // Ignore metadata update failures for background email jobs.
+      }
+    }
+  });
+};
+
+const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
+  const normalizedSupportId = String(supportPaymentId || "").trim();
+  if (!normalizedSupportId) {
+    return;
+  }
+
+  setImmediate(async () => {
+    try {
+      const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
+      if (supportPayment?.paymentStatus !== "paid" || supportPayment?.thankYouEmailSentAt) {
+        return;
+      }
+
+      let attachment = null;
+      try {
+        attachment = await generateSupportReceiptPdf({ supportPayment });
+      } catch (pdfError) {
+        reqLogger.warn(
+          {
+            err: pdfError,
+            supportPaymentId: normalizedSupportId,
+          },
+          "Support receipt PDF generation failed; sending email without attachment"
+        );
+      }
+
+      const result = await sendSupportThankYouEmail({
+        supportPayment,
+        attachments: attachment ? [attachment] : [],
+      });
+
+      if (!result.sent) {
+        await SupportPayment.updateOne(
+          { _id: normalizedSupportId },
+          {
+            $set: {
+              thankYouEmailLastAttemptAt: new Date(),
+              thankYouEmailError: String(result.reason || "send_failed"),
+            },
+          }
+        );
+
+        if (!result.skipped) {
+          reqLogger.warn(
+            {
+              supportPaymentId: normalizedSupportId,
+              reason: result.reason,
+              error: result.error,
+            },
+            "Support thank-you email was not delivered"
+          );
+        }
+        return;
+      }
+
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportId },
+        {
+          $set: {
+            thankYouEmailSentAt: new Date(),
+            thankYouEmailRecipient: String(supportPayment.email || "").toLowerCase(),
+            thankYouEmailMessageId: String(result.messageId || result.providerId || ""),
+            thankYouEmailLastAttemptAt: new Date(),
+            thankYouEmailError: "",
+          },
+        }
+      );
+
+      reqLogger.info(
+        {
+          supportPaymentId: normalizedSupportId,
+          emailId: result.messageId || result.providerId,
+        },
+        "Support thank-you email delivered"
+      );
+    } catch (error) {
+      reqLogger.error(
+        {
+          err: error,
+          supportPaymentId: normalizedSupportId,
+        },
+        "Support thank-you email processing failed"
+      );
+
+      try {
+        await SupportPayment.updateOne(
+          { _id: normalizedSupportId },
+          {
+            $set: {
+              thankYouEmailLastAttemptAt: new Date(),
+              thankYouEmailError: "processing_failed",
+            },
+          }
+        );
+      } catch {
+        // Ignore metadata update failures for background email jobs.
+      }
+    }
+  });
+};
+
 exports.createOrder = async (req, res) => {
   const reqLogger = req.log || logger;
 
@@ -656,6 +873,11 @@ exports.verifyPayment = async (req, res) => {
     let draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
 
     if (draftBooking?.paymentStatus === "paid") {
+      scheduleServiceConfirmationEmail({
+        bookingId: draftBooking._id,
+        reqLogger,
+      });
+
       return res.status(200).json({
         success: true,
         message: "Payment already verified",
@@ -777,6 +999,11 @@ exports.verifyPayment = async (req, res) => {
       },
       "Payment verified and booking saved"
     );
+
+    scheduleServiceConfirmationEmail({
+      bookingId: booking._id,
+      reqLogger,
+    });
 
     return res.status(200).json({
       success: true,
@@ -953,6 +1180,11 @@ exports.verifySupportPayment = async (req, res) => {
     const supportRecord = await SupportPayment.findOne({ orderId: normalizedOrderId });
 
     if (supportRecord?.paymentStatus === "paid") {
+      scheduleSupportThankYouEmail({
+        supportPaymentId: supportRecord._id,
+        reqLogger,
+      });
+
       return res.status(200).json({
         success: true,
         message: "Support payment already verified",
@@ -1037,7 +1269,7 @@ exports.verifySupportPayment = async (req, res) => {
       String(successfulPayment.cf_payment_id || successfulPayment.payment_id || "").trim() ||
       `cf_${normalizedOrderId}`;
 
-    await SupportPayment.findOneAndUpdate(
+    const savedSupportPayment = await SupportPayment.findOneAndUpdate(
       { orderId: normalizedOrderId },
       {
         $set: {
@@ -1052,6 +1284,7 @@ exports.verifySupportPayment = async (req, res) => {
         },
       },
       {
+        new: true,
         upsert: true,
         runValidators: true,
       }
@@ -1065,6 +1298,11 @@ exports.verifySupportPayment = async (req, res) => {
       },
       "Support payment verified"
     );
+
+    scheduleSupportThankYouEmail({
+      supportPaymentId: savedSupportPayment?._id,
+      reqLogger,
+    });
 
     return res.status(200).json({
       success: true,

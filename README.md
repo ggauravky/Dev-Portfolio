@@ -114,13 +114,17 @@ RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=5
 CHAT_RATE_LIMIT_MAX=30
 
-# Login lifecycle emails via Resend
-RESEND_ENABLED=true
-RESEND_API_KEY=re_your_resend_api_key
-RESEND_FROM_EMAIL=Gaurav Kumar <hello@your-verified-domain.com>
-RESEND_REPLY_TO=support@your-verified-domain.com
+# Transactional emails via Brevo (auth, newsletter, bookings, support)
+BREVO_ENABLED=true
+BREVO_API_KEY=xkeysib_your_brevo_api_key
+BREVO_SENDER_EMAIL=hello@your-verified-domain.com
+BREVO_SENDER_NAME=Gaurav Kumar
+BREVO_REPLY_TO_EMAIL=support@your-verified-domain.com
+BREVO_ADMIN_NOTIFICATION_EMAIL=admin@your-verified-domain.com
 EMAIL_APP_NAME=Gaurav Kumar Portfolio
 EMAIL_SUPPORT_URL=https://your-app-name.vercel.app/contact
+EMAIL_SERVICES_URL=https://your-app-name.vercel.app/services
+EMAIL_BLOG_URL=https://your-app-name.vercel.app/blog
 
 # Observability (optional)
 LOG_LEVEL=debug

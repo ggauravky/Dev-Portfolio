@@ -92,6 +92,34 @@ const bookingSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
+    confirmationEmailSentAt: {
+      type: Date,
+    },
+    confirmationEmailLastAttemptAt: {
+      type: Date,
+    },
+    confirmationEmailRecipient: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      maxlength: 320,
+    },
+    confirmationEmailMessageId: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
+    confirmationEmailAdminMessageId: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
+    confirmationEmailError: {
+      type: String,
+      trim: true,
+      maxlength: 120,
+      default: "",
+    },
     ipAddress: {
       type: String,
       default: "unknown",
