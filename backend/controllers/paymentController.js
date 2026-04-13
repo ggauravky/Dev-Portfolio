@@ -4,11 +4,13 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { randomBytes } = require("node:crypto");
+const { createHmac, randomBytes, timingSafeEqual } = require("node:crypto");
 const Booking = require("../models/Booking");
 const SupportPayment = require("../models/SupportPayment");
 const { logger } = require("../utils/logger");
 const {
+  sendServicePaymentAcknowledgementEmail,
+  sendSupportPaymentAcknowledgementEmail,
   sendServiceBookingConfirmationEmail,
   sendSupportThankYouEmail,
   isBrevoConfigured,
@@ -38,7 +40,107 @@ const isEmailDispatchConfigured = () => isBrevoConfigured();
 const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
 const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
 const CASHFREE_TIMEOUT_MS = Number.parseInt(process.env.CASHFREE_TIMEOUT_MS, 10) || 12000;
+const PAYMENT_STATUS_NEXT_POLL_MS = Number.parseInt(process.env.PAYMENT_STATUS_NEXT_POLL_MS, 10) || 3000;
+const PAYMENT_ASYNC_VERIFY_DELAY_MS =
+  Number.parseInt(process.env.PAYMENT_ASYNC_VERIFY_DELAY_MS, 10) || 1500;
+const reconciliationJobsInFlight = new Set();
+const CASHFREE_WEBHOOK_SECRET = String(process.env.CASHFREE_WEBHOOK_SECRET || "").trim();
 let cachedFetch = typeof globalThis.fetch === "function" ? globalThis.fetch : null;
+
+const isAsyncVerifyEnabled = () =>
+  String(process.env.PAYMENT_ASYNC_VERIFY_ENABLED || "false").trim().toLowerCase() === "true";
+
+const getWebhookHeaderValue = (req, ...headerNames) => {
+  for (const headerName of headerNames) {
+    const value = req.headers?.[headerName];
+    if (value) {
+      return String(Array.isArray(value) ? value[0] : value).trim();
+    }
+  }
+
+  return "";
+};
+
+const getWebhookRawBody = (req) => {
+  if (typeof req.rawBody === "string") {
+    return req.rawBody;
+  }
+
+  if (Buffer.isBuffer(req.rawBody)) {
+    return req.rawBody.toString("utf8");
+  }
+
+  if (Buffer.isBuffer(req.body)) {
+    return req.body.toString("utf8");
+  }
+
+  if (req.body && typeof req.body === "object") {
+    try {
+      return JSON.stringify(req.body);
+    } catch {
+      return "";
+    }
+  }
+
+  return String(req.body || "");
+};
+
+const timingSafeStringEqual = (left, right) => {
+  const leftBuffer = Buffer.from(String(left || ""), "utf8");
+  const rightBuffer = Buffer.from(String(right || ""), "utf8");
+
+  if (!leftBuffer.length || leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const isCashfreeWebhookSignatureValid = ({ req, webhookSecret, rawBody }) => {
+  const signature = getWebhookHeaderValue(req, "x-webhook-signature", "x-cf-signature");
+  if (!signature || !webhookSecret || !rawBody) {
+    return false;
+  }
+
+  const timestamp = getWebhookHeaderValue(req, "x-webhook-timestamp", "x-cf-timestamp");
+  const signedPayloadCandidates = timestamp ? [`${timestamp}${rawBody}`, rawBody] : [rawBody];
+
+  return signedPayloadCandidates.some((signedPayload) => {
+    const generatedSignature = createHmac("sha256", webhookSecret)
+      .update(signedPayload)
+      .digest("base64");
+
+    return timingSafeStringEqual(signature, generatedSignature);
+  });
+};
+
+const parseWebhookPayload = (rawBody, parsedBody) => {
+  if (parsedBody && typeof parsedBody === "object" && !Buffer.isBuffer(parsedBody)) {
+    return parsedBody;
+  }
+
+  try {
+    return JSON.parse(String(rawBody || "{}"));
+  } catch {
+    return null;
+  }
+};
+
+const extractWebhookOrderId = (payload) =>
+  String(
+    payload?.data?.order?.order_id ||
+      payload?.data?.order?.id ||
+      payload?.order?.order_id ||
+      payload?.order?.id ||
+      payload?.order_id ||
+      payload?.orderId ||
+      ""
+  ).trim();
+
+const extractWebhookEventName = (payload) =>
+  String(
+    payload?.type || payload?.event || payload?.name || payload?.event_name || payload?.eventType || ""
+  ).trim();
 
 const getFetchClient = async () => {
   if (typeof cachedFetch === "function") {
@@ -192,7 +294,25 @@ const toSafeText = (value, maxLength, fallback = "") => {
 };
 
 const normalizeEmailAddress = (value) => String(value || "").trim().toLowerCase();
-const isMatchingEmail = (left, right) => normalizeEmailAddress(left) === normalizeEmailAddress(right);
+const normalizeComparableEmailAddress = (value) => {
+  const normalizedEmail = normalizeEmailAddress(value);
+  const [localPart, rawDomain] = normalizedEmail.split("@");
+
+  if (!localPart || !rawDomain) {
+    return normalizedEmail;
+  }
+
+  const normalizedDomain = rawDomain === "googlemail.com" ? "gmail.com" : rawDomain;
+  if (normalizedDomain === "gmail.com") {
+    const canonicalLocal = localPart.split("+")[0].replaceAll(".", "");
+    return `${canonicalLocal}@gmail.com`;
+  }
+
+  return `${localPart}@${normalizedDomain}`;
+};
+
+const isMatchingEmail = (left, right) =>
+  normalizeComparableEmailAddress(left) === normalizeComparableEmailAddress(right);
 const getAuthenticatedIdentity = (req) => {
   const userId = String(req.authUser?.id || "").trim();
   const email = normalizeEmailAddress(req.authUser?.email);
@@ -280,6 +400,120 @@ const normalizeGatewayPaymentStatus = (value) => {
   }
 
   return "created";
+};
+
+const summarizeReconciliationError = (error) =>
+  String(error?.message || "reconciliation_failed")
+    .trim()
+    .slice(0, 200);
+
+const resolveVerificationState = ({ paymentStatus, reconciliationStatus }) => {
+  const normalizedPaymentStatus = String(paymentStatus || "").trim().toLowerCase();
+  const normalizedReconciliationStatus = String(reconciliationStatus || "").trim().toLowerCase();
+
+  if (normalizedPaymentStatus === "paid" || normalizedReconciliationStatus === "paid") {
+    return "complete";
+  }
+
+  if (normalizedPaymentStatus === "failed" || normalizedReconciliationStatus === "failed") {
+    return "failed";
+  }
+
+  if (["pending_local"].includes(normalizedReconciliationStatus)) {
+    return "pending_local";
+  }
+
+  return "pending_gateway";
+};
+
+const buildPaymentStatusData = ({ type, record }) => {
+  const paymentStatus = String(record?.paymentStatus || "created").trim().toLowerCase();
+  const verificationStatus = resolveVerificationState({
+    paymentStatus,
+    reconciliationStatus: record?.reconciliationStatus,
+  });
+  const isResolved = verificationStatus === "complete" || verificationStatus === "failed";
+
+  return {
+    type,
+    orderId: String(record?.orderId || "").trim(),
+    paymentStatus,
+    verificationStatus,
+    reconciliationStatus: String(record?.reconciliationStatus || "idle").trim().toLowerCase(),
+    reconciliationAttempts: Number(record?.reconciliationAttempts || 0),
+    receiptReady: paymentStatus === "paid",
+    nextPollMs: isResolved ? 0 : PAYMENT_STATUS_NEXT_POLL_MS,
+    amount: Number(record?.amount || 0),
+    paymentId: String(record?.paymentId || "").trim(),
+    paidAt: record?.paidAt || null,
+    emailDispatchQueued: isEmailDispatchConfigured() && paymentStatus === "paid",
+    updatedAt: record?.updatedAt || null,
+  };
+};
+
+const buildPaymentStatusRequestContext = ({ req, res }) => {
+  const authIdentity = getAuthenticatedIdentity(req);
+
+  if (!authIdentity) {
+    res.status(401).json({
+      success: false,
+      message: "Please sign in first",
+    });
+    return null;
+  }
+
+  const normalizedOrderId = String(req.params?.orderId || "").trim();
+  const providedEmail = normalizeEmailAddress(req.query?.email);
+
+  if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
+    res.status(403).json({
+      success: false,
+      message: "Status email must match your signed-in Google account.",
+    });
+    return null;
+  }
+
+  return {
+    authIdentity,
+    normalizedOrderId,
+  };
+};
+
+const ensureStatusOwnership = ({ record, authIdentity, res, accountMismatchMessage, detailsMismatchMessage }) => {
+  if (!record) {
+    return true;
+  }
+
+  const ownershipMismatch = getOwnershipMismatchMessage({
+    record,
+    authIdentity,
+    normalizedEmail: authIdentity.email,
+    accountMismatchMessage,
+    detailsMismatchMessage,
+  });
+
+  if (!ownershipMismatch) {
+    return true;
+  }
+
+  res.status(403).json({
+    success: false,
+    message: ownershipMismatch,
+  });
+  return false;
+};
+
+const resolvePaymentStatusRecord = ({ booking, supportPayment }) => {
+  const useServiceRecord =
+    Boolean(booking) &&
+    (!supportPayment ||
+      new Date(booking.updatedAt || booking.createdAt || 0) >=
+        new Date(supportPayment.updatedAt || supportPayment.createdAt || 0));
+
+  return {
+    type: useServiceRecord ? "service" : "support",
+    record: useServiceRecord ? booking : supportPayment,
+  };
 };
 
 const toPaymentArray = (paymentList) => {
@@ -752,6 +986,154 @@ const mapGatewayError = (error, fallbackMessage) => {
   };
 };
 
+const scheduleServicePaymentAcknowledgementEmail = ({ bookingId, reqLogger }) => {
+  const normalizedBookingId = String(bookingId || "").trim();
+  if (!normalizedBookingId) {
+    return;
+  }
+
+  setImmediate(async () => {
+    try {
+      const booking = await Booking.findById(normalizedBookingId).lean();
+      if (!booking || booking.acknowledgementEmailSentAt) {
+        return;
+      }
+
+      const result = await sendServicePaymentAcknowledgementEmail({ booking });
+      if (!result.sent) {
+        await Booking.updateOne(
+          { _id: normalizedBookingId },
+          {
+            $set: {
+              acknowledgementEmailLastAttemptAt: new Date(),
+              acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
+            },
+          }
+        );
+
+        if (!result.skipped) {
+          reqLogger.warn(
+            {
+              bookingId: normalizedBookingId,
+              reason: result.reason,
+              error: result.error,
+            },
+            "Service acknowledgement email was not delivered"
+          );
+        }
+        return;
+      }
+
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            acknowledgementEmailSentAt: new Date(),
+            acknowledgementEmailLastAttemptAt: new Date(),
+            acknowledgementEmailError: "",
+          },
+        }
+      );
+    } catch (error) {
+      reqLogger.error(
+        {
+          err: error,
+          bookingId: normalizedBookingId,
+        },
+        "Service acknowledgement email processing failed"
+      );
+
+      try {
+        await Booking.updateOne(
+          { _id: normalizedBookingId },
+          {
+            $set: {
+              acknowledgementEmailLastAttemptAt: new Date(),
+              acknowledgementEmailError: "processing_failed",
+            },
+          }
+        );
+      } catch {
+        // Ignore metadata update failures for background email jobs.
+      }
+    }
+  });
+};
+
+const scheduleSupportPaymentAcknowledgementEmail = ({ supportPaymentId, reqLogger }) => {
+  const normalizedSupportId = String(supportPaymentId || "").trim();
+  if (!normalizedSupportId) {
+    return;
+  }
+
+  setImmediate(async () => {
+    try {
+      const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
+      if (!supportPayment || supportPayment.acknowledgementEmailSentAt) {
+        return;
+      }
+
+      const result = await sendSupportPaymentAcknowledgementEmail({ supportPayment });
+      if (!result.sent) {
+        await SupportPayment.updateOne(
+          { _id: normalizedSupportId },
+          {
+            $set: {
+              acknowledgementEmailLastAttemptAt: new Date(),
+              acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
+            },
+          }
+        );
+
+        if (!result.skipped) {
+          reqLogger.warn(
+            {
+              supportPaymentId: normalizedSupportId,
+              reason: result.reason,
+              error: result.error,
+            },
+            "Support acknowledgement email was not delivered"
+          );
+        }
+        return;
+      }
+
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportId },
+        {
+          $set: {
+            acknowledgementEmailSentAt: new Date(),
+            acknowledgementEmailLastAttemptAt: new Date(),
+            acknowledgementEmailError: "",
+          },
+        }
+      );
+    } catch (error) {
+      reqLogger.error(
+        {
+          err: error,
+          supportPaymentId: normalizedSupportId,
+        },
+        "Support acknowledgement email processing failed"
+      );
+
+      try {
+        await SupportPayment.updateOne(
+          { _id: normalizedSupportId },
+          {
+            $set: {
+              acknowledgementEmailLastAttemptAt: new Date(),
+              acknowledgementEmailError: "processing_failed",
+            },
+          }
+        );
+      } catch {
+        // Ignore metadata update failures for background email jobs.
+      }
+    }
+  });
+};
+
 const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
   const normalizedBookingId = String(bookingId || "").trim();
   if (!normalizedBookingId) {
@@ -1013,17 +1395,11 @@ const buildVerifyRequestContext = ({ req, res, requireAuthMessage, emailMismatch
 
   const normalizedOrderId = String(req.body?.orderId || "").trim();
   const providedEmail = normalizeEmailAddress(req.body?.email);
-  if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
-    res.status(403).json({
-      success: false,
-      message: emailMismatchMessage,
-    });
-    return null;
-  }
 
   return {
     authIdentity,
     normalizedOrderId,
+    providedEmail,
     normalizedEmail: authIdentity.email,
   };
 };
@@ -1040,17 +1416,11 @@ const buildReceiptRequestContext = ({ req, res, requireAuthMessage, emailMismatc
 
   const normalizedOrderId = String(req.params?.orderId || "").trim();
   const providedEmail = normalizeEmailAddress(req.query?.email);
-  if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
-    res.status(403).json({
-      success: false,
-      message: emailMismatchMessage,
-    });
-    return null;
-  }
 
   return {
     authIdentity,
     normalizedOrderId,
+    providedEmail,
     normalizedEmail: authIdentity.email,
   };
 };
@@ -1095,6 +1465,155 @@ const queueSupportEmailIfConfigured = ({ emailDispatchQueued, supportPaymentId, 
   });
 };
 
+const queueServiceAcknowledgementIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
+  if (!emailDispatchQueued) {
+    return;
+  }
+
+  scheduleServicePaymentAcknowledgementEmail({
+    bookingId,
+    reqLogger,
+  });
+};
+
+const queueSupportAcknowledgementIfConfigured = ({
+  emailDispatchQueued,
+  supportPaymentId,
+  reqLogger,
+}) => {
+  if (!emailDispatchQueued) {
+    return;
+  }
+
+  scheduleSupportPaymentAcknowledgementEmail({
+    supportPaymentId,
+    reqLogger,
+  });
+};
+
+const tryHandleAsyncServiceVerification = async ({
+  draftBooking,
+  normalizedOrderId,
+  emailDispatchQueued,
+  reqLogger,
+  res,
+}) => {
+  if (!isAsyncVerifyEnabled() || !draftBooking) {
+    return false;
+  }
+
+  const acceptedAt = draftBooking.verificationAcceptedAt || new Date();
+
+  await Booking.updateOne(
+    { _id: draftBooking._id },
+    {
+      $set: {
+        verificationAcceptedAt: acceptedAt,
+        reconciliationStatus: "queued",
+        lastReconciliationAt: new Date(),
+        lastReconciliationError: "",
+      },
+    }
+  );
+
+  const scheduled = scheduleAsyncReconciliation({
+    type: "service",
+    normalizedOrderId,
+    emailDispatchQueued,
+    reqLogger,
+  });
+
+  if (!draftBooking.acknowledgementEmailSentAt) {
+    queueServiceAcknowledgementIfConfigured({
+      emailDispatchQueued,
+      bookingId: draftBooking._id,
+      reqLogger,
+    });
+  }
+
+  res.status(202).json({
+    success: true,
+    message: scheduled
+      ? "Payment verification queued. We are confirming this payment in the background."
+      : "Payment verification is already in progress.",
+    data: {
+      bookingId: draftBooking._id,
+      service: draftBooking.service,
+      amount: draftBooking.amount,
+      orderId: normalizedOrderId,
+      paymentId: draftBooking.paymentId,
+      emailDispatchQueued,
+      verificationStatus: "pending_gateway",
+      reconciliationStatus: scheduled ? "queued" : "processing",
+      receiptReady: false,
+      nextPollMs: PAYMENT_STATUS_NEXT_POLL_MS,
+    },
+  });
+
+  return true;
+};
+
+const tryHandleAsyncSupportVerification = async ({
+  supportRecord,
+  normalizedOrderId,
+  emailDispatchQueued,
+  reqLogger,
+  res,
+}) => {
+  if (!isAsyncVerifyEnabled() || !supportRecord) {
+    return false;
+  }
+
+  const acceptedAt = supportRecord.verificationAcceptedAt || new Date();
+
+  await SupportPayment.updateOne(
+    { _id: supportRecord._id },
+    {
+      $set: {
+        verificationAcceptedAt: acceptedAt,
+        reconciliationStatus: "queued",
+        lastReconciliationAt: new Date(),
+        lastReconciliationError: "",
+      },
+    }
+  );
+
+  const scheduled = scheduleAsyncReconciliation({
+    type: "support",
+    normalizedOrderId,
+    emailDispatchQueued,
+    reqLogger,
+  });
+
+  if (!supportRecord.acknowledgementEmailSentAt) {
+    queueSupportAcknowledgementIfConfigured({
+      emailDispatchQueued,
+      supportPaymentId: supportRecord._id,
+      reqLogger,
+    });
+  }
+
+  res.status(202).json({
+    success: true,
+    message: scheduled
+      ? "Support payment verification queued. We are confirming this payment in the background."
+      : "Support payment verification is already in progress.",
+    data: {
+      orderId: normalizedOrderId,
+      amount: supportRecord.amount,
+      contributorName: supportRecord.contributorName,
+      paymentId: supportRecord.paymentId,
+      emailDispatchQueued,
+      verificationStatus: "pending_gateway",
+      reconciliationStatus: scheduled ? "queued" : "processing",
+      receiptReady: false,
+      nextPollMs: PAYMENT_STATUS_NEXT_POLL_MS,
+    },
+  });
+
+  return true;
+};
+
 const sendServiceVerificationSuccess = ({
   res,
   message,
@@ -1137,6 +1656,512 @@ const sendSupportVerificationSuccess = ({
       emailDispatchQueued,
     },
   });
+};
+
+const updateServiceReconciliationState = async ({
+  normalizedOrderId,
+  setFields,
+  incrementAttempt = false,
+}) => {
+  const update = {
+    $set: {
+      ...setFields,
+    },
+  };
+
+  if (incrementAttempt) {
+    update.$inc = {
+      reconciliationAttempts: 1,
+    };
+  }
+
+  await Booking.updateOne({ orderId: normalizedOrderId }, update);
+};
+
+const updateSupportReconciliationState = async ({
+  normalizedOrderId,
+  setFields,
+  incrementAttempt = false,
+}) => {
+  const update = {
+    $set: {
+      ...setFields,
+    },
+  };
+
+  if (incrementAttempt) {
+    update.$inc = {
+      reconciliationAttempts: 1,
+    };
+  }
+
+  await SupportPayment.updateOne({ orderId: normalizedOrderId }, update);
+};
+
+const reconcileServiceOrderAsync = async ({ normalizedOrderId, emailDispatchQueued, reqLogger }) => {
+  if (!isDatabaseReady()) {
+    return;
+  }
+
+  let gatewayOrderStatusAtFailure = "";
+  let bookingInsertBaseAtFailure = null;
+  let lastDraftBooking = null;
+
+  try {
+    await updateServiceReconciliationState({
+      normalizedOrderId,
+      setFields: {
+        reconciliationStatus: "processing",
+        lastReconciliationAt: new Date(),
+      },
+      incrementAttempt: true,
+    });
+
+    const draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
+    lastDraftBooking = draftBooking;
+
+    if (!draftBooking) {
+      await updateServiceReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "pending_local",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "booking_not_found",
+        },
+      });
+      return;
+    }
+
+    if (draftBooking.paymentStatus === "paid") {
+      await updateServiceReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+
+      queueServiceEmailIfConfigured({
+        emailDispatchQueued,
+        bookingId: draftBooking._id,
+        reqLogger,
+      });
+      return;
+    }
+
+    const config = getCashfreeConfig();
+    const normalizedEmail = normalizeEmailAddress(draftBooking.email);
+
+    const cashfreeOrder = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}`,
+      config,
+    });
+
+    const verificationContext = buildBookingVerificationContext({
+      draftBooking,
+      cashfreeOrder,
+      normalizedEmail,
+      normalizedOrderId,
+      ipAddress: draftBooking.ipAddress || "system",
+      userAgent: draftBooking.userAgent || "async-reconciliation",
+      reqLogger,
+    });
+
+    if (verificationContext.error) {
+      await updateServiceReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "pending_gateway",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: verificationContext.error.message,
+        },
+      });
+      return;
+    }
+
+    const { bookingInsertBase, gatewayOrderStatus } = verificationContext;
+    bookingInsertBase.userId = draftBooking?.userId || null;
+    bookingInsertBase.email = normalizedEmail;
+    gatewayOrderStatusAtFailure = gatewayOrderStatus;
+    bookingInsertBaseAtFailure = bookingInsertBase;
+
+    await upsertServiceVerificationDraft({
+      normalizedOrderId,
+      bookingInsertBase,
+      gatewayOrderStatus,
+    });
+
+    const paymentList = await fetchOrderPaymentsWithPaidFallback({
+      config,
+      normalizedOrderId,
+      gatewayOrderStatus,
+      reqLogger,
+      fallbackLogMessage:
+        "Service async reconciliation payment list fetch failed for paid order; continuing with gateway-paid fallback",
+    });
+
+    const successfulPayment =
+      findSuccessfulPayment(paymentList) ||
+      findGatewayPaidFallbackPayment(paymentList, gatewayOrderStatus, normalizedOrderId);
+
+    if (!successfulPayment) {
+      const failedPayment = findFailedPayment(paymentList);
+      const nextStatus = resolvePendingVerificationStatus({
+        failedPayment,
+        gatewayOrderStatus,
+      });
+
+      await persistServicePendingStatusSafely({
+        normalizedOrderId,
+        bookingInsertBase,
+        nextStatus,
+        reqLogger,
+      });
+
+      await updateServiceReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: nextStatus === "failed" ? "failed" : "pending_gateway",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+      return;
+    }
+
+    const booking = await Booking.findOneAndUpdate(
+      { orderId: normalizedOrderId },
+      {
+        $set: {
+          paymentStatus: "paid",
+          paymentId: resolveGatewayPaymentId(successfulPayment, normalizedOrderId),
+          paymentProvider: "cashfree",
+          paidAt: new Date(),
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+        $setOnInsert: bookingInsertBase,
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    queueServiceEmailIfConfigured({
+      emailDispatchQueued,
+      bookingId: booking?._id,
+      reqLogger,
+    });
+  } catch (error) {
+    const rescuedBooking = await tryRescueServicePaidBooking({
+      gatewayOrderStatusAtFailure,
+      normalizedOrderId,
+      lastDraftBooking,
+      error,
+      bookingInsertBaseAtFailure,
+      reqLogger,
+    });
+
+    if (rescuedBooking) {
+      await updateServiceReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+
+      queueServiceEmailIfConfigured({
+        emailDispatchQueued,
+        bookingId: rescuedBooking._id,
+        reqLogger,
+      });
+      return;
+    }
+
+    await updateServiceReconciliationState({
+      normalizedOrderId,
+      setFields: {
+        reconciliationStatus: "pending_local",
+        lastReconciliationAt: new Date(),
+        lastReconciliationError: summarizeReconciliationError(error),
+      },
+    });
+
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Service async reconciliation failed"
+    );
+  }
+};
+
+const reconcileSupportOrderAsync = async ({ normalizedOrderId, emailDispatchQueued, reqLogger }) => {
+  if (!isDatabaseReady()) {
+    return;
+  }
+
+  let gatewayOrderStatusAtFailure = "";
+  let supportInsertBaseAtFailure = null;
+  let lastSupportRecord = null;
+
+  try {
+    await updateSupportReconciliationState({
+      normalizedOrderId,
+      setFields: {
+        reconciliationStatus: "processing",
+        lastReconciliationAt: new Date(),
+      },
+      incrementAttempt: true,
+    });
+
+    const supportRecord = await SupportPayment.findOne({ orderId: normalizedOrderId });
+    lastSupportRecord = supportRecord;
+
+    if (!supportRecord) {
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "pending_local",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "support_record_not_found",
+        },
+      });
+      return;
+    }
+
+    if (supportRecord.paymentStatus === "paid") {
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+
+      queueSupportEmailIfConfigured({
+        emailDispatchQueued,
+        supportPaymentId: supportRecord._id,
+        reqLogger,
+      });
+      return;
+    }
+
+    const config = getCashfreeConfig();
+    const normalizedEmail = normalizeEmailAddress(supportRecord.email);
+
+    const cashfreeOrder = await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}`,
+      config,
+    });
+
+    const verificationContext = buildSupportVerificationContext({
+      supportRecord,
+      cashfreeOrder,
+      normalizedEmail,
+      normalizedOrderId,
+      ipAddress: supportRecord.ipAddress || "system",
+      userAgent: supportRecord.userAgent || "async-reconciliation",
+    });
+
+    if (verificationContext.error) {
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "pending_gateway",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: verificationContext.error.message,
+        },
+      });
+      return;
+    }
+
+    const { supportInsertBase, gatewayOrderStatus } = verificationContext;
+    supportInsertBase.userId = supportRecord?.userId || null;
+    supportInsertBase.email = normalizedEmail;
+    gatewayOrderStatusAtFailure = gatewayOrderStatus;
+    supportInsertBaseAtFailure = supportInsertBase;
+
+    const paymentList = await fetchOrderPaymentsWithPaidFallback({
+      config,
+      normalizedOrderId,
+      gatewayOrderStatus,
+      reqLogger,
+      fallbackLogMessage:
+        "Support async reconciliation payment list fetch failed for paid order; continuing with gateway-paid fallback",
+    });
+
+    const successfulPayment =
+      findSuccessfulPayment(paymentList) ||
+      findGatewayPaidFallbackPayment(paymentList, gatewayOrderStatus, normalizedOrderId);
+
+    if (!successfulPayment) {
+      const failedPayment = findFailedPayment(paymentList);
+      const nextStatus = resolvePendingVerificationStatus({
+        failedPayment,
+        gatewayOrderStatus,
+      });
+
+      await persistSupportPendingStatusSafely({
+        normalizedOrderId,
+        supportInsertBase,
+        nextStatus,
+        reqLogger,
+      });
+
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: nextStatus === "failed" ? "failed" : "pending_gateway",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+      return;
+    }
+
+    const resolvedPaymentId = resolveGatewayPaymentId(successfulPayment, normalizedOrderId);
+    const conflictingPayment = await findSupportPaymentConflict({
+      normalizedOrderId,
+      resolvedPaymentId,
+    });
+
+    if (conflictingPayment) {
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "pending_local",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "payment_id_conflict",
+        },
+      });
+      return;
+    }
+
+    const { resolvedOrderId: supportInsertOrderId, mutableFields: supportMutableFields } =
+      splitOrderIdFromUpsertFields(supportInsertBase, normalizedOrderId);
+
+    const savedSupportPayment = await SupportPayment.findOneAndUpdate(
+      { orderId: normalizedOrderId },
+      {
+        $set: {
+          ...supportMutableFields,
+          paymentStatus: "paid",
+          paymentProvider: "cashfree",
+          paymentId: resolvedPaymentId,
+          paidAt: new Date(),
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+        $setOnInsert: {
+          orderId: supportInsertOrderId || normalizedOrderId,
+          ...supportMutableFields,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      }
+    );
+
+    queueSupportEmailIfConfigured({
+      emailDispatchQueued,
+      supportPaymentId: savedSupportPayment?._id,
+      reqLogger,
+    });
+  } catch (error) {
+    const rescuedSupportPayment = await tryRescueSupportPaidPayment({
+      gatewayOrderStatusAtFailure,
+      normalizedOrderId,
+      lastSupportRecord,
+      error,
+      supportInsertBaseAtFailure,
+      reqLogger,
+    });
+
+    if (rescuedSupportPayment) {
+      await updateSupportReconciliationState({
+        normalizedOrderId,
+        setFields: {
+          reconciliationStatus: "paid",
+          lastReconciliationAt: new Date(),
+          lastReconciliationError: "",
+        },
+      });
+
+      queueSupportEmailIfConfigured({
+        emailDispatchQueued,
+        supportPaymentId: rescuedSupportPayment._id,
+        reqLogger,
+      });
+      return;
+    }
+
+    await updateSupportReconciliationState({
+      normalizedOrderId,
+      setFields: {
+        reconciliationStatus: "pending_local",
+        lastReconciliationAt: new Date(),
+        lastReconciliationError: summarizeReconciliationError(error),
+      },
+    });
+
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Support async reconciliation failed"
+    );
+  }
+};
+
+const scheduleAsyncReconciliation = ({ type, normalizedOrderId, emailDispatchQueued, reqLogger }) => {
+  const orderId = String(normalizedOrderId || "").trim();
+  if (!orderId) {
+    return false;
+  }
+
+  const jobKey = `${type}:${orderId}`;
+  if (reconciliationJobsInFlight.has(jobKey)) {
+    return false;
+  }
+
+  reconciliationJobsInFlight.add(jobKey);
+
+  setTimeout(async () => {
+    try {
+      if (type === "service") {
+        await reconcileServiceOrderAsync({
+          normalizedOrderId: orderId,
+          emailDispatchQueued,
+          reqLogger,
+        });
+      } else {
+        await reconcileSupportOrderAsync({
+          normalizedOrderId: orderId,
+          emailDispatchQueued,
+          reqLogger,
+        });
+      }
+    } finally {
+      reconciliationJobsInFlight.delete(jobKey);
+    }
+  }, PAYMENT_ASYNC_VERIFY_DELAY_MS);
+
+  return true;
 };
 
 const fetchOrderPaymentsWithPaidFallback = async ({
@@ -1513,6 +2538,208 @@ const tryRescueSupportPaidPayment = async ({
   }
 };
 
+const findWebhookPaymentRecords = async (normalizedOrderId) => {
+  const [booking, supportPayment] = await Promise.all([
+    Booking.findOne({ orderId: normalizedOrderId })
+      .select("_id paymentStatus")
+      .lean(),
+    SupportPayment.findOne({ orderId: normalizedOrderId })
+      .select("_id paymentStatus")
+      .lean(),
+  ]);
+
+  return {
+    booking,
+    supportPayment,
+  };
+};
+
+const markWebhookReceivedMetadata = async ({ normalizedOrderId, booking, supportPayment, eventName }) => {
+  const now = new Date();
+  const metadata = {
+    webhookReceivedAt: now,
+    reconciliationStatus: "queued",
+    lastReconciliationAt: now,
+    lastReconciliationError: eventName ? `webhook:${eventName}`.slice(0, 200) : "",
+  };
+
+  const updates = [];
+
+  if (booking?._id) {
+    updates.push(
+      Booking.updateOne(
+        { orderId: normalizedOrderId },
+        {
+          $set: metadata,
+        }
+      )
+    );
+  }
+
+  if (supportPayment?._id) {
+    updates.push(
+      SupportPayment.updateOne(
+        { orderId: normalizedOrderId },
+        {
+          $set: metadata,
+        }
+      )
+    );
+  }
+
+  if (updates.length) {
+    await Promise.all(updates);
+  }
+};
+
+exports.handleCashfreeWebhook = async (req, res) => {
+  const reqLogger = req.log || logger;
+
+  if (!isDatabaseReady()) {
+    return res.status(202).json({
+      success: true,
+      message: "Webhook acknowledged while database is unavailable. Retry will reconcile later.",
+    });
+  }
+
+  if (!CASHFREE_WEBHOOK_SECRET) {
+    reqLogger.error("Cashfree webhook secret is missing in environment configuration");
+    return res.status(503).json({
+      success: false,
+      message: "Webhook secret is not configured on server",
+    });
+  }
+
+  const rawBody = getWebhookRawBody(req);
+  const signatureValid = isCashfreeWebhookSignatureValid({
+    req,
+    webhookSecret: CASHFREE_WEBHOOK_SECRET,
+    rawBody,
+  });
+
+  if (!signatureValid) {
+    reqLogger.warn(
+      {
+        webhookSignature: getWebhookHeaderValue(req, "x-webhook-signature", "x-cf-signature"),
+        webhookTimestamp: getWebhookHeaderValue(req, "x-webhook-timestamp", "x-cf-timestamp"),
+      },
+      "Rejected Cashfree webhook due to invalid signature"
+    );
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid webhook signature",
+    });
+  }
+
+  const payload = parseWebhookPayload(rawBody, req.body);
+  if (!payload) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid webhook payload",
+    });
+  }
+
+  const normalizedOrderId = extractWebhookOrderId(payload);
+  const eventName = extractWebhookEventName(payload);
+
+  if (!normalizedOrderId) {
+    reqLogger.warn(
+      {
+        eventName,
+        payloadKeys: Object.keys(payload || {}).slice(0, 12),
+      },
+      "Cashfree webhook did not include a valid order identifier"
+    );
+
+    return res.status(202).json({
+      success: true,
+      message: "Webhook accepted without order identifier",
+    });
+  }
+
+  try {
+    const { booking, supportPayment } = await findWebhookPaymentRecords(normalizedOrderId);
+
+    if (!booking && !supportPayment) {
+      reqLogger.warn(
+        {
+          orderId: normalizedOrderId,
+          eventName,
+        },
+        "Cashfree webhook received for unknown order"
+      );
+
+      return res.status(202).json({
+        success: true,
+        message: "Webhook accepted for unknown order",
+      });
+    }
+
+    await markWebhookReceivedMetadata({
+      normalizedOrderId,
+      booking,
+      supportPayment,
+      eventName,
+    });
+
+    const emailDispatchQueued = isEmailDispatchConfigured();
+    const scheduledTypes = [];
+
+    if (booking) {
+      const scheduled = scheduleAsyncReconciliation({
+        type: "service",
+        normalizedOrderId,
+        emailDispatchQueued,
+        reqLogger,
+      });
+      if (scheduled) {
+        scheduledTypes.push("service");
+      }
+    }
+
+    if (supportPayment) {
+      const scheduled = scheduleAsyncReconciliation({
+        type: "support",
+        normalizedOrderId,
+        emailDispatchQueued,
+        reqLogger,
+      });
+      if (scheduled) {
+        scheduledTypes.push("support");
+      }
+    }
+
+    reqLogger.info(
+      {
+        orderId: normalizedOrderId,
+        eventName,
+        scheduledTypes,
+      },
+      "Cashfree webhook accepted and reconciliation scheduled"
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Webhook processed",
+    });
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+        eventName,
+      },
+      "Cashfree webhook processing failed"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Webhook processing failed",
+    });
+  }
+};
+
 exports.createOrder = async (req, res) => {
   const reqLogger = req.log || logger;
 
@@ -1537,10 +2764,14 @@ exports.createOrder = async (req, res) => {
 
     const providedEmail = normalizeEmailAddress(email);
     if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
-      return res.status(403).json({
-        success: false,
-        message: "Booking email must match your signed-in Google account.",
-      });
+      reqLogger.warn(
+        {
+          providedEmail,
+          authEmail: authIdentity.email,
+          userId: authIdentity.userId,
+        },
+        "Create-order email mismatch ignored in favor of signed-in account email"
+      );
     }
 
     const selectedService = getService(service);
@@ -1610,6 +2841,9 @@ exports.createOrder = async (req, res) => {
             paymentStatus: "created",
             // Keep a unique placeholder to avoid legacy non-sparse paymentId index conflicts.
             paymentId: createPendingPaymentId(orderId),
+            reconciliationStatus: "idle",
+            reconciliationAttempts: 0,
+            lastReconciliationError: "",
             ipAddress,
             userAgent,
             date: new Date(),
@@ -1737,6 +2971,18 @@ exports.verifyPayment = async (req, res) => {
         paymentId: draftBooking.paymentId,
         emailDispatchQueued,
       });
+    }
+
+    if (
+      await tryHandleAsyncServiceVerification({
+        draftBooking,
+        normalizedOrderId,
+        emailDispatchQueued,
+        reqLogger,
+        res,
+      })
+    ) {
+      return;
     }
 
     const config = getCashfreeConfig();
@@ -1930,10 +3176,14 @@ exports.createSupportOrder = async (req, res) => {
 
     const providedEmail = normalizeEmailAddress(email);
     if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
-      return res.status(403).json({
-        success: false,
-        message: "Support email must match your signed-in Google account.",
-      });
+      reqLogger.warn(
+        {
+          providedEmail,
+          authEmail: authIdentity.email,
+          userId: authIdentity.userId,
+        },
+        "Create-support-order email mismatch ignored in favor of signed-in account email"
+      );
     }
 
     const normalizedEmail = authIdentity.email;
@@ -1994,6 +3244,9 @@ exports.createSupportOrder = async (req, res) => {
             paymentStatus: "created",
             paymentProvider: "cashfree",
             paymentId: createPendingPaymentId(orderId),
+            reconciliationStatus: "idle",
+            reconciliationAttempts: 0,
+            lastReconciliationError: "",
             ipAddress,
             userAgent,
           },
@@ -2119,6 +3372,18 @@ exports.verifySupportPayment = async (req, res) => {
         paymentId: supportRecord.paymentId,
         emailDispatchQueued,
       });
+    }
+
+    if (
+      await tryHandleAsyncSupportVerification({
+        supportRecord,
+        normalizedOrderId,
+        emailDispatchQueued,
+        reqLogger,
+        res,
+      })
+    ) {
+      return;
     }
 
     const cashfreeOrder = await callCashfreeApi({
@@ -2320,6 +3585,103 @@ exports.verifySupportPayment = async (req, res) => {
   }
 };
 
+const handlePaymentStatusRequest = async ({ req, res, reqLogger }) => {
+  const statusRequestContext = buildPaymentStatusRequestContext({ req, res });
+  if (!statusRequestContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId } = statusRequestContext;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const [booking, supportPayment] = await Promise.all([
+      Booking.findOne({ orderId: normalizedOrderId }).lean(),
+      SupportPayment.findOne({ orderId: normalizedOrderId }).lean(),
+    ]);
+
+    if (!booking && !supportPayment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment order not found",
+      });
+    }
+
+    if (
+      !ensureStatusOwnership({
+        record: booking,
+        authIdentity,
+        res,
+        accountMismatchMessage: "This booking belongs to a different signed-in account.",
+        detailsMismatchMessage: "Status access is not allowed for this account.",
+      })
+    ) {
+      return;
+    }
+
+    if (
+      !ensureStatusOwnership({
+        record: supportPayment,
+        authIdentity,
+        res,
+        accountMismatchMessage: "This support payment belongs to a different signed-in account.",
+        detailsMismatchMessage: "Status access is not allowed for this account.",
+      })
+    ) {
+      return;
+    }
+
+    const { type, record } = resolvePaymentStatusRecord({
+      booking,
+      supportPayment,
+    });
+    const statusData = buildPaymentStatusData({ type, record });
+
+    if (type === "service") {
+      statusData.bookingId = String(record?._id || "").trim();
+      statusData.service = String(record?.service || "").trim();
+      statusData.serviceSlug = String(record?.serviceSlug || "").trim();
+    } else {
+      statusData.supportPaymentId = String(record?._id || "").trim();
+      statusData.contributorName = String(record?.contributorName || "Supporter").trim();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment status fetched successfully",
+      data: statusData,
+    });
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+        userId: authIdentity.userId,
+      },
+      "Failed to fetch payment status"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch payment status right now",
+    });
+  }
+};
+
+exports.getPaymentStatus = async (req, res) => {
+  return handlePaymentStatusRequest({
+    req,
+    res,
+    reqLogger: req.log || logger,
+  });
+};
+
 exports.getMyBookings = async (req, res) => {
   const reqLogger = req.log || logger;
   const authIdentity = getAuthenticatedIdentity(req);
@@ -2358,7 +3720,7 @@ exports.getMyBookings = async (req, res) => {
       ],
     })
       .select(
-        "_id orderId paymentId paymentStatus paymentProvider service serviceSlug amount preferredDate preferredTime paidAt createdAt updatedAt confirmationEmailSentAt confirmationEmailError"
+        "_id orderId paymentId paymentStatus paymentProvider service serviceSlug amount preferredDate preferredTime paidAt createdAt updatedAt confirmationEmailSentAt confirmationEmailError verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError acknowledgementEmailSentAt"
       )
       .sort({ createdAt: -1 })
       .lean();
@@ -2383,6 +3745,12 @@ exports.getMyBookings = async (req, res) => {
           updatedAt: booking.updatedAt,
           confirmationEmailSentAt: booking.confirmationEmailSentAt,
           confirmationEmailError: booking.confirmationEmailError,
+          verificationAcceptedAt: booking.verificationAcceptedAt,
+          reconciliationStatus: booking.reconciliationStatus,
+          reconciliationAttempts: booking.reconciliationAttempts,
+          lastReconciliationAt: booking.lastReconciliationAt,
+          lastReconciliationError: booking.lastReconciliationError,
+          acknowledgementEmailSentAt: booking.acknowledgementEmailSentAt,
         })),
       },
     });
@@ -2440,7 +3808,7 @@ exports.getMySupportPayments = async (req, res) => {
       ],
     })
       .select(
-        "_id orderId paymentId paymentStatus paymentProvider contributorName amount message paidAt createdAt updatedAt thankYouEmailSentAt thankYouEmailError"
+        "_id orderId paymentId paymentStatus paymentProvider contributorName amount message paidAt createdAt updatedAt thankYouEmailSentAt thankYouEmailError verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError acknowledgementEmailSentAt"
       )
       .sort({ createdAt: -1 })
       .lean();
@@ -2463,6 +3831,12 @@ exports.getMySupportPayments = async (req, res) => {
           updatedAt: item.updatedAt,
           thankYouEmailSentAt: item.thankYouEmailSentAt,
           thankYouEmailError: item.thankYouEmailError,
+          verificationAcceptedAt: item.verificationAcceptedAt,
+          reconciliationStatus: item.reconciliationStatus,
+          reconciliationAttempts: item.reconciliationAttempts,
+          lastReconciliationAt: item.lastReconciliationAt,
+          lastReconciliationError: item.lastReconciliationError,
+          acknowledgementEmailSentAt: item.acknowledgementEmailSentAt,
         })),
       },
     });

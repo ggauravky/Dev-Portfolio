@@ -126,6 +126,45 @@ const bookingSchema = new mongoose.Schema(
       maxlength: 120,
       default: "",
     },
+    verificationAcceptedAt: {
+      type: Date,
+    },
+    webhookReceivedAt: {
+      type: Date,
+    },
+    reconciliationStatus: {
+      type: String,
+      trim: true,
+      enum: ["idle", "queued", "processing", "pending_gateway", "pending_local", "paid", "failed"],
+      default: "idle",
+      index: true,
+    },
+    reconciliationAttempts: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+    lastReconciliationAt: {
+      type: Date,
+    },
+    lastReconciliationError: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+      default: "",
+    },
+    acknowledgementEmailSentAt: {
+      type: Date,
+    },
+    acknowledgementEmailLastAttemptAt: {
+      type: Date,
+    },
+    acknowledgementEmailError: {
+      type: String,
+      trim: true,
+      maxlength: 120,
+      default: "",
+    },
     ipAddress: {
       type: String,
       default: "unknown",

@@ -11,6 +11,7 @@ import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
 import {
     createSupportOrder,
+    fetchPaymentStatus,
     fetchSupportReceiptImage,
     fetchSupportReceiptPdf,
     openCashfreeCheckout,
@@ -105,6 +106,16 @@ function Support() {
         }
     }
     const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
+    const isPendingVerificationPayload = (verification) => {
+        const verificationState = String(verification?.verificationStatus || '').toLowerCase()
+        const paymentState = String(verification?.paymentStatus || '').toLowerCase()
+
+        if (verificationState === 'complete' || paymentState === 'paid') {
+            return false
+        }
+
+        return ['pending_gateway', 'pending_local', 'queued', 'processing', 'pending', 'created'].includes(verificationState || paymentState)
+    }
 
     const saveBlobAsFile = (blob, filename) => {
         const url = URL.createObjectURL(blob)
@@ -213,9 +224,9 @@ function Support() {
     const applyVerifiedSupport = (pendingDetails, verification, silent) => {
         const merged = {
             ...pendingDetails,
-            amount: verification.amount,
-            contributorName: verification.contributorName,
-            paymentId: verification.paymentId,
+            amount: Number(verification.amount || pendingDetails.amount || 0),
+            contributorName: verification.contributorName || pendingDetails.contributorName || 'Supporter',
+            paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${pendingDetails.orderId}`,
             emailDispatchQueued: Boolean(verification.emailDispatchQueued),
         }
 
@@ -232,6 +243,56 @@ function Support() {
         void downloadSupportReceiptPdf(merged, { silent: true, auto: true })
 
         return true
+    }
+
+    const pollSupportStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
+        const { silent = false } = options
+        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
+
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+            try {
+                const status = await fetchPaymentStatus(orderId, activeEmail)
+                const verificationState = String(status?.verificationStatus || '').toLowerCase()
+                const paymentState = String(status?.paymentStatus || '').toLowerCase()
+
+                if (verificationState === 'complete' || paymentState === 'paid') {
+                    return applyVerifiedSupport(pendingDetails, status, silent)
+                }
+
+                if (verificationState === 'failed' || paymentState === 'failed') {
+                    const failedMessage =
+                        'Payment could not be confirmed. If amount was deducted, gateway will auto-reconcile it.'
+                    setPaymentFailure(failedMessage)
+                    sessionStorage.removeItem(pendingSupportKey)
+                    if (!silent) {
+                        toast.error(failedMessage)
+                    }
+                    return false
+                }
+
+                const nextDelay = Number(status?.nextPollMs || getRetryDelay(Math.min(attempt, 4)))
+                await pause(Math.max(1200, Math.min(nextDelay, 9000)))
+            } catch (statusError) {
+                const message = String(statusError?.message || '')
+                const statusCode = Number(statusError?.status)
+                const failure = classifyVerificationFailure(message, statusCode)
+
+                if (!failure.isRetryable) {
+                    break
+                }
+
+                await pause(getRetryDelay(Math.min(attempt, 4)))
+            }
+        }
+
+        const pendingMessage =
+            'Payment is still being finalized. Keep this page open, or check My Activity in a minute with the same email.'
+        setPaymentFailure(pendingMessage)
+        if (!silent) {
+            toast.error(pendingMessage)
+        }
+
+        return false
     }
 
     const handleSupportVerificationError = async (error, attempt, silent) => {
@@ -255,12 +316,7 @@ function Support() {
         }
 
         if (failure.isPendingGatewayState) {
-            const pendingMessage = 'Payment is still processing on gateway. Please wait a moment and retry with the same email.'
-            setPaymentFailure(pendingMessage)
-            if (!silent) {
-                toast.error(pendingMessage)
-            }
-            return { shouldRetry: false, result: false }
+            return { shouldRetry: false, shouldPollStatus: true, result: false }
         }
 
         if (failure.isRetryable) {
@@ -283,16 +339,27 @@ function Support() {
 
     const finalizeSupportVerification = async (orderId, pendingDetails, options = {}) => {
         const { silent = false } = options
+        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
-                const verification = await verifySupportPayment(orderId, pendingDetails.email)
+                const verification = await verifySupportPayment(orderId, activeEmail)
+
+                if (isPendingVerificationPayload(verification)) {
+                    return pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
+                }
+
                 return applyVerifiedSupport(pendingDetails, verification, silent)
             } catch (error) {
                 const outcome = await handleSupportVerificationError(error, attempt, silent)
                 if (outcome.shouldRetry) {
                     continue
                 }
+
+                if (outcome.shouldPollStatus) {
+                    return pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
+                }
+
                 return outcome.result
             }
         }
@@ -337,8 +404,14 @@ function Support() {
             return
         }
 
+        const activeEmail = String(user?.email || '').trim().toLowerCase()
+        if (activeEmail && activeEmail !== String(pending.email || '').trim().toLowerCase()) {
+            pending.email = activeEmail
+            sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
+        }
+
         finalizeSupportVerification(pending.orderId, pending, { silent: true })
-    }, [isAuthenticated, isLoading])
+    }, [isAuthenticated, isLoading, user?.email])
 
     const handleSubmit = (event) => {
         event.preventDefault()
@@ -358,6 +431,13 @@ function Support() {
             setIsSubmitting(true)
             setPaymentFailure('')
             try {
+                const refreshedUser = await refreshSession()
+                const activeEmail = String(refreshedUser?.email || user?.email || '').trim()
+
+                if (!activeEmail) {
+                    throw new Error('Your sign-in session is not ready. Please sign in again.')
+                }
+
                 const resolvedName = String(form.name || '').trim()
                 const profileName = String(user?.displayName || user?.name || '').trim()
 
@@ -385,13 +465,13 @@ function Support() {
                 const order = await createSupportOrder({
                     ...form,
                     name: resolvedName,
-                    email: user.email,
+                    email: activeEmail,
                     amount: numericAmount,
                 })
 
                 const pending = {
                     orderId: order.orderId,
-                    email: user.email,
+                    email: activeEmail,
                     contributorName: resolvedName,
                     amount: numericAmount,
                 }

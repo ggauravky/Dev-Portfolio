@@ -198,6 +198,22 @@ exports.paymentReceiptValidationRules = [
     .normalizeEmail(),
 ];
 
+exports.paymentStatusValidationRules = [
+  param("orderId")
+    .trim()
+    .notEmpty()
+    .withMessage("Order ID is required")
+    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
+    .withMessage("Order ID format is invalid"),
+
+  query("email")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+];
+
 exports.blogSupportValidationRules = [
   body("slug")
     .trim()

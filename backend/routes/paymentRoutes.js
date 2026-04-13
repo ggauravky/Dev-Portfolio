@@ -7,11 +7,13 @@
 const express = require("express");
 const {
   createOrder,
+  handleCashfreeWebhook,
   verifyPayment,
   createSupportOrder,
   verifySupportPayment,
   getMyBookings,
   getMySupportPayments,
+  getPaymentStatus,
   downloadServiceReceipt,
   downloadSupportReceipt,
   downloadServiceReceiptImage,
@@ -24,6 +26,7 @@ const {
   supportCreateOrderValidationRules,
   supportVerifyValidationRules,
   paymentReceiptValidationRules,
+  paymentStatusValidationRules,
   validate,
 } = require("../middleware/validator");
 const { requireAuth } = require("../middleware/auth");
@@ -43,6 +46,8 @@ const blockIfGatewayDisabled = (req, res, next) => {
     message: "Payment gateway is under construction. Please try again later.",
   });
 };
+
+router.post("/webhook/cashfree", handleCashfreeWebhook);
 
 router.use(blockIfGatewayDisabled);
 
@@ -80,6 +85,14 @@ router.post(
 );
 router.get("/my-bookings", paymentRateLimiter, requireAuth, getMyBookings);
 router.get("/my-support-payments", paymentRateLimiter, requireAuth, getMySupportPayments);
+router.get(
+  "/status/:orderId",
+  paymentRateLimiter,
+  requireAuth,
+  paymentStatusValidationRules,
+  validate,
+  getPaymentStatus
+);
 router.get(
   "/receipt/service/:orderId",
   paymentRateLimiter,

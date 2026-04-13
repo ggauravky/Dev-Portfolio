@@ -12,6 +12,7 @@ import useAuth from '../hooks/useAuth'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
 import {
     createCashfreeOrder,
+    fetchPaymentStatus,
     fetchServiceReceiptImage,
     fetchServiceReceiptPdf,
     openCashfreeCheckout,
@@ -126,6 +127,16 @@ function BookNow() {
         }
     }
     const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
+    const isPendingVerificationPayload = (verification) => {
+        const verificationState = String(verification?.verificationStatus || '').toLowerCase()
+        const paymentState = String(verification?.paymentStatus || '').toLowerCase()
+
+        if (verificationState === 'complete' || paymentState === 'paid') {
+            return false
+        }
+
+        return ['pending_gateway', 'pending_local', 'queued', 'processing', 'pending', 'created'].includes(verificationState || paymentState)
+    }
 
     const saveBlobAsFile = (blob, filename) => {
         const url = URL.createObjectURL(blob)
@@ -342,9 +353,9 @@ function BookNow() {
     const applyVerifiedOrder = (orderId, pendingDetails, verification, silent) => {
         const mergedDetails = {
             ...pendingDetails,
-            bookingId: verification.bookingId,
-            amount: verification.amount,
-            service: verification.service,
+            bookingId: verification.bookingId || pendingDetails.bookingId,
+            amount: Number(verification.amount || pendingDetails.amount || 0),
+            service: verification.service || pendingDetails.service,
             paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${orderId}`,
             emailDispatchQueued: Boolean(verification.emailDispatchQueued),
         }
@@ -361,6 +372,56 @@ function BookNow() {
         void downloadServiceReceiptPdf(mergedDetails, { silent: true, auto: true })
 
         return true
+    }
+
+    const pollOrderStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
+        const { silent = false } = options
+        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
+
+        for (let attempt = 0; attempt < 10; attempt += 1) {
+            try {
+                const status = await fetchPaymentStatus(orderId, activeEmail)
+                const verificationState = String(status?.verificationStatus || '').toLowerCase()
+                const paymentState = String(status?.paymentStatus || '').toLowerCase()
+
+                if (verificationState === 'complete' || paymentState === 'paid') {
+                    return applyVerifiedOrder(orderId, pendingDetails, status, silent)
+                }
+
+                if (verificationState === 'failed' || paymentState === 'failed') {
+                    const failedMessage =
+                        'Payment could not be confirmed. If amount was deducted, gateway will auto-reconcile it.'
+                    setPaymentFailure(failedMessage)
+                    sessionStorage.removeItem(pendingOrderKey)
+                    if (!silent) {
+                        toast.error(failedMessage)
+                    }
+                    return false
+                }
+
+                const nextDelay = Number(status?.nextPollMs || getRetryDelay(Math.min(attempt, 4)))
+                await pause(Math.max(1200, Math.min(nextDelay, 9000)))
+            } catch (statusError) {
+                const message = String(statusError?.message || '')
+                const statusCode = Number(statusError?.status)
+                const failure = classifyVerificationFailure(message, statusCode)
+
+                if (!failure.isRetryable) {
+                    break
+                }
+
+                await pause(getRetryDelay(Math.min(attempt, 4)))
+            }
+        }
+
+        const pendingMessage =
+            'Payment is still being finalized. Keep this page open, or check My Activity in a minute with the same email.'
+        setPaymentFailure(pendingMessage)
+        if (!silent) {
+            toast.error(pendingMessage)
+        }
+
+        return false
     }
 
     const handleOrderVerificationError = async (error, attempt, silent) => {
@@ -386,14 +447,7 @@ function BookNow() {
         }
 
         if (failure.isPendingGatewayState) {
-            const pendingMessage = 'Payment is still processing on gateway. Please wait a moment and retry with the same email.'
-            setPaymentFailure(pendingMessage)
-
-            if (!silent) {
-                toast.error(pendingMessage)
-            }
-
-            return { shouldRetry: false, result: false }
+            return { shouldRetry: false, shouldPollStatus: true, result: false }
         }
 
         if (failure.isRetryable) {
@@ -419,16 +473,27 @@ function BookNow() {
 
     const finalizeOrderVerification = async (orderId, pendingDetails, options = {}) => {
         const { silent = false } = options
+        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
-                const verification = await verifyCashfreePayment(orderId, pendingDetails.email)
+                const verification = await verifyCashfreePayment(orderId, activeEmail)
+
+                if (isPendingVerificationPayload(verification)) {
+                    return pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
+                }
+
                 return applyVerifiedOrder(orderId, pendingDetails, verification, silent)
             } catch (error) {
                 const outcome = await handleOrderVerificationError(error, attempt, silent)
                 if (outcome.shouldRetry) {
                     continue
                 }
+
+                if (outcome.shouldPollStatus) {
+                    return pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
+                }
+
                 return outcome.result
             }
         }
@@ -481,8 +546,14 @@ function BookNow() {
             return
         }
 
+        const activeEmail = String(user?.email || '').trim().toLowerCase()
+        if (activeEmail && activeEmail !== String(pending.email || '').trim().toLowerCase()) {
+            pending.email = activeEmail
+            sessionStorage.setItem(pendingOrderKey, JSON.stringify(pending))
+        }
+
         finalizeOrderVerification(pending.orderId, pending, { silent: true })
-    }, [isAuthenticated, isLoading])
+    }, [isAuthenticated, isLoading, user?.email])
 
     const handleSubmit = (event) => {
         event.preventDefault()
@@ -503,6 +574,13 @@ function BookNow() {
             setPaymentFailure('')
 
             try {
+                const refreshedUser = await refreshSession()
+                const activeEmail = String(refreshedUser?.email || user?.email || '').trim()
+
+                if (!activeEmail) {
+                    throw new Error('Your sign-in session is not ready. Please sign in again.')
+                }
+
                 const resolvedName = String(form.name || '').trim()
                 const profileName = String(user?.displayName || user?.name || '').trim()
 
@@ -524,7 +602,7 @@ function BookNow() {
 
                 const order = await createCashfreeOrder({
                     ...form,
-                    email: user.email,
+                    email: activeEmail,
                     service: currentService.slug,
                 })
 
@@ -532,7 +610,7 @@ function BookNow() {
                     orderId: order.orderId,
                     paymentId: '',
                     name: resolvedName,
-                    email: user.email,
+                    email: activeEmail,
                     service: order.serviceTitle,
                     preferredDate: form.preferredDate,
                     preferredTime: form.preferredTime,

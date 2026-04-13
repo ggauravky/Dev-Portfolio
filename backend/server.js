@@ -95,7 +95,16 @@ app.use(cors(corsOptions));
 // Body parser middleware
 // 2 MB global limit — enough for base64 image uploads (~400 KB) with headroom.
 // Tighter per-route overrides are applied where smaller inputs are expected.
-app.use(express.json({ limit: "2mb" }));
+app.use(
+  express.json({
+    limit: "2mb",
+    verify: (req, res, buffer) => {
+      if (buffer?.length) {
+        req.rawBody = buffer.toString("utf8");
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 

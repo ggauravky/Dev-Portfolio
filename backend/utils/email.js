@@ -716,6 +716,117 @@ const buildSupportThankYouPayload = (supportPayment) => {
   };
 };
 
+const buildServiceAcknowledgementPayload = (booking) => {
+  const displayName = getDisplayName(booking);
+
+  const detailRows = [
+    {
+      label: "Service",
+      value: normalizeEnvString(booking?.service) || "Not available",
+    },
+    {
+      label: "Amount",
+      value: formatCurrencyInr(booking?.amount),
+    },
+    {
+      label: "Order ID",
+      value: normalizeEnvString(booking?.orderId) || "Not available",
+    },
+    {
+      label: "Status",
+      value: "Payment received. Final confirmation in progress.",
+    },
+  ];
+
+  const text = [
+    `Hi ${displayName},`,
+    "",
+    "We received your booking payment request and are confirming it with the gateway.",
+    `Service: ${normalizeEnvString(booking?.service) || "Not available"}`,
+    `Amount: ${formatCurrencyInr(booking?.amount)}`,
+    `Order ID: ${normalizeEnvString(booking?.orderId) || "Not available"}`,
+    "",
+    "You will receive a final confirmation email with receipt shortly after verification completes.",
+    "",
+    `Need help? ${EMAIL_SUPPORT_URL}`,
+    "",
+    "Thanks,",
+    "Gaurav Kumar",
+  ].join("\n");
+
+  const html = buildEmailLayout({
+    preheader: "Payment received. Final confirmation is in progress.",
+    heading: "Payment Received",
+    intro: `Hi ${displayName}, we received your payment request and started verification.`,
+    bodyParagraphs: [
+      "No action is needed from your side. Final confirmation and receipt will be sent as soon as reconciliation completes.",
+    ],
+    detailRows,
+    actionLabel: "Open Portfolio",
+    actionHref: EMAIL_HOME_URL,
+    footer: `Need support? Reach us at ${EMAIL_SUPPORT_URL}`,
+  });
+
+  return {
+    subject: `Payment received: ${normalizeEnvString(booking?.service) || "Service booking"}`,
+    text,
+    html,
+  };
+};
+
+const buildSupportAcknowledgementPayload = (supportPayment) => {
+  const displayName = getDisplayName(supportPayment);
+
+  const detailRows = [
+    {
+      label: "Amount",
+      value: formatCurrencyInr(supportPayment?.amount),
+    },
+    {
+      label: "Order ID",
+      value: normalizeEnvString(supportPayment?.orderId) || "Not available",
+    },
+    {
+      label: "Status",
+      value: "Contribution received. Final confirmation in progress.",
+    },
+  ];
+
+  const text = [
+    `Hi ${displayName},`,
+    "",
+    "We received your support contribution and started payment verification.",
+    `Amount: ${formatCurrencyInr(supportPayment?.amount)}`,
+    `Order ID: ${normalizeEnvString(supportPayment?.orderId) || "Not available"}`,
+    "",
+    "You will receive the final support receipt once confirmation completes.",
+    "",
+    `Need help? ${EMAIL_SUPPORT_URL}`,
+    "",
+    "With gratitude,",
+    "Gaurav Kumar",
+  ].join("\n");
+
+  const html = buildEmailLayout({
+    preheader: "Support payment received. Final confirmation is in progress.",
+    heading: "Support Payment Received",
+    intro: `Hi ${displayName}, your support payment request was received.`,
+    bodyParagraphs: [
+      "We are reconciling this payment in the background. You will receive your final receipt as soon as verification completes.",
+    ],
+    detailRows,
+    actionLabel: "Open Portfolio",
+    actionHref: EMAIL_HOME_URL,
+    footer: `Questions? Reach us at ${EMAIL_SUPPORT_URL}`,
+  });
+
+  return {
+    subject: `Support payment received: ${formatCurrencyInr(supportPayment?.amount)}`,
+    text,
+    html,
+  };
+};
+
 const sendLifecycleEmail = async ({ type, user }) => {
   const email = normalizeEnvString(user?.email).toLowerCase();
   const userId = normalizeEnvString(user?._id || user?.id || email);
@@ -851,6 +962,54 @@ const sendSupportThankYouEmail = async ({ supportPayment, attachments = [] }) =>
   });
 };
 
+const sendServicePaymentAcknowledgementEmail = async ({ booking }) => {
+  const recipientEmail = normalizeEnvString(booking?.email).toLowerCase();
+  if (!recipientEmail) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_recipient",
+    };
+  }
+
+  const template = buildServiceAcknowledgementPayload(booking);
+  const dedupeSeed = normalizeEnvString(booking?.orderId || booking?._id || recipientEmail);
+
+  return sendTransactionalEmail({
+    to: [{ email: recipientEmail, name: normalizeEnvString(booking?.name) }],
+    subject: template.subject,
+    htmlContent: template.html,
+    textContent: template.text,
+    tags: ["booking", "payment", "acknowledged"],
+    idempotencyKey: buildIdempotencyKey("service", "ack", dedupeSeed),
+  });
+};
+
+const sendSupportPaymentAcknowledgementEmail = async ({ supportPayment }) => {
+  const recipientEmail = normalizeEnvString(supportPayment?.email).toLowerCase();
+  if (!recipientEmail) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_recipient",
+    };
+  }
+
+  const template = buildSupportAcknowledgementPayload(supportPayment);
+  const dedupeSeed = normalizeEnvString(
+    supportPayment?.orderId || supportPayment?._id || recipientEmail
+  );
+
+  return sendTransactionalEmail({
+    to: [{ email: recipientEmail, name: normalizeEnvString(supportPayment?.contributorName) }],
+    subject: template.subject,
+    htmlContent: template.html,
+    textContent: template.text,
+    tags: ["support", "payment", "acknowledged"],
+    idempotencyKey: buildIdempotencyKey("support", "ack", dedupeSeed),
+  });
+};
+
 module.exports = {
   ONE_DAY_MS,
   isBrevoConfigured,
@@ -858,6 +1017,8 @@ module.exports = {
   sendWelcomeEmail,
   sendWelcomeBackEmail,
   sendNewsletterThankYouEmail,
+  sendServicePaymentAcknowledgementEmail,
+  sendSupportPaymentAcknowledgementEmail,
   sendServiceBookingConfirmationEmail,
   sendSupportThankYouEmail,
 };
