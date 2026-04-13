@@ -65,3 +65,16 @@ export const logoutSession = async () => {
         body: JSON.stringify({}),
     })
 }
+
+export const fetchAuthProfile = async () => {
+    return requestAuthApi('/api/auth/profile', {
+        method: 'GET',
+    })
+}
+
+export const updateAuthProfile = async (payload) => {
+    return requestAuthApi('/api/auth/profile', {
+        method: 'PATCH',
+        body: JSON.stringify(payload || {}),
+    })
+}

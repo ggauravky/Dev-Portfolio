@@ -50,12 +50,12 @@ const renderDesktopProfileMenu = ({
                     <p className="text-xs text-slate-400 truncate">{user.email}</p>
                 </div>
                 <Link
-                    to="/my-supports"
+                    to="/my-activity"
                     className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 transition-colors"
                     onClick={() => setIsProfileMenuOpen(false)}
                 >
                     <span>❤️</span>
-                    <span>My supports</span>
+                    <span>My Activity</span>
                 </Link>
                 <button
                     type="button"
@@ -92,11 +92,11 @@ const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
             <Link
-                to="/my-supports"
+                to="/my-activity"
                 onClick={closeMenu}
                 className="inline-flex items-center justify-center rounded-xl border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200"
             >
-                My supports
+                My Activity
             </Link>
             <button
                 type="button"

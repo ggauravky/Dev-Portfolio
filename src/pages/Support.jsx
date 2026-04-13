@@ -8,12 +8,16 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
+import useAuth from '../hooks/useAuth'
 import { createSupportOrder, fetchSupportReceiptPdf, openCashfreeCheckout, verifySupportPayment } from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
+import GoogleSignInModal from '../components/support/GoogleSignInModal'
 
 const quickAmounts = [49, 99, 199, 499, 999, 1999]
 
 function Support() {
+    const { user, isAuthenticated, isLoading, refreshSession, updateProfile } = useAuth()
+
     useSEO({
         title: 'Support Jar | Gaurav Kumar Yadav',
         description: 'Support my work directly with any amount through secure Cashfree checkout.',
@@ -34,8 +38,26 @@ function Support() {
     const [paymentFailure, setPaymentFailure] = useState('')
     const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
     const [receiptDownloadError, setReceiptDownloadError] = useState('')
+    const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingSupportKey = 'pendingSupportOrder'
+    const requiresSignIn = isAuthenticated !== true
+    const getCheckoutButtonLabel = () => {
+        if (isLoading) {
+            return 'Checking Sign-In...'
+        }
+
+        if (requiresSignIn) {
+            return 'Sign In to Continue'
+        }
+
+        if (isSubmitting) {
+            return 'Starting Secure Checkout...'
+        }
+
+        return 'Support with Cashfree'
+    }
+    const checkoutButtonLabel = getCheckoutButtonLabel()
 
     const handleChange = (event) => {
         const { name, value } = event.target
@@ -48,6 +70,18 @@ function Support() {
 
         setForm((prev) => ({ ...prev, [name]: value }))
     }
+
+    useEffect(() => {
+        if (!isAuthenticated || !user) {
+            return
+        }
+
+        setForm((prev) => ({
+            ...prev,
+            name: prev.name || user.displayName || user.name || '',
+            email: user.email || prev.email,
+        }))
+    }, [isAuthenticated, user])
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
     const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
@@ -266,6 +300,10 @@ function Support() {
     }, [thankYouNote])
 
     useEffect(() => {
+        if (isLoading || !isAuthenticated) {
+            return
+        }
+
         const pendingRaw = sessionStorage.getItem(pendingSupportKey)
         if (!pendingRaw) {
             return
@@ -284,15 +322,41 @@ function Support() {
         }
 
         finalizeSupportVerification(pending.orderId, pending, { silent: true })
-    }, [])
+    }, [isAuthenticated, isLoading])
 
     const handleSubmit = (event) => {
         event.preventDefault()
+
+        if (isLoading) {
+            toast.error('Checking your sign-in session. Please wait a second.')
+            return
+        }
+
+        if (!isAuthenticated || !user?.email) {
+            setShowSignInModal(true)
+            toast.error('Please sign in with Google before starting support payment.')
+            return
+        }
 
         const runCheckout = async () => {
             setIsSubmitting(true)
             setPaymentFailure('')
             try {
+                const resolvedName = String(form.name || '').trim()
+                const profileName = String(user?.displayName || user?.name || '').trim()
+
+                if (!resolvedName) {
+                    throw new Error('Name is required')
+                }
+
+                if (resolvedName !== profileName) {
+                    try {
+                        await updateProfile({ displayName: resolvedName })
+                    } catch (profileError) {
+                        toast.error(profileError?.message || 'Unable to save your profile name right now')
+                    }
+                }
+
                 if (!/^[6-9]\d{9}$/.test(String(form.phone || '').trim())) {
                     throw new Error('Phone must be a valid 10-digit Indian mobile number')
                 }
@@ -304,13 +368,15 @@ function Support() {
 
                 const order = await createSupportOrder({
                     ...form,
+                    name: resolvedName,
+                    email: user.email,
                     amount: numericAmount,
                 })
 
                 const pending = {
                     orderId: order.orderId,
-                    email: form.email,
-                    contributorName: form.name,
+                    email: user.email,
+                    contributorName: resolvedName,
                     amount: numericAmount,
                 }
                 sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
@@ -382,6 +448,19 @@ function Support() {
                             </div>
                         ) : null}
 
+                        {requiresSignIn ? (
+                            <div className="mt-4 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+                                <p>Sign in with Google to continue. Your email is auto-filled and locked for secure support receipts.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSignInModal(true)}
+                                    className="mt-2 inline-flex items-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition-colors"
+                                >
+                                    Sign In with Google
+                                </button>
+                            </div>
+                        ) : null}
+
                         <div className="mt-4 grid sm:grid-cols-3 gap-3">
                             <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3">
                                 <p className="text-[11px] uppercase tracking-wider text-cyan-300">100%</p>
@@ -422,6 +501,7 @@ function Support() {
                                         value={form.name}
                                         onChange={handleChange}
                                         maxLength={80}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Your name"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
@@ -434,12 +514,14 @@ function Support() {
                                         name="email"
                                         type="email"
                                         value={form.email}
-                                        onChange={handleChange}
+                                        readOnly
+                                        disabled
                                         maxLength={120}
                                         required
-                                        placeholder="you@example.com"
+                                        placeholder="Sign in with Google to auto-fill"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
                                     />
+                                    <p className="mt-1 text-[11px] text-slate-500">Email is locked to your signed-in Google account.</p>
                                 </div>
                             </div>
 
@@ -457,6 +539,7 @@ function Support() {
                                         inputMode="numeric"
                                         pattern="[6-9][0-9]{9}"
                                         autoComplete="tel-national"
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="10-digit number"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
@@ -472,6 +555,7 @@ function Support() {
                                         max="100000"
                                         value={form.amount}
                                         onChange={handleChange}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Enter any amount"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
@@ -486,6 +570,7 @@ function Support() {
                                         <button
                                             key={amt}
                                             type="button"
+                                            disabled={requiresSignIn || isLoading}
                                             onClick={() => setForm((prev) => ({ ...prev, amount: String(amt) }))}
                                             className={`rounded-lg px-3 py-2 text-sm font-semibold border transition-colors ${
                                                 Number.parseInt(form.amount, 10) === amt
@@ -507,6 +592,7 @@ function Support() {
                                     rows="4"
                                     value={form.message}
                                     onChange={handleChange}
+                                    disabled={requiresSignIn || isLoading}
                                     maxLength={300}
                                     placeholder="Write a short note"
                                     className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 resize-none"
@@ -515,10 +601,10 @@ function Support() {
 
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || requiresSignIn || isLoading}
                                 className="w-full rounded-xl px-5 py-3.5 font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
                             >
-                                {isSubmitting ? 'Starting Secure Checkout...' : 'Support with Cashfree'}
+                                {checkoutButtonLabel}
                             </button>
                         </form>
                     </section>
@@ -629,6 +715,15 @@ function Support() {
                     </div>
                 ) : null}
             </div>
+
+            <GoogleSignInModal
+                isOpen={showSignInModal}
+                onClose={() => setShowSignInModal(false)}
+                onAuthenticated={async () => {
+                    await refreshSession()
+                    setShowSignInModal(false)
+                }}
+            />
         </div>
     )
 }

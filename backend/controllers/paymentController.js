@@ -189,6 +189,21 @@ const toSafeText = (value, maxLength, fallback = "") => {
 
 const normalizeEmailAddress = (value) => String(value || "").trim().toLowerCase();
 const isMatchingEmail = (left, right) => normalizeEmailAddress(left) === normalizeEmailAddress(right);
+const getAuthenticatedIdentity = (req) => {
+  const userId = String(req.authUser?.id || "").trim();
+  const email = normalizeEmailAddress(req.authUser?.email);
+  const displayName = toSafeText(req.authUser?.displayName || req.authUser?.name, 80, "Customer");
+
+  if (!userId || !email) {
+    return null;
+  }
+
+  return {
+    userId,
+    email,
+    displayName,
+  };
+};
 
 const getService = (slug) => SERVICE_CATALOG[String(slug || "").trim()];
 
@@ -903,6 +918,500 @@ const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
   });
 };
 
+const buildVerifyRequestContext = ({ req, res, requireAuthMessage, emailMismatchMessage }) => {
+  const authIdentity = getAuthenticatedIdentity(req);
+  if (!authIdentity) {
+    res.status(401).json({
+      success: false,
+      message: requireAuthMessage,
+    });
+    return null;
+  }
+
+  const normalizedOrderId = String(req.body?.orderId || "").trim();
+  const providedEmail = normalizeEmailAddress(req.body?.email);
+  if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
+    res.status(403).json({
+      success: false,
+      message: emailMismatchMessage,
+    });
+    return null;
+  }
+
+  return {
+    authIdentity,
+    normalizedOrderId,
+    normalizedEmail: authIdentity.email,
+  };
+};
+
+const buildReceiptRequestContext = ({ req, res, requireAuthMessage, emailMismatchMessage }) => {
+  const authIdentity = getAuthenticatedIdentity(req);
+  if (!authIdentity) {
+    res.status(401).json({
+      success: false,
+      message: requireAuthMessage,
+    });
+    return null;
+  }
+
+  const normalizedOrderId = String(req.params?.orderId || "").trim();
+  const providedEmail = normalizeEmailAddress(req.query?.email);
+  if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
+    res.status(403).json({
+      success: false,
+      message: emailMismatchMessage,
+    });
+    return null;
+  }
+
+  return {
+    authIdentity,
+    normalizedOrderId,
+    normalizedEmail: authIdentity.email,
+  };
+};
+
+const getOwnershipMismatchMessage = ({
+  record,
+  authIdentity,
+  normalizedEmail,
+  accountMismatchMessage,
+  detailsMismatchMessage,
+}) => {
+  if (record?.userId && String(record.userId) !== authIdentity.userId) {
+    return accountMismatchMessage;
+  }
+
+  if (record?.email && !isMatchingEmail(record.email, normalizedEmail)) {
+    return detailsMismatchMessage;
+  }
+
+  return "";
+};
+
+const queueServiceEmailIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
+  if (!emailDispatchQueued) {
+    return;
+  }
+
+  scheduleServiceConfirmationEmail({
+    bookingId,
+    reqLogger,
+  });
+};
+
+const queueSupportEmailIfConfigured = ({ emailDispatchQueued, supportPaymentId, reqLogger }) => {
+  if (!emailDispatchQueued) {
+    return;
+  }
+
+  scheduleSupportThankYouEmail({
+    supportPaymentId,
+    reqLogger,
+  });
+};
+
+const sendServiceVerificationSuccess = ({
+  res,
+  message,
+  booking,
+  orderId,
+  paymentId,
+  emailDispatchQueued,
+}) => {
+  return res.status(200).json({
+    success: true,
+    message,
+    data: {
+      bookingId: booking._id,
+      service: booking.service,
+      amount: booking.amount,
+      orderId,
+      paymentId,
+      emailDispatchQueued,
+    },
+  });
+};
+
+const sendSupportVerificationSuccess = ({
+  res,
+  message,
+  orderId,
+  amount,
+  contributorName,
+  paymentId,
+  emailDispatchQueued,
+}) => {
+  return res.status(200).json({
+    success: true,
+    message,
+    data: {
+      orderId,
+      amount,
+      contributorName,
+      paymentId,
+      emailDispatchQueued,
+    },
+  });
+};
+
+const fetchOrderPaymentsWithPaidFallback = async ({
+  config,
+  normalizedOrderId,
+  gatewayOrderStatus,
+  reqLogger,
+  fallbackLogMessage,
+}) => {
+  try {
+    return await callCashfreeApi({
+      method: "GET",
+      endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}/payments`,
+      config,
+    });
+  } catch (paymentListError) {
+    if (gatewayOrderStatus !== "paid") {
+      throw paymentListError;
+    }
+
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+        gatewayOrderStatus,
+        err: paymentListError,
+      },
+      fallbackLogMessage
+    );
+    return [];
+  }
+};
+
+const resolvePendingVerificationStatus = ({ failedPayment, gatewayOrderStatus }) => {
+  if (failedPayment) {
+    return "failed";
+  }
+
+  if (gatewayOrderStatus === "failed" || gatewayOrderStatus === "paid") {
+    return "pending";
+  }
+
+  return gatewayOrderStatus;
+};
+
+const resolvePendingVerificationMessage = ({ failedPayment, gatewayOrderStatus, failedMessage }) => {
+  if (failedPayment) {
+    return failedMessage;
+  }
+
+  if (gatewayOrderStatus === "paid") {
+    return "Payment is being finalized by gateway. Please retry in a few seconds.";
+  }
+
+  return "Payment is not completed yet";
+};
+
+const upsertServiceVerificationDraft = async ({
+  normalizedOrderId,
+  bookingInsertBase,
+  gatewayOrderStatus,
+}) => {
+  await Booking.findOneAndUpdate(
+    { orderId: normalizedOrderId },
+    {
+      $setOnInsert: {
+        ...bookingInsertBase,
+        paymentProvider: "cashfree",
+        paymentStatus: gatewayOrderStatus,
+        paymentId: createPendingPaymentId(normalizedOrderId),
+      },
+    },
+    {
+      upsert: true,
+      runValidators: true,
+    }
+  );
+};
+
+const persistServicePendingStatusSafely = async ({
+  normalizedOrderId,
+  bookingInsertBase,
+  nextStatus,
+  reqLogger,
+}) => {
+  try {
+    await Booking.updateOne(
+      { orderId: normalizedOrderId },
+      {
+        $set: {
+          paymentStatus: nextStatus,
+        },
+        $setOnInsert: bookingInsertBase,
+      },
+      {
+        upsert: true,
+        runValidators: true,
+      }
+    );
+  } catch (pendingPersistError) {
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+        nextStatus,
+        err: pendingPersistError,
+      },
+      "Service pending-status persistence failed during verification"
+    );
+  }
+};
+
+const persistSupportPendingStatusSafely = async ({
+  normalizedOrderId,
+  supportInsertBase,
+  nextStatus,
+  reqLogger,
+}) => {
+  try {
+    await SupportPayment.findOneAndUpdate(
+      { orderId: normalizedOrderId },
+      {
+        $set: {
+          ...supportInsertBase,
+          paymentStatus: nextStatus,
+          paymentProvider: "cashfree",
+          paymentId: createPendingPaymentId(normalizedOrderId),
+        },
+        $setOnInsert: {
+          ...supportInsertBase,
+        },
+      },
+      {
+        upsert: true,
+        runValidators: true,
+      }
+    );
+  } catch (pendingPersistError) {
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+        nextStatus,
+        err: pendingPersistError,
+      },
+      "Support pending-status persistence failed during verification"
+    );
+  }
+};
+
+const findOrCreatePaidServiceBooking = async ({
+  normalizedOrderId,
+  lastDraftBooking,
+  error,
+  bookingInsertBaseAtFailure,
+}) => {
+  let paidBooking = await Booking.findOne({
+    orderId: normalizedOrderId,
+    paymentStatus: "paid",
+  });
+
+  if (paidBooking) {
+    return paidBooking;
+  }
+
+  const rescuePaymentId = resolveRescuePaymentId(
+    normalizedOrderId,
+    lastDraftBooking?.paymentId,
+    error?.cf_payment_id,
+    error?.payment_id
+  );
+
+  const rescueSet = {
+    paymentStatus: "paid",
+    paymentProvider: "cashfree",
+    paymentId: rescuePaymentId,
+    paidAt: new Date(),
+  };
+
+  if (bookingInsertBaseAtFailure) {
+    Object.assign(rescueSet, bookingInsertBaseAtFailure);
+  }
+
+  const rescueUpdate = {
+    $set: rescueSet,
+  };
+
+  if (bookingInsertBaseAtFailure) {
+    rescueUpdate.$setOnInsert = bookingInsertBaseAtFailure;
+  }
+
+  paidBooking = await Booking.findOneAndUpdate(
+    { orderId: normalizedOrderId },
+    rescueUpdate,
+    {
+      new: true,
+      upsert: !!bookingInsertBaseAtFailure,
+      runValidators: !!bookingInsertBaseAtFailure,
+    }
+  );
+
+  return paidBooking;
+};
+
+const tryRescueServicePaidBooking = async ({
+  gatewayOrderStatusAtFailure,
+  normalizedOrderId,
+  lastDraftBooking,
+  error,
+  bookingInsertBaseAtFailure,
+  reqLogger,
+}) => {
+  if (gatewayOrderStatusAtFailure !== "paid") {
+    return null;
+  }
+
+  try {
+    const paidBooking = await findOrCreatePaidServiceBooking({
+      normalizedOrderId,
+      lastDraftBooking,
+      error,
+      bookingInsertBaseAtFailure,
+    });
+
+    if (paidBooking?.paymentStatus !== "paid") {
+      return null;
+    }
+
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+        bookingId: paidBooking._id,
+        paymentId: paidBooking.paymentId,
+        err: error,
+      },
+      "Service payment verified via paid-order rescue path"
+    );
+
+    return paidBooking;
+  } catch (rescueError) {
+    reqLogger.error(
+      {
+        err: rescueError,
+        orderId: normalizedOrderId,
+      },
+      "Service paid-order rescue path failed"
+    );
+    return null;
+  }
+};
+
+const findSupportPaymentConflict = async ({ normalizedOrderId, resolvedPaymentId }) => {
+  return SupportPayment.findOne({
+    paymentId: resolvedPaymentId,
+    orderId: { $ne: normalizedOrderId },
+  })
+    .select("orderId paymentStatus")
+    .lean();
+};
+
+const findOrCreatePaidSupportPayment = async ({
+  normalizedOrderId,
+  lastSupportRecord,
+  error,
+  supportInsertBaseAtFailure,
+}) => {
+  let paidSupportPayment = await SupportPayment.findOne({
+    orderId: normalizedOrderId,
+    paymentStatus: "paid",
+  });
+
+  if (paidSupportPayment) {
+    return paidSupportPayment;
+  }
+
+  const rescuePaymentId = resolveRescuePaymentId(
+    normalizedOrderId,
+    lastSupportRecord?.paymentId,
+    error?.cf_payment_id,
+    error?.payment_id
+  );
+
+  const rescueSet = {
+    paymentStatus: "paid",
+    paymentProvider: "cashfree",
+    paymentId: rescuePaymentId,
+    paidAt: new Date(),
+  };
+
+  if (supportInsertBaseAtFailure) {
+    Object.assign(rescueSet, supportInsertBaseAtFailure);
+  }
+
+  const rescueUpdate = {
+    $set: rescueSet,
+  };
+
+  if (supportInsertBaseAtFailure) {
+    rescueUpdate.$setOnInsert = supportInsertBaseAtFailure;
+  }
+
+  paidSupportPayment = await SupportPayment.findOneAndUpdate(
+    { orderId: normalizedOrderId },
+    rescueUpdate,
+    {
+      new: true,
+      upsert: !!supportInsertBaseAtFailure,
+      runValidators: !!supportInsertBaseAtFailure,
+    }
+  );
+
+  return paidSupportPayment;
+};
+
+const tryRescueSupportPaidPayment = async ({
+  gatewayOrderStatusAtFailure,
+  normalizedOrderId,
+  lastSupportRecord,
+  error,
+  supportInsertBaseAtFailure,
+  reqLogger,
+}) => {
+  if (gatewayOrderStatusAtFailure !== "paid") {
+    return null;
+  }
+
+  try {
+    const paidSupportPayment = await findOrCreatePaidSupportPayment({
+      normalizedOrderId,
+      lastSupportRecord,
+      error,
+      supportInsertBaseAtFailure,
+    });
+
+    if (paidSupportPayment?.paymentStatus !== "paid") {
+      return null;
+    }
+
+    reqLogger.warn(
+      {
+        orderId: normalizedOrderId,
+        supportPaymentId: paidSupportPayment._id,
+        paymentId: paidSupportPayment.paymentId,
+        err: error,
+      },
+      "Support payment verified via paid-order rescue path"
+    );
+
+    return paidSupportPayment;
+  } catch (rescueError) {
+    reqLogger.error(
+      {
+        err: rescueError,
+        orderId: normalizedOrderId,
+      },
+      "Support paid-order rescue path failed"
+    );
+    return null;
+  }
+};
+
 exports.createOrder = async (req, res) => {
   const reqLogger = req.log || logger;
 
@@ -916,6 +1425,23 @@ exports.createOrder = async (req, res) => {
   try {
     const { name, email, phone, service, preferredDate, preferredTime, projectBrief } = req.body;
     const { ipAddress, userAgent } = getRequestClientMeta(req);
+    const authIdentity = getAuthenticatedIdentity(req);
+
+    if (!authIdentity) {
+      return res.status(401).json({
+        success: false,
+        message: "Please sign in with Google before booking a service.",
+      });
+    }
+
+    const providedEmail = normalizeEmailAddress(email);
+    if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
+      return res.status(403).json({
+        success: false,
+        message: "Booking email must match your signed-in Google account.",
+      });
+    }
+
     const selectedService = getService(service);
 
     if (!selectedService) {
@@ -928,7 +1454,8 @@ exports.createOrder = async (req, res) => {
     const config = getCashfreeConfig();
 
     const serviceSlug = String(service || "").trim();
-    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedEmail = authIdentity.email;
+    const customerName = toSafeText(name, 80, authIdentity.displayName);
     const orderId = createOrderId();
 
     const frontendUrl = String(process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
@@ -944,7 +1471,7 @@ exports.createOrder = async (req, res) => {
         order_note: `${selectedService.title} booking`,
         customer_details: {
           customer_id: toCustomerId(normalizedEmail),
-          customer_name: String(name || "").trim(),
+          customer_name: customerName,
           customer_email: normalizedEmail,
           customer_phone: String(phone || "").trim(),
         },
@@ -968,8 +1495,9 @@ exports.createOrder = async (req, res) => {
         { orderId },
         {
           $set: {
-            name: String(name || "").trim(),
+            name: customerName,
             email: normalizedEmail,
+            userId: authIdentity.userId,
             phone: normalizeIndianPhone(phone),
             serviceSlug,
             service: selectedService.title,
@@ -1008,6 +1536,7 @@ exports.createOrder = async (req, res) => {
     reqLogger.info(
       {
         orderId,
+        userId: authIdentity.userId,
         amount: selectedService.amount,
         service,
         preferredDate,
@@ -1057,8 +1586,17 @@ exports.verifyPayment = async (req, res) => {
     });
   }
 
-  const normalizedOrderId = String(req.body?.orderId || "").trim();
-  const normalizedEmail = String(req.body?.email || "").trim().toLowerCase();
+  const verifyContext = buildVerifyRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before verifying payment.",
+    emailMismatchMessage: "Verification email must match your signed-in Google account.",
+  });
+  if (!verifyContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = verifyContext;
   let gatewayOrderStatusAtFailure = "";
   let bookingInsertBaseAtFailure = null;
   let lastDraftBooking = null;
@@ -1068,25 +1606,35 @@ exports.verifyPayment = async (req, res) => {
     const draftBooking = await Booking.findOne({ orderId: normalizedOrderId });
     lastDraftBooking = draftBooking;
 
-    if (draftBooking?.paymentStatus === "paid") {
-      if (emailDispatchQueued) {
-        scheduleServiceConfirmationEmail({
-          bookingId: draftBooking._id,
-          reqLogger,
-        });
-      }
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: draftBooking,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This booking belongs to a different signed-in account.",
+      detailsMismatchMessage: "Verification details do not match this order.",
+    });
 
-      return res.status(200).json({
-        success: true,
+    if (ownershipMismatchMessage) {
+      return res.status(403).json({
+        success: false,
+        message: ownershipMismatchMessage,
+      });
+    }
+
+    if (draftBooking?.paymentStatus === "paid") {
+      queueServiceEmailIfConfigured({
+        emailDispatchQueued,
+        bookingId: draftBooking._id,
+        reqLogger,
+      });
+
+      return sendServiceVerificationSuccess({
+        res,
         message: "Payment already verified",
-        data: {
-          bookingId: draftBooking._id,
-          service: draftBooking.service,
-          amount: draftBooking.amount,
-          orderId: normalizedOrderId,
-          paymentId: draftBooking.paymentId,
-          emailDispatchQueued,
-        },
+        booking: draftBooking,
+        orderId: normalizedOrderId,
+        paymentId: draftBooking.paymentId,
+        emailDispatchQueued,
       });
     }
 
@@ -1116,47 +1664,25 @@ exports.verifyPayment = async (req, res) => {
     }
 
     const { bookingInsertBase, gatewayOrderStatus } = verificationContext;
+    bookingInsertBase.userId = draftBooking?.userId || authIdentity.userId;
+    bookingInsertBase.email = normalizedEmail;
     gatewayOrderStatusAtFailure = gatewayOrderStatus;
     bookingInsertBaseAtFailure = bookingInsertBase;
 
-    await Booking.findOneAndUpdate(
-      { orderId: normalizedOrderId },
-      {
-        $setOnInsert: {
-          ...bookingInsertBase,
-          paymentProvider: "cashfree",
-          paymentStatus: gatewayOrderStatus,
-          paymentId: createPendingPaymentId(normalizedOrderId),
-        },
-      },
-      {
-        upsert: true,
-        runValidators: true,
-      }
-    );
+    await upsertServiceVerificationDraft({
+      normalizedOrderId,
+      bookingInsertBase,
+      gatewayOrderStatus,
+    });
 
-    let paymentList = [];
-    try {
-      paymentList = await callCashfreeApi({
-        method: "GET",
-        endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}/payments`,
-        config,
-      });
-    } catch (paymentListError) {
-      if (gatewayOrderStatus !== "paid") {
-        throw paymentListError;
-      }
-
-      reqLogger.warn(
-        {
-          orderId: normalizedOrderId,
-          gatewayOrderStatus,
-          err: paymentListError,
-        },
-        "Service payment list fetch failed for paid order; continuing with gateway-paid fallback"
-      );
-      paymentList = [];
-    }
+    const paymentList = await fetchOrderPaymentsWithPaidFallback({
+      config,
+      normalizedOrderId,
+      gatewayOrderStatus,
+      reqLogger,
+      fallbackLogMessage:
+        "Service payment list fetch failed for paid order; continuing with gateway-paid fallback",
+    });
 
     const successfulPayment =
       findSuccessfulPayment(paymentList) ||
@@ -1164,43 +1690,17 @@ exports.verifyPayment = async (req, res) => {
 
     if (!successfulPayment) {
       const failedPayment = findFailedPayment(paymentList);
-      let nextStatus = gatewayOrderStatus;
-      if (failedPayment) {
-        nextStatus = "failed";
-      } else if (gatewayOrderStatus === "failed") {
-        nextStatus = "pending";
-      } else if (gatewayOrderStatus === "paid") {
-        nextStatus = "pending";
-      }
+      const nextStatus = resolvePendingVerificationStatus({
+        failedPayment,
+        gatewayOrderStatus,
+      });
 
-      try {
-        await Booking.updateOne(
-          { orderId: normalizedOrderId },
-          {
-            $set: {
-              paymentStatus: nextStatus,
-            },
-            $setOnInsert: bookingInsertBase,
-          },
-          {
-            upsert: true,
-            runValidators: true,
-          }
-        );
-      } catch (pendingPersistError) {
-        reqLogger.warn(
-          {
-            orderId: normalizedOrderId,
-            nextStatus,
-            err: pendingPersistError,
-          },
-          "Service pending-status persistence failed during verification"
-        );
-      }
-
-      const pendingMessage = gatewayOrderStatus === "paid"
-        ? "Payment is being finalized by gateway. Please retry in a few seconds."
-        : "Payment is not completed yet";
+      await persistServicePendingStatusSafely({
+        normalizedOrderId,
+        bookingInsertBase,
+        nextStatus,
+        reqLogger,
+      });
 
       reqLogger.warn(
         {
@@ -1213,9 +1713,11 @@ exports.verifyPayment = async (req, res) => {
 
       return res.status(409).json({
         success: false,
-        message: failedPayment
-          ? "Payment was not completed. If amount was deducted, gateway will auto-reconcile."
-          : pendingMessage,
+        message: resolvePendingVerificationMessage({
+          failedPayment,
+          gatewayOrderStatus,
+          failedMessage: "Payment was not completed. If amount was deducted, gateway will auto-reconcile.",
+        }),
       });
     }
 
@@ -1246,109 +1748,45 @@ exports.verifyPayment = async (req, res) => {
       "Payment verified and booking saved"
     );
 
-    if (emailDispatchQueued) {
-      scheduleServiceConfirmationEmail({
-        bookingId: booking._id,
-        reqLogger,
-      });
-    }
+    queueServiceEmailIfConfigured({
+      emailDispatchQueued,
+      bookingId: booking._id,
+      reqLogger,
+    });
 
-    return res.status(200).json({
-      success: true,
+    return sendServiceVerificationSuccess({
+      res,
       message: "Payment verified and booking confirmed",
-      data: {
-        bookingId: booking._id,
-        service: booking.service,
-        amount: booking.amount,
-        orderId: normalizedOrderId,
-        paymentId: booking.paymentId,
-        emailDispatchQueued,
-      },
+      booking,
+      orderId: normalizedOrderId,
+      paymentId: booking.paymentId,
+      emailDispatchQueued,
     });
   } catch (error) {
-    if (gatewayOrderStatusAtFailure === "paid") {
-      try {
-        let paidBooking = await Booking.findOne({
-          orderId: normalizedOrderId,
-          paymentStatus: "paid",
-        });
+    const rescuedBooking = await tryRescueServicePaidBooking({
+      gatewayOrderStatusAtFailure,
+      normalizedOrderId,
+      lastDraftBooking,
+      error,
+      bookingInsertBaseAtFailure,
+      reqLogger,
+    });
 
-        if (!paidBooking) {
-          const rescuePaymentId = resolveRescuePaymentId(
-            normalizedOrderId,
-            lastDraftBooking?.paymentId,
-            error?.cf_payment_id,
-            error?.payment_id
-          );
+    if (rescuedBooking) {
+      queueServiceEmailIfConfigured({
+        emailDispatchQueued,
+        bookingId: rescuedBooking._id,
+        reqLogger,
+      });
 
-          const rescueSet = {
-            paymentStatus: "paid",
-            paymentProvider: "cashfree",
-            paymentId: rescuePaymentId,
-            paidAt: new Date(),
-          };
-          if (bookingInsertBaseAtFailure) {
-            Object.assign(rescueSet, bookingInsertBaseAtFailure);
-          }
-
-          const rescueUpdate = {
-            $set: rescueSet,
-          };
-          if (bookingInsertBaseAtFailure) {
-            rescueUpdate.$setOnInsert = bookingInsertBaseAtFailure;
-          }
-
-          paidBooking = await Booking.findOneAndUpdate(
-            { orderId: normalizedOrderId },
-            rescueUpdate,
-            {
-              new: true,
-              upsert: !!bookingInsertBaseAtFailure,
-              runValidators: !!bookingInsertBaseAtFailure,
-            }
-          );
-        }
-
-        if (paidBooking?.paymentStatus === "paid") {
-          reqLogger.warn(
-            {
-              orderId: normalizedOrderId,
-              bookingId: paidBooking._id,
-              paymentId: paidBooking.paymentId,
-              err: error,
-            },
-            "Service payment verified via paid-order rescue path"
-          );
-
-          if (emailDispatchQueued) {
-            scheduleServiceConfirmationEmail({
-              bookingId: paidBooking._id,
-              reqLogger,
-            });
-          }
-
-          return res.status(200).json({
-            success: true,
-            message: "Payment verified and booking confirmed",
-            data: {
-              bookingId: paidBooking._id,
-              service: paidBooking.service,
-              amount: paidBooking.amount,
-              orderId: normalizedOrderId,
-              paymentId: paidBooking.paymentId,
-              emailDispatchQueued,
-            },
-          });
-        }
-      } catch (rescueError) {
-        reqLogger.error(
-          {
-            err: rescueError,
-            orderId: normalizedOrderId,
-          },
-          "Service paid-order rescue path failed"
-        );
-      }
+      return sendServiceVerificationSuccess({
+        res,
+        message: "Payment verified and booking confirmed",
+        booking: rescuedBooking,
+        orderId: normalizedOrderId,
+        paymentId: rescuedBooking.paymentId,
+        emailDispatchQueued,
+      });
     }
 
     const mapped = mapGatewayError(error, "Unable to verify payment");
@@ -1381,7 +1819,24 @@ exports.createSupportOrder = async (req, res) => {
   try {
     const { name, email, phone, amount, message } = req.body;
     const { ipAddress, userAgent } = getRequestClientMeta(req);
-    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const authIdentity = getAuthenticatedIdentity(req);
+    if (!authIdentity) {
+      return res.status(401).json({
+        success: false,
+        message: "Please sign in with Google before creating a support payment.",
+      });
+    }
+
+    const providedEmail = normalizeEmailAddress(email);
+    if (providedEmail && !isMatchingEmail(providedEmail, authIdentity.email)) {
+      return res.status(403).json({
+        success: false,
+        message: "Support email must match your signed-in Google account.",
+      });
+    }
+
+    const normalizedEmail = authIdentity.email;
+    const contributorName = toSafeText(name, 80, authIdentity.displayName);
     const normalizedAmount = Number.parseInt(amount, 10);
 
     if (!Number.isFinite(normalizedAmount) || normalizedAmount < 1 || normalizedAmount > 100000) {
@@ -1406,7 +1861,7 @@ exports.createSupportOrder = async (req, res) => {
         order_note: "Direct support contribution",
         customer_details: {
           customer_id: toCustomerId(normalizedEmail),
-          customer_name: String(name || "").trim(),
+          customer_name: contributorName,
           customer_email: normalizedEmail,
           customer_phone: normalizeIndianPhone(phone),
         },
@@ -1429,8 +1884,9 @@ exports.createSupportOrder = async (req, res) => {
         { orderId },
         {
           $set: {
-            contributorName: String(name || "").trim(),
+            contributorName,
             email: normalizedEmail,
+            userId: authIdentity.userId,
             phone: normalizeIndianPhone(phone),
             amount: normalizedAmount,
             message: String(message || "").trim(),
@@ -1462,6 +1918,7 @@ exports.createSupportOrder = async (req, res) => {
     reqLogger.info(
       {
         orderId,
+        userId: authIdentity.userId,
         amount: normalizedAmount,
       },
       "Support order created"
@@ -1500,8 +1957,17 @@ exports.createSupportOrder = async (req, res) => {
 exports.verifySupportPayment = async (req, res) => {
   const reqLogger = req.log || logger;
   const emailDispatchQueued = isEmailDispatchConfigured();
-  const normalizedOrderId = String(req.body?.orderId || "").trim();
-  const normalizedEmail = String(req.body?.email || "").trim().toLowerCase();
+  const verifyContext = buildVerifyRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before verifying support payment.",
+    emailMismatchMessage: "Verification email must match your signed-in Google account.",
+  });
+  if (!verifyContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = verifyContext;
   let gatewayOrderStatusAtFailure = "";
   let supportInsertBaseAtFailure = null;
   let lastSupportRecord = null;
@@ -1521,24 +1987,36 @@ exports.verifySupportPayment = async (req, res) => {
     const supportRecord = await SupportPayment.findOne({ orderId: normalizedOrderId });
     lastSupportRecord = supportRecord;
 
-    if (supportRecord?.paymentStatus === "paid") {
-      if (emailDispatchQueued) {
-        scheduleSupportThankYouEmail({
-          supportPaymentId: supportRecord._id,
-          reqLogger,
-        });
-      }
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: supportRecord,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This support payment belongs to a different signed-in account.",
+      detailsMismatchMessage: "Verification details do not match this support order.",
+    });
 
-      return res.status(200).json({
-        success: true,
+    if (ownershipMismatchMessage) {
+      return res.status(403).json({
+        success: false,
+        message: ownershipMismatchMessage,
+      });
+    }
+
+    if (supportRecord?.paymentStatus === "paid") {
+      queueSupportEmailIfConfigured({
+        emailDispatchQueued,
+        supportPaymentId: supportRecord._id,
+        reqLogger,
+      });
+
+      return sendSupportVerificationSuccess({
+        res,
         message: "Support payment already verified",
-        data: {
-          orderId: normalizedOrderId,
-          amount: supportRecord.amount,
-          contributorName: supportRecord.contributorName,
-          paymentId: supportRecord.paymentId,
-          emailDispatchQueued,
-        },
+        orderId: normalizedOrderId,
+        amount: supportRecord.amount,
+        contributorName: supportRecord.contributorName,
+        paymentId: supportRecord.paymentId,
+        emailDispatchQueued,
       });
     }
 
@@ -1565,33 +2043,21 @@ exports.verifySupportPayment = async (req, res) => {
     }
 
     const { contributorName, orderAmount, supportInsertBase, gatewayOrderStatus } = verificationContext;
+    supportInsertBase.userId = supportRecord?.userId || authIdentity.userId;
+    supportInsertBase.email = normalizedEmail;
     gatewayOrderStatusAtFailure = gatewayOrderStatus;
     supportInsertBaseAtFailure = supportInsertBase;
     lastContributorName = contributorName;
     lastOrderAmount = orderAmount;
 
-    let paymentList = [];
-    try {
-      paymentList = await callCashfreeApi({
-        method: "GET",
-        endpoint: `/pg/orders/${encodeURIComponent(normalizedOrderId)}/payments`,
-        config,
-      });
-    } catch (paymentListError) {
-      if (gatewayOrderStatus !== "paid") {
-        throw paymentListError;
-      }
-
-      reqLogger.warn(
-        {
-          orderId: normalizedOrderId,
-          gatewayOrderStatus,
-          err: paymentListError,
-        },
-        "Support payment list fetch failed for paid order; continuing with gateway-paid fallback"
-      );
-      paymentList = [];
-    }
+    const paymentList = await fetchOrderPaymentsWithPaidFallback({
+      config,
+      normalizedOrderId,
+      gatewayOrderStatus,
+      reqLogger,
+      fallbackLogMessage:
+        "Support payment list fetch failed for paid order; continuing with gateway-paid fallback",
+    });
 
     const successfulPayment =
       findSuccessfulPayment(paymentList) ||
@@ -1599,48 +2065,17 @@ exports.verifySupportPayment = async (req, res) => {
 
     if (!successfulPayment) {
       const failedPayment = findFailedPayment(paymentList);
+      const nextStatus = resolvePendingVerificationStatus({
+        failedPayment,
+        gatewayOrderStatus,
+      });
 
-      let nextStatus = gatewayOrderStatus;
-      if (failedPayment) {
-        nextStatus = "failed";
-      } else if (gatewayOrderStatus === "failed") {
-        nextStatus = "pending";
-      } else if (gatewayOrderStatus === "paid") {
-        nextStatus = "pending";
-      }
-      try {
-        await SupportPayment.findOneAndUpdate(
-          { orderId: normalizedOrderId },
-          {
-            $set: {
-              ...supportInsertBase,
-              paymentStatus: nextStatus,
-              paymentProvider: "cashfree",
-              paymentId: createPendingPaymentId(normalizedOrderId),
-            },
-            $setOnInsert: {
-              ...supportInsertBase,
-            },
-          },
-          {
-            upsert: true,
-            runValidators: true,
-          }
-        );
-      } catch (pendingPersistError) {
-        reqLogger.warn(
-          {
-            orderId: normalizedOrderId,
-            nextStatus,
-            err: pendingPersistError,
-          },
-          "Support pending-status persistence failed during verification"
-        );
-      }
-
-      const pendingMessage = gatewayOrderStatus === "paid"
-        ? "Payment is being finalized by gateway. Please retry in a few seconds."
-        : "Payment is not completed yet";
+      await persistSupportPendingStatusSafely({
+        normalizedOrderId,
+        supportInsertBase,
+        nextStatus,
+        reqLogger,
+      });
 
       reqLogger.warn(
         {
@@ -1653,20 +2088,21 @@ exports.verifySupportPayment = async (req, res) => {
 
       return res.status(409).json({
         success: false,
-        message: failedPayment
-          ? "Payment was not completed. If amount was deducted, it will be auto-reconciled by gateway."
-          : pendingMessage,
+        message: resolvePendingVerificationMessage({
+          failedPayment,
+          gatewayOrderStatus,
+          failedMessage:
+            "Payment was not completed. If amount was deducted, it will be auto-reconciled by gateway.",
+        }),
       });
     }
 
     const resolvedPaymentId = resolveGatewayPaymentId(successfulPayment, normalizedOrderId);
 
-    const conflictingPayment = await SupportPayment.findOne({
-      paymentId: resolvedPaymentId,
-      orderId: { $ne: normalizedOrderId },
-    })
-      .select("orderId paymentStatus")
-      .lean();
+    const conflictingPayment = await findSupportPaymentConflict({
+      normalizedOrderId,
+      resolvedPaymentId,
+    });
 
     if (conflictingPayment) {
       reqLogger.warn(
@@ -1715,107 +2151,47 @@ exports.verifySupportPayment = async (req, res) => {
       "Support payment verified"
     );
 
-    if (emailDispatchQueued) {
-      scheduleSupportThankYouEmail({
-        supportPaymentId: savedSupportPayment?._id,
-        reqLogger,
-      });
-    }
+    queueSupportEmailIfConfigured({
+      emailDispatchQueued,
+      supportPaymentId: savedSupportPayment?._id,
+      reqLogger,
+    });
 
-    return res.status(200).json({
-      success: true,
+    return sendSupportVerificationSuccess({
+      res,
       message: "Support payment verified",
-      data: {
-        orderId: normalizedOrderId,
-        amount: orderAmount,
-        contributorName,
-        paymentId: resolvedPaymentId,
-        emailDispatchQueued,
-      },
+      orderId: normalizedOrderId,
+      amount: orderAmount,
+      contributorName,
+      paymentId: resolvedPaymentId,
+      emailDispatchQueued,
     });
   } catch (error) {
-    if (gatewayOrderStatusAtFailure === "paid") {
-      try {
-        let paidSupportPayment = await SupportPayment.findOne({
-          orderId: normalizedOrderId,
-          paymentStatus: "paid",
-        });
+    const rescuedSupportPayment = await tryRescueSupportPaidPayment({
+      gatewayOrderStatusAtFailure,
+      normalizedOrderId,
+      lastSupportRecord,
+      error,
+      supportInsertBaseAtFailure,
+      reqLogger,
+    });
 
-        if (!paidSupportPayment) {
-          const rescuePaymentId = resolveRescuePaymentId(
-            normalizedOrderId,
-            lastSupportRecord?.paymentId,
-            error?.cf_payment_id,
-            error?.payment_id
-          );
+    if (rescuedSupportPayment) {
+      queueSupportEmailIfConfigured({
+        emailDispatchQueued,
+        supportPaymentId: rescuedSupportPayment._id,
+        reqLogger,
+      });
 
-          const rescueSet = {
-            paymentStatus: "paid",
-            paymentProvider: "cashfree",
-            paymentId: rescuePaymentId,
-            paidAt: new Date(),
-          };
-          if (supportInsertBaseAtFailure) {
-            Object.assign(rescueSet, supportInsertBaseAtFailure);
-          }
-
-          const rescueUpdate = {
-            $set: rescueSet,
-          };
-          if (supportInsertBaseAtFailure) {
-            rescueUpdate.$setOnInsert = supportInsertBaseAtFailure;
-          }
-
-          paidSupportPayment = await SupportPayment.findOneAndUpdate(
-            { orderId: normalizedOrderId },
-            rescueUpdate,
-            {
-              new: true,
-              upsert: !!supportInsertBaseAtFailure,
-              runValidators: !!supportInsertBaseAtFailure,
-            }
-          );
-        }
-
-        if (paidSupportPayment?.paymentStatus === "paid") {
-          reqLogger.warn(
-            {
-              orderId: normalizedOrderId,
-              supportPaymentId: paidSupportPayment._id,
-              paymentId: paidSupportPayment.paymentId,
-              err: error,
-            },
-            "Support payment verified via paid-order rescue path"
-          );
-
-          if (emailDispatchQueued) {
-            scheduleSupportThankYouEmail({
-              supportPaymentId: paidSupportPayment._id,
-              reqLogger,
-            });
-          }
-
-          return res.status(200).json({
-            success: true,
-            message: "Support payment verified",
-            data: {
-              orderId: normalizedOrderId,
-              amount: paidSupportPayment.amount || lastOrderAmount,
-              contributorName: paidSupportPayment.contributorName || lastContributorName,
-              paymentId: paidSupportPayment.paymentId,
-              emailDispatchQueued,
-            },
-          });
-        }
-      } catch (rescueError) {
-        reqLogger.error(
-          {
-            err: rescueError,
-            orderId: normalizedOrderId,
-          },
-          "Support paid-order rescue path failed"
-        );
-      }
+      return sendSupportVerificationSuccess({
+        res,
+        message: "Support payment verified",
+        orderId: normalizedOrderId,
+        amount: rescuedSupportPayment.amount || lastOrderAmount,
+        contributorName: rescuedSupportPayment.contributorName || lastContributorName,
+        paymentId: rescuedSupportPayment.paymentId,
+        emailDispatchQueued,
+      });
     }
 
     const mapped = mapGatewayError(error, "Unable to verify support payment");
@@ -1839,10 +2215,181 @@ exports.verifySupportPayment = async (req, res) => {
   }
 };
 
+exports.getMyBookings = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const authIdentity = getAuthenticatedIdentity(req);
+
+  if (!authIdentity) {
+    return res.status(401).json({
+      success: false,
+      message: "Please sign in first",
+    });
+  }
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    await Booking.updateMany(
+      {
+        userId: null,
+        email: authIdentity.email,
+      },
+      {
+        $set: {
+          userId: authIdentity.userId,
+        },
+      }
+    );
+
+    const bookings = await Booking.find({
+      $or: [
+        { userId: authIdentity.userId },
+        { userId: null, email: authIdentity.email },
+      ],
+    })
+      .select(
+        "_id orderId paymentId paymentStatus paymentProvider service serviceSlug amount preferredDate preferredTime paidAt createdAt updatedAt confirmationEmailSentAt confirmationEmailError"
+      )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      message: "Bookings fetched successfully",
+      data: {
+        items: (bookings || []).map((booking) => ({
+          id: String(booking._id),
+          orderId: booking.orderId,
+          paymentId: booking.paymentId,
+          paymentStatus: booking.paymentStatus,
+          paymentProvider: booking.paymentProvider,
+          service: booking.service,
+          serviceSlug: booking.serviceSlug,
+          amount: booking.amount,
+          preferredDate: booking.preferredDate,
+          preferredTime: booking.preferredTime,
+          paidAt: booking.paidAt,
+          createdAt: booking.createdAt,
+          updatedAt: booking.updatedAt,
+          confirmationEmailSentAt: booking.confirmationEmailSentAt,
+          confirmationEmailError: booking.confirmationEmailError,
+        })),
+      },
+    });
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        userId: authIdentity.userId,
+      },
+      "Failed to fetch user bookings"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load your booking activity right now.",
+    });
+  }
+};
+
+exports.getMySupportPayments = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const authIdentity = getAuthenticatedIdentity(req);
+
+  if (!authIdentity) {
+    return res.status(401).json({
+      success: false,
+      message: "Please sign in first",
+    });
+  }
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    await SupportPayment.updateMany(
+      {
+        userId: null,
+        email: authIdentity.email,
+      },
+      {
+        $set: {
+          userId: authIdentity.userId,
+        },
+      }
+    );
+
+    const supportPayments = await SupportPayment.find({
+      $or: [
+        { userId: authIdentity.userId },
+        { userId: null, email: authIdentity.email },
+      ],
+    })
+      .select(
+        "_id orderId paymentId paymentStatus paymentProvider contributorName amount message paidAt createdAt updatedAt thankYouEmailSentAt thankYouEmailError"
+      )
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      message: "Support payments fetched successfully",
+      data: {
+        items: (supportPayments || []).map((item) => ({
+          id: String(item._id),
+          orderId: item.orderId,
+          paymentId: item.paymentId,
+          paymentStatus: item.paymentStatus,
+          paymentProvider: item.paymentProvider,
+          contributorName: item.contributorName,
+          amount: item.amount,
+          message: item.message,
+          paidAt: item.paidAt,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+          thankYouEmailSentAt: item.thankYouEmailSentAt,
+          thankYouEmailError: item.thankYouEmailError,
+        })),
+      },
+    });
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        userId: authIdentity.userId,
+      },
+      "Failed to fetch user support payments"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load your support activity right now.",
+    });
+  }
+};
+
 exports.downloadServiceReceipt = async (req, res) => {
   const reqLogger = req.log || logger;
-  const normalizedOrderId = String(req.params?.orderId || "").trim();
-  const normalizedEmail = normalizeEmailAddress(req.query?.email);
+  const receiptContext = buildReceiptRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before downloading service receipts.",
+    emailMismatchMessage: "Receipt email must match your signed-in Google account.",
+  });
+  if (!receiptContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = receiptContext;
 
   if (!isDatabaseReady()) {
     return res.status(503).json({
@@ -1861,10 +2408,18 @@ exports.downloadServiceReceipt = async (req, res) => {
       });
     }
 
-    if (!isMatchingEmail(booking.email, normalizedEmail)) {
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: booking,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This receipt belongs to a different signed-in account.",
+      detailsMismatchMessage: "Receipt access is not allowed for this account.",
+    });
+
+    if (ownershipMismatchMessage) {
       return res.status(403).json({
         success: false,
-        message: "Receipt access is not allowed for this email",
+        message: ownershipMismatchMessage,
       });
     }
 
@@ -1890,7 +2445,8 @@ exports.downloadServiceReceipt = async (req, res) => {
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.setHeader("Cache-Control", "private, max-age=300");
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Pragma", "no-cache");
 
     return res.status(200).send(buffer);
   } catch (error) {
@@ -1911,8 +2467,17 @@ exports.downloadServiceReceipt = async (req, res) => {
 
 exports.downloadSupportReceipt = async (req, res) => {
   const reqLogger = req.log || logger;
-  const normalizedOrderId = String(req.params?.orderId || "").trim();
-  const normalizedEmail = normalizeEmailAddress(req.query?.email);
+  const receiptContext = buildReceiptRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before downloading support receipts.",
+    emailMismatchMessage: "Receipt email must match your signed-in Google account.",
+  });
+  if (!receiptContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = receiptContext;
 
   if (!isDatabaseReady()) {
     return res.status(503).json({
@@ -1931,10 +2496,18 @@ exports.downloadSupportReceipt = async (req, res) => {
       });
     }
 
-    if (!isMatchingEmail(supportPayment.email, normalizedEmail)) {
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: supportPayment,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This receipt belongs to a different signed-in account.",
+      detailsMismatchMessage: "Receipt access is not allowed for this account.",
+    });
+
+    if (ownershipMismatchMessage) {
       return res.status(403).json({
         success: false,
-        message: "Receipt access is not allowed for this email",
+        message: ownershipMismatchMessage,
       });
     }
 
@@ -1960,7 +2533,8 @@ exports.downloadSupportReceipt = async (req, res) => {
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.setHeader("Cache-Control", "private, max-age=300");
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Pragma", "no-cache");
 
     return res.status(200).send(buffer);
   } catch (error) {

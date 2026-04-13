@@ -191,9 +191,8 @@ exports.paymentReceiptValidationRules = [
     .withMessage("Order ID format is invalid"),
 
   query("email")
+    .optional({ checkFalsy: true })
     .trim()
-    .notEmpty()
-    .withMessage("Email is required")
     .isEmail()
     .withMessage("Please provide a valid email address")
     .normalizeEmail(),
@@ -227,6 +226,15 @@ exports.blogSupportStatusValidationRules = [
     .withMessage("Blog slug is required")
     .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     .withMessage("Blog slug format is invalid"),
+];
+
+exports.authProfileUpdateValidationRules = [
+  body("displayName")
+    .trim()
+    .notEmpty()
+    .withMessage("Display name is required")
+    .isLength({ min: 2, max: 120 })
+    .withMessage("Display name must be between 2 and 120 characters"),
 ];
 
 exports.validate = (req, res, next) => {

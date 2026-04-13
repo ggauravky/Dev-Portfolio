@@ -4,6 +4,7 @@ import {
     fetchCurrentSession,
     logoutSession,
     signInWithGoogleCredential,
+    updateAuthProfile,
 } from '../services/auth'
 
 const AuthContext = createContext(null)
@@ -43,6 +44,12 @@ export function AuthProvider({ children }) {
         }
     }, [])
 
+    const updateProfile = useCallback(async (payload) => {
+        const data = await updateAuthProfile(payload)
+        setUser(data.user || null)
+        return data.user || null
+    }, [])
+
     const value = useMemo(
         () => ({
             user,
@@ -50,9 +57,10 @@ export function AuthProvider({ children }) {
             isAuthenticated: Boolean(user),
             signIn,
             signOut,
+            updateProfile,
             refreshSession,
         }),
-        [user, isLoading, signIn, signOut, refreshSession]
+        [user, isLoading, signIn, signOut, updateProfile, refreshSession]
     )
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

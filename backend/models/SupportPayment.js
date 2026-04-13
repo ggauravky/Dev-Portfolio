@@ -22,6 +22,12 @@ const supportPaymentSchema = new mongoose.Schema(
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
       index: true,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
+    },
     phone: {
       type: String,
       required: [true, "Phone number is required"],

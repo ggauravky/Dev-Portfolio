@@ -184,6 +184,7 @@ function AnimatedRoutes() {
                 <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
                 <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
                 <Route path="/contact"                    element={<R><Contact /></R>} />
+                <Route path="/my-activity"               element={<R><MySupports /></R>} />
                 <Route path="/my-supports"                element={<R><MySupports /></R>} />
                 <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />

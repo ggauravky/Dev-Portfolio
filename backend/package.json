@@ -5,7 +5,10 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "dev": "nodemon server.js"
+        "dev": "nodemon server.js",
+        "migrate:backfill-user-links": "node scripts/backfill-user-links.js",
+        "migrate:backfill-user-links:dry": "node scripts/backfill-user-links.js --dry-run",
+        "migrate:backfill-user-links:help": "node scripts/backfill-user-links.js --help"
     },
     "keywords": [
         "portfolio",

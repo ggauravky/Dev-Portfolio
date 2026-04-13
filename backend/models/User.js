@@ -22,7 +22,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       unique: true,
       index: true,
+      immutable: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
+    },
+    displayName: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 120,
     },
     name: {
       type: String,

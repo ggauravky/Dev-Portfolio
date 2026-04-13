@@ -39,15 +39,58 @@ const getGoogleClient = () => {
   return googleClient;
 };
 
-const buildUserPayload = (user) => ({
-  id: String(user._id),
-  name: user.name,
-  email: user.email,
-  picture: user.picture,
-});
+const buildUserPayload = (user) => {
+  const resolvedName = String(user.displayName || user.name || "User").trim() || "User";
+
+  return {
+    id: String(user._id),
+    name: resolvedName,
+    displayName: String(user.displayName || "").trim(),
+    email: user.email,
+    picture: user.picture,
+    emailLocked: true,
+  };
+};
 
 const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
 const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
+const normalizeDisplayName = (value) => normalizeText(value, 120);
+
+const resolveGoogleSignInConflict = ({
+  userByGoogleId,
+  userByEmail,
+  googleId,
+  normalizedEmail,
+  reqLogger,
+}) => {
+  if (
+    userByGoogleId &&
+    userByEmail &&
+    String(userByGoogleId._id) !== String(userByEmail._id)
+  ) {
+    reqLogger.warn(
+      {
+        googleId,
+        email: normalizedEmail,
+        userByGoogleId: String(userByGoogleId._id),
+        userByEmail: String(userByEmail._id),
+      },
+      "Google sign-in rejected due to conflicting account ownership"
+    );
+
+    return "Account mapping conflict detected. Please contact support.";
+  }
+
+  if (userByEmail && userByEmail.googleId !== googleId) {
+    return "This email is already linked with a different Google account.";
+  }
+
+  if (userByGoogleId && userByGoogleId.email !== normalizedEmail) {
+    return "Your Google account email does not match the original sign-in email.";
+  }
+
+  return "";
+};
 
 const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
   const now = new Date();
@@ -237,22 +280,40 @@ exports.googleSignIn = async (req, res) => {
     const emailVerified = payload.email_verified !== false;
     const picture = normalizeText(payload.picture, 2048);
 
-    const existingUser = await User.findOne({
-      $or: [{ googleId: payload.sub }, { email: normalizedEmail }],
+    const userByGoogleId = await User.findOne({ googleId: payload.sub });
+    const userByEmail = await User.findOne({ email: normalizedEmail });
+
+    const accountConflictMessage = resolveGoogleSignInConflict({
+      userByGoogleId,
+      userByEmail,
+      googleId: payload.sub,
+      normalizedEmail,
+      reqLogger,
     });
+
+    if (accountConflictMessage) {
+      return res.status(409).json({
+        success: false,
+        message: accountConflictMessage,
+      });
+    }
+
+    const existingUser = userByGoogleId || userByEmail;
 
     const isNewUser = !existingUser;
     let user = existingUser;
 
     if (user) {
       user.googleId = payload.sub;
-      user.email = normalizedEmail;
       user.name = userName;
       user.givenName = givenName;
       user.familyName = familyName;
       user.locale = locale;
       user.emailVerified = emailVerified;
       user.picture = picture;
+      if (!user.displayName) {
+        user.displayName = userName;
+      }
       user.lastLoginAt = new Date();
       await user.save();
     } else {
@@ -260,6 +321,7 @@ exports.googleSignIn = async (req, res) => {
         googleId: payload.sub,
         email: normalizedEmail,
         name: userName,
+        displayName: userName,
         givenName,
         familyName,
         locale,
@@ -321,6 +383,71 @@ exports.getCurrentSession = async (req, res) => {
     message: "Session fetched successfully",
     data: {
       user: req.authUser,
+    },
+  });
+};
+
+exports.getProfile = async (req, res) => {
+  if (!req.authUser?.id) {
+    return res.status(401).json({
+      success: false,
+      message: "Please sign in first",
+    });
+  }
+
+  const user = await User.findById(req.authUser.id).select("_id name displayName email picture");
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User profile not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Profile fetched successfully",
+    data: {
+      user: buildUserPayload(user),
+    },
+  });
+};
+
+exports.updateProfile = async (req, res) => {
+  if (!req.authUser?.id) {
+    return res.status(401).json({
+      success: false,
+      message: "Please sign in first",
+    });
+  }
+
+  const updatedDisplayName = normalizeDisplayName(req.body?.displayName);
+
+  const user = await User.findByIdAndUpdate(
+    req.authUser.id,
+    {
+      $set: {
+        displayName: updatedDisplayName,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+      fields: "_id name displayName email picture",
+    }
+  );
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User profile not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    data: {
+      user: buildUserPayload(user),
     },
   });
 };

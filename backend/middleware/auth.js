@@ -58,12 +58,18 @@ const handleMissingToken = (req, res, required) => {
   return setAnonymousUser(req);
 };
 
-const buildAuthUser = (user) => ({
-  id: String(user._id),
-  name: user.name,
-  email: user.email,
-  picture: user.picture,
-});
+const buildAuthUser = (user) => {
+  const resolvedName = String(user.displayName || user.name || "User").trim() || "User";
+
+  return {
+    id: String(user._id),
+    name: resolvedName,
+    displayName: String(user.displayName || "").trim(),
+    email: user.email,
+    picture: user.picture,
+    emailLocked: true,
+  };
+};
 
 const handleMissingUser = (req, res, required) => {
   clearSessionCookie(res);
@@ -108,7 +114,7 @@ const attachUserFromToken = async (req, res, options = {}) => {
 
   try {
     const payload = verifySessionToken(token);
-    const user = await User.findById(payload.uid).select("_id name email picture");
+    const user = await User.findById(payload.uid).select("_id name displayName email picture");
 
     if (!user) {
       return handleMissingUser(req, res, required);

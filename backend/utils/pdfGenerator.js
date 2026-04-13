@@ -60,6 +60,20 @@ const sanitizeToken = (value, fallback) => {
   return token || fallback;
 };
 
+const splitLongToken = (token, maxCharsPerLine) => {
+  const normalizedToken = normalizeText(token);
+  if (!normalizedToken || normalizedToken.length <= maxCharsPerLine) {
+    return normalizedToken ? [normalizedToken] : [];
+  }
+
+  const parts = [];
+  for (let index = 0; index < normalizedToken.length; index += maxCharsPerLine) {
+    parts.push(normalizedToken.slice(index, index + maxCharsPerLine));
+  }
+
+  return parts;
+};
+
 const wrapByWords = (text, maxCharsPerLine) => {
   const raw = normalizeText(text);
   if (!raw) {
@@ -70,7 +84,10 @@ const wrapByWords = (text, maxCharsPerLine) => {
   const chunks = raw.split(/\r?\n/);
 
   for (const chunk of chunks) {
-    const words = chunk.split(/\s+/).filter(Boolean);
+    const words = chunk
+      .split(/\s+/)
+      .filter(Boolean)
+      .flatMap((word) => splitLongToken(word, maxCharsPerLine));
 
     if (!words.length) {
       lines.push("");

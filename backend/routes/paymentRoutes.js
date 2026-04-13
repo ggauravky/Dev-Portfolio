@@ -10,6 +10,8 @@ const {
   verifyPayment,
   createSupportOrder,
   verifySupportPayment,
+  getMyBookings,
+  getMySupportPayments,
   downloadServiceReceipt,
   downloadSupportReceipt,
 } = require("../controllers/paymentController");
@@ -22,6 +24,7 @@ const {
   paymentReceiptValidationRules,
   validate,
 } = require("../middleware/validator");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -41,11 +44,26 @@ const blockIfGatewayDisabled = (req, res, next) => {
 
 router.use(blockIfGatewayDisabled);
 
-router.post("/create-order", paymentRateLimiter, paymentCreateOrderValidationRules, validate, createOrder);
-router.post("/verify", paymentRateLimiter, paymentVerifyValidationRules, validate, verifyPayment);
+router.post(
+  "/create-order",
+  paymentRateLimiter,
+  requireAuth,
+  paymentCreateOrderValidationRules,
+  validate,
+  createOrder
+);
+router.post(
+  "/verify",
+  paymentRateLimiter,
+  requireAuth,
+  paymentVerifyValidationRules,
+  validate,
+  verifyPayment
+);
 router.post(
   "/create-support-order",
   paymentRateLimiter,
+  requireAuth,
   supportCreateOrderValidationRules,
   validate,
   createSupportOrder
@@ -53,13 +71,17 @@ router.post(
 router.post(
   "/verify-support",
   paymentRateLimiter,
+  requireAuth,
   supportVerifyValidationRules,
   validate,
   verifySupportPayment
 );
+router.get("/my-bookings", paymentRateLimiter, requireAuth, getMyBookings);
+router.get("/my-support-payments", paymentRateLimiter, requireAuth, getMySupportPayments);
 router.get(
   "/receipt/service/:orderId",
   paymentRateLimiter,
+  requireAuth,
   paymentReceiptValidationRules,
   validate,
   downloadServiceReceipt
@@ -67,6 +89,7 @@ router.get(
 router.get(
   "/receipt/support/:orderId",
   paymentRateLimiter,
+  requireAuth,
   paymentReceiptValidationRules,
   validate,
   downloadSupportReceipt

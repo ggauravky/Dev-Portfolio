@@ -8,10 +8,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
+import useAuth from '../hooks/useAuth'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
 import { createCashfreeOrder, fetchServiceReceiptPdf, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
+import GoogleSignInModal from '../components/support/GoogleSignInModal'
 
 const getMinBookDate = () => {
     const date = new Date()
@@ -25,6 +27,7 @@ const getMinBookDate = () => {
 function BookNow() {
     const navigate = useNavigate()
     const [params] = useSearchParams()
+    const { user, isAuthenticated, isLoading, refreshSession, updateProfile } = useAuth()
     const requestedService = params.get('service')
     const selectedService = getServiceBySlug(requestedService) || servicesData[0]
 
@@ -51,13 +54,31 @@ function BookNow() {
     const [paymentFailure, setPaymentFailure] = useState('')
     const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
     const [receiptDownloadError, setReceiptDownloadError] = useState('')
+    const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingOrderKey = 'pendingCashfreeOrder'
+    const requiresSignIn = isAuthenticated !== true
 
     const currentService = useMemo(
         () => servicesData.find((service) => service.slug === form.service) || selectedService,
         [form.service, selectedService]
     )
+    const getCheckoutButtonLabel = () => {
+        if (isLoading) {
+            return 'Checking Sign-In...'
+        }
+
+        if (requiresSignIn) {
+            return 'Sign In to Continue'
+        }
+
+        if (isSubmitting) {
+            return 'Starting Secure Checkout...'
+        }
+
+        return 'Proceed to Secure Checkout'
+    }
+    const checkoutButtonLabel = getCheckoutButtonLabel()
 
     const handleChange = (event) => {
         const { name, value } = event.target
@@ -70,6 +91,18 @@ function BookNow() {
 
         setForm((prev) => ({ ...prev, [name]: value }))
     }
+
+    useEffect(() => {
+        if (!isAuthenticated || !user) {
+            return
+        }
+
+        setForm((prev) => ({
+            ...prev,
+            name: prev.name || user.displayName || user.name || '',
+            email: user.email || prev.email,
+        }))
+    }, [isAuthenticated, user])
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
     const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
@@ -368,6 +401,10 @@ function BookNow() {
     }
 
     useEffect(() => {
+        if (isLoading || !isAuthenticated) {
+            return
+        }
+
         const pendingOrderRaw = sessionStorage.getItem(pendingOrderKey)
         if (!pendingOrderRaw) {
             return
@@ -386,30 +423,57 @@ function BookNow() {
         }
 
         finalizeOrderVerification(pending.orderId, pending, { silent: true })
-    }, [])
+    }, [isAuthenticated, isLoading])
 
     const handleSubmit = (event) => {
         event.preventDefault()
+
+        if (isLoading) {
+            toast.error('Checking your sign-in session. Please wait a second.')
+            return
+        }
+
+        if (!isAuthenticated || !user?.email) {
+            setShowSignInModal(true)
+            toast.error('Please sign in with Google before booking a service.')
+            return
+        }
 
         const runCheckout = async () => {
             setIsSubmitting(true)
             setPaymentFailure('')
 
             try {
+                const resolvedName = String(form.name || '').trim()
+                const profileName = String(user?.displayName || user?.name || '').trim()
+
+                if (!resolvedName) {
+                    throw new Error('Name is required')
+                }
+
+                if (resolvedName !== profileName) {
+                    try {
+                        await updateProfile({ displayName: resolvedName })
+                    } catch (profileError) {
+                        toast.error(profileError?.message || 'Unable to save your profile name right now')
+                    }
+                }
+
                 if (!/^[6-9]\d{9}$/.test(String(form.phone || '').trim())) {
                     throw new Error('Phone must be a valid 10-digit Indian mobile number')
                 }
 
                 const order = await createCashfreeOrder({
                     ...form,
+                    email: user.email,
                     service: currentService.slug,
                 })
 
                 const pending = {
                     orderId: order.orderId,
                     paymentId: '',
-                    name: form.name,
-                    email: form.email,
+                    name: resolvedName,
+                    email: user.email,
                     service: order.serviceTitle,
                     preferredDate: form.preferredDate,
                     preferredTime: form.preferredTime,
@@ -491,6 +555,19 @@ function BookNow() {
                             </div>
                         ) : null}
 
+                        {requiresSignIn ? (
+                            <div className="mt-4 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+                                <p>Sign in with Google to continue. Your email is auto-filled and locked for secure booking history.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSignInModal(true)}
+                                    className="mt-2 inline-flex items-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition-colors"
+                                >
+                                    Sign In with Google
+                                </button>
+                            </div>
+                        ) : null}
+
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
@@ -501,6 +578,7 @@ function BookNow() {
                                         value={form.name}
                                         onChange={handleChange}
                                         maxLength={80}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Your full name"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
@@ -513,12 +591,14 @@ function BookNow() {
                                         name="email"
                                         type="email"
                                         value={form.email}
-                                        onChange={handleChange}
+                                        readOnly
+                                        disabled
                                         maxLength={120}
                                         required
-                                        placeholder="you@example.com"
+                                        placeholder="Sign in with Google to auto-fill"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
                                     />
+                                    <p className="mt-1 text-[11px] text-slate-500">Email is locked to your signed-in Google account.</p>
                                 </div>
                             </div>
 
@@ -536,6 +616,7 @@ function BookNow() {
                                         inputMode="numeric"
                                         pattern="[6-9][0-9]{9}"
                                         autoComplete="tel-national"
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="10-digit number"
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
@@ -548,6 +629,7 @@ function BookNow() {
                                         name="service"
                                         value={form.service}
                                         onChange={handleChange}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
                                     >
@@ -570,6 +652,7 @@ function BookNow() {
                                         min={minDate}
                                         value={form.preferredDate}
                                         onChange={handleChange}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
                                     />
@@ -583,6 +666,7 @@ function BookNow() {
                                         type="time"
                                         value={form.preferredTime}
                                         onChange={handleChange}
+                                        disabled={requiresSignIn || isLoading}
                                         required
                                         className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
                                     />
@@ -597,6 +681,7 @@ function BookNow() {
                                     rows="5"
                                     value={form.projectBrief}
                                     onChange={handleChange}
+                                    disabled={requiresSignIn || isLoading}
                                     maxLength={1200}
                                     placeholder="Share your requirement, deadline, goals, and any important context."
                                     className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 resize-none"
@@ -605,10 +690,10 @@ function BookNow() {
 
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || requiresSignIn || isLoading}
                                 className="w-full rounded-xl px-5 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.01]"
                             >
-                                {isSubmitting ? 'Starting Secure Checkout...' : 'Proceed to Secure Checkout'}
+                                {checkoutButtonLabel}
                             </button>
                         </form>
                     </section>
@@ -773,6 +858,15 @@ function BookNow() {
                     </div>
                 ) : null}
             </div>
+
+            <GoogleSignInModal
+                isOpen={showSignInModal}
+                onClose={() => setShowSignInModal(false)}
+                onAuthenticated={async () => {
+                    await refreshSession()
+                    setShowSignInModal(false)
+                }}
+            />
         </div>
     )
 }

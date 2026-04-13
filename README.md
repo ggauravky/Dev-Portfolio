@@ -95,6 +95,8 @@ Backend .env:
 
 ```env
 MONGODB_URI=your_mongodb_connection_string
+# Optional direct URI fallback for migration scripts when SRV DNS is blocked
+MONGODB_URI_DIRECT=
 PORT=5000
 PORT_RETRIES=10
 NODE_ENV=development
@@ -130,6 +132,38 @@ EMAIL_BLOG_URL=https://your-app-name.vercel.app/blog
 LOG_LEVEL=debug
 SENTRY_DSN=
 SENTRY_TRACES_SAMPLE_RATE=0.1
+```
+
+## Legacy User Link Backfill
+
+Backfills legacy records so bookings/support payments are linked to userId by email.
+
+Dry run:
+
+```bash
+cd backend
+npm run migrate:backfill-user-links:dry
+```
+
+Run migration:
+
+```bash
+cd backend
+npm run migrate:backfill-user-links
+```
+
+Show migration help/options:
+
+```bash
+cd backend
+npm run migrate:backfill-user-links:help
+```
+
+If your network blocks DNS SRV lookups (for mongodb+srv URIs), run using a direct mongodb:// URI:
+
+```bash
+cd backend
+npm run migrate:backfill-user-links:dry -- --mongo-uri "mongodb://host1:27017,host2:27017,host3:27017/db_name?replicaSet=yourReplicaSet&tls=true&authSource=admin"
 ```
 
 ## Build and Production

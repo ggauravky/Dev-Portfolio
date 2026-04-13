@@ -9,16 +9,31 @@ const {
   getPublicAuthConfig,
   googleSignIn,
   getCurrentSession,
+  getProfile,
+  updateProfile,
   logout,
 } = require("../controllers/authController");
 const { authRateLimiter } = require("../middleware/rateLimiter");
-const { attachOptionalUser } = require("../middleware/auth");
+const { attachOptionalUser, requireAuth } = require("../middleware/auth");
+const {
+  authProfileUpdateValidationRules,
+  validate,
+} = require("../middleware/validator");
 
 const router = express.Router();
 
 router.get("/config", authRateLimiter, getPublicAuthConfig);
 router.post("/google", authRateLimiter, googleSignIn);
 router.get("/me", attachOptionalUser, getCurrentSession);
+router.get("/profile", authRateLimiter, requireAuth, getProfile);
+router.patch(
+  "/profile",
+  authRateLimiter,
+  requireAuth,
+  authProfileUpdateValidationRules,
+  validate,
+  updateProfile
+);
 router.post("/logout", attachOptionalUser, logout);
 
 module.exports = router;

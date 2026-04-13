@@ -29,6 +29,7 @@ const assertResponse = async (response) => {
 export const createCashfreeOrder = async (payload) => {
     const response = await fetch(`${API_URL}/api/payment/create-order`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -42,6 +43,7 @@ export const createCashfreeOrder = async (payload) => {
 export const verifyCashfreePayment = async (orderId, email) => {
     const response = await fetch(`${API_URL}/api/payment/verify`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -55,6 +57,7 @@ export const verifyCashfreePayment = async (orderId, email) => {
 export const createSupportOrder = async (payload) => {
     const response = await fetch(`${API_URL}/api/payment/create-support-order`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
@@ -68,10 +71,31 @@ export const createSupportOrder = async (payload) => {
 export const verifySupportPayment = async (orderId, email) => {
     const response = await fetch(`${API_URL}/api/payment/verify-support`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ orderId, email }),
+    })
+
+    const data = await assertResponse(response)
+    return data.data
+}
+
+export const fetchMyBookings = async () => {
+    const response = await fetch(`${API_URL}/api/payment/my-bookings`, {
+        method: 'GET',
+        credentials: 'include',
+    })
+
+    const data = await assertResponse(response)
+    return data.data
+}
+
+export const fetchMySupportPayments = async () => {
+    const response = await fetch(`${API_URL}/api/payment/my-support-payments`, {
+        method: 'GET',
+        credentials: 'include',
     })
 
     const data = await assertResponse(response)
@@ -98,23 +122,31 @@ const assertBlobResponse = async (response) => {
 }
 
 export const fetchServiceReceiptPdf = async (orderId, email) => {
-    const response = await fetch(
-        `${API_URL}/api/payment/receipt/service/${encodeURIComponent(String(orderId || '').trim())}?email=${encodeURIComponent(String(email || '').trim())}`,
-        {
-            method: 'GET',
-        }
-    )
+    const normalizedEmail = String(email || '').trim()
+    const endpoint = `${API_URL}/api/payment/receipt/service/${encodeURIComponent(String(orderId || '').trim())}`
+    const receiptUrl = normalizedEmail
+        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
+        : endpoint
+
+    const response = await fetch(receiptUrl, {
+        method: 'GET',
+        credentials: 'include',
+    })
 
     return assertBlobResponse(response)
 }
 
 export const fetchSupportReceiptPdf = async (orderId, email) => {
-    const response = await fetch(
-        `${API_URL}/api/payment/receipt/support/${encodeURIComponent(String(orderId || '').trim())}?email=${encodeURIComponent(String(email || '').trim())}`,
-        {
-            method: 'GET',
-        }
-    )
+    const normalizedEmail = String(email || '').trim()
+    const endpoint = `${API_URL}/api/payment/receipt/support/${encodeURIComponent(String(orderId || '').trim())}`
+    const receiptUrl = normalizedEmail
+        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
+        : endpoint
+
+    const response = await fetch(receiptUrl, {
+        method: 'GET',
+        credentials: 'include',
+    })
 
     return assertBlobResponse(response)
 }
