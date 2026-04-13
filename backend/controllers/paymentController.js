@@ -17,6 +17,10 @@ const {
   generateServiceConfirmationPdf,
   generateSupportReceiptPdf,
 } = require("../utils/pdfGenerator");
+const {
+  generateServiceConfirmationImage,
+  generateSupportReceiptImage,
+} = require("../utils/receiptImage");
 
 const SERVICE_CATALOG = {
   mentorship: { title: "Mentorship", amount: 49 },
@@ -202,6 +206,18 @@ const getAuthenticatedIdentity = (req) => {
     userId,
     email,
     displayName,
+  };
+};
+
+const splitOrderIdFromUpsertFields = (payload, fallbackOrderId = "") => {
+  const normalizedPayload = payload && typeof payload === "object" ? payload : {};
+  const resolvedOrderId = String(normalizedPayload.orderId || fallbackOrderId || "").trim();
+  const mutableFields = { ...normalizedPayload };
+  delete mutableFields.orderId;
+
+  return {
+    resolvedOrderId,
+    mutableFields,
   };
 };
 
@@ -597,6 +613,71 @@ const buildSupportVerificationContext = ({
   };
 };
 
+const mapMongoError = (error) => {
+  if (Number(error?.code) === 11000) {
+    return {
+      status: 409,
+      message: "A payment record conflict occurred. Please retry once with the same order details.",
+      logLevel: "warn",
+    };
+  }
+
+  const errorMessage = String(error?.message || "");
+  const errorName = String(error?.name || "");
+  const hasConflictingUpdateError =
+    Number(error?.code) === 40 || /create a conflict at|ConflictingUpdateOperators/i.test(errorMessage);
+  const hasMongoRuntimeIssue =
+    /mongo|mongoose/i.test(errorName) ||
+    /server selection|topology|connection pool|timed out while checking out|not primary|node is recovering|replica set|connection .* closed/i.test(
+      errorMessage
+    );
+
+  if (!hasConflictingUpdateError && !hasMongoRuntimeIssue) {
+    return null;
+  }
+
+  return hasConflictingUpdateError
+    ? {
+        status: 409,
+        message: "Payment confirmation is still reconciling. Please retry with the same order details.",
+        logLevel: "warn",
+      }
+    : {
+        status: 503,
+        message: "Verification service is temporarily unavailable. Please retry with the same order details.",
+        logLevel: "error",
+      };
+};
+
+const mapGatewayStatusError = (gatewayStatus) => {
+  if (!Number.isFinite(gatewayStatus)) {
+    return null;
+  }
+
+  if (gatewayStatus === 401 || gatewayStatus === 403) {
+    return {
+      status: 502,
+      message:
+        "Payment gateway authentication failed. Verify Cashfree app ID and secret for the correct mode.",
+      logLevel: "error",
+    };
+  }
+
+  if (gatewayStatus >= 400 && gatewayStatus < 500) {
+    return {
+      status: 400,
+      message: "Payment request was rejected by gateway. Please retry with valid details.",
+      logLevel: "warn",
+    };
+  }
+
+  return {
+    status: 502,
+    message: "Payment gateway is unavailable right now. Please try again shortly.",
+    logLevel: "error",
+  };
+};
+
 const mapGatewayError = (error, fallbackMessage) => {
   if (error?.code === PAYMENT_CONFIG_ERROR_CODE) {
     return {
@@ -632,27 +713,9 @@ const mapGatewayError = (error, fallbackMessage) => {
     };
   }
 
-  if (Number(error?.code) === 11000) {
-    return {
-      status: 409,
-      message: "A payment record conflict occurred. Please retry once with the same order details.",
-      logLevel: "warn",
-    };
-  }
-
-  const errorMessage = String(error?.message || "");
-  const errorName = String(error?.name || "");
-  if (
-    /mongo|mongoose/i.test(errorName) ||
-    /server selection|topology|connection pool|timed out while checking out|not primary|node is recovering|replica set|connection .* closed/i.test(
-      errorMessage
-    )
-  ) {
-    return {
-      status: 503,
-      message: "Verification service is temporarily unavailable. Please retry with the same order details.",
-      logLevel: "error",
-    };
+  const mappedMongoError = mapMongoError(error);
+  if (mappedMongoError) {
+    return mappedMongoError;
   }
 
   if (error?.name === "ValidationError") {
@@ -677,29 +740,9 @@ const mapGatewayError = (error, fallbackMessage) => {
     Number(error?.response?.status) ||
     Number(error?.error?.status_code);
 
-  if (Number.isFinite(gatewayStatus)) {
-    if (gatewayStatus === 401 || gatewayStatus === 403) {
-      return {
-        status: 502,
-        message:
-          "Payment gateway authentication failed. Verify Cashfree app ID and secret for the correct mode.",
-        logLevel: "error",
-      };
-    }
-
-    if (gatewayStatus >= 400 && gatewayStatus < 500) {
-      return {
-        status: 400,
-        message: "Payment request was rejected by gateway. Please retry with valid details.",
-        logLevel: "warn",
-      };
-    }
-
-    return {
-      status: 502,
-      message: "Payment gateway is unavailable right now. Please try again shortly.",
-      logLevel: "error",
-    };
+  const mappedGatewayStatusError = mapGatewayStatusError(gatewayStatus);
+  if (mappedGatewayStatusError) {
+    return mappedGatewayStatusError;
   }
 
   return {
@@ -722,22 +765,42 @@ const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
         return;
       }
 
-      let attachment = null;
+      let attachments = [];
       try {
-        attachment = await generateServiceConfirmationPdf({ booking });
+        const pdfAttachment = await generateServiceConfirmationPdf({ booking });
+        if (String(pdfAttachment?.contentBase64 || "").trim()) {
+          attachments = [pdfAttachment];
+        }
       } catch (pdfError) {
         reqLogger.warn(
           {
             err: pdfError,
             bookingId: normalizedBookingId,
           },
-          "Service confirmation PDF generation failed; sending email without attachment"
+          "Service confirmation PDF generation failed; trying image fallback"
         );
+      }
+
+      if (!attachments.length) {
+        try {
+          const imageAttachment = await generateServiceConfirmationImage({ booking });
+          if (String(imageAttachment?.contentBase64 || "").trim()) {
+            attachments = [imageAttachment];
+          }
+        } catch (imageError) {
+          reqLogger.warn(
+            {
+              err: imageError,
+              bookingId: normalizedBookingId,
+            },
+            "Service confirmation image fallback generation failed; sending email without attachment"
+          );
+        }
       }
 
       const result = await sendServiceBookingConfirmationEmail({
         booking,
-        attachments: attachment ? [attachment] : [],
+        attachments,
       });
 
       if (!result.customer?.sent) {
@@ -830,22 +893,42 @@ const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
         return;
       }
 
-      let attachment = null;
+      let attachments = [];
       try {
-        attachment = await generateSupportReceiptPdf({ supportPayment });
+        const pdfAttachment = await generateSupportReceiptPdf({ supportPayment });
+        if (String(pdfAttachment?.contentBase64 || "").trim()) {
+          attachments = [pdfAttachment];
+        }
       } catch (pdfError) {
         reqLogger.warn(
           {
             err: pdfError,
             supportPaymentId: normalizedSupportId,
           },
-          "Support receipt PDF generation failed; sending email without attachment"
+          "Support receipt PDF generation failed; trying image fallback"
         );
+      }
+
+      if (!attachments.length) {
+        try {
+          const imageAttachment = await generateSupportReceiptImage({ supportPayment });
+          if (String(imageAttachment?.contentBase64 || "").trim()) {
+            attachments = [imageAttachment];
+          }
+        } catch (imageError) {
+          reqLogger.warn(
+            {
+              err: imageError,
+              supportPaymentId: normalizedSupportId,
+            },
+            "Support receipt image fallback generation failed; sending email without attachment"
+          );
+        }
       }
 
       const result = await sendSupportThankYouEmail({
         supportPayment,
-        attachments: attachment ? [attachment] : [],
+        attachments,
       });
 
       if (!result.sent) {
@@ -1170,18 +1253,24 @@ const persistSupportPendingStatusSafely = async ({
   nextStatus,
   reqLogger,
 }) => {
+  const { resolvedOrderId, mutableFields } = splitOrderIdFromUpsertFields(
+    supportInsertBase,
+    normalizedOrderId
+  );
+
   try {
     await SupportPayment.findOneAndUpdate(
       { orderId: normalizedOrderId },
       {
         $set: {
-          ...supportInsertBase,
+          ...mutableFields,
           paymentStatus: nextStatus,
           paymentProvider: "cashfree",
           paymentId: createPendingPaymentId(normalizedOrderId),
         },
         $setOnInsert: {
-          ...supportInsertBase,
+          orderId: resolvedOrderId || normalizedOrderId,
+          ...mutableFields,
         },
       },
       {
@@ -1230,8 +1319,11 @@ const findOrCreatePaidServiceBooking = async ({
     paidAt: new Date(),
   };
 
+  const { resolvedOrderId: serviceInsertOrderId, mutableFields: serviceMutableFields } =
+    splitOrderIdFromUpsertFields(bookingInsertBaseAtFailure, normalizedOrderId);
+
   if (bookingInsertBaseAtFailure) {
-    Object.assign(rescueSet, bookingInsertBaseAtFailure);
+    Object.assign(rescueSet, serviceMutableFields);
   }
 
   const rescueUpdate = {
@@ -1239,7 +1331,10 @@ const findOrCreatePaidServiceBooking = async ({
   };
 
   if (bookingInsertBaseAtFailure) {
-    rescueUpdate.$setOnInsert = bookingInsertBaseAtFailure;
+    rescueUpdate.$setOnInsert = {
+      orderId: serviceInsertOrderId || normalizedOrderId,
+      ...serviceMutableFields,
+    };
   }
 
   paidBooking = await Booking.findOneAndUpdate(
@@ -1340,8 +1435,11 @@ const findOrCreatePaidSupportPayment = async ({
     paidAt: new Date(),
   };
 
+  const { resolvedOrderId: supportInsertOrderId, mutableFields: supportMutableFields } =
+    splitOrderIdFromUpsertFields(supportInsertBaseAtFailure, normalizedOrderId);
+
   if (supportInsertBaseAtFailure) {
-    Object.assign(rescueSet, supportInsertBaseAtFailure);
+    Object.assign(rescueSet, supportMutableFields);
   }
 
   const rescueUpdate = {
@@ -1349,7 +1447,10 @@ const findOrCreatePaidSupportPayment = async ({
   };
 
   if (supportInsertBaseAtFailure) {
-    rescueUpdate.$setOnInsert = supportInsertBaseAtFailure;
+    rescueUpdate.$setOnInsert = {
+      orderId: supportInsertOrderId || normalizedOrderId,
+      ...supportMutableFields,
+    };
   }
 
   paidSupportPayment = await SupportPayment.findOneAndUpdate(
@@ -2121,18 +2222,22 @@ exports.verifySupportPayment = async (req, res) => {
       });
     }
 
+    const { resolvedOrderId: supportInsertOrderId, mutableFields: supportMutableFields } =
+      splitOrderIdFromUpsertFields(supportInsertBase, normalizedOrderId);
+
     const savedSupportPayment = await SupportPayment.findOneAndUpdate(
       { orderId: normalizedOrderId },
       {
         $set: {
-          ...supportInsertBase,
+          ...supportMutableFields,
           paymentStatus: "paid",
           paymentProvider: "cashfree",
           paymentId: resolvedPaymentId,
           paidAt: new Date(),
         },
         $setOnInsert: {
-          ...supportInsertBase,
+          orderId: supportInsertOrderId || normalizedOrderId,
+          ...supportMutableFields,
         },
       },
       {
@@ -2549,6 +2654,182 @@ exports.downloadSupportReceipt = async (req, res) => {
     return res.status(503).json({
       success: false,
       message: "Unable to generate support receipt PDF. Please retry in a moment.",
+    });
+  }
+};
+
+exports.downloadServiceReceiptImage = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const receiptContext = buildReceiptRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before downloading service receipts.",
+    emailMismatchMessage: "Receipt email must match your signed-in Google account.",
+  });
+  if (!receiptContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = receiptContext;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const booking = await Booking.findOne({ orderId: normalizedOrderId }).lean();
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found for receipt download",
+      });
+    }
+
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: booking,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This receipt belongs to a different signed-in account.",
+      detailsMismatchMessage: "Receipt access is not allowed for this account.",
+    });
+
+    if (ownershipMismatchMessage) {
+      return res.status(403).json({
+        success: false,
+        message: ownershipMismatchMessage,
+      });
+    }
+
+    if (booking.paymentStatus !== "paid") {
+      return res.status(409).json({
+        success: false,
+        message: "Receipt is available only after payment confirmation",
+      });
+    }
+
+    const attachment = await generateServiceConfirmationImage({ booking });
+    const contentBase64 = String(attachment?.contentBase64 || "").trim();
+
+    if (!contentBase64) {
+      return res.status(503).json({
+        success: false,
+        message: "Unable to generate service confirmation image right now",
+      });
+    }
+
+    const filename = String(attachment?.name || `service-confirmation-${normalizedOrderId}.svg`);
+    const buffer = Buffer.from(contentBase64, "base64");
+
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Pragma", "no-cache");
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Service receipt image download failed"
+    );
+
+    return res.status(503).json({
+      success: false,
+      message: "Unable to generate service confirmation image. Please retry in a moment.",
+    });
+  }
+};
+
+exports.downloadSupportReceiptImage = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const receiptContext = buildReceiptRequestContext({
+    req,
+    res,
+    requireAuthMessage: "Please sign in with Google before downloading support receipts.",
+    emailMismatchMessage: "Receipt email must match your signed-in Google account.",
+  });
+  if (!receiptContext) {
+    return;
+  }
+
+  const { authIdentity, normalizedOrderId, normalizedEmail } = receiptContext;
+
+  if (!isDatabaseReady()) {
+    return res.status(503).json({
+      success: false,
+      message: "Database is temporarily unavailable. Please retry in a moment.",
+    });
+  }
+
+  try {
+    const supportPayment = await SupportPayment.findOne({ orderId: normalizedOrderId }).lean();
+
+    if (!supportPayment) {
+      return res.status(404).json({
+        success: false,
+        message: "Support receipt not found",
+      });
+    }
+
+    const ownershipMismatchMessage = getOwnershipMismatchMessage({
+      record: supportPayment,
+      authIdentity,
+      normalizedEmail,
+      accountMismatchMessage: "This receipt belongs to a different signed-in account.",
+      detailsMismatchMessage: "Receipt access is not allowed for this account.",
+    });
+
+    if (ownershipMismatchMessage) {
+      return res.status(403).json({
+        success: false,
+        message: ownershipMismatchMessage,
+      });
+    }
+
+    if (supportPayment.paymentStatus !== "paid") {
+      return res.status(409).json({
+        success: false,
+        message: "Receipt is available only after payment confirmation",
+      });
+    }
+
+    const attachment = await generateSupportReceiptImage({ supportPayment });
+    const contentBase64 = String(attachment?.contentBase64 || "").trim();
+
+    if (!contentBase64) {
+      return res.status(503).json({
+        success: false,
+        message: "Unable to generate support receipt image right now",
+      });
+    }
+
+    const filename = String(attachment?.name || `support-receipt-${normalizedOrderId}.svg`);
+    const buffer = Buffer.from(contentBase64, "base64");
+
+    res.setHeader("Content-Type", "image/svg+xml");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Pragma", "no-cache");
+
+    return res.status(200).send(buffer);
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+      },
+      "Support receipt image download failed"
+    );
+
+    return res.status(503).json({
+      success: false,
+      message: "Unable to generate support receipt image. Please retry in a moment.",
     });
   }
 };

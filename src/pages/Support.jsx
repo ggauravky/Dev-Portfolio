@@ -9,7 +9,13 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
-import { createSupportOrder, fetchSupportReceiptPdf, openCashfreeCheckout, verifySupportPayment } from '../services/payment'
+import {
+    createSupportOrder,
+    fetchSupportReceiptImage,
+    fetchSupportReceiptPdf,
+    openCashfreeCheckout,
+    verifySupportPayment,
+} from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
 import GoogleSignInModal from '../components/support/GoogleSignInModal'
 
@@ -111,47 +117,46 @@ function Support() {
         URL.revokeObjectURL(url)
     }
 
-    const downloadBlob = (content, filename, mimeType) => {
-        const blob = new Blob([content], { type: mimeType })
-        const url = URL.createObjectURL(blob)
-        const link = globalThis.document.createElement('a')
-        link.href = url
-        link.download = filename
-        globalThis.document.body.appendChild(link)
-        link.click()
-        link.remove()
-        URL.revokeObjectURL(url)
-    }
+    const downloadSupportReceipt = async (details, options = {}) => {
+        const { silent = false, auto = false } = options
 
-    const downloadSupportReceipt = (details) => {
-        const html = `<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <title>Support Receipt</title>
-        <style>
-            body { font-family: Arial, sans-serif; background:#0f172a; color:#e2e8f0; padding:20px; }
-            .card { max-width:620px; margin:0 auto; border:1px solid #334155; border-radius:16px; padding:24px; background:#111827; }
-            h1 { color:#22d3ee; margin:0 0 10px 0; }
-            p { margin:8px 0; line-height:1.5; }
-            .meta { color:#94a3b8; font-size:14px; }
-            .tag { display:inline-block; padding:6px 12px; border-radius:999px; background:#0f2740; color:#7dd3fc; border:1px solid #164e63; font-size:12px; margin-bottom:16px; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div class="tag">Support Confirmed</div>
-            <h1>Thank You for Supporting</h1>
-            <p><strong>Name:</strong> ${details.contributorName || 'Supporter'}</p>
-            <p><strong>Amount:</strong> INR ${details.amount}</p>
-            <p><strong>Order ID:</strong> ${details.orderId}</p>
-            <p><strong>Payment ID:</strong> ${details.paymentId}</p>
-            <p class="meta">Your support helps me continue building and sharing practical developer work.</p>
-        </div>
-    </body>
-</html>`
+        if (!details?.orderId || !details?.email) {
+            if (!silent) {
+                toast.error('Receipt details are incomplete for image download')
+            }
+            return false
+        }
 
-        downloadBlob(html, `support-receipt-${details.orderId}.html`, 'text/html;charset=utf-8')
+        setIsDownloadingReceipt(true)
+
+        try {
+            const blob = await fetchSupportReceiptImage(details.orderId, details.email)
+            saveBlobAsFile(blob, `support-receipt-${details.orderId}.svg`)
+            setReceiptDownloadError(
+                auto
+                    ? 'PDF download was unavailable, so an image backup receipt was downloaded instead.'
+                    : ''
+            )
+
+            if (!silent) {
+                toast.success('Support receipt image downloaded')
+            }
+
+            return true
+        } catch (error) {
+            const message = String(error?.message || 'Unable to download support receipt image')
+            if (!auto) {
+                setReceiptDownloadError(message)
+            }
+
+            if (!silent) {
+                toast.error(message)
+            }
+
+            return false
+        } finally {
+            setIsDownloadingReceipt(false)
+        }
     }
 
     const downloadSupportReceiptPdf = async (details, options = {}) => {
@@ -177,10 +182,21 @@ function Support() {
 
             return true
         } catch (error) {
+            if (auto) {
+                const imageFallbackDownloaded = await downloadSupportReceipt(details, {
+                    silent: true,
+                    auto: true,
+                })
+
+                if (imageFallbackDownloaded) {
+                    return true
+                }
+            }
+
             const message = String(error?.message || 'Unable to download support receipt PDF')
             setReceiptDownloadError(
                 auto
-                    ? 'Automatic PDF download was blocked. Use the button below to download your receipt.'
+                    ? 'Automatic PDF download was blocked. Use the image backup receipt button below.'
                     : message
             )
 
@@ -678,10 +694,11 @@ function Support() {
                                 <div className="mt-3">
                                     <button
                                         type="button"
+                                        disabled={isDownloadingReceipt}
                                         onClick={() => downloadSupportReceipt(supportSuccess)}
                                         className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
                                     >
-                                        Download HTML Backup Receipt
+                                        {isDownloadingReceipt ? 'Downloading Image Receipt...' : 'Download Image Backup Receipt'}
                                     </button>
                                 </div>
 

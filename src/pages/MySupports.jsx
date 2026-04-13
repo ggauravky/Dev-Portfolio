@@ -7,7 +7,9 @@ import { fetchMySupports } from '../services/blogSupport'
 import {
     fetchMyBookings,
     fetchMySupportPayments,
+    fetchServiceReceiptImage,
     fetchServiceReceiptPdf,
+    fetchSupportReceiptImage,
     fetchSupportReceiptPdf,
 } from '../services/payment'
 
@@ -122,7 +124,13 @@ function MyActivity() {
             saveBlobAsFile(blob, `service-confirmation-${orderId}.pdf`)
             toast.success('Service confirmation PDF downloaded')
         } catch (error) {
-            toast.error(error?.message || 'Unable to download service confirmation PDF')
+            try {
+                const imageBlob = await fetchServiceReceiptImage(orderId, user.email)
+                saveBlobAsFile(imageBlob, `service-confirmation-${orderId}.svg`)
+                toast.success('PDF unavailable, image backup receipt downloaded')
+            } catch (imageError) {
+                toast.error(imageError?.message || error?.message || 'Unable to download service confirmation receipt')
+            }
         } finally {
             setDownloadingKey('')
         }
@@ -141,7 +149,13 @@ function MyActivity() {
             saveBlobAsFile(blob, `support-receipt-${orderId}.pdf`)
             toast.success('Support receipt PDF downloaded')
         } catch (error) {
-            toast.error(error?.message || 'Unable to download support receipt PDF')
+            try {
+                const imageBlob = await fetchSupportReceiptImage(orderId, user.email)
+                saveBlobAsFile(imageBlob, `support-receipt-${orderId}.svg`)
+                toast.success('PDF unavailable, image backup receipt downloaded')
+            } catch (imageError) {
+                toast.error(imageError?.message || error?.message || 'Unable to download support receipt')
+            }
         } finally {
             setDownloadingKey('')
         }
@@ -157,7 +171,7 @@ function MyActivity() {
 
     const getReceiptButtonLabel = (isDownloading, canDownload, successLabel) => {
         if (isDownloading) {
-            return 'Downloading PDF...'
+            return 'Downloading Receipt...'
         }
 
         if (canDownload) {

@@ -102,7 +102,7 @@ export const fetchMySupportPayments = async () => {
     return data.data
 }
 
-const assertBlobResponse = async (response) => {
+const assertBlobResponse = async (response, fallbackMessage = 'Unable to download receipt file') => {
     if (!response.ok) {
         let data = null
 
@@ -112,7 +112,7 @@ const assertBlobResponse = async (response) => {
             data = null
         }
 
-        const error = new Error(data?.message || 'Unable to download receipt PDF')
+        const error = new Error(data?.message || fallbackMessage)
         error.status = response.status
         error.payload = data
         throw error
@@ -133,7 +133,7 @@ export const fetchServiceReceiptPdf = async (orderId, email) => {
         credentials: 'include',
     })
 
-    return assertBlobResponse(response)
+    return assertBlobResponse(response, 'Unable to download service confirmation PDF')
 }
 
 export const fetchSupportReceiptPdf = async (orderId, email) => {
@@ -148,7 +148,37 @@ export const fetchSupportReceiptPdf = async (orderId, email) => {
         credentials: 'include',
     })
 
-    return assertBlobResponse(response)
+    return assertBlobResponse(response, 'Unable to download support receipt PDF')
+}
+
+export const fetchServiceReceiptImage = async (orderId, email) => {
+    const normalizedEmail = String(email || '').trim()
+    const endpoint = `${API_URL}/api/payment/receipt-image/service/${encodeURIComponent(String(orderId || '').trim())}`
+    const receiptUrl = normalizedEmail
+        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
+        : endpoint
+
+    const response = await fetch(receiptUrl, {
+        method: 'GET',
+        credentials: 'include',
+    })
+
+    return assertBlobResponse(response, 'Unable to download service confirmation image')
+}
+
+export const fetchSupportReceiptImage = async (orderId, email) => {
+    const normalizedEmail = String(email || '').trim()
+    const endpoint = `${API_URL}/api/payment/receipt-image/support/${encodeURIComponent(String(orderId || '').trim())}`
+    const receiptUrl = normalizedEmail
+        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
+        : endpoint
+
+    const response = await fetch(receiptUrl, {
+        method: 'GET',
+        credentials: 'include',
+    })
+
+    return assertBlobResponse(response, 'Unable to download support receipt image')
 }
 
 export const loadCashfreeSdk = () =>

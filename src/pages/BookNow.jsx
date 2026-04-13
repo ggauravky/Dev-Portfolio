@@ -10,7 +10,13 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
-import { createCashfreeOrder, fetchServiceReceiptPdf, openCashfreeCheckout, verifyCashfreePayment } from '../services/payment'
+import {
+    createCashfreeOrder,
+    fetchServiceReceiptImage,
+    fetchServiceReceiptPdf,
+    openCashfreeCheckout,
+    verifyCashfreePayment,
+} from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
 import GoogleSignInModal from '../components/support/GoogleSignInModal'
@@ -167,12 +173,65 @@ function BookNow() {
 
             return true
         } catch (error) {
+            if (auto) {
+                const imageFallbackDownloaded = await downloadServiceReceiptImage(details, {
+                    silent: true,
+                    auto: true,
+                })
+
+                if (imageFallbackDownloaded) {
+                    return true
+                }
+            }
+
             const message = String(error?.message || 'Unable to download service confirmation PDF')
             setReceiptDownloadError(
                 auto
-                    ? 'Automatic PDF download was blocked. Use the button below to download your confirmation PDF.'
+                    ? 'Automatic PDF download was blocked. Use the image backup button below.'
                     : message
             )
+
+            if (!silent) {
+                toast.error(message)
+            }
+
+            return false
+        } finally {
+            setIsDownloadingReceipt(false)
+        }
+    }
+
+    const downloadServiceReceiptImage = async (details, options = {}) => {
+        const { silent = false, auto = false } = options
+
+        if (!details?.orderId || !details?.email) {
+            if (!silent) {
+                toast.error('Receipt details are incomplete for image download')
+            }
+            return false
+        }
+
+        setIsDownloadingReceipt(true)
+
+        try {
+            const blob = await fetchServiceReceiptImage(details.orderId, details.email)
+            saveBlobAsFile(blob, `service-confirmation-${details.orderId}.svg`)
+            setReceiptDownloadError(
+                auto
+                    ? 'PDF download was unavailable, so an image backup receipt was downloaded instead.'
+                    : ''
+            )
+
+            if (!silent) {
+                toast.success('Service confirmation image downloaded')
+            }
+
+            return true
+        } catch (error) {
+            const message = String(error?.message || 'Unable to download service confirmation image')
+            if (!auto) {
+                setReceiptDownloadError(message)
+            }
 
             if (!silent) {
                 toast.error(message)
@@ -814,6 +873,17 @@ function BookNow() {
                                         className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
                                     >
                                         Download Calendar File
+                                    </button>
+                                </div>
+
+                                <div className="mt-3">
+                                    <button
+                                        type="button"
+                                        disabled={isDownloadingReceipt}
+                                        onClick={() => downloadServiceReceiptImage(paymentSuccess)}
+                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                    >
+                                        {isDownloadingReceipt ? 'Downloading Image Receipt...' : 'Download Image Backup Receipt'}
                                     </button>
                                 </div>
 

@@ -14,6 +14,8 @@ const {
   getMySupportPayments,
   downloadServiceReceipt,
   downloadSupportReceipt,
+  downloadServiceReceiptImage,
+  downloadSupportReceiptImage,
 } = require("../controllers/paymentController");
 const { paymentRateLimiter } = require("../middleware/rateLimiter");
 const {
@@ -93,6 +95,22 @@ router.get(
   paymentReceiptValidationRules,
   validate,
   downloadSupportReceipt
+);
+router.get(
+  "/receipt-image/service/:orderId",
+  paymentRateLimiter,
+  requireAuth,
+  paymentReceiptValidationRules,
+  validate,
+  downloadServiceReceiptImage
+);
+router.get(
+  "/receipt-image/support/:orderId",
+  paymentRateLimiter,
+  requireAuth,
+  paymentReceiptValidationRules,
+  validate,
+  downloadSupportReceiptImage
 );
 
 module.exports = router;
