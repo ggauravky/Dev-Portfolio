@@ -245,8 +245,55 @@ function Support() {
         return true
     }
 
+    const scheduleSupportBackgroundVerification = (orderId, pendingDetails, attempt = 1) => {
+        if (attempt > 3) {
+            return
+        }
+
+        const retryDelay = Math.max(6000, getRetryDelay(Math.min(attempt + 1, 4)))
+
+        setTimeout(async () => {
+            const pendingRaw = sessionStorage.getItem(pendingSupportKey)
+            if (!pendingRaw) {
+                return
+            }
+
+            let nextPending = pendingDetails
+            try {
+                const parsed = JSON.parse(pendingRaw)
+                if (parsed?.orderId === orderId) {
+                    nextPending = parsed
+                }
+            } catch {
+                nextPending = pendingDetails
+            }
+
+            const activeEmail = String(user?.email || nextPending?.email || '').trim()
+            if (!activeEmail || !nextPending?.orderId) {
+                return
+            }
+
+            if (activeEmail.toLowerCase() !== String(nextPending.email || '').trim().toLowerCase()) {
+                nextPending = {
+                    ...nextPending,
+                    email: activeEmail,
+                }
+                sessionStorage.setItem(pendingSupportKey, JSON.stringify(nextPending))
+            }
+
+            const resolved = await finalizeSupportVerification(orderId, nextPending, {
+                silent: true,
+                skipStatusPollingOnPending: true,
+            })
+
+            if (!resolved) {
+                scheduleSupportBackgroundVerification(orderId, nextPending, attempt + 1)
+            }
+        }, retryDelay)
+    }
+
     const pollSupportStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false } = options
+        const { silent = false, scheduleBackgroundRetry = true } = options
         const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -292,10 +339,15 @@ function Support() {
             toast.error(pendingMessage)
         }
 
+        if (scheduleBackgroundRetry) {
+            scheduleSupportBackgroundVerification(orderId, pendingDetails)
+        }
+
         return false
     }
 
-    const handleSupportVerificationError = async (error, attempt, silent) => {
+    const handleSupportVerificationError = async (error, attempt, silent, options = {}) => {
+        const { skipStatusPollingOnPending = false } = options
         const message = String(error?.message || '')
         const statusCode = Number(error?.status)
         const failure = classifyVerificationFailure(message, statusCode)
@@ -316,6 +368,15 @@ function Support() {
         }
 
         if (failure.isPendingGatewayState) {
+            if (skipStatusPollingOnPending) {
+                if (attempt < 4) {
+                    await pause(getRetryDelay(attempt))
+                    return { shouldRetry: true, result: false }
+                }
+
+                return { shouldRetry: false, result: false }
+            }
+
             return { shouldRetry: false, shouldPollStatus: true, result: false }
         }
 
@@ -337,30 +398,96 @@ function Support() {
         return { shouldRetry: false, result: false }
     }
 
+    const handlePendingSupportVerification = async ({
+        verification,
+        attempt,
+        orderId,
+        pendingDetails,
+        silent,
+        skipStatusPollingOnPending,
+    }) => {
+        if (!isPendingVerificationPayload(verification)) {
+            return { shouldContinue: false, shouldReturn: false, result: false }
+        }
+
+        if (skipStatusPollingOnPending) {
+            if (attempt < 4) {
+                await pause(getRetryDelay(attempt))
+                return { shouldContinue: true, shouldReturn: false, result: false }
+            }
+
+            return { shouldContinue: false, shouldReturn: true, result: false }
+        }
+
+        const pollResult = await pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
+        return { shouldContinue: false, shouldReturn: true, result: pollResult }
+    }
+
+    const resolveSupportVerificationError = async ({
+        error,
+        attempt,
+        silent,
+        skipStatusPollingOnPending,
+        orderId,
+        pendingDetails,
+    }) => {
+        const outcome = await handleSupportVerificationError(error, attempt, silent, {
+            skipStatusPollingOnPending,
+        })
+
+        if (outcome.shouldRetry) {
+            return { shouldContinue: true, result: false }
+        }
+
+        if (outcome.shouldPollStatus && !skipStatusPollingOnPending) {
+            const pollResult = await pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
+            return { shouldContinue: false, result: pollResult }
+        }
+
+        return { shouldContinue: false, result: outcome.result }
+    }
+
     const finalizeSupportVerification = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false } = options
+        const { silent = false, skipStatusPollingOnPending = false } = options
         const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
                 const verification = await verifySupportPayment(orderId, activeEmail)
 
-                if (isPendingVerificationPayload(verification)) {
-                    return pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
+                const pendingOutcome = await handlePendingSupportVerification({
+                    verification,
+                    attempt,
+                    orderId,
+                    pendingDetails,
+                    silent,
+                    skipStatusPollingOnPending,
+                })
+
+                if (pendingOutcome.shouldContinue) {
+                    continue
+                }
+
+                if (pendingOutcome.shouldReturn) {
+                    return pendingOutcome.result
                 }
 
                 return applyVerifiedSupport(pendingDetails, verification, silent)
             } catch (error) {
-                const outcome = await handleSupportVerificationError(error, attempt, silent)
-                if (outcome.shouldRetry) {
+                const errorOutcome = await resolveSupportVerificationError({
+                    error,
+                    attempt,
+                    silent,
+                    skipStatusPollingOnPending,
+                    orderId,
+                    pendingDetails,
+                })
+
+                if (errorOutcome.shouldContinue) {
                     continue
                 }
 
-                if (outcome.shouldPollStatus) {
-                    return pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
-                }
-
-                return outcome.result
+                return errorOutcome.result
             }
         }
 

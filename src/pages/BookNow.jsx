@@ -374,8 +374,55 @@ function BookNow() {
         return true
     }
 
+    const scheduleOrderBackgroundVerification = (orderId, pendingDetails, attempt = 1) => {
+        if (attempt > 3) {
+            return
+        }
+
+        const retryDelay = Math.max(6000, getRetryDelay(Math.min(attempt + 1, 4)))
+
+        setTimeout(async () => {
+            const pendingRaw = sessionStorage.getItem(pendingOrderKey)
+            if (!pendingRaw) {
+                return
+            }
+
+            let nextPending = pendingDetails
+            try {
+                const parsed = JSON.parse(pendingRaw)
+                if (parsed?.orderId === orderId) {
+                    nextPending = parsed
+                }
+            } catch {
+                nextPending = pendingDetails
+            }
+
+            const activeEmail = String(user?.email || nextPending?.email || '').trim()
+            if (!activeEmail || !nextPending?.orderId) {
+                return
+            }
+
+            if (activeEmail.toLowerCase() !== String(nextPending.email || '').trim().toLowerCase()) {
+                nextPending = {
+                    ...nextPending,
+                    email: activeEmail,
+                }
+                sessionStorage.setItem(pendingOrderKey, JSON.stringify(nextPending))
+            }
+
+            const resolved = await finalizeOrderVerification(orderId, nextPending, {
+                silent: true,
+                skipStatusPollingOnPending: true,
+            })
+
+            if (!resolved) {
+                scheduleOrderBackgroundVerification(orderId, nextPending, attempt + 1)
+            }
+        }, retryDelay)
+    }
+
     const pollOrderStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false } = options
+        const { silent = false, scheduleBackgroundRetry = true } = options
         const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -421,10 +468,15 @@ function BookNow() {
             toast.error(pendingMessage)
         }
 
+        if (scheduleBackgroundRetry) {
+            scheduleOrderBackgroundVerification(orderId, pendingDetails)
+        }
+
         return false
     }
 
-    const handleOrderVerificationError = async (error, attempt, silent) => {
+    const handleOrderVerificationError = async (error, attempt, silent, options = {}) => {
+        const { skipStatusPollingOnPending = false } = options
         const message = String(error?.message || '')
         const statusCode = Number(error?.status)
         const failure = classifyVerificationFailure(message, statusCode)
@@ -447,6 +499,15 @@ function BookNow() {
         }
 
         if (failure.isPendingGatewayState) {
+            if (skipStatusPollingOnPending) {
+                if (attempt < 4) {
+                    await pause(getRetryDelay(attempt))
+                    return { shouldRetry: true, result: false }
+                }
+
+                return { shouldRetry: false, result: false }
+            }
+
             return { shouldRetry: false, shouldPollStatus: true, result: false }
         }
 
@@ -471,30 +532,96 @@ function BookNow() {
         return { shouldRetry: false, result: false }
     }
 
+    const handlePendingOrderVerification = async ({
+        verification,
+        attempt,
+        orderId,
+        pendingDetails,
+        silent,
+        skipStatusPollingOnPending,
+    }) => {
+        if (!isPendingVerificationPayload(verification)) {
+            return { shouldContinue: false, shouldReturn: false, result: false }
+        }
+
+        if (skipStatusPollingOnPending) {
+            if (attempt < 4) {
+                await pause(getRetryDelay(attempt))
+                return { shouldContinue: true, shouldReturn: false, result: false }
+            }
+
+            return { shouldContinue: false, shouldReturn: true, result: false }
+        }
+
+        const pollResult = await pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
+        return { shouldContinue: false, shouldReturn: true, result: pollResult }
+    }
+
+    const resolveOrderVerificationError = async ({
+        error,
+        attempt,
+        silent,
+        skipStatusPollingOnPending,
+        orderId,
+        pendingDetails,
+    }) => {
+        const outcome = await handleOrderVerificationError(error, attempt, silent, {
+            skipStatusPollingOnPending,
+        })
+
+        if (outcome.shouldRetry) {
+            return { shouldContinue: true, result: false }
+        }
+
+        if (outcome.shouldPollStatus && !skipStatusPollingOnPending) {
+            const pollResult = await pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
+            return { shouldContinue: false, result: pollResult }
+        }
+
+        return { shouldContinue: false, result: outcome.result }
+    }
+
     const finalizeOrderVerification = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false } = options
+        const { silent = false, skipStatusPollingOnPending = false } = options
         const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
 
         for (let attempt = 0; attempt < 5; attempt += 1) {
             try {
                 const verification = await verifyCashfreePayment(orderId, activeEmail)
 
-                if (isPendingVerificationPayload(verification)) {
-                    return pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
+                const pendingOutcome = await handlePendingOrderVerification({
+                    verification,
+                    attempt,
+                    orderId,
+                    pendingDetails,
+                    silent,
+                    skipStatusPollingOnPending,
+                })
+
+                if (pendingOutcome.shouldContinue) {
+                    continue
+                }
+
+                if (pendingOutcome.shouldReturn) {
+                    return pendingOutcome.result
                 }
 
                 return applyVerifiedOrder(orderId, pendingDetails, verification, silent)
             } catch (error) {
-                const outcome = await handleOrderVerificationError(error, attempt, silent)
-                if (outcome.shouldRetry) {
+                const errorOutcome = await resolveOrderVerificationError({
+                    error,
+                    attempt,
+                    silent,
+                    skipStatusPollingOnPending,
+                    orderId,
+                    pendingDetails,
+                })
+
+                if (errorOutcome.shouldContinue) {
                     continue
                 }
 
-                if (outcome.shouldPollStatus) {
-                    return pollOrderStatusUntilResolved(orderId, pendingDetails, { silent })
-                }
-
-                return outcome.result
+                return errorOutcome.result
             }
         }
 

@@ -43,6 +43,12 @@ const CASHFREE_TIMEOUT_MS = Number.parseInt(process.env.CASHFREE_TIMEOUT_MS, 10)
 const PAYMENT_STATUS_NEXT_POLL_MS = Number.parseInt(process.env.PAYMENT_STATUS_NEXT_POLL_MS, 10) || 3000;
 const PAYMENT_ASYNC_VERIFY_DELAY_MS =
   Number.parseInt(process.env.PAYMENT_ASYNC_VERIFY_DELAY_MS, 10) || 1500;
+const PAYMENT_ASYNC_RECON_MAX_ATTEMPTS =
+  Number.parseInt(process.env.PAYMENT_ASYNC_RECON_MAX_ATTEMPTS, 10) || 6;
+const PAYMENT_ASYNC_RECON_RETRY_BASE_MS =
+  Number.parseInt(process.env.PAYMENT_ASYNC_RECON_RETRY_BASE_MS, 10) || 3000;
+const PAYMENT_ASYNC_RECON_RETRY_MAX_MS =
+  Number.parseInt(process.env.PAYMENT_ASYNC_RECON_RETRY_MAX_MS, 10) || 20000;
 const reconciliationJobsInFlight = new Set();
 const CASHFREE_WEBHOOK_SECRET = String(process.env.CASHFREE_WEBHOOK_SECRET || "").trim();
 let cachedFetch = typeof globalThis.fetch === "function" ? globalThis.fetch : null;
@@ -606,9 +612,36 @@ const findGatewayPaidFallbackPayment = (paymentList, gatewayOrderStatus, orderId
     return createSyntheticPaidPayment(orderId);
   }
 
-  const explicitFailed = payments.find((payment) => isFailedPaymentToken(extractPaymentStatusToken(payment)));
-  if (explicitFailed) {
-    return null;
+  const successfulPayment = payments.find((payment) =>
+    isSuccessfulPaymentToken(extractPaymentStatusToken(payment))
+  );
+  if (successfulPayment) {
+    return successfulPayment;
+  }
+
+  const nonFailedPaymentWithId = payments.find((payment) => {
+    const statusToken = extractPaymentStatusToken(payment);
+    const gatewayPaymentId = String(
+      payment?.cf_payment_id ||
+      payment?.payment_id ||
+      payment?.cfPaymentId ||
+      payment?.paymentId ||
+      payment?.id ||
+      ""
+    ).trim();
+
+    return gatewayPaymentId && !isFailedPaymentToken(statusToken);
+  });
+
+  if (nonFailedPaymentWithId) {
+    return nonFailedPaymentWithId;
+  }
+
+  const nonFailedPayment = payments.find(
+    (payment) => !isFailedPaymentToken(extractPaymentStatusToken(payment))
+  );
+  if (nonFailedPayment) {
+    return nonFailedPayment;
   }
 
   const paymentWithId = payments.find((payment) =>
@@ -623,6 +656,87 @@ const findGatewayPaidFallbackPayment = (paymentList, gatewayOrderStatus, orderId
   );
 
   return paymentWithId || payments[0] || createSyntheticPaidPayment(orderId);
+};
+
+const getReconciliationRetryDelayMs = (attemptNumber) => {
+  const normalizedAttempt = Number.parseInt(attemptNumber, 10) || 1;
+
+  if (normalizedAttempt <= 1) {
+    return Math.max(500, PAYMENT_ASYNC_VERIFY_DELAY_MS);
+  }
+
+  const exponentialDelay =
+    PAYMENT_ASYNC_RECON_RETRY_BASE_MS * 2 ** Math.max(0, normalizedAttempt - 2);
+
+  return Math.max(1200, Math.min(exponentialDelay, PAYMENT_ASYNC_RECON_RETRY_MAX_MS));
+};
+
+const getReconciliationRecord = async ({ type, normalizedOrderId }) => {
+  if (type === "service") {
+    return Booking.findOne({ orderId: normalizedOrderId })
+      .select("paymentStatus reconciliationStatus")
+      .lean();
+  }
+
+  return SupportPayment.findOne({ orderId: normalizedOrderId })
+    .select("paymentStatus reconciliationStatus")
+    .lean();
+};
+
+const shouldRetryReconciliation = async ({
+  type,
+  normalizedOrderId,
+  attemptNumber,
+  reqLogger,
+}) => {
+  if (attemptNumber >= PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
+    return false;
+  }
+
+  try {
+    const record = await getReconciliationRecord({
+      type,
+      normalizedOrderId,
+    });
+
+    if (!record) {
+      return true;
+    }
+
+    const paymentStatus = String(record.paymentStatus || "").trim().toLowerCase();
+    const reconciliationStatus = String(record.reconciliationStatus || "").trim().toLowerCase();
+
+    if (["paid", "failed"].includes(paymentStatus)) {
+      return false;
+    }
+
+    if (["paid", "failed"].includes(reconciliationStatus)) {
+      return false;
+    }
+
+    return [
+      "queued",
+      "processing",
+      "pending_gateway",
+      "pending_local",
+      "idle",
+      "created",
+      "pending",
+      "",
+    ].includes(reconciliationStatus);
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+        type,
+        attemptNumber,
+      },
+      "Unable to inspect reconciliation state for retry decision"
+    );
+
+    return attemptNumber < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS;
+  }
 };
 
 const findSuccessfulPayment = (paymentList) =>
@@ -2128,9 +2242,20 @@ const reconcileSupportOrderAsync = async ({ normalizedOrderId, emailDispatchQueu
   }
 };
 
-const scheduleAsyncReconciliation = ({ type, normalizedOrderId, emailDispatchQueued, reqLogger }) => {
+const scheduleAsyncReconciliation = ({
+  type,
+  normalizedOrderId,
+  emailDispatchQueued,
+  reqLogger,
+  attemptNumber = 1,
+}) => {
   const orderId = String(normalizedOrderId || "").trim();
   if (!orderId) {
+    return false;
+  }
+
+  const normalizedAttempt = Number.parseInt(attemptNumber, 10) || 1;
+  if (normalizedAttempt > PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
     return false;
   }
 
@@ -2140,8 +2265,11 @@ const scheduleAsyncReconciliation = ({ type, normalizedOrderId, emailDispatchQue
   }
 
   reconciliationJobsInFlight.add(jobKey);
+  const delayMs = getReconciliationRetryDelayMs(normalizedAttempt);
 
   setTimeout(async () => {
+    let shouldRetry = false;
+
     try {
       if (type === "service") {
         await reconcileServiceOrderAsync({
@@ -2156,10 +2284,39 @@ const scheduleAsyncReconciliation = ({ type, normalizedOrderId, emailDispatchQue
           reqLogger,
         });
       }
+
+      shouldRetry = await shouldRetryReconciliation({
+        type,
+        normalizedOrderId: orderId,
+        attemptNumber: normalizedAttempt,
+        reqLogger,
+      });
+    } catch (error) {
+      reqLogger.error(
+        {
+          err: error,
+          orderId,
+          type,
+          attemptNumber: normalizedAttempt,
+        },
+        "Async reconciliation execution failed"
+      );
+
+      shouldRetry = normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS;
     } finally {
       reconciliationJobsInFlight.delete(jobKey);
+
+      if (shouldRetry && normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
+        scheduleAsyncReconciliation({
+          type,
+          normalizedOrderId: orderId,
+          emailDispatchQueued,
+          reqLogger,
+          attemptNumber: normalizedAttempt + 1,
+        });
+      }
     }
-  }, PAYMENT_ASYNC_VERIFY_DELAY_MS);
+  }, delayMs);
 
   return true;
 };
