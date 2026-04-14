@@ -49,6 +49,29 @@ const formatCurrencyInr = (value) => {
   })}`;
 };
 
+const humanizeToken = (value, fallback = "Not available") => {
+  const raw = String(value || "")
+    .trim()
+    .replaceAll(/[_-]+/g, " ")
+    .replaceAll(/\s{2,}/g, " ");
+
+  if (!raw) {
+    return fallback;
+  }
+
+  return raw
+    .split(" ")
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+    .join(" ");
+};
+
+const buildReceiptNumber = ({ prefix, orderId, paymentId }) => {
+  const normalizedPrefix = sanitizeToken(prefix, "receipt").toUpperCase();
+  const tokenSource = normalizeText(paymentId) || normalizeText(orderId) || Date.now().toString(36);
+  const compactToken = sanitizeToken(tokenSource, Date.now().toString(36)).replaceAll("-", "").toUpperCase();
+  return `${normalizedPrefix}-${compactToken.slice(0, 16)}`;
+};
+
 const sanitizeToken = (value, fallback) => {
   const token = normalizeText(value)
     .toLowerCase()
@@ -239,9 +262,22 @@ const createReceiptPdfBuffer = async ({ title, subtitle, fields, footer }) => {
 
 const generateServiceConfirmationPdf = async ({ booking }) => {
   const orderId = normalizeText(booking?.orderId) || "service-order";
+  const paymentId = normalizeText(booking?.paymentId) || "Not available";
+  const paidAt = formatDateTime(booking?.paidAt || booking?.updatedAt || Date.now());
+  const issuedAt = formatDateTime(Date.now());
+  const preferredDate = formatDate(booking?.preferredDate);
+  const preferredTime = normalizeText(booking?.preferredTime) || "Not available";
   const fileToken = sanitizeToken(orderId, `service-${Date.now().toString(36)}`);
 
   const fields = [
+    {
+      label: "Receipt Number",
+      value: buildReceiptNumber({
+        prefix: "svc",
+        orderId,
+        paymentId,
+      }),
+    },
     {
       label: "Customer Name",
       value: normalizeText(booking?.name) || "Not available",
@@ -259,24 +295,48 @@ const generateServiceConfirmationPdf = async ({ booking }) => {
       value: formatCurrencyInr(booking?.amount),
     },
     {
+      label: "Currency",
+      value: "INR",
+    },
+    {
+      label: "Payment Gateway",
+      value: "Cashfree",
+    },
+    {
       label: "Order ID",
       value: orderId,
     },
     {
-      label: "Payment ID",
-      value: normalizeText(booking?.paymentId) || "Not available",
+      label: "Transaction ID",
+      value: paymentId,
+    },
+    {
+      label: "Payment Status",
+      value: humanizeToken(booking?.paymentStatus, "Paid"),
+    },
+    {
+      label: "Verification Status",
+      value: humanizeToken(booking?.reconciliationStatus, "Paid"),
     },
     {
       label: "Preferred Date",
-      value: formatDate(booking?.preferredDate),
+      value: preferredDate,
     },
     {
       label: "Preferred Time",
-      value: normalizeText(booking?.preferredTime) || "Not available",
+      value: preferredTime,
+    },
+    {
+      label: "Preferred Slot",
+      value: `${preferredDate}, ${preferredTime}`,
     },
     {
       label: "Paid At",
-      value: formatDateTime(booking?.paidAt || booking?.updatedAt || Date.now()),
+      value: `${paidAt} (IST)`,
+    },
+    {
+      label: "Receipt Issued At",
+      value: `${issuedAt} (IST)`,
     },
     {
       label: "Project Brief",
@@ -286,10 +346,10 @@ const generateServiceConfirmationPdf = async ({ booking }) => {
 
   const buffer = await createReceiptPdfBuffer({
     title: "Service Booking Confirmation",
-    subtitle: `Generated on ${formatDateTime(Date.now())}`,
+    subtitle: `Issued on ${issuedAt} | Mode: Online Payment`,
     fields,
     footer:
-      "This confirmation receipt was generated automatically after successful payment verification. Keep it for your records.",
+      "This service confirmation was generated after successful payment verification. Keep this receipt number and transaction ID for support and future reference.",
   });
 
   return {
@@ -300,9 +360,20 @@ const generateServiceConfirmationPdf = async ({ booking }) => {
 
 const generateSupportReceiptPdf = async ({ supportPayment }) => {
   const orderId = normalizeText(supportPayment?.orderId) || "support-order";
+  const paymentId = normalizeText(supportPayment?.paymentId) || "Not available";
+  const paidAt = formatDateTime(supportPayment?.paidAt || supportPayment?.updatedAt || Date.now());
+  const issuedAt = formatDateTime(Date.now());
   const fileToken = sanitizeToken(orderId, `support-${Date.now().toString(36)}`);
 
   const fields = [
+    {
+      label: "Receipt Number",
+      value: buildReceiptNumber({
+        prefix: "sup",
+        orderId,
+        paymentId,
+      }),
+    },
     {
       label: "Contributor",
       value: normalizeText(supportPayment?.contributorName) || "Not available",
@@ -316,16 +387,36 @@ const generateSupportReceiptPdf = async ({ supportPayment }) => {
       value: formatCurrencyInr(supportPayment?.amount),
     },
     {
+      label: "Currency",
+      value: "INR",
+    },
+    {
+      label: "Payment Gateway",
+      value: "Cashfree",
+    },
+    {
       label: "Order ID",
       value: orderId,
     },
     {
-      label: "Payment ID",
-      value: normalizeText(supportPayment?.paymentId) || "Not available",
+      label: "Transaction ID",
+      value: paymentId,
+    },
+    {
+      label: "Payment Status",
+      value: humanizeToken(supportPayment?.paymentStatus, "Paid"),
+    },
+    {
+      label: "Verification Status",
+      value: humanizeToken(supportPayment?.reconciliationStatus, "Paid"),
     },
     {
       label: "Paid At",
-      value: formatDateTime(supportPayment?.paidAt || supportPayment?.updatedAt || Date.now()),
+      value: `${paidAt} (IST)`,
+    },
+    {
+      label: "Receipt Issued At",
+      value: `${issuedAt} (IST)`,
     },
     {
       label: "Message",
@@ -335,10 +426,10 @@ const generateSupportReceiptPdf = async ({ supportPayment }) => {
 
   const buffer = await createReceiptPdfBuffer({
     title: "Support Contribution Receipt",
-    subtitle: `Generated on ${formatDateTime(Date.now())}`,
+    subtitle: `Issued on ${issuedAt} | Thank you for your support`,
     fields,
     footer:
-      "Thank you for supporting this work. This receipt confirms that your contribution was successfully received.",
+      "This contribution receipt confirms your payment was received successfully. Keep this receipt number and transaction ID for future reference.",
   });
 
   return {

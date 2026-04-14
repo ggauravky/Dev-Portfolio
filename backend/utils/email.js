@@ -149,6 +149,8 @@ const EMAIL_SUPPORT_URL =
 const EMAIL_SERVICES_URL =
   normalizeEnvString(process.env.EMAIL_SERVICES_URL) || `${defaultHomeUrl}/services`;
 const EMAIL_BLOG_URL = normalizeEnvString(process.env.EMAIL_BLOG_URL) || `${defaultHomeUrl}/blog`;
+const EMAIL_ACTIVITY_URL =
+  normalizeEnvString(process.env.EMAIL_ACTIVITY_URL) || `${defaultHomeUrl}/my-activity`;
 
 let brevoClient = null;
 
@@ -181,6 +183,31 @@ const shouldSendWelcomeBackEmail = (user) => {
 };
 
 const buildIdempotencyKey = (...parts) => parts.map((part) => normalizeTagValue(part, "na")).join("-");
+
+const humanizeStatus = (value, fallback = "Paid") => {
+  const raw = normalizeEnvString(value)
+    .replaceAll(/[_-]+/g, " ")
+    .replaceAll(/\s{2,}/g, " ")
+    .trim();
+
+  if (!raw) {
+    return fallback;
+  }
+
+  return raw
+    .split(" ")
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+    .join(" ");
+};
+
+const buildReceiptReference = ({ prefix, orderId, paymentId }) => {
+  const normalizedPrefix = normalizeTagValue(prefix, "receipt").toUpperCase();
+  const tokenSource = normalizeEnvString(paymentId) || normalizeEnvString(orderId) || Date.now().toString(36);
+  const compactToken = normalizeTagValue(tokenSource, Date.now().toString(36))
+    .replaceAll("-", "")
+    .toUpperCase();
+  return `${normalizedPrefix}-${compactToken.slice(0, 16)}`;
+};
 
 const buildEmailLayout = ({
   preheader,
@@ -551,11 +578,20 @@ const buildNewsletterPayload = (email) => {
 
 const buildServiceConfirmationPayload = (booking) => {
   const customerName = getDisplayName(booking);
+  const receiptReference = buildReceiptReference({
+    prefix: "svc",
+    orderId: booking?.orderId,
+    paymentId: booking?.paymentId,
+  });
   const preferredSlot = `${formatDate(booking?.preferredDate)} at ${normalizeEnvString(
     booking?.preferredTime
   )}`;
 
   const detailRows = [
+    {
+      label: "Receipt Number",
+      value: receiptReference,
+    },
     {
       label: "Service",
       value: normalizeEnvString(booking?.service) || "Not available",
@@ -569,8 +605,12 @@ const buildServiceConfirmationPayload = (booking) => {
       value: normalizeEnvString(booking?.orderId) || "Not available",
     },
     {
-      label: "Payment ID",
+      label: "Transaction ID",
       value: normalizeEnvString(booking?.paymentId) || "Not available",
+    },
+    {
+      label: "Payment Status",
+      value: humanizeStatus(booking?.paymentStatus, "Paid"),
     },
     {
       label: "Preferred Slot",
@@ -586,15 +626,17 @@ const buildServiceConfirmationPayload = (booking) => {
     `Hi ${customerName},`,
     "",
     "Your service booking payment has been confirmed.",
+    `Receipt Number: ${receiptReference}`,
     `Service: ${normalizeEnvString(booking?.service) || "Not available"}`,
     `Amount: ${formatCurrencyInr(booking?.amount)}`,
     `Order ID: ${normalizeEnvString(booking?.orderId) || "Not available"}`,
-    `Payment ID: ${normalizeEnvString(booking?.paymentId) || "Not available"}`,
+    `Transaction ID: ${normalizeEnvString(booking?.paymentId) || "Not available"}`,
     `Preferred Slot: ${preferredSlot}`,
     `Paid At: ${formatDateTime(booking?.paidAt || booking?.updatedAt || Date.now())}`,
     "",
     "A confirmation PDF is attached for your records.",
     "",
+    `My Activity: ${EMAIL_ACTIVITY_URL}`,
     `Services page: ${EMAIL_SERVICES_URL}`,
     `Support: ${EMAIL_SUPPORT_URL}`,
     "",
@@ -609,10 +651,11 @@ const buildServiceConfirmationPayload = (booking) => {
     bodyParagraphs: [
       "Your service request is now confirmed. The team will reach out if any additional details are needed.",
       "A confirmation PDF is attached for your records.",
+      `You can track this payment in My Activity using receipt ${receiptReference}.`,
     ],
     detailRows,
-    actionLabel: "View Services",
-    actionHref: EMAIL_SERVICES_URL,
+    actionLabel: "Open My Activity",
+    actionHref: EMAIL_ACTIVITY_URL,
     footer: `Need support? Contact us at ${EMAIL_SUPPORT_URL}`,
   });
 
@@ -658,8 +701,17 @@ const buildServiceConfirmationPayload = (booking) => {
 
 const buildSupportThankYouPayload = (supportPayment) => {
   const displayName = getDisplayName(supportPayment);
+  const receiptReference = buildReceiptReference({
+    prefix: "sup",
+    orderId: supportPayment?.orderId,
+    paymentId: supportPayment?.paymentId,
+  });
 
   const detailRows = [
+    {
+      label: "Receipt Number",
+      value: receiptReference,
+    },
     {
       label: "Amount",
       value: formatCurrencyInr(supportPayment?.amount),
@@ -669,8 +721,12 @@ const buildSupportThankYouPayload = (supportPayment) => {
       value: normalizeEnvString(supportPayment?.orderId) || "Not available",
     },
     {
-      label: "Payment ID",
+      label: "Transaction ID",
       value: normalizeEnvString(supportPayment?.paymentId) || "Not available",
+    },
+    {
+      label: "Payment Status",
+      value: humanizeStatus(supportPayment?.paymentStatus, "Paid"),
     },
     {
       label: "Paid At",
@@ -682,12 +738,14 @@ const buildSupportThankYouPayload = (supportPayment) => {
     `Hi ${displayName},`,
     "",
     "Thank you for your support contribution.",
+    `Receipt Number: ${receiptReference}`,
     `Amount: ${formatCurrencyInr(supportPayment?.amount)}`,
     `Order ID: ${normalizeEnvString(supportPayment?.orderId) || "Not available"}`,
-    `Payment ID: ${normalizeEnvString(supportPayment?.paymentId) || "Not available"}`,
+    `Transaction ID: ${normalizeEnvString(supportPayment?.paymentId) || "Not available"}`,
     "",
     "A support receipt PDF is attached for your records.",
     "",
+    `My Activity: ${EMAIL_ACTIVITY_URL}`,
     `Home: ${EMAIL_HOME_URL}`,
     `Contact: ${EMAIL_SUPPORT_URL}`,
     "",
@@ -702,10 +760,11 @@ const buildSupportThankYouPayload = (supportPayment) => {
     bodyParagraphs: [
       "Your contribution directly helps in creating better resources and more hands-on content.",
       "A support receipt PDF is attached for your records.",
+      `You can find this contribution in My Activity using receipt ${receiptReference}.`,
     ],
     detailRows,
-    actionLabel: "Visit Portfolio",
-    actionHref: EMAIL_HOME_URL,
+    actionLabel: "Open My Activity",
+    actionHref: EMAIL_ACTIVITY_URL,
     footer: `Questions? Reach us at ${EMAIL_SUPPORT_URL}`,
   });
 

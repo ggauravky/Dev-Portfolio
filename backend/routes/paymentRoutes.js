@@ -18,6 +18,7 @@ const {
   downloadSupportReceipt,
   downloadServiceReceiptImage,
   downloadSupportReceiptImage,
+  getPaymentQueueAdminStatus,
 } = require("../controllers/paymentController");
 const {
   paymentRateLimiter,
@@ -33,6 +34,7 @@ const {
   validate,
 } = require("../middleware/validator");
 const { requireAuth } = require("../middleware/auth");
+const { requireAdminKey } = require("../middleware/adminAuth");
 
 const router = express.Router();
 
@@ -51,6 +53,7 @@ const blockIfGatewayDisabled = (req, res, next) => {
 };
 
 router.post("/webhook/cashfree", paymentWebhookRateLimiter, handleCashfreeWebhook);
+router.get("/admin/queue-status", paymentRateLimiter, requireAdminKey, getPaymentQueueAdminStatus);
 
 router.use(blockIfGatewayDisabled);
 

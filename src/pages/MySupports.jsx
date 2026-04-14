@@ -7,6 +7,7 @@ import { fetchMySupports } from '../services/blogSupport'
 import {
     fetchMyBookings,
     fetchMySupportPayments,
+    fetchPaymentStatus,
     fetchServiceReceiptImage,
     fetchServiceReceiptPdf,
     fetchSupportReceiptImage,
@@ -39,6 +40,64 @@ const getStatusBadgeClass = (status) => {
     }
     return 'border-slate-500/35 bg-slate-500/10 text-slate-300'
 }
+
+const isPendingPaymentState = (status) => ['created', 'pending'].includes(String(status || '').toLowerCase())
+
+const parsePendingPaymentTargetsKey = (targetsKey) =>
+    String(targetsKey || '')
+        .split('|')
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .map((entry) => {
+            const separatorIndex = entry.indexOf(':')
+            if (separatorIndex <= 0) {
+                return null
+            }
+
+            const type = entry.slice(0, separatorIndex)
+            const orderId = entry.slice(separatorIndex + 1).trim()
+
+            if (!orderId) {
+                return null
+            }
+
+            return {
+                type,
+                orderId,
+            }
+        })
+        .filter(Boolean)
+
+const splitPaymentStatusUpdatesByType = (updates) => {
+    const serviceStatusesByOrderId = new Map()
+    const supportStatusesByOrderId = new Map()
+
+    updates.forEach((entry) => {
+        const mapTarget = entry.type === 'support' ? supportStatusesByOrderId : serviceStatusesByOrderId
+        mapTarget.set(entry.orderId, entry.status)
+    })
+
+    return {
+        serviceStatusesByOrderId,
+        supportStatusesByOrderId,
+    }
+}
+
+const mergeActivityItemsWithStatuses = (items, statusesByOrderId) =>
+    items.map((item) => {
+        const status = statusesByOrderId.get(String(item.orderId || '').trim())
+        if (!status) {
+            return item
+        }
+
+        return {
+            ...item,
+            paymentStatus: String(status.paymentStatus || item.paymentStatus || '').toLowerCase(),
+            paidAt: status.paidAt || item.paidAt,
+            updatedAt: status.updatedAt || item.updatedAt,
+            reconciliationStatus: status.reconciliationStatus || item.reconciliationStatus,
+        }
+    })
 
 const parsePaymentSuccessState = (searchParams) => {
     const source = String(searchParams.get('source') || '').trim().toLowerCase()
@@ -108,6 +167,29 @@ function MyActivity() {
         [searchParams]
     )
 
+    const pendingPaymentTargetsKey = useMemo(() => {
+        const targets = []
+
+        bookings.forEach((item) => {
+            if (!item?.orderId || !isPendingPaymentState(item.paymentStatus)) {
+                return
+            }
+
+            targets.push(`service:${String(item.orderId).trim()}`)
+        })
+
+        supportPayments.forEach((item) => {
+            if (!item?.orderId || !isPendingPaymentState(item.paymentStatus)) {
+                return
+            }
+
+            targets.push(`support:${String(item.orderId).trim()}`)
+        })
+
+        const sortedTargets = [...targets].sort((left, right) => left.localeCompare(right))
+        return sortedTargets.join('|')
+    }, [bookings, supportPayments])
+
     useEffect(() => {
         if (!queryPaymentSuccessState) {
             setPaymentSuccessState(null)
@@ -152,6 +234,80 @@ function MyActivity() {
 
         loadActivity()
     }, [isAuthenticated, isLoading])
+
+    useEffect(() => {
+        if (loading || isLoading || !isAuthenticated || !user?.email || !pendingPaymentTargetsKey) {
+            return
+        }
+
+        const targets = parsePendingPaymentTargetsKey(pendingPaymentTargetsKey)
+
+        if (!targets.length) {
+            return
+        }
+
+        let cancelled = false
+        let attemptCount = 0
+        let timerId = null
+
+        const pollPendingPaymentStatuses = async () => {
+            attemptCount += 1
+
+            const activeEmail = String(user.email || '').trim()
+            const checks = await Promise.allSettled(
+                targets.map(async (target) => {
+                    const status = await fetchPaymentStatus(target.orderId, activeEmail)
+                    return {
+                        ...target,
+                        status,
+                    }
+                })
+            )
+
+            if (cancelled) {
+                return
+            }
+
+            const successfulUpdates = checks
+                .filter((result) => result.status === 'fulfilled' && result.value?.status)
+                .map((result) => result.value)
+
+            if (successfulUpdates.length) {
+                const { serviceStatusesByOrderId, supportStatusesByOrderId } =
+                    splitPaymentStatusUpdatesByType(successfulUpdates)
+
+                if (serviceStatusesByOrderId.size) {
+                    setBookings((prev) => mergeActivityItemsWithStatuses(prev, serviceStatusesByOrderId))
+                }
+
+                if (supportStatusesByOrderId.size) {
+                    setSupportPayments((prev) =>
+                        mergeActivityItemsWithStatuses(prev, supportStatusesByOrderId)
+                    )
+                }
+            }
+
+            const shouldContinuePolling =
+                attemptCount < 6 &&
+                (!successfulUpdates.length ||
+                    successfulUpdates.some((entry) => isPendingPaymentState(entry.status?.paymentStatus)))
+
+            if (shouldContinuePolling) {
+                timerId = setTimeout(() => {
+                    void pollPendingPaymentStatuses()
+                }, 3500)
+            }
+        }
+
+        void pollPendingPaymentStatuses()
+
+        return () => {
+            cancelled = true
+            if (timerId) {
+                clearTimeout(timerId)
+            }
+        }
+    }, [isAuthenticated, isLoading, loading, pendingPaymentTargetsKey, user?.email])
 
     const saveBlobAsFile = (blob, filename) => {
         const url = URL.createObjectURL(blob)

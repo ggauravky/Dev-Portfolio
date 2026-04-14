@@ -29,6 +29,7 @@ const mlLogRoutes = require("./routes/mlLogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const blogSupportRoutes = require("./routes/blogSupportRoutes");
+const { closePaymentQueueWorkers, getPaymentQueueStatus } = require("./queues/paymentQueue");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
@@ -126,6 +127,7 @@ app.get("/health", (req, res) => {
       retentionDays: retentionPolicy.retentionDays,
       policyEndpoint: "/api/chat/privacy-policy",
     },
+    paymentQueue: getPaymentQueueStatus(),
   });
 });
 
@@ -179,6 +181,7 @@ const MAX_PORT_RETRIES = Number.parseInt(process.env.PORT_RETRIES, 10) || 10;
 // Use 127.0.0.1 explicitly in development to avoid IPv6 localhost issues.
 const HOST = process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1";
 let server;
+let shutdownInProgress = false;
 
 const logServerInfo = (port) => {
   logger.info(
@@ -216,6 +219,31 @@ const startServer = (port, retriesLeft) => {
 
 startServer(BASE_PORT, MAX_PORT_RETRIES);
 
+const gracefulShutdown = async ({ reason = "shutdown", exitCode = 0 } = {}) => {
+  if (shutdownInProgress) {
+    return;
+  }
+
+  shutdownInProgress = true;
+  logger.info({ reason }, "Graceful shutdown started");
+
+  const closeServerPromise =
+    server && typeof server.close === "function"
+      ? new Promise((resolve) => {
+          server.close(() => resolve());
+        })
+      : Promise.resolve();
+
+  try {
+    await Promise.allSettled([closeServerPromise, closePaymentQueueWorkers()]);
+  } catch (error) {
+    logger.error({ err: error, reason }, "Graceful shutdown encountered an error");
+  }
+
+  logger.info({ reason, exitCode }, "Process terminated");
+  process.exit(exitCode);
+};
+
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   logger.error({ err }, "Unhandled promise rejection");
@@ -223,22 +251,15 @@ process.on("unhandledRejection", (err) => {
   // In development, log and continue rather than killing the server.
   // In production, shut down gracefully so the process manager can restart.
   if (process.env.NODE_ENV === "production") {
-    if (server) {
-      server.close(() => process.exit(1));
-    } else {
-      process.exit(1);
-    }
+    void gracefulShutdown({ reason: "unhandledRejection", exitCode: 1 });
   }
 });
 
 // Handle SIGTERM
 process.on("SIGTERM", () => {
-  logger.info("SIGTERM received. Shutting down gracefully");
-  if (server) {
-    server.close(() => {
-      logger.info("Process terminated");
-    });
-  } else {
-    logger.info("Process terminated");
-  }
+  void gracefulShutdown({ reason: "SIGTERM", exitCode: 0 });
+});
+
+process.on("SIGINT", () => {
+  void gracefulShutdown({ reason: "SIGINT", exitCode: 0 });
 });

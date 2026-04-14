@@ -7,6 +7,7 @@
 const { createHmac, randomBytes, randomUUID, timingSafeEqual } = require("node:crypto");
 const Booking = require("../models/Booking");
 const SupportPayment = require("../models/SupportPayment");
+const PaymentWebhookEvent = require("../models/PaymentWebhookEvent");
 const { logger } = require("../utils/logger");
 const {
   sendServicePaymentAcknowledgementEmail,
@@ -23,6 +24,13 @@ const {
   generateServiceConfirmationImage,
   generateSupportReceiptImage,
 } = require("../utils/receiptImage");
+const {
+  isPaymentQueueReady,
+  enqueuePaymentReconciliationJob,
+  enqueuePaymentEmailJob,
+  startPaymentQueueWorkers,
+  getPaymentQueueDiagnostics,
+} = require("../queues/paymentQueue");
 
 const SERVICE_CATALOG = {
   mentorship: { title: "Mentorship", amount: 49 },
@@ -41,6 +49,12 @@ const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
 const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
 const CASHFREE_TIMEOUT_MS = Number.parseInt(process.env.CASHFREE_TIMEOUT_MS, 10) || 12000;
 const PAYMENT_STATUS_NEXT_POLL_MS = Number.parseInt(process.env.PAYMENT_STATUS_NEXT_POLL_MS, 10) || 3000;
+const PAYMENT_STATUS_ON_DEMAND_RECONCILIATION_ENABLED =
+  String(process.env.PAYMENT_STATUS_ON_DEMAND_RECONCILIATION_ENABLED || "true")
+    .trim()
+    .toLowerCase() === "true";
+const PAYMENT_STATUS_ON_DEMAND_RECONCILE_COOLDOWN_MS =
+  Number.parseInt(process.env.PAYMENT_STATUS_ON_DEMAND_RECONCILE_COOLDOWN_MS, 10) || 4000;
 const PAYMENT_ASYNC_VERIFY_DELAY_MS =
   Number.parseInt(process.env.PAYMENT_ASYNC_VERIFY_DELAY_MS, 10) || 1500;
 const PAYMENT_ASYNC_RECON_MAX_ATTEMPTS =
@@ -54,6 +68,24 @@ const CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS =
 const CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP =
   String(process.env.CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP || "true").trim().toLowerCase() === "true";
 const reconciliationJobsInFlight = new Set();
+const PAYMENT_EMAIL_JOB_TYPES = Object.freeze({
+  SERVICE_ACKNOWLEDGEMENT: "service_acknowledgement",
+  SUPPORT_ACKNOWLEDGEMENT: "support_acknowledgement",
+  SERVICE_CONFIRMATION: "service_confirmation",
+  SUPPORT_THANK_YOU: "support_thank_you",
+});
+const NON_RETRYABLE_QUEUE_EMAIL_REASONS = new Set([
+  "missing_target",
+  "missing_recipient",
+  "missing_admin_recipient",
+  "admin_not_configured",
+  "brevo_not_configured",
+  "already_sent_or_missing_record",
+  "unknown_job_type",
+]);
+const paymentQueueLogger = logger.child({ component: "payment-queue" });
+let isPaymentQueueRuntimeActive = false;
+const statusReconciliationInFlight = new Set();
 const CASHFREE_WEBHOOK_SECRET = String(process.env.CASHFREE_WEBHOOK_SECRET || "").trim();
 let cachedFetch = typeof globalThis.fetch === "function" ? globalThis.fetch : null;
 
@@ -207,6 +239,54 @@ const extractWebhookEventName = (payload) =>
   String(
     payload?.type || payload?.event || payload?.name || payload?.event_name || payload?.eventType || ""
   ).trim();
+
+const extractWebhookPaymentId = (payload) =>
+  String(
+    payload?.data?.payment?.cf_payment_id ||
+      payload?.data?.payment?.payment_id ||
+      payload?.data?.cf_payment_id ||
+      payload?.payment?.cf_payment_id ||
+      payload?.payment?.payment_id ||
+      payload?.payment_id ||
+      payload?.cf_payment_id ||
+      ""
+  ).trim();
+
+const buildWebhookEventKey = ({ eventName, normalizedOrderId, paymentId, rawBody }) => {
+  const normalizedEventName = String(eventName || "cashfree_webhook")
+    .trim()
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9:_-]+/g, "_")
+    .slice(0, 60);
+
+  const normalizedPaymentId = String(paymentId || "").trim();
+  const bodyFingerprint = createHmac("sha256", CASHFREE_WEBHOOK_SECRET || "cashfree_webhook")
+    .update(String(rawBody || ""))
+    .digest("hex")
+    .slice(0, 24);
+
+  const dedupeToken = normalizedPaymentId || bodyFingerprint;
+  return `${normalizedEventName}:${normalizedOrderId}:${dedupeToken}`.slice(0, 180);
+};
+
+const registerWebhookEventIfNew = async ({ eventKey, normalizedOrderId, eventName, paymentId }) => {
+  try {
+    await PaymentWebhookEvent.create({
+      eventKey,
+      orderId: normalizedOrderId,
+      eventName: String(eventName || "").trim().slice(0, 120),
+      paymentId: String(paymentId || "").trim().slice(0, 120),
+      receivedAt: new Date(),
+    });
+    return true;
+  } catch (error) {
+    if (Number(error?.code) === 11000) {
+      return false;
+    }
+
+    throw error;
+  }
+};
 
 const getFetchClient = async () => {
   if (typeof cachedFetch === "function") {
@@ -589,6 +669,100 @@ const resolvePaymentStatusRecord = ({ booking, supportPayment }) => {
     type: useServiceRecord ? "service" : "support",
     record: useServiceRecord ? booking : supportPayment,
   };
+};
+
+const isTerminalVerificationState = (value) =>
+  ["paid", "failed"].includes(String(value || "").trim().toLowerCase());
+
+const shouldAttemptOnDemandStatusReconciliation = (record) => {
+  if (!PAYMENT_STATUS_ON_DEMAND_RECONCILIATION_ENABLED || !record) {
+    return false;
+  }
+
+  const paymentStatus = String(record.paymentStatus || "").trim().toLowerCase();
+  const reconciliationStatus = String(record.reconciliationStatus || "").trim().toLowerCase();
+
+  if (isTerminalVerificationState(paymentStatus) || isTerminalVerificationState(reconciliationStatus)) {
+    return false;
+  }
+
+  const lastReconciliationAtMs = new Date(record.lastReconciliationAt || 0).getTime();
+  if (
+    Number.isFinite(lastReconciliationAtMs) &&
+    lastReconciliationAtMs > 0 &&
+    Date.now() - lastReconciliationAtMs < PAYMENT_STATUS_ON_DEMAND_RECONCILE_COOLDOWN_MS
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+const fetchPaymentStatusRecordByType = async ({ type, normalizedOrderId }) => {
+  if (type === "service") {
+    return Booking.findOne({ orderId: normalizedOrderId }).lean();
+  }
+
+  return SupportPayment.findOne({ orderId: normalizedOrderId }).lean();
+};
+
+const reconcileStatusRecordOnDemand = async ({
+  type,
+  normalizedOrderId,
+  record,
+  reqLogger,
+}) => {
+  if (!shouldAttemptOnDemandStatusReconciliation(record)) {
+    return record;
+  }
+
+  const reconciliationKey = `${type}:${normalizedOrderId}`;
+  if (statusReconciliationInFlight.has(reconciliationKey)) {
+    return record;
+  }
+
+  statusReconciliationInFlight.add(reconciliationKey);
+  try {
+    const attemptNumber = Math.max(1, (Number.parseInt(record?.reconciliationAttempts, 10) || 0) + 1);
+
+    await runAsyncReconciliationAttempt({
+      type,
+      normalizedOrderId,
+      emailDispatchQueued: isEmailDispatchConfigured(),
+      reqLogger,
+      attemptNumber,
+    });
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+        type,
+      },
+      "On-demand status reconciliation attempt failed"
+    );
+  } finally {
+    statusReconciliationInFlight.delete(reconciliationKey);
+  }
+
+  try {
+    const refreshedRecord = await fetchPaymentStatusRecordByType({
+      type,
+      normalizedOrderId,
+    });
+
+    return refreshedRecord || record;
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: normalizedOrderId,
+        type,
+      },
+      "Failed to refresh payment status record after reconciliation attempt"
+    );
+    return record;
+  }
 };
 
 const toPaymentArray = (paymentList) => {
@@ -1169,400 +1343,538 @@ const mapGatewayError = (error, fallbackMessage) => {
   };
 };
 
-const scheduleServicePaymentAcknowledgementEmail = ({ bookingId, reqLogger }) => {
+const processServicePaymentAcknowledgementEmail = async ({ bookingId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
   const normalizedBookingId = String(bookingId || "").trim();
   if (!normalizedBookingId) {
-    return;
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_target",
+    };
   }
 
-  setImmediate(async () => {
-    try {
-      const booking = await Booking.findById(normalizedBookingId).lean();
-      if (!booking || booking.acknowledgementEmailSentAt) {
-        return;
-      }
+  try {
+    const booking = await Booking.findById(normalizedBookingId).lean();
+    if (!booking || booking.acknowledgementEmailSentAt) {
+      return {
+        sent: true,
+        skipped: true,
+        reason: "already_sent_or_missing_record",
+      };
+    }
 
-      const result = await sendServicePaymentAcknowledgementEmail({ booking });
-      if (!result.sent) {
-        await Booking.updateOne(
-          { _id: normalizedBookingId },
-          {
-            $set: {
-              acknowledgementEmailLastAttemptAt: new Date(),
-              acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
-            },
-          }
-        );
-
-        if (!result.skipped) {
-          reqLogger.warn(
-            {
-              bookingId: normalizedBookingId,
-              reason: result.reason,
-              error: result.error,
-            },
-            "Service acknowledgement email was not delivered"
-          );
-        }
-        return;
-      }
-
+    const result = await sendServicePaymentAcknowledgementEmail({ booking });
+    if (!result.sent) {
       await Booking.updateOne(
         { _id: normalizedBookingId },
         {
           $set: {
-            acknowledgementEmailSentAt: new Date(),
             acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: "",
+            acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
           },
         }
       );
-    } catch (error) {
-      reqLogger.error(
-        {
-          err: error,
-          bookingId: normalizedBookingId,
+
+      if (!result.skipped) {
+        effectiveLogger.warn(
+          {
+            bookingId: normalizedBookingId,
+            reason: result.reason,
+            error: result.error,
+          },
+          "Service acknowledgement email was not delivered"
+        );
+      }
+      return {
+        sent: false,
+        skipped: Boolean(result.skipped),
+        reason: String(result.reason || "send_failed"),
+        error: result.error,
+      };
+    }
+
+    await Booking.updateOne(
+      { _id: normalizedBookingId },
+      {
+        $set: {
+          acknowledgementEmailSentAt: new Date(),
+          acknowledgementEmailLastAttemptAt: new Date(),
+          acknowledgementEmailError: "",
         },
-        "Service acknowledgement email processing failed"
+      }
+    );
+
+    return {
+      sent: true,
+      skipped: false,
+      reason: "sent",
+    };
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        bookingId: normalizedBookingId,
+      },
+      "Service acknowledgement email processing failed"
+    );
+
+    try {
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            acknowledgementEmailLastAttemptAt: new Date(),
+            acknowledgementEmailError: "processing_failed",
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+
+    return {
+      sent: false,
+      skipped: false,
+      reason: "processing_failed",
+      error,
+    };
+  }
+};
+
+const scheduleServicePaymentAcknowledgementEmail = ({ bookingId, reqLogger }) => {
+  setImmediate(() => {
+    void processServicePaymentAcknowledgementEmail({
+      bookingId,
+      reqLogger,
+    });
+  });
+};
+
+const processSupportPaymentAcknowledgementEmail = async ({ supportPaymentId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
+  const normalizedSupportId = String(supportPaymentId || "").trim();
+  if (!normalizedSupportId) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_target",
+    };
+  }
+
+  try {
+    const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
+    if (!supportPayment || supportPayment.acknowledgementEmailSentAt) {
+      return {
+        sent: true,
+        skipped: true,
+        reason: "already_sent_or_missing_record",
+      };
+    }
+
+    const result = await sendSupportPaymentAcknowledgementEmail({ supportPayment });
+    if (!result.sent) {
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportId },
+        {
+          $set: {
+            acknowledgementEmailLastAttemptAt: new Date(),
+            acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
+          },
+        }
       );
 
-      try {
-        await Booking.updateOne(
-          { _id: normalizedBookingId },
+      if (!result.skipped) {
+        effectiveLogger.warn(
           {
-            $set: {
-              acknowledgementEmailLastAttemptAt: new Date(),
-              acknowledgementEmailError: "processing_failed",
-            },
-          }
+            supportPaymentId: normalizedSupportId,
+            reason: result.reason,
+            error: result.error,
+          },
+          "Support acknowledgement email was not delivered"
         );
-      } catch {
-        // Ignore metadata update failures for background email jobs.
       }
+      return {
+        sent: false,
+        skipped: Boolean(result.skipped),
+        reason: String(result.reason || "send_failed"),
+        error: result.error,
+      };
     }
-  });
+
+    await SupportPayment.updateOne(
+      { _id: normalizedSupportId },
+      {
+        $set: {
+          acknowledgementEmailSentAt: new Date(),
+          acknowledgementEmailLastAttemptAt: new Date(),
+          acknowledgementEmailError: "",
+        },
+      }
+    );
+
+    return {
+      sent: true,
+      skipped: false,
+      reason: "sent",
+    };
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        supportPaymentId: normalizedSupportId,
+      },
+      "Support acknowledgement email processing failed"
+    );
+
+    try {
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportId },
+        {
+          $set: {
+            acknowledgementEmailLastAttemptAt: new Date(),
+            acknowledgementEmailError: "processing_failed",
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+
+    return {
+      sent: false,
+      skipped: false,
+      reason: "processing_failed",
+      error,
+    };
+  }
 };
 
 const scheduleSupportPaymentAcknowledgementEmail = ({ supportPaymentId, reqLogger }) => {
-  const normalizedSupportId = String(supportPaymentId || "").trim();
-  if (!normalizedSupportId) {
-    return;
-  }
-
-  setImmediate(async () => {
-    try {
-      const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
-      if (!supportPayment || supportPayment.acknowledgementEmailSentAt) {
-        return;
-      }
-
-      const result = await sendSupportPaymentAcknowledgementEmail({ supportPayment });
-      if (!result.sent) {
-        await SupportPayment.updateOne(
-          { _id: normalizedSupportId },
-          {
-            $set: {
-              acknowledgementEmailLastAttemptAt: new Date(),
-              acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
-            },
-          }
-        );
-
-        if (!result.skipped) {
-          reqLogger.warn(
-            {
-              supportPaymentId: normalizedSupportId,
-              reason: result.reason,
-              error: result.error,
-            },
-            "Support acknowledgement email was not delivered"
-          );
-        }
-        return;
-      }
-
-      await SupportPayment.updateOne(
-        { _id: normalizedSupportId },
-        {
-          $set: {
-            acknowledgementEmailSentAt: new Date(),
-            acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: "",
-          },
-        }
-      );
-    } catch (error) {
-      reqLogger.error(
-        {
-          err: error,
-          supportPaymentId: normalizedSupportId,
-        },
-        "Support acknowledgement email processing failed"
-      );
-
-      try {
-        await SupportPayment.updateOne(
-          { _id: normalizedSupportId },
-          {
-            $set: {
-              acknowledgementEmailLastAttemptAt: new Date(),
-              acknowledgementEmailError: "processing_failed",
-            },
-          }
-        );
-      } catch {
-        // Ignore metadata update failures for background email jobs.
-      }
-    }
+  setImmediate(() => {
+    void processSupportPaymentAcknowledgementEmail({
+      supportPaymentId,
+      reqLogger,
+    });
   });
 };
 
-const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
+const processServiceConfirmationEmail = async ({ bookingId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
   const normalizedBookingId = String(bookingId || "").trim();
   if (!normalizedBookingId) {
-    return;
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_target",
+    };
   }
 
-  setImmediate(async () => {
-    try {
-      const booking = await Booking.findById(normalizedBookingId).lean();
-      if (booking?.paymentStatus !== "paid" || booking?.confirmationEmailSentAt) {
-        return;
-      }
+  try {
+    const booking = await Booking.findById(normalizedBookingId).lean();
+    if (booking?.paymentStatus !== "paid" || booking?.confirmationEmailSentAt) {
+      return {
+        sent: true,
+        skipped: true,
+        reason: "already_sent_or_missing_record",
+      };
+    }
 
-      let attachments = [];
+    let attachments = [];
+    try {
+      const pdfAttachment = await generateServiceConfirmationPdf({ booking });
+      if (String(pdfAttachment?.contentBase64 || "").trim()) {
+        attachments = [pdfAttachment];
+      }
+    } catch (pdfError) {
+      effectiveLogger.warn(
+        {
+          err: pdfError,
+          bookingId: normalizedBookingId,
+        },
+        "Service confirmation PDF generation failed; trying image fallback"
+      );
+    }
+
+    if (!attachments.length) {
       try {
-        const pdfAttachment = await generateServiceConfirmationPdf({ booking });
-        if (String(pdfAttachment?.contentBase64 || "").trim()) {
-          attachments = [pdfAttachment];
+        const imageAttachment = await generateServiceConfirmationImage({ booking });
+        if (String(imageAttachment?.contentBase64 || "").trim()) {
+          attachments = [imageAttachment];
         }
-      } catch (pdfError) {
-        reqLogger.warn(
+      } catch (imageError) {
+        effectiveLogger.warn(
           {
-            err: pdfError,
+            err: imageError,
             bookingId: normalizedBookingId,
           },
-          "Service confirmation PDF generation failed; trying image fallback"
+          "Service confirmation image fallback generation failed; sending email without attachment"
         );
       }
+    }
 
-      if (!attachments.length) {
-        try {
-          const imageAttachment = await generateServiceConfirmationImage({ booking });
-          if (String(imageAttachment?.contentBase64 || "").trim()) {
-            attachments = [imageAttachment];
-          }
-        } catch (imageError) {
-          reqLogger.warn(
-            {
-              err: imageError,
-              bookingId: normalizedBookingId,
-            },
-            "Service confirmation image fallback generation failed; sending email without attachment"
-          );
-        }
-      }
+    const result = await sendServiceBookingConfirmationEmail({
+      booking,
+      attachments,
+    });
 
-      const result = await sendServiceBookingConfirmationEmail({
-        booking,
-        attachments,
-      });
-
-      if (!result.customer?.sent) {
-        await Booking.updateOne(
-          { _id: normalizedBookingId },
-          {
-            $set: {
-              confirmationEmailLastAttemptAt: new Date(),
-              confirmationEmailError: String(result.customer?.reason || "send_failed"),
-            },
-          }
-        );
-
-        if (!result.customer?.skipped) {
-          reqLogger.warn(
-            {
-              bookingId: normalizedBookingId,
-              reason: result.customer?.reason,
-              error: result.customer?.error,
-            },
-            "Service confirmation email was not delivered"
-          );
-        }
-        return;
-      }
-
+    if (!result.customer?.sent) {
       await Booking.updateOne(
         { _id: normalizedBookingId },
         {
           $set: {
-            confirmationEmailSentAt: new Date(),
-            confirmationEmailRecipient: String(booking.email || "").toLowerCase(),
-            confirmationEmailMessageId: String(
-              result.customer?.messageId || result.customer?.providerId || ""
-            ),
-            confirmationEmailAdminMessageId: String(
-              result.admin?.messageId || result.admin?.providerId || ""
-            ),
             confirmationEmailLastAttemptAt: new Date(),
-            confirmationEmailError: "",
+            confirmationEmailError: String(result.customer?.reason || "send_failed"),
           },
         }
       );
 
-      reqLogger.info(
-        {
-          bookingId: normalizedBookingId,
-          customerEmailId: result.customer?.messageId || result.customer?.providerId,
-          adminEmailSent: Boolean(result.admin?.sent),
-          adminEmailId: result.admin?.messageId || result.admin?.providerId,
-        },
-        "Service confirmation email delivered"
-      );
-    } catch (error) {
-      reqLogger.error(
-        {
-          err: error,
-          bookingId: normalizedBookingId,
-        },
-        "Service confirmation email processing failed"
-      );
-
-      try {
-        await Booking.updateOne(
-          { _id: normalizedBookingId },
+      if (!result.customer?.skipped) {
+        effectiveLogger.warn(
           {
-            $set: {
-              confirmationEmailLastAttemptAt: new Date(),
-              confirmationEmailError: "processing_failed",
-            },
-          }
+            bookingId: normalizedBookingId,
+            reason: result.customer?.reason,
+            error: result.customer?.error,
+          },
+          "Service confirmation email was not delivered"
         );
-      } catch {
-        // Ignore metadata update failures for background email jobs.
       }
+      return {
+        sent: false,
+        skipped: Boolean(result.customer?.skipped),
+        reason: String(result.customer?.reason || "send_failed"),
+        error: result.customer?.error,
+      };
     }
+
+    await Booking.updateOne(
+      { _id: normalizedBookingId },
+      {
+        $set: {
+          confirmationEmailSentAt: new Date(),
+          confirmationEmailRecipient: String(booking.email || "").toLowerCase(),
+          confirmationEmailMessageId: String(
+            result.customer?.messageId || result.customer?.providerId || ""
+          ),
+          confirmationEmailAdminMessageId: String(
+            result.admin?.messageId || result.admin?.providerId || ""
+          ),
+          confirmationEmailLastAttemptAt: new Date(),
+          confirmationEmailError: "",
+        },
+      }
+    );
+
+    effectiveLogger.info(
+      {
+        bookingId: normalizedBookingId,
+        customerEmailId: result.customer?.messageId || result.customer?.providerId,
+        adminEmailSent: Boolean(result.admin?.sent),
+        adminEmailId: result.admin?.messageId || result.admin?.providerId,
+      },
+      "Service confirmation email delivered"
+    );
+
+    return {
+      sent: true,
+      skipped: false,
+      reason: "sent",
+      customerMessageId: result.customer?.messageId || result.customer?.providerId,
+    };
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        bookingId: normalizedBookingId,
+      },
+      "Service confirmation email processing failed"
+    );
+
+    try {
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            confirmationEmailLastAttemptAt: new Date(),
+            confirmationEmailError: "processing_failed",
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+
+    return {
+      sent: false,
+      skipped: false,
+      reason: "processing_failed",
+      error,
+    };
+  }
+};
+
+const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
+  setImmediate(() => {
+    void processServiceConfirmationEmail({
+      bookingId,
+      reqLogger,
+    });
   });
 };
 
-const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
+const processSupportThankYouEmail = async ({ supportPaymentId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
   const normalizedSupportId = String(supportPaymentId || "").trim();
   if (!normalizedSupportId) {
-    return;
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_target",
+    };
   }
 
-  setImmediate(async () => {
-    try {
-      const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
-      if (supportPayment?.paymentStatus !== "paid" || supportPayment?.thankYouEmailSentAt) {
-        return;
-      }
+  try {
+    const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
+    if (supportPayment?.paymentStatus !== "paid" || supportPayment?.thankYouEmailSentAt) {
+      return {
+        sent: true,
+        skipped: true,
+        reason: "already_sent_or_missing_record",
+      };
+    }
 
-      let attachments = [];
+    let attachments = [];
+    try {
+      const pdfAttachment = await generateSupportReceiptPdf({ supportPayment });
+      if (String(pdfAttachment?.contentBase64 || "").trim()) {
+        attachments = [pdfAttachment];
+      }
+    } catch (pdfError) {
+      effectiveLogger.warn(
+        {
+          err: pdfError,
+          supportPaymentId: normalizedSupportId,
+        },
+        "Support receipt PDF generation failed; trying image fallback"
+      );
+    }
+
+    if (!attachments.length) {
       try {
-        const pdfAttachment = await generateSupportReceiptPdf({ supportPayment });
-        if (String(pdfAttachment?.contentBase64 || "").trim()) {
-          attachments = [pdfAttachment];
+        const imageAttachment = await generateSupportReceiptImage({ supportPayment });
+        if (String(imageAttachment?.contentBase64 || "").trim()) {
+          attachments = [imageAttachment];
         }
-      } catch (pdfError) {
-        reqLogger.warn(
+      } catch (imageError) {
+        effectiveLogger.warn(
           {
-            err: pdfError,
+            err: imageError,
             supportPaymentId: normalizedSupportId,
           },
-          "Support receipt PDF generation failed; trying image fallback"
+          "Support receipt image fallback generation failed; sending email without attachment"
         );
       }
+    }
 
-      if (!attachments.length) {
-        try {
-          const imageAttachment = await generateSupportReceiptImage({ supportPayment });
-          if (String(imageAttachment?.contentBase64 || "").trim()) {
-            attachments = [imageAttachment];
-          }
-        } catch (imageError) {
-          reqLogger.warn(
-            {
-              err: imageError,
-              supportPaymentId: normalizedSupportId,
-            },
-            "Support receipt image fallback generation failed; sending email without attachment"
-          );
-        }
-      }
+    const result = await sendSupportThankYouEmail({
+      supportPayment,
+      attachments,
+    });
 
-      const result = await sendSupportThankYouEmail({
-        supportPayment,
-        attachments,
-      });
-
-      if (!result.sent) {
-        await SupportPayment.updateOne(
-          { _id: normalizedSupportId },
-          {
-            $set: {
-              thankYouEmailLastAttemptAt: new Date(),
-              thankYouEmailError: String(result.reason || "send_failed"),
-            },
-          }
-        );
-
-        if (!result.skipped) {
-          reqLogger.warn(
-            {
-              supportPaymentId: normalizedSupportId,
-              reason: result.reason,
-              error: result.error,
-            },
-            "Support thank-you email was not delivered"
-          );
-        }
-        return;
-      }
-
+    if (!result.sent) {
       await SupportPayment.updateOne(
         { _id: normalizedSupportId },
         {
           $set: {
-            thankYouEmailSentAt: new Date(),
-            thankYouEmailRecipient: String(supportPayment.email || "").toLowerCase(),
-            thankYouEmailMessageId: String(result.messageId || result.providerId || ""),
             thankYouEmailLastAttemptAt: new Date(),
-            thankYouEmailError: "",
+            thankYouEmailError: String(result.reason || "send_failed"),
           },
         }
       );
 
-      reqLogger.info(
-        {
-          supportPaymentId: normalizedSupportId,
-          emailId: result.messageId || result.providerId,
-        },
-        "Support thank-you email delivered"
-      );
-    } catch (error) {
-      reqLogger.error(
-        {
-          err: error,
-          supportPaymentId: normalizedSupportId,
-        },
-        "Support thank-you email processing failed"
-      );
-
-      try {
-        await SupportPayment.updateOne(
-          { _id: normalizedSupportId },
+      if (!result.skipped) {
+        effectiveLogger.warn(
           {
-            $set: {
-              thankYouEmailLastAttemptAt: new Date(),
-              thankYouEmailError: "processing_failed",
-            },
-          }
+            supportPaymentId: normalizedSupportId,
+            reason: result.reason,
+            error: result.error,
+          },
+          "Support thank-you email was not delivered"
         );
-      } catch {
-        // Ignore metadata update failures for background email jobs.
       }
+      return {
+        sent: false,
+        skipped: Boolean(result.skipped),
+        reason: String(result.reason || "send_failed"),
+        error: result.error,
+      };
     }
+
+    await SupportPayment.updateOne(
+      { _id: normalizedSupportId },
+      {
+        $set: {
+          thankYouEmailSentAt: new Date(),
+          thankYouEmailRecipient: String(supportPayment.email || "").toLowerCase(),
+          thankYouEmailMessageId: String(result.messageId || result.providerId || ""),
+          thankYouEmailLastAttemptAt: new Date(),
+          thankYouEmailError: "",
+        },
+      }
+    );
+
+    effectiveLogger.info(
+      {
+        supportPaymentId: normalizedSupportId,
+        emailId: result.messageId || result.providerId,
+      },
+      "Support thank-you email delivered"
+    );
+
+    return {
+      sent: true,
+      skipped: false,
+      reason: "sent",
+      messageId: result.messageId || result.providerId,
+    };
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        supportPaymentId: normalizedSupportId,
+      },
+      "Support thank-you email processing failed"
+    );
+
+    try {
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportId },
+        {
+          $set: {
+            thankYouEmailLastAttemptAt: new Date(),
+            thankYouEmailError: "processing_failed",
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+
+    return {
+      sent: false,
+      skipped: false,
+      reason: "processing_failed",
+      error,
+    };
+  }
+};
+
+const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
+  setImmediate(() => {
+    void processSupportThankYouEmail({
+      supportPaymentId,
+      reqLogger,
+    });
   });
 };
 
@@ -1626,14 +1938,60 @@ const getOwnershipMismatchMessage = ({
   return "";
 };
 
+const enqueuePaymentEmailJobWithFallback = ({
+  jobType,
+  bookingId,
+  supportPaymentId,
+  reqLogger,
+  fallback,
+}) => {
+  const scheduleFallback = typeof fallback === "function" ? fallback : () => {};
+  if (!isPaymentQueueReady() || !isPaymentQueueRuntimeActive) {
+    scheduleFallback();
+    return;
+  }
+
+  const effectiveLogger = reqLogger || logger;
+
+  void enqueuePaymentEmailJob({
+    jobType,
+    bookingId,
+    supportPaymentId,
+  })
+    .then((queued) => {
+      if (!queued) {
+        scheduleFallback();
+      }
+    })
+    .catch((error) => {
+      effectiveLogger.warn(
+        {
+          err: error,
+          jobType,
+          bookingId,
+          supportPaymentId,
+        },
+        "Failed to enqueue payment email job; using in-process scheduler"
+      );
+      scheduleFallback();
+    });
+};
+
 const queueServiceEmailIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
   if (!emailDispatchQueued) {
     return;
   }
 
-  scheduleServiceConfirmationEmail({
+  enqueuePaymentEmailJobWithFallback({
+    jobType: PAYMENT_EMAIL_JOB_TYPES.SERVICE_CONFIRMATION,
     bookingId,
     reqLogger,
+    fallback: () => {
+      scheduleServiceConfirmationEmail({
+        bookingId,
+        reqLogger,
+      });
+    },
   });
 };
 
@@ -1642,9 +2000,16 @@ const queueSupportEmailIfConfigured = ({ emailDispatchQueued, supportPaymentId, 
     return;
   }
 
-  scheduleSupportThankYouEmail({
+  enqueuePaymentEmailJobWithFallback({
+    jobType: PAYMENT_EMAIL_JOB_TYPES.SUPPORT_THANK_YOU,
     supportPaymentId,
     reqLogger,
+    fallback: () => {
+      scheduleSupportThankYouEmail({
+        supportPaymentId,
+        reqLogger,
+      });
+    },
   });
 };
 
@@ -1653,9 +2018,16 @@ const queueServiceAcknowledgementIfConfigured = ({ emailDispatchQueued, bookingI
     return;
   }
 
-  scheduleServicePaymentAcknowledgementEmail({
+  enqueuePaymentEmailJobWithFallback({
+    jobType: PAYMENT_EMAIL_JOB_TYPES.SERVICE_ACKNOWLEDGEMENT,
     bookingId,
     reqLogger,
+    fallback: () => {
+      scheduleServicePaymentAcknowledgementEmail({
+        bookingId,
+        reqLogger,
+      });
+    },
   });
 };
 
@@ -1668,9 +2040,16 @@ const queueSupportAcknowledgementIfConfigured = ({
     return;
   }
 
-  scheduleSupportPaymentAcknowledgementEmail({
+  enqueuePaymentEmailJobWithFallback({
+    jobType: PAYMENT_EMAIL_JOB_TYPES.SUPPORT_ACKNOWLEDGEMENT,
     supportPaymentId,
     reqLogger,
+    fallback: () => {
+      scheduleSupportPaymentAcknowledgementEmail({
+        supportPaymentId,
+        reqLogger,
+      });
+    },
   });
 };
 
@@ -2311,6 +2690,115 @@ const reconcileSupportOrderAsync = async ({ normalizedOrderId, emailDispatchQueu
   }
 };
 
+const runAsyncReconciliationAttempt = async ({
+  type,
+  normalizedOrderId,
+  emailDispatchQueued,
+  reqLogger,
+  attemptNumber,
+}) => {
+  const effectiveLogger = reqLogger || logger;
+  const orderId = String(normalizedOrderId || "").trim();
+  const normalizedAttempt = Number.parseInt(attemptNumber, 10) || 1;
+
+  if (!orderId || normalizedAttempt > PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
+    return;
+  }
+
+  let shouldRetry = false;
+
+  try {
+    if (type === "service") {
+      await reconcileServiceOrderAsync({
+        normalizedOrderId: orderId,
+        emailDispatchQueued,
+        reqLogger: effectiveLogger,
+      });
+    } else if (type === "support") {
+      await reconcileSupportOrderAsync({
+        normalizedOrderId: orderId,
+        emailDispatchQueued,
+        reqLogger: effectiveLogger,
+      });
+    } else {
+      effectiveLogger.warn(
+        {
+          type,
+          orderId,
+        },
+        "Skipped reconciliation for unknown job type"
+      );
+      return;
+    }
+
+    shouldRetry = await shouldRetryReconciliation({
+      type,
+      normalizedOrderId: orderId,
+      attemptNumber: normalizedAttempt,
+      reqLogger: effectiveLogger,
+    });
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        orderId,
+        type,
+        attemptNumber: normalizedAttempt,
+      },
+      "Async reconciliation execution failed"
+    );
+
+    shouldRetry = normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS;
+  }
+
+  if (shouldRetry && normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
+    scheduleAsyncReconciliation({
+      type,
+      normalizedOrderId: orderId,
+      emailDispatchQueued,
+      reqLogger: effectiveLogger,
+      attemptNumber: normalizedAttempt + 1,
+    });
+  }
+};
+
+const scheduleAsyncReconciliationInProcess = ({
+  type,
+  normalizedOrderId,
+  emailDispatchQueued,
+  reqLogger,
+  attemptNumber,
+}) => {
+  const orderId = String(normalizedOrderId || "").trim();
+  const normalizedAttempt = Number.parseInt(attemptNumber, 10) || 1;
+
+  if (!orderId || normalizedAttempt > PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
+    return false;
+  }
+
+  const jobKey = `${type}:${orderId}`;
+  if (reconciliationJobsInFlight.has(jobKey)) {
+    return false;
+  }
+
+  reconciliationJobsInFlight.add(jobKey);
+  const delayMs = getReconciliationRetryDelayMs(normalizedAttempt);
+
+  setTimeout(() => {
+    void runAsyncReconciliationAttempt({
+      type,
+      normalizedOrderId: orderId,
+      emailDispatchQueued,
+      reqLogger,
+      attemptNumber: normalizedAttempt,
+    }).finally(() => {
+      reconciliationJobsInFlight.delete(jobKey);
+    });
+  }, delayMs);
+
+  return true;
+};
+
 const scheduleAsyncReconciliation = ({
   type,
   normalizedOrderId,
@@ -2328,66 +2816,191 @@ const scheduleAsyncReconciliation = ({
     return false;
   }
 
-  const jobKey = `${type}:${orderId}`;
-  if (reconciliationJobsInFlight.has(jobKey)) {
-    return false;
+  if (!isPaymentQueueReady() || !isPaymentQueueRuntimeActive) {
+    return scheduleAsyncReconciliationInProcess({
+      type,
+      normalizedOrderId: orderId,
+      emailDispatchQueued,
+      reqLogger,
+      attemptNumber: normalizedAttempt,
+    });
   }
 
-  reconciliationJobsInFlight.add(jobKey);
+  const effectiveLogger = reqLogger || logger;
   const delayMs = getReconciliationRetryDelayMs(normalizedAttempt);
 
-  setTimeout(async () => {
-    let shouldRetry = false;
-
-    try {
-      if (type === "service") {
-        await reconcileServiceOrderAsync({
+  void enqueuePaymentReconciliationJob({
+    type,
+    normalizedOrderId: orderId,
+    emailDispatchQueued,
+    attemptNumber: normalizedAttempt,
+    delayMs,
+  })
+    .then((queued) => {
+      if (!queued) {
+        scheduleAsyncReconciliationInProcess({
+          type,
           normalizedOrderId: orderId,
           emailDispatchQueued,
-          reqLogger,
-        });
-      } else {
-        await reconcileSupportOrderAsync({
-          normalizedOrderId: orderId,
-          emailDispatchQueued,
-          reqLogger,
+          reqLogger: effectiveLogger,
+          attemptNumber: normalizedAttempt,
         });
       }
-
-      shouldRetry = await shouldRetryReconciliation({
-        type,
-        normalizedOrderId: orderId,
-        attemptNumber: normalizedAttempt,
-        reqLogger,
-      });
-    } catch (error) {
-      reqLogger.error(
+    })
+    .catch((error) => {
+      effectiveLogger.warn(
         {
           err: error,
           orderId,
           type,
           attemptNumber: normalizedAttempt,
         },
-        "Async reconciliation execution failed"
+        "Failed to enqueue reconciliation job; using in-process scheduler"
       );
 
-      shouldRetry = normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS;
-    } finally {
-      reconciliationJobsInFlight.delete(jobKey);
-
-      if (shouldRetry && normalizedAttempt < PAYMENT_ASYNC_RECON_MAX_ATTEMPTS) {
-        scheduleAsyncReconciliation({
-          type,
-          normalizedOrderId: orderId,
-          emailDispatchQueued,
-          reqLogger,
-          attemptNumber: normalizedAttempt + 1,
-        });
-      }
-    }
-  }, delayMs);
+      scheduleAsyncReconciliationInProcess({
+        type,
+        normalizedOrderId: orderId,
+        emailDispatchQueued,
+        reqLogger: effectiveLogger,
+        attemptNumber: normalizedAttempt,
+      });
+    });
 
   return true;
+};
+
+const processPaymentQueueReconciliationJob = async ({
+  type,
+  normalizedOrderId,
+  emailDispatchQueued,
+  attemptNumber,
+}) => {
+  await runAsyncReconciliationAttempt({
+    type,
+    normalizedOrderId,
+    emailDispatchQueued,
+    reqLogger: paymentQueueLogger,
+    attemptNumber,
+  });
+};
+
+const shouldRetryQueuedEmailResult = (result) => {
+  if (!result || result.sent || result.skipped) {
+    return false;
+  }
+
+  const reason = String(result.reason || "").trim().toLowerCase();
+  if (!reason) {
+    return true;
+  }
+
+  return !NON_RETRYABLE_QUEUE_EMAIL_REASONS.has(reason);
+};
+
+const processPaymentQueueEmailJob = async ({ jobType, bookingId, supportPaymentId }) => {
+  let result;
+
+  switch (jobType) {
+    case PAYMENT_EMAIL_JOB_TYPES.SERVICE_ACKNOWLEDGEMENT:
+      result = await processServicePaymentAcknowledgementEmail({
+        bookingId,
+        reqLogger: paymentQueueLogger,
+      });
+      break;
+    case PAYMENT_EMAIL_JOB_TYPES.SUPPORT_ACKNOWLEDGEMENT:
+      result = await processSupportPaymentAcknowledgementEmail({
+        supportPaymentId,
+        reqLogger: paymentQueueLogger,
+      });
+      break;
+    case PAYMENT_EMAIL_JOB_TYPES.SERVICE_CONFIRMATION:
+      result = await processServiceConfirmationEmail({
+        bookingId,
+        reqLogger: paymentQueueLogger,
+      });
+      break;
+    case PAYMENT_EMAIL_JOB_TYPES.SUPPORT_THANK_YOU:
+      result = await processSupportThankYouEmail({
+        supportPaymentId,
+        reqLogger: paymentQueueLogger,
+      });
+      break;
+    default:
+      paymentQueueLogger.warn(
+        {
+          jobType,
+          bookingId,
+          supportPaymentId,
+        },
+        "Skipped unknown payment email queue job type"
+      );
+      result = {
+        sent: false,
+        skipped: true,
+        reason: "unknown_job_type",
+      };
+  }
+
+  if (shouldRetryQueuedEmailResult(result)) {
+    const retryableError = new Error(
+      `Retryable payment email failure (${String(result.reason || "send_failed")})`
+    );
+    retryableError.code = "PAYMENT_EMAIL_RETRYABLE_FAILURE";
+    retryableError.context = {
+      jobType,
+      bookingId,
+      supportPaymentId,
+      reason: result.reason,
+      error: result.error,
+    };
+    throw retryableError;
+  }
+};
+
+if (isPaymentQueueReady()) {
+  try {
+    isPaymentQueueRuntimeActive = Boolean(
+      startPaymentQueueWorkers({
+        processReconciliationJob: processPaymentQueueReconciliationJob,
+        processEmailJob: processPaymentQueueEmailJob,
+      })
+    );
+  } catch (error) {
+    isPaymentQueueRuntimeActive = false;
+    paymentQueueLogger.error(
+      {
+        err: error,
+      },
+      "Failed to start payment queue workers"
+    );
+  }
+}
+
+exports.getPaymentQueueAdminStatus = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const failedSampleLimit = Number.parseInt(req.query?.failedSampleLimit, 10) || 5;
+
+  try {
+    const queueStatus = await getPaymentQueueDiagnostics({ failedSampleLimit });
+
+    return res.status(200).json({
+      success: true,
+      data: queueStatus,
+    });
+  } catch (error) {
+    reqLogger.error(
+      {
+        err: error,
+      },
+      "Failed to fetch payment queue admin status"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to fetch payment queue status",
+    });
+  }
 };
 
 const fetchOrderPaymentsWithPaidFallback = async ({
@@ -2818,27 +3431,82 @@ const markWebhookReceivedMetadata = async ({ normalizedOrderId, booking, support
   }
 };
 
-exports.handleCashfreeWebhook = async (req, res) => {
-  const reqLogger = req.log || logger;
+const handleDuplicateWebhookEventIfNeeded = async ({
+  normalizedOrderId,
+  eventName,
+  paymentId,
+  rawBody,
+  reqLogger,
+  res,
+}) => {
+  const webhookEventKey = buildWebhookEventKey({
+    eventName,
+    normalizedOrderId,
+    paymentId,
+    rawBody,
+  });
 
+  let isNewWebhookEvent = true;
+  try {
+    isNewWebhookEvent = await registerWebhookEventIfNew({
+      eventKey: webhookEventKey,
+      normalizedOrderId,
+      eventName,
+      paymentId,
+    });
+  } catch (dedupeError) {
+    reqLogger.warn(
+      {
+        err: dedupeError,
+        orderId: normalizedOrderId,
+        eventName,
+        paymentId,
+      },
+      "Webhook dedupe persistence failed; continuing without dedupe guarantee"
+    );
+  }
+
+  if (isNewWebhookEvent) {
+    return false;
+  }
+
+  reqLogger.info(
+    {
+      orderId: normalizedOrderId,
+      eventName,
+      paymentId,
+    },
+    "Duplicate Cashfree webhook ignored"
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "Duplicate webhook ignored",
+  });
+  return true;
+};
+
+const validateAndExtractWebhookContext = ({ req, res, reqLogger }) => {
   if (!isDatabaseReady()) {
-    return res.status(202).json({
+    res.status(202).json({
       success: true,
       message: "Webhook acknowledged while database is unavailable. Retry will reconcile later.",
     });
+    return null;
   }
 
   if (!CASHFREE_WEBHOOK_SECRET) {
     reqLogger.error("Cashfree webhook secret is missing in environment configuration");
-    return res.status(503).json({
+    res.status(503).json({
       success: false,
       message: "Webhook secret is not configured on server",
     });
+    return null;
   }
 
   const rawBody = getWebhookRawBody(req);
   if (rejectWebhookTimestampIfInvalid({ req, res, reqLogger })) {
-    return;
+    return null;
   }
 
   const signatureValid = isCashfreeWebhookSignatureValid({
@@ -2856,22 +3524,25 @@ exports.handleCashfreeWebhook = async (req, res) => {
       "Rejected Cashfree webhook due to invalid signature"
     );
 
-    return res.status(401).json({
+    res.status(401).json({
       success: false,
       message: "Invalid webhook signature",
     });
+    return null;
   }
 
   const payload = parseWebhookPayload(rawBody, req.body);
   if (!payload) {
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       message: "Invalid webhook payload",
     });
+    return null;
   }
 
   const normalizedOrderId = extractWebhookOrderId(payload);
   const eventName = extractWebhookEventName(payload);
+  const paymentId = extractWebhookPaymentId(payload);
 
   if (!normalizedOrderId) {
     reqLogger.warn(
@@ -2882,10 +3553,42 @@ exports.handleCashfreeWebhook = async (req, res) => {
       "Cashfree webhook did not include a valid order identifier"
     );
 
-    return res.status(202).json({
+    res.status(202).json({
       success: true,
       message: "Webhook accepted without order identifier",
     });
+    return null;
+  }
+
+  return {
+    rawBody,
+    normalizedOrderId,
+    eventName,
+    paymentId,
+  };
+};
+
+exports.handleCashfreeWebhook = async (req, res) => {
+  const reqLogger = req.log || logger;
+
+  const webhookContext = validateAndExtractWebhookContext({ req, res, reqLogger });
+  if (!webhookContext) {
+    return;
+  }
+
+  const { rawBody, normalizedOrderId, eventName, paymentId } = webhookContext;
+
+  const duplicateHandled = await handleDuplicateWebhookEventIfNeeded({
+    normalizedOrderId,
+    eventName,
+    paymentId,
+    rawBody,
+    reqLogger,
+    res,
+  });
+
+  if (duplicateHandled) {
+    return;
   }
 
   try {
@@ -3875,15 +4578,25 @@ const handlePaymentStatusRequest = async ({ req, res, reqLogger }) => {
       booking,
       supportPayment,
     });
-    const statusData = buildPaymentStatusData({ type, record });
+
+    const statusRecord = await reconcileStatusRecordOnDemand({
+      type,
+      normalizedOrderId,
+      record,
+      reqLogger,
+    });
+    const statusData = buildPaymentStatusData({
+      type,
+      record: statusRecord,
+    });
 
     if (type === "service") {
-      statusData.bookingId = String(record?._id || "").trim();
-      statusData.service = String(record?.service || "").trim();
-      statusData.serviceSlug = String(record?.serviceSlug || "").trim();
+      statusData.bookingId = String(statusRecord?._id || "").trim();
+      statusData.service = String(statusRecord?.service || "").trim();
+      statusData.serviceSlug = String(statusRecord?.serviceSlug || "").trim();
     } else {
-      statusData.supportPaymentId = String(record?._id || "").trim();
-      statusData.contributorName = String(record?.contributorName || "Supporter").trim();
+      statusData.supportPaymentId = String(statusRecord?._id || "").trim();
+      statusData.contributorName = String(statusRecord?.contributorName || "Supporter").trim();
     }
 
     return res.status(200).json({

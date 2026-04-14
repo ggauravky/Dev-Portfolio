@@ -127,6 +127,22 @@ EMAIL_APP_NAME=Gaurav Kumar Portfolio
 EMAIL_SUPPORT_URL=https://your-app-name.vercel.app/contact
 EMAIL_SERVICES_URL=https://your-app-name.vercel.app/services
 EMAIL_BLOG_URL=https://your-app-name.vercel.app/blog
+EMAIL_ACTIVITY_URL=https://your-app-name.vercel.app/my-activity
+
+# Payment async queue (recommended for production reliability)
+PAYMENT_QUEUE_ENABLED=true
+# Use either PAYMENT_QUEUE_REDIS_URL or REDIS_URL
+PAYMENT_QUEUE_REDIS_URL=redis://localhost:6379
+REDIS_URL=
+PAYMENT_QUEUE_PREFIX=portfolio
+PAYMENT_RECON_WORKER_CONCURRENCY=2
+PAYMENT_EMAIL_WORKER_CONCURRENCY=2
+PAYMENT_EMAIL_JOB_ATTEMPTS=4
+PAYMENT_EMAIL_JOB_BACKOFF_MS=5000
+PAYMENT_WEBHOOK_EVENT_TTL_DAYS=14
+
+# Admin diagnostics
+# GET /api/payment/admin/queue-status?failedSampleLimit=5 with x-admin-key
 
 # Observability (optional)
 LOG_LEVEL=debug
