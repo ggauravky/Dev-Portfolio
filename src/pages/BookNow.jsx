@@ -64,7 +64,7 @@ function BookNow() {
     const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingOrderKey = 'pendingCashfreeOrder'
-    const activityRedirectKeyPrefix = 'paymentActivityOpened:service:'
+    const paymentSuccessStorageKey = 'paymentSuccess:service'
     const requiresSignIn = isAuthenticated !== true
 
     const currentService = useMemo(
@@ -148,40 +148,6 @@ function BookNow() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
-    }
-
-    const openActivitySuccessTab = (details) => {
-        const orderId = String(details?.orderId || '').trim()
-        if (!orderId || !globalThis.window) {
-            return
-        }
-
-        const redirectKey = `${activityRedirectKeyPrefix}${orderId}`
-        if (sessionStorage.getItem(redirectKey)) {
-            return
-        }
-
-        sessionStorage.setItem(redirectKey, '1')
-
-        const params = new URLSearchParams({
-            source: 'payment',
-            status: 'success',
-            flow: 'service',
-            tab: 'bookings',
-            orderId,
-        })
-
-        const paymentId = String(details?.paymentId || '').trim()
-        if (paymentId) {
-            params.set('paymentId', paymentId)
-        }
-
-        const activityUrl = `/my-activity?${params.toString()}`
-        const openedWindow = globalThis.window.open(activityUrl, '_blank', 'noopener,noreferrer')
-
-        if (!openedWindow) {
-            toast.error('Popup blocked. Open My Activity to download your receipt.')
-        }
     }
 
     const downloadBlob = (content, filename, mimeType) => {
@@ -392,20 +358,29 @@ function BookNow() {
             amount: Number(verification.amount || pendingDetails.amount || 0),
             service: verification.service || pendingDetails.service,
             paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${orderId}`,
-            emailDispatchQueued: Boolean(verification.emailDispatchQueued),
+        }
+        const successDetails = {
+            ...mergedDetails,
+            orderId: String(orderId || mergedDetails.orderId || '').trim(),
         }
 
-        setPaymentSuccess(mergedDetails)
+        setPaymentSuccess(null)
         setPaymentFailure('')
         setReceiptDownloadError('')
         sessionStorage.removeItem(pendingOrderKey)
+        sessionStorage.setItem(paymentSuccessStorageKey, JSON.stringify(successDetails))
 
         if (!silent) {
-            toast.success('Payment verified and booking confirmed')
+            toast.success('Payment verified and booking confirmed. Thanks for booking. Check your mail.')
         }
 
-        void downloadServiceReceiptPdf(mergedDetails, { silent: true, auto: true })
-        openActivitySuccessTab(mergedDetails)
+        const successOrderId = encodeURIComponent(successDetails.orderId)
+        navigate(`/payment-success?flow=service&orderId=${successOrderId}`, {
+            state: {
+                flow: 'service',
+                details: successDetails,
+            },
+        })
 
         return true
     }
@@ -1066,9 +1041,7 @@ function BookNow() {
                                     Payment verification is complete. Save your invitation and calendar file to keep session details handy.
                                 </p>
                                 <p className="mt-2 text-xs text-slate-400">
-                                    {paymentSuccess.emailDispatchQueued
-                                        ? 'Your confirmation PDF starts downloading automatically. A copy is also sent to your email.'
-                                        : 'Your confirmation PDF starts downloading automatically. Email delivery is temporarily unavailable, so please keep the downloaded files.'}
+                                    Your confirmation PDF starts downloading automatically. Thank you for booking, and check your mail for updates.
                                 </p>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">

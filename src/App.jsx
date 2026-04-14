@@ -54,6 +54,7 @@ const Services = lazy(() => import('./pages/Services'))
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
 const BookNow = lazy(() => import('./pages/BookNow'))
 const Support = lazy(() => import('./pages/Support'))
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -174,6 +175,7 @@ function AnimatedRoutes() {
                 <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
                 <Route path="/booknow"                    element={<R><BookNow /></R>} />
                 <Route path="/support"                    element={<R><Support /></R>} />
+                <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
                 <Route path="/payment-under-construction" element={<R><UnderConstruction variant="payment" /></R>} />
                 <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
                 <Route path="/resume-review"              element={<R><ServiceDetail forcedSlug="resume-review" /></R>} />

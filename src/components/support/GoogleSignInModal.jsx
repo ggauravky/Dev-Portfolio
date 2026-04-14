@@ -114,8 +114,15 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
 
                         setIsSigningIn(true)
                         try {
-                            await signIn(credential)
-                            toast.success('Signed in with Google')
+                            const signInResult = await signIn(credential)
+                            const authMessageText = String(signInResult?.authMessage?.text || '').trim()
+
+                            if (authMessageText) {
+                                toast.success(authMessageText)
+                            } else {
+                                toast.success('Signed in with Google')
+                            }
+
                             await onAuthenticated?.()
                         } catch (error) {
                             toast.error(error?.message || 'Unable to complete Google sign-in')

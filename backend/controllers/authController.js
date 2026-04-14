@@ -55,6 +55,19 @@ const buildUserPayload = (user) => {
 const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
 const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
 const normalizeDisplayName = (value) => normalizeText(value, 120);
+const buildAuthLifecycleMessage = (isNewUser) => {
+  if (isNewUser) {
+    return {
+      type: "welcome",
+      text: "Welcome. Please check your email for the welcome message.",
+    };
+  }
+
+  return {
+    type: "welcome_back",
+    text: "Welcome back. Please check your email for the welcome-back message.",
+  };
+};
 
 const resolveGoogleSignInConflict = ({
   userByGoogleId,
@@ -349,6 +362,7 @@ exports.googleSignIn = async (req, res) => {
       message: "Signed in successfully",
       data: {
         user: buildUserPayload(user),
+        authMessage: buildAuthLifecycleMessage(isNewUser),
       },
     });
   } catch (error) {

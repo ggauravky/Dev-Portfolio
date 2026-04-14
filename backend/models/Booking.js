@@ -98,34 +98,6 @@ const bookingSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
-    confirmationEmailSentAt: {
-      type: Date,
-    },
-    confirmationEmailLastAttemptAt: {
-      type: Date,
-    },
-    confirmationEmailRecipient: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      maxlength: 320,
-    },
-    confirmationEmailMessageId: {
-      type: String,
-      trim: true,
-      maxlength: 200,
-    },
-    confirmationEmailAdminMessageId: {
-      type: String,
-      trim: true,
-      maxlength: 200,
-    },
-    confirmationEmailError: {
-      type: String,
-      trim: true,
-      maxlength: 120,
-      default: "",
-    },
     verificationAcceptedAt: {
       type: Date,
     },
@@ -151,18 +123,6 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 200,
-      default: "",
-    },
-    acknowledgementEmailSentAt: {
-      type: Date,
-    },
-    acknowledgementEmailLastAttemptAt: {
-      type: Date,
-    },
-    acknowledgementEmailError: {
-      type: String,
-      trim: true,
-      maxlength: 120,
       default: "",
     },
     ipAddress: {

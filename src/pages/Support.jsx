@@ -5,7 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
@@ -23,6 +23,7 @@ import GoogleSignInModal from '../components/support/GoogleSignInModal'
 const quickAmounts = [49, 99, 199, 499, 999, 1999]
 
 function Support() {
+    const navigate = useNavigate()
     const { user, isAuthenticated, isLoading, refreshSession, updateProfile } = useAuth()
 
     useSEO({
@@ -48,7 +49,7 @@ function Support() {
     const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingSupportKey = 'pendingSupportOrder'
-    const activityRedirectKeyPrefix = 'paymentActivityOpened:support:'
+    const paymentSuccessStorageKey = 'paymentSuccess:support'
     const requiresSignIn = isAuthenticated !== true
     const getCheckoutButtonLabel = () => {
         if (isLoading) {
@@ -127,40 +128,6 @@ function Support() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
-    }
-
-    const openActivitySuccessTab = (details) => {
-        const orderId = String(details?.orderId || '').trim()
-        if (!orderId || !globalThis.window) {
-            return
-        }
-
-        const redirectKey = `${activityRedirectKeyPrefix}${orderId}`
-        if (sessionStorage.getItem(redirectKey)) {
-            return
-        }
-
-        sessionStorage.setItem(redirectKey, '1')
-
-        const params = new URLSearchParams({
-            source: 'payment',
-            status: 'success',
-            flow: 'support',
-            tab: 'payments',
-            orderId,
-        })
-
-        const paymentId = String(details?.paymentId || '').trim()
-        if (paymentId) {
-            params.set('paymentId', paymentId)
-        }
-
-        const activityUrl = `/my-activity?${params.toString()}`
-        const openedWindow = globalThis.window.open(activityUrl, '_blank', 'noopener,noreferrer')
-
-        if (!openedWindow) {
-            toast.error('Popup blocked. Open My Activity to download your receipt.')
-        }
     }
 
     const downloadSupportReceipt = async (details, options = {}) => {
@@ -262,21 +229,30 @@ function Support() {
             amount: Number(verification.amount || pendingDetails.amount || 0),
             contributorName: verification.contributorName || pendingDetails.contributorName || 'Supporter',
             paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${pendingDetails.orderId}`,
-            emailDispatchQueued: Boolean(verification.emailDispatchQueued),
+        }
+        const successDetails = {
+            ...merged,
+            orderId: String(merged.orderId || pendingDetails.orderId || '').trim(),
         }
 
-        setSupportSuccess(merged)
+        setSupportSuccess(null)
         setPaymentFailure('')
         setReceiptDownloadError('')
         sessionStorage.removeItem(pendingSupportKey)
-        setThankYouNote('Thank you for helping me grow. Your support means a lot!')
+        sessionStorage.setItem(paymentSuccessStorageKey, JSON.stringify(successDetails))
+        setThankYouNote('Thank you for helping me grow. Your support means a lot. Check your mail for updates!')
 
         if (!silent) {
-            toast.success('Support payment verified. Thank you!')
+            toast.success('Support payment verified. Thank you! Check your mail for updates.')
         }
 
-        void downloadSupportReceiptPdf(merged, { silent: true, auto: true })
-        openActivitySuccessTab(merged)
+        const successOrderId = encodeURIComponent(successDetails.orderId)
+        navigate(`/payment-success?flow=support&orderId=${successOrderId}`, {
+            state: {
+                flow: 'support',
+                details: successDetails,
+            },
+        })
 
         return true
     }
@@ -911,9 +887,7 @@ function Support() {
                                     Your contribution has been received successfully.
                                 </p>
                                 <p className="mt-2 text-xs text-slate-400">
-                                    {supportSuccess.emailDispatchQueued
-                                        ? 'Your PDF receipt download starts automatically. A copy is also sent to your email.'
-                                        : 'Your PDF receipt download starts automatically. Email delivery is temporarily unavailable, so please keep the downloaded receipt.'}
+                                    Your PDF receipt download starts automatically. Thank you for supporting, and check your mail for updates.
                                 </p>
 
                                 <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">

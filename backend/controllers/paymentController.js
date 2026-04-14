@@ -10,13 +10,6 @@ const SupportPayment = require("../models/SupportPayment");
 const PaymentWebhookEvent = require("../models/PaymentWebhookEvent");
 const { logger } = require("../utils/logger");
 const {
-  sendServicePaymentAcknowledgementEmail,
-  sendSupportPaymentAcknowledgementEmail,
-  sendServiceBookingConfirmationEmail,
-  sendSupportThankYouEmail,
-  isBrevoConfigured,
-} = require("../utils/email");
-const {
   generateServiceConfirmationPdf,
   generateSupportReceiptPdf,
 } = require("../utils/pdfGenerator");
@@ -27,7 +20,6 @@ const {
 const {
   isPaymentQueueReady,
   enqueuePaymentReconciliationJob,
-  enqueuePaymentEmailJob,
   startPaymentQueueWorkers,
   getPaymentQueueDiagnostics,
 } = require("../queues/paymentQueue");
@@ -43,7 +35,7 @@ const SERVICE_CATALOG = {
   "ai-data-guidance": { title: "AI / Data Science Guidance", amount: 499 },
 };
 
-const isEmailDispatchConfigured = () => isBrevoConfigured();
+const PAYMENT_EMAIL_NOTIFICATIONS_ENABLED = false;
 
 const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
 const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
@@ -68,21 +60,6 @@ const CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS =
 const CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP =
   String(process.env.CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP || "true").trim().toLowerCase() === "true";
 const reconciliationJobsInFlight = new Set();
-const PAYMENT_EMAIL_JOB_TYPES = Object.freeze({
-  SERVICE_ACKNOWLEDGEMENT: "service_acknowledgement",
-  SUPPORT_ACKNOWLEDGEMENT: "support_acknowledgement",
-  SERVICE_CONFIRMATION: "service_confirmation",
-  SUPPORT_THANK_YOU: "support_thank_you",
-});
-const NON_RETRYABLE_QUEUE_EMAIL_REASONS = new Set([
-  "missing_target",
-  "missing_recipient",
-  "missing_admin_recipient",
-  "admin_not_configured",
-  "brevo_not_configured",
-  "already_sent_or_missing_record",
-  "unknown_job_type",
-]);
 const paymentQueueLogger = logger.child({ component: "payment-queue" });
 let isPaymentQueueRuntimeActive = false;
 const statusReconciliationInFlight = new Set();
@@ -601,7 +578,7 @@ const buildPaymentStatusData = ({ type, record }) => {
     amount: Number(record?.amount || 0),
     paymentId: String(record?.paymentId || "").trim(),
     paidAt: record?.paidAt || null,
-    emailDispatchQueued: isEmailDispatchConfigured() && paymentStatus === "paid",
+    emailDispatchQueued: PAYMENT_EMAIL_NOTIFICATIONS_ENABLED && paymentStatus === "paid",
     updatedAt: record?.updatedAt || null,
   };
 };
@@ -728,7 +705,7 @@ const reconcileStatusRecordOnDemand = async ({
     await runAsyncReconciliationAttempt({
       type,
       normalizedOrderId,
-      emailDispatchQueued: isEmailDispatchConfigured(),
+      emailDispatchQueued: PAYMENT_EMAIL_NOTIFICATIONS_ENABLED,
       reqLogger,
       attemptNumber,
     });
@@ -1343,540 +1320,7 @@ const mapGatewayError = (error, fallbackMessage) => {
   };
 };
 
-const processServicePaymentAcknowledgementEmail = async ({ bookingId, reqLogger }) => {
-  const effectiveLogger = reqLogger || logger;
-  const normalizedBookingId = String(bookingId || "").trim();
-  if (!normalizedBookingId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_target",
-    };
-  }
-
-  try {
-    const booking = await Booking.findById(normalizedBookingId).lean();
-    if (!booking || booking.acknowledgementEmailSentAt) {
-      return {
-        sent: true,
-        skipped: true,
-        reason: "already_sent_or_missing_record",
-      };
-    }
-
-    const result = await sendServicePaymentAcknowledgementEmail({ booking });
-    if (!result.sent) {
-      await Booking.updateOne(
-        { _id: normalizedBookingId },
-        {
-          $set: {
-            acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
-          },
-        }
-      );
-
-      if (!result.skipped) {
-        effectiveLogger.warn(
-          {
-            bookingId: normalizedBookingId,
-            reason: result.reason,
-            error: result.error,
-          },
-          "Service acknowledgement email was not delivered"
-        );
-      }
-      return {
-        sent: false,
-        skipped: Boolean(result.skipped),
-        reason: String(result.reason || "send_failed"),
-        error: result.error,
-      };
-    }
-
-    await Booking.updateOne(
-      { _id: normalizedBookingId },
-      {
-        $set: {
-          acknowledgementEmailSentAt: new Date(),
-          acknowledgementEmailLastAttemptAt: new Date(),
-          acknowledgementEmailError: "",
-        },
-      }
-    );
-
-    return {
-      sent: true,
-      skipped: false,
-      reason: "sent",
-    };
-  } catch (error) {
-    effectiveLogger.error(
-      {
-        err: error,
-        bookingId: normalizedBookingId,
-      },
-      "Service acknowledgement email processing failed"
-    );
-
-    try {
-      await Booking.updateOne(
-        { _id: normalizedBookingId },
-        {
-          $set: {
-            acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: "processing_failed",
-          },
-        }
-      );
-    } catch {
-      // Ignore metadata update failures for background email jobs.
-    }
-
-    return {
-      sent: false,
-      skipped: false,
-      reason: "processing_failed",
-      error,
-    };
-  }
-};
-
-const scheduleServicePaymentAcknowledgementEmail = ({ bookingId, reqLogger }) => {
-  setImmediate(() => {
-    void processServicePaymentAcknowledgementEmail({
-      bookingId,
-      reqLogger,
-    });
-  });
-};
-
-const processSupportPaymentAcknowledgementEmail = async ({ supportPaymentId, reqLogger }) => {
-  const effectiveLogger = reqLogger || logger;
-  const normalizedSupportId = String(supportPaymentId || "").trim();
-  if (!normalizedSupportId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_target",
-    };
-  }
-
-  try {
-    const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
-    if (!supportPayment || supportPayment.acknowledgementEmailSentAt) {
-      return {
-        sent: true,
-        skipped: true,
-        reason: "already_sent_or_missing_record",
-      };
-    }
-
-    const result = await sendSupportPaymentAcknowledgementEmail({ supportPayment });
-    if (!result.sent) {
-      await SupportPayment.updateOne(
-        { _id: normalizedSupportId },
-        {
-          $set: {
-            acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: String(result.reason || "send_failed").slice(0, 120),
-          },
-        }
-      );
-
-      if (!result.skipped) {
-        effectiveLogger.warn(
-          {
-            supportPaymentId: normalizedSupportId,
-            reason: result.reason,
-            error: result.error,
-          },
-          "Support acknowledgement email was not delivered"
-        );
-      }
-      return {
-        sent: false,
-        skipped: Boolean(result.skipped),
-        reason: String(result.reason || "send_failed"),
-        error: result.error,
-      };
-    }
-
-    await SupportPayment.updateOne(
-      { _id: normalizedSupportId },
-      {
-        $set: {
-          acknowledgementEmailSentAt: new Date(),
-          acknowledgementEmailLastAttemptAt: new Date(),
-          acknowledgementEmailError: "",
-        },
-      }
-    );
-
-    return {
-      sent: true,
-      skipped: false,
-      reason: "sent",
-    };
-  } catch (error) {
-    effectiveLogger.error(
-      {
-        err: error,
-        supportPaymentId: normalizedSupportId,
-      },
-      "Support acknowledgement email processing failed"
-    );
-
-    try {
-      await SupportPayment.updateOne(
-        { _id: normalizedSupportId },
-        {
-          $set: {
-            acknowledgementEmailLastAttemptAt: new Date(),
-            acknowledgementEmailError: "processing_failed",
-          },
-        }
-      );
-    } catch {
-      // Ignore metadata update failures for background email jobs.
-    }
-
-    return {
-      sent: false,
-      skipped: false,
-      reason: "processing_failed",
-      error,
-    };
-  }
-};
-
-const scheduleSupportPaymentAcknowledgementEmail = ({ supportPaymentId, reqLogger }) => {
-  setImmediate(() => {
-    void processSupportPaymentAcknowledgementEmail({
-      supportPaymentId,
-      reqLogger,
-    });
-  });
-};
-
-const processServiceConfirmationEmail = async ({ bookingId, reqLogger }) => {
-  const effectiveLogger = reqLogger || logger;
-  const normalizedBookingId = String(bookingId || "").trim();
-  if (!normalizedBookingId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_target",
-    };
-  }
-
-  try {
-    const booking = await Booking.findById(normalizedBookingId).lean();
-    if (booking?.paymentStatus !== "paid" || booking?.confirmationEmailSentAt) {
-      return {
-        sent: true,
-        skipped: true,
-        reason: "already_sent_or_missing_record",
-      };
-    }
-
-    let attachments = [];
-    try {
-      const pdfAttachment = await generateServiceConfirmationPdf({ booking });
-      if (String(pdfAttachment?.contentBase64 || "").trim()) {
-        attachments = [pdfAttachment];
-      }
-    } catch (pdfError) {
-      effectiveLogger.warn(
-        {
-          err: pdfError,
-          bookingId: normalizedBookingId,
-        },
-        "Service confirmation PDF generation failed; trying image fallback"
-      );
-    }
-
-    if (!attachments.length) {
-      try {
-        const imageAttachment = await generateServiceConfirmationImage({ booking });
-        if (String(imageAttachment?.contentBase64 || "").trim()) {
-          attachments = [imageAttachment];
-        }
-      } catch (imageError) {
-        effectiveLogger.warn(
-          {
-            err: imageError,
-            bookingId: normalizedBookingId,
-          },
-          "Service confirmation image fallback generation failed; sending email without attachment"
-        );
-      }
-    }
-
-    const result = await sendServiceBookingConfirmationEmail({
-      booking,
-      attachments,
-    });
-
-    if (!result.customer?.sent) {
-      await Booking.updateOne(
-        { _id: normalizedBookingId },
-        {
-          $set: {
-            confirmationEmailLastAttemptAt: new Date(),
-            confirmationEmailError: String(result.customer?.reason || "send_failed"),
-          },
-        }
-      );
-
-      if (!result.customer?.skipped) {
-        effectiveLogger.warn(
-          {
-            bookingId: normalizedBookingId,
-            reason: result.customer?.reason,
-            error: result.customer?.error,
-          },
-          "Service confirmation email was not delivered"
-        );
-      }
-      return {
-        sent: false,
-        skipped: Boolean(result.customer?.skipped),
-        reason: String(result.customer?.reason || "send_failed"),
-        error: result.customer?.error,
-      };
-    }
-
-    await Booking.updateOne(
-      { _id: normalizedBookingId },
-      {
-        $set: {
-          confirmationEmailSentAt: new Date(),
-          confirmationEmailRecipient: String(booking.email || "").toLowerCase(),
-          confirmationEmailMessageId: String(
-            result.customer?.messageId || result.customer?.providerId || ""
-          ),
-          confirmationEmailAdminMessageId: String(
-            result.admin?.messageId || result.admin?.providerId || ""
-          ),
-          confirmationEmailLastAttemptAt: new Date(),
-          confirmationEmailError: "",
-        },
-      }
-    );
-
-    effectiveLogger.info(
-      {
-        bookingId: normalizedBookingId,
-        customerEmailId: result.customer?.messageId || result.customer?.providerId,
-        adminEmailSent: Boolean(result.admin?.sent),
-        adminEmailId: result.admin?.messageId || result.admin?.providerId,
-      },
-      "Service confirmation email delivered"
-    );
-
-    return {
-      sent: true,
-      skipped: false,
-      reason: "sent",
-      customerMessageId: result.customer?.messageId || result.customer?.providerId,
-    };
-  } catch (error) {
-    effectiveLogger.error(
-      {
-        err: error,
-        bookingId: normalizedBookingId,
-      },
-      "Service confirmation email processing failed"
-    );
-
-    try {
-      await Booking.updateOne(
-        { _id: normalizedBookingId },
-        {
-          $set: {
-            confirmationEmailLastAttemptAt: new Date(),
-            confirmationEmailError: "processing_failed",
-          },
-        }
-      );
-    } catch {
-      // Ignore metadata update failures for background email jobs.
-    }
-
-    return {
-      sent: false,
-      skipped: false,
-      reason: "processing_failed",
-      error,
-    };
-  }
-};
-
-const scheduleServiceConfirmationEmail = ({ bookingId, reqLogger }) => {
-  setImmediate(() => {
-    void processServiceConfirmationEmail({
-      bookingId,
-      reqLogger,
-    });
-  });
-};
-
-const processSupportThankYouEmail = async ({ supportPaymentId, reqLogger }) => {
-  const effectiveLogger = reqLogger || logger;
-  const normalizedSupportId = String(supportPaymentId || "").trim();
-  if (!normalizedSupportId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_target",
-    };
-  }
-
-  try {
-    const supportPayment = await SupportPayment.findById(normalizedSupportId).lean();
-    if (supportPayment?.paymentStatus !== "paid" || supportPayment?.thankYouEmailSentAt) {
-      return {
-        sent: true,
-        skipped: true,
-        reason: "already_sent_or_missing_record",
-      };
-    }
-
-    let attachments = [];
-    try {
-      const pdfAttachment = await generateSupportReceiptPdf({ supportPayment });
-      if (String(pdfAttachment?.contentBase64 || "").trim()) {
-        attachments = [pdfAttachment];
-      }
-    } catch (pdfError) {
-      effectiveLogger.warn(
-        {
-          err: pdfError,
-          supportPaymentId: normalizedSupportId,
-        },
-        "Support receipt PDF generation failed; trying image fallback"
-      );
-    }
-
-    if (!attachments.length) {
-      try {
-        const imageAttachment = await generateSupportReceiptImage({ supportPayment });
-        if (String(imageAttachment?.contentBase64 || "").trim()) {
-          attachments = [imageAttachment];
-        }
-      } catch (imageError) {
-        effectiveLogger.warn(
-          {
-            err: imageError,
-            supportPaymentId: normalizedSupportId,
-          },
-          "Support receipt image fallback generation failed; sending email without attachment"
-        );
-      }
-    }
-
-    const result = await sendSupportThankYouEmail({
-      supportPayment,
-      attachments,
-    });
-
-    if (!result.sent) {
-      await SupportPayment.updateOne(
-        { _id: normalizedSupportId },
-        {
-          $set: {
-            thankYouEmailLastAttemptAt: new Date(),
-            thankYouEmailError: String(result.reason || "send_failed"),
-          },
-        }
-      );
-
-      if (!result.skipped) {
-        effectiveLogger.warn(
-          {
-            supportPaymentId: normalizedSupportId,
-            reason: result.reason,
-            error: result.error,
-          },
-          "Support thank-you email was not delivered"
-        );
-      }
-      return {
-        sent: false,
-        skipped: Boolean(result.skipped),
-        reason: String(result.reason || "send_failed"),
-        error: result.error,
-      };
-    }
-
-    await SupportPayment.updateOne(
-      { _id: normalizedSupportId },
-      {
-        $set: {
-          thankYouEmailSentAt: new Date(),
-          thankYouEmailRecipient: String(supportPayment.email || "").toLowerCase(),
-          thankYouEmailMessageId: String(result.messageId || result.providerId || ""),
-          thankYouEmailLastAttemptAt: new Date(),
-          thankYouEmailError: "",
-        },
-      }
-    );
-
-    effectiveLogger.info(
-      {
-        supportPaymentId: normalizedSupportId,
-        emailId: result.messageId || result.providerId,
-      },
-      "Support thank-you email delivered"
-    );
-
-    return {
-      sent: true,
-      skipped: false,
-      reason: "sent",
-      messageId: result.messageId || result.providerId,
-    };
-  } catch (error) {
-    effectiveLogger.error(
-      {
-        err: error,
-        supportPaymentId: normalizedSupportId,
-      },
-      "Support thank-you email processing failed"
-    );
-
-    try {
-      await SupportPayment.updateOne(
-        { _id: normalizedSupportId },
-        {
-          $set: {
-            thankYouEmailLastAttemptAt: new Date(),
-            thankYouEmailError: "processing_failed",
-          },
-        }
-      );
-    } catch {
-      // Ignore metadata update failures for background email jobs.
-    }
-
-    return {
-      sent: false,
-      skipped: false,
-      reason: "processing_failed",
-      error,
-    };
-  }
-};
-
-const scheduleSupportThankYouEmail = ({ supportPaymentId, reqLogger }) => {
-  setImmediate(() => {
-    void processSupportThankYouEmail({
-      supportPaymentId,
-      reqLogger,
-    });
-  });
-};
+// Payment and support transactional emails are intentionally disabled.
 
 const buildVerifyRequestContext = ({ req, res, requireAuthMessage, emailMismatchMessage }) => {
   const authIdentity = getAuthenticatedIdentity(req);
@@ -1938,120 +1382,8 @@ const getOwnershipMismatchMessage = ({
   return "";
 };
 
-const enqueuePaymentEmailJobWithFallback = ({
-  jobType,
-  bookingId,
-  supportPaymentId,
-  reqLogger,
-  fallback,
-}) => {
-  const scheduleFallback = typeof fallback === "function" ? fallback : () => {};
-  if (!isPaymentQueueReady() || !isPaymentQueueRuntimeActive) {
-    scheduleFallback();
-    return;
-  }
-
-  const effectiveLogger = reqLogger || logger;
-
-  void enqueuePaymentEmailJob({
-    jobType,
-    bookingId,
-    supportPaymentId,
-  })
-    .then((queued) => {
-      if (!queued) {
-        scheduleFallback();
-      }
-    })
-    .catch((error) => {
-      effectiveLogger.warn(
-        {
-          err: error,
-          jobType,
-          bookingId,
-          supportPaymentId,
-        },
-        "Failed to enqueue payment email job; using in-process scheduler"
-      );
-      scheduleFallback();
-    });
-};
-
-const queueServiceEmailIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
-  if (!emailDispatchQueued) {
-    return;
-  }
-
-  enqueuePaymentEmailJobWithFallback({
-    jobType: PAYMENT_EMAIL_JOB_TYPES.SERVICE_CONFIRMATION,
-    bookingId,
-    reqLogger,
-    fallback: () => {
-      scheduleServiceConfirmationEmail({
-        bookingId,
-        reqLogger,
-      });
-    },
-  });
-};
-
-const queueSupportEmailIfConfigured = ({ emailDispatchQueued, supportPaymentId, reqLogger }) => {
-  if (!emailDispatchQueued) {
-    return;
-  }
-
-  enqueuePaymentEmailJobWithFallback({
-    jobType: PAYMENT_EMAIL_JOB_TYPES.SUPPORT_THANK_YOU,
-    supportPaymentId,
-    reqLogger,
-    fallback: () => {
-      scheduleSupportThankYouEmail({
-        supportPaymentId,
-        reqLogger,
-      });
-    },
-  });
-};
-
-const queueServiceAcknowledgementIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
-  if (!emailDispatchQueued) {
-    return;
-  }
-
-  enqueuePaymentEmailJobWithFallback({
-    jobType: PAYMENT_EMAIL_JOB_TYPES.SERVICE_ACKNOWLEDGEMENT,
-    bookingId,
-    reqLogger,
-    fallback: () => {
-      scheduleServicePaymentAcknowledgementEmail({
-        bookingId,
-        reqLogger,
-      });
-    },
-  });
-};
-
-const queueSupportAcknowledgementIfConfigured = ({
-  emailDispatchQueued,
-  supportPaymentId,
-  reqLogger,
-}) => {
-  if (!emailDispatchQueued) {
-    return;
-  }
-
-  enqueuePaymentEmailJobWithFallback({
-    jobType: PAYMENT_EMAIL_JOB_TYPES.SUPPORT_ACKNOWLEDGEMENT,
-    supportPaymentId,
-    reqLogger,
-    fallback: () => {
-      scheduleSupportPaymentAcknowledgementEmail({
-        supportPaymentId,
-        reqLogger,
-      });
-    },
-  });
-};
+const queueServiceEmailIfConfigured = () => {};
+const queueSupportEmailIfConfigured = () => {};
 
 const tryHandleAsyncServiceVerification = async ({
   draftBooking,
@@ -2084,14 +1416,6 @@ const tryHandleAsyncServiceVerification = async ({
     emailDispatchQueued,
     reqLogger,
   });
-
-  if (!draftBooking.acknowledgementEmailSentAt) {
-    queueServiceAcknowledgementIfConfigured({
-      emailDispatchQueued,
-      bookingId: draftBooking._id,
-      reqLogger,
-    });
-  }
 
   res.status(202).json({
     success: true,
@@ -2146,14 +1470,6 @@ const tryHandleAsyncSupportVerification = async ({
     emailDispatchQueued,
     reqLogger,
   });
-
-  if (!supportRecord.acknowledgementEmailSentAt) {
-    queueSupportAcknowledgementIfConfigured({
-      emailDispatchQueued,
-      supportPaymentId: supportRecord._id,
-      reqLogger,
-    });
-  }
 
   res.status(202).json({
     success: true,
@@ -2885,85 +2201,11 @@ const processPaymentQueueReconciliationJob = async ({
   });
 };
 
-const shouldRetryQueuedEmailResult = (result) => {
-  if (!result || result.sent || result.skipped) {
-    return false;
-  }
-
-  const reason = String(result.reason || "").trim().toLowerCase();
-  if (!reason) {
-    return true;
-  }
-
-  return !NON_RETRYABLE_QUEUE_EMAIL_REASONS.has(reason);
-};
-
-const processPaymentQueueEmailJob = async ({ jobType, bookingId, supportPaymentId }) => {
-  let result;
-
-  switch (jobType) {
-    case PAYMENT_EMAIL_JOB_TYPES.SERVICE_ACKNOWLEDGEMENT:
-      result = await processServicePaymentAcknowledgementEmail({
-        bookingId,
-        reqLogger: paymentQueueLogger,
-      });
-      break;
-    case PAYMENT_EMAIL_JOB_TYPES.SUPPORT_ACKNOWLEDGEMENT:
-      result = await processSupportPaymentAcknowledgementEmail({
-        supportPaymentId,
-        reqLogger: paymentQueueLogger,
-      });
-      break;
-    case PAYMENT_EMAIL_JOB_TYPES.SERVICE_CONFIRMATION:
-      result = await processServiceConfirmationEmail({
-        bookingId,
-        reqLogger: paymentQueueLogger,
-      });
-      break;
-    case PAYMENT_EMAIL_JOB_TYPES.SUPPORT_THANK_YOU:
-      result = await processSupportThankYouEmail({
-        supportPaymentId,
-        reqLogger: paymentQueueLogger,
-      });
-      break;
-    default:
-      paymentQueueLogger.warn(
-        {
-          jobType,
-          bookingId,
-          supportPaymentId,
-        },
-        "Skipped unknown payment email queue job type"
-      );
-      result = {
-        sent: false,
-        skipped: true,
-        reason: "unknown_job_type",
-      };
-  }
-
-  if (shouldRetryQueuedEmailResult(result)) {
-    const retryableError = new Error(
-      `Retryable payment email failure (${String(result.reason || "send_failed")})`
-    );
-    retryableError.code = "PAYMENT_EMAIL_RETRYABLE_FAILURE";
-    retryableError.context = {
-      jobType,
-      bookingId,
-      supportPaymentId,
-      reason: result.reason,
-      error: result.error,
-    };
-    throw retryableError;
-  }
-};
-
 if (isPaymentQueueReady()) {
   try {
     isPaymentQueueRuntimeActive = Boolean(
       startPaymentQueueWorkers({
         processReconciliationJob: processPaymentQueueReconciliationJob,
-        processEmailJob: processPaymentQueueEmailJob,
       })
     );
   } catch (error) {
@@ -3616,7 +2858,7 @@ exports.handleCashfreeWebhook = async (req, res) => {
       eventName,
     });
 
-    const emailDispatchQueued = isEmailDispatchConfigured();
+    const emailDispatchQueued = PAYMENT_EMAIL_NOTIFICATIONS_ENABLED;
     const scheduledTypes = [];
 
     if (booking) {
@@ -3847,7 +3089,7 @@ exports.createOrder = async (req, res) => {
 
 exports.verifyPayment = async (req, res) => {
   const reqLogger = req.log || logger;
-  const emailDispatchQueued = isEmailDispatchConfigured();
+  const emailDispatchQueued = PAYMENT_EMAIL_NOTIFICATIONS_ENABLED;
 
   if (!isDatabaseReady()) {
     return res.status(503).json({
@@ -4247,7 +3489,7 @@ exports.createSupportOrder = async (req, res) => {
 
 exports.verifySupportPayment = async (req, res) => {
   const reqLogger = req.log || logger;
-  const emailDispatchQueued = isEmailDispatchConfigured();
+  const emailDispatchQueued = PAYMENT_EMAIL_NOTIFICATIONS_ENABLED;
   const verifyContext = buildVerifyRequestContext({
     req,
     res,
@@ -4667,7 +3909,7 @@ exports.getMyBookings = async (req, res) => {
       ],
     })
       .select(
-        "_id orderId paymentId paymentStatus paymentProvider service serviceSlug amount preferredDate preferredTime paidAt createdAt updatedAt confirmationEmailSentAt confirmationEmailError verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError acknowledgementEmailSentAt"
+        "_id orderId paymentId paymentStatus paymentProvider service serviceSlug amount preferredDate preferredTime paidAt createdAt updatedAt verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError"
       )
       .sort({ createdAt: -1 })
       .lean();
@@ -4690,14 +3932,11 @@ exports.getMyBookings = async (req, res) => {
           paidAt: booking.paidAt,
           createdAt: booking.createdAt,
           updatedAt: booking.updatedAt,
-          confirmationEmailSentAt: booking.confirmationEmailSentAt,
-          confirmationEmailError: booking.confirmationEmailError,
           verificationAcceptedAt: booking.verificationAcceptedAt,
           reconciliationStatus: booking.reconciliationStatus,
           reconciliationAttempts: booking.reconciliationAttempts,
           lastReconciliationAt: booking.lastReconciliationAt,
           lastReconciliationError: booking.lastReconciliationError,
-          acknowledgementEmailSentAt: booking.acknowledgementEmailSentAt,
         })),
       },
     });
@@ -4755,7 +3994,7 @@ exports.getMySupportPayments = async (req, res) => {
       ],
     })
       .select(
-        "_id orderId paymentId paymentStatus paymentProvider contributorName amount message paidAt createdAt updatedAt thankYouEmailSentAt thankYouEmailError verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError acknowledgementEmailSentAt"
+        "_id orderId paymentId paymentStatus paymentProvider contributorName amount message paidAt createdAt updatedAt verificationAcceptedAt reconciliationStatus reconciliationAttempts lastReconciliationAt lastReconciliationError"
       )
       .sort({ createdAt: -1 })
       .lean();
@@ -4776,14 +4015,11 @@ exports.getMySupportPayments = async (req, res) => {
           paidAt: item.paidAt,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
-          thankYouEmailSentAt: item.thankYouEmailSentAt,
-          thankYouEmailError: item.thankYouEmailError,
           verificationAcceptedAt: item.verificationAcceptedAt,
           reconciliationStatus: item.reconciliationStatus,
           reconciliationAttempts: item.reconciliationAttempts,
           lastReconciliationAt: item.lastReconciliationAt,
           lastReconciliationError: item.lastReconciliationError,
-          acknowledgementEmailSentAt: item.acknowledgementEmailSentAt,
         })),
       },
     });

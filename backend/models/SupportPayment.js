@@ -77,29 +77,6 @@ const supportPaymentSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
-    thankYouEmailSentAt: {
-      type: Date,
-    },
-    thankYouEmailLastAttemptAt: {
-      type: Date,
-    },
-    thankYouEmailRecipient: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      maxlength: 320,
-    },
-    thankYouEmailMessageId: {
-      type: String,
-      trim: true,
-      maxlength: 200,
-    },
-    thankYouEmailError: {
-      type: String,
-      trim: true,
-      maxlength: 120,
-      default: "",
-    },
     verificationAcceptedAt: {
       type: Date,
     },
@@ -125,18 +102,6 @@ const supportPaymentSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 200,
-      default: "",
-    },
-    acknowledgementEmailSentAt: {
-      type: Date,
-    },
-    acknowledgementEmailLastAttemptAt: {
-      type: Date,
-    },
-    acknowledgementEmailError: {
-      type: String,
-      trim: true,
-      maxlength: 120,
       default: "",
     },
     ipAddress: {

@@ -12,19 +12,10 @@ const PAYMENT_QUEUE_PREFIX = String(process.env.PAYMENT_QUEUE_PREFIX || "portfol
 const RECONCILIATION_QUEUE_NAME = String(
   process.env.PAYMENT_RECON_QUEUE_NAME || "payment-reconciliation"
 ).trim();
-const EMAIL_QUEUE_NAME = String(process.env.PAYMENT_EMAIL_QUEUE_NAME || "payment-email").trim();
 
 const RECONCILIATION_WORKER_CONCURRENCY =
   Number.parseInt(process.env.PAYMENT_RECON_WORKER_CONCURRENCY, 10) || 2;
-const EMAIL_WORKER_CONCURRENCY = Number.parseInt(process.env.PAYMENT_EMAIL_WORKER_CONCURRENCY, 10) || 2;
-const PAYMENT_EMAIL_JOB_ATTEMPTS = Math.max(
-  1,
-  Number.parseInt(process.env.PAYMENT_EMAIL_JOB_ATTEMPTS, 10) || 4
-);
-const PAYMENT_EMAIL_JOB_BACKOFF_MS = Math.max(
-  250,
-  Number.parseInt(process.env.PAYMENT_EMAIL_JOB_BACKOFF_MS, 10) || 5000
-);
+
 const PAYMENT_QUEUE_DIAGNOSTIC_JOB_STATES = [
   "waiting",
   "active",
@@ -36,9 +27,7 @@ const PAYMENT_QUEUE_DIAGNOSTIC_JOB_STATES = [
 
 let queueConnection = null;
 let reconciliationQueue = null;
-let emailQueue = null;
 let reconciliationWorker = null;
-let emailWorker = null;
 let workersStarted = false;
 
 const isPaymentQueueReady = () => PAYMENT_QUEUE_ENABLED && Boolean(PAYMENT_QUEUE_REDIS_URL);
@@ -88,26 +77,6 @@ const ensureReconciliationQueue = () => {
   }
 
   return reconciliationQueue;
-};
-
-const ensureEmailQueue = () => {
-  if (!emailQueue) {
-    const connection = ensureQueueConnection();
-    if (!connection) {
-      return null;
-    }
-
-    emailQueue = new Queue(EMAIL_QUEUE_NAME, {
-      connection,
-      prefix: PAYMENT_QUEUE_PREFIX || "portfolio",
-      defaultJobOptions: {
-        removeOnComplete: 500,
-        removeOnFail: 1000,
-      },
-    });
-  }
-
-  return emailQueue;
 };
 
 const isDuplicateJobError = (error) => {
@@ -164,55 +133,6 @@ const enqueuePaymentReconciliationJob = async ({
   }
 };
 
-const enqueuePaymentEmailJob = async ({ jobType, bookingId, supportPaymentId }) => {
-  if (!isPaymentQueueReady()) {
-    return false;
-  }
-
-  const queue = ensureEmailQueue();
-  if (!queue) {
-    return false;
-  }
-
-  const normalizedType = String(jobType || "").trim();
-  const normalizedBookingId = String(bookingId || "").trim();
-  const normalizedSupportPaymentId = String(supportPaymentId || "").trim();
-  const targetId = normalizedBookingId || normalizedSupportPaymentId;
-
-  if (!normalizedType || !targetId) {
-    return false;
-  }
-
-  const jobId = `${normalizedType}:${targetId}`;
-
-  try {
-    await queue.add(
-      "dispatch-email",
-      {
-        jobType: normalizedType,
-        bookingId: normalizedBookingId,
-        supportPaymentId: normalizedSupportPaymentId,
-      },
-      {
-        jobId,
-        attempts: PAYMENT_EMAIL_JOB_ATTEMPTS,
-        backoff: {
-          type: "exponential",
-          delay: PAYMENT_EMAIL_JOB_BACKOFF_MS,
-        },
-      }
-    );
-
-    return true;
-  } catch (error) {
-    if (isDuplicateJobError(error)) {
-      return true;
-    }
-
-    throw error;
-  }
-};
-
 const attachWorkerLogging = (worker, workerName) => {
   worker.on("ready", () => {
     logger.info(
@@ -246,7 +166,7 @@ const attachWorkerLogging = (worker, workerName) => {
   });
 };
 
-const startPaymentQueueWorkers = ({ processReconciliationJob, processEmailJob }) => {
+const startPaymentQueueWorkers = ({ processReconciliationJob }) => {
   if (workersStarted) {
     return true;
   }
@@ -255,8 +175,8 @@ const startPaymentQueueWorkers = ({ processReconciliationJob, processEmailJob })
     return false;
   }
 
-  if (typeof processReconciliationJob !== "function" || typeof processEmailJob !== "function") {
-    throw new TypeError("Queue worker handlers must be functions");
+  if (typeof processReconciliationJob !== "function") {
+    throw new TypeError("Queue worker reconciliation handler must be a function");
   }
 
   reconciliationWorker = new Worker(
@@ -271,23 +191,10 @@ const startPaymentQueueWorkers = ({ processReconciliationJob, processEmailJob })
     }
   );
 
-  emailWorker = new Worker(
-    EMAIL_QUEUE_NAME,
-    async (job) => {
-      await processEmailJob(job.data || {});
-    },
-    {
-      connection: createRedisConnection(),
-      prefix: PAYMENT_QUEUE_PREFIX || "portfolio",
-      concurrency: EMAIL_WORKER_CONCURRENCY,
-    }
-  );
-
   attachWorkerLogging(reconciliationWorker, RECONCILIATION_QUEUE_NAME);
-  attachWorkerLogging(emailWorker, EMAIL_QUEUE_NAME);
 
   workersStarted = true;
-  logger.info("Payment queue workers started");
+  logger.info("Payment reconciliation queue worker started");
   return true;
 };
 
@@ -299,19 +206,9 @@ const closePaymentQueueWorkers = async () => {
     reconciliationWorker = null;
   }
 
-  if (emailWorker) {
-    closers.push(emailWorker.close());
-    emailWorker = null;
-  }
-
   if (reconciliationQueue) {
     closers.push(reconciliationQueue.close());
     reconciliationQueue = null;
-  }
-
-  if (emailQueue) {
-    closers.push(emailQueue.close());
-    emailQueue = null;
   }
 
   if (queueConnection) {
@@ -330,10 +227,7 @@ const getPaymentQueueStatus = () => ({
   workersStarted,
   queueNames: {
     reconciliation: RECONCILIATION_QUEUE_NAME,
-    email: EMAIL_QUEUE_NAME,
   },
-  emailJobAttempts: PAYMENT_EMAIL_JOB_ATTEMPTS,
-  emailJobBackoffMs: PAYMENT_EMAIL_JOB_BACKOFF_MS,
 });
 
 const sanitizeFailedSampleLimit = (value) => {
@@ -356,10 +250,7 @@ const summarizeQueueJob = (job) => {
     finishedAt: Number(job?.finishedOn || 0) || undefined,
     data: {
       type: String(data.type || ""),
-      jobType: String(data.jobType || ""),
       normalizedOrderId: String(data.normalizedOrderId || ""),
-      bookingId: String(data.bookingId || ""),
-      supportPaymentId: String(data.supportPaymentId || ""),
       attemptNumber: Number(data.attemptNumber || 0) || undefined,
     },
   };
@@ -391,8 +282,7 @@ const getPaymentQueueDiagnostics = async ({ failedSampleLimit = 5 } = {}) => {
 
   try {
     const reconQueue = ensureReconciliationQueue();
-    const mailQueue = ensureEmailQueue();
-    if (!reconQueue || !mailQueue) {
+    if (!reconQueue) {
       return {
         ...baseStatus,
         diagnostics: null,
@@ -401,16 +291,15 @@ const getPaymentQueueDiagnostics = async ({ failedSampleLimit = 5 } = {}) => {
       };
     }
 
-    const [reconciliation, email] = await Promise.all([
-      getQueueDiagnostics({ queue: reconQueue, failedSampleLimit: normalizedLimit }),
-      getQueueDiagnostics({ queue: mailQueue, failedSampleLimit: normalizedLimit }),
-    ]);
+    const reconciliation = await getQueueDiagnostics({
+      queue: reconQueue,
+      failedSampleLimit: normalizedLimit,
+    });
 
     return {
       ...baseStatus,
       diagnostics: {
         reconciliation,
-        email,
       },
       failedSampleLimit: normalizedLimit,
     };
@@ -434,7 +323,6 @@ const getPaymentQueueDiagnostics = async ({ failedSampleLimit = 5 } = {}) => {
 module.exports = {
   isPaymentQueueReady,
   enqueuePaymentReconciliationJob,
-  enqueuePaymentEmailJob,
   startPaymentQueueWorkers,
   closePaymentQueueWorkers,
   getPaymentQueueStatus,

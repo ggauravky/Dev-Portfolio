@@ -104,7 +104,10 @@ export function AuthProvider({ children }) {
 
             const nextUser = data.user || null
             setUser(nextUser)
-            return nextUser
+            return {
+                user: nextUser,
+                authMessage: data.authMessage || null,
+            }
         } catch (error) {
             if (error?.name === 'AbortError') {
                 return null
