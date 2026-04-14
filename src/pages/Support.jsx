@@ -94,6 +94,8 @@ function Support() {
 
     const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
     const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
+    const maxStatusPollingAttempts = 20
+    const maxBackgroundVerificationRetries = 6
     const classifyVerificationFailure = (message, statusCode) => {
         const text = String(message || '')
         const normalizedStatus = Number(statusCode)
@@ -258,7 +260,7 @@ function Support() {
     }
 
     const scheduleSupportBackgroundVerification = (orderId, pendingDetails, attempt = 1) => {
-        if (attempt > 3) {
+        if (attempt > maxBackgroundVerificationRetries) {
             return
         }
 
@@ -286,16 +288,13 @@ function Support() {
             }
 
             if (activeEmail.toLowerCase() !== String(nextPending.email || '').trim().toLowerCase()) {
-                nextPending = {
-                    ...nextPending,
-                    email: activeEmail,
-                }
-                sessionStorage.setItem(pendingSupportKey, JSON.stringify(nextPending))
+                sessionStorage.removeItem(pendingSupportKey)
+                setPaymentFailure('Your signed-in account changed. Please start checkout again with this account.')
+                return
             }
 
             const resolved = await finalizeSupportVerification(orderId, nextPending, {
                 silent: true,
-                skipStatusPollingOnPending: true,
             })
 
             if (!resolved) {
@@ -307,8 +306,9 @@ function Support() {
     const pollSupportStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
         const { silent = false, scheduleBackgroundRetry = true } = options
         const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
+        setPaymentFailure('')
 
-        for (let attempt = 0; attempt < 10; attempt += 1) {
+        for (let attempt = 0; attempt < maxStatusPollingAttempts; attempt += 1) {
             try {
                 const status = await fetchPaymentStatus(orderId, activeEmail)
                 const verificationState = String(status?.verificationStatus || '').toLowerCase()
@@ -330,7 +330,7 @@ function Support() {
                 }
 
                 const nextDelay = Number(status?.nextPollMs || getRetryDelay(Math.min(attempt, 4)))
-                await pause(Math.max(1200, Math.min(nextDelay, 9000)))
+                await pause(Math.max(1200, Math.min(nextDelay, 12000)))
             } catch (statusError) {
                 const message = String(statusError?.message || '')
                 const statusCode = Number(statusError?.status)
@@ -545,11 +545,13 @@ function Support() {
 
         const activeEmail = String(user?.email || '').trim().toLowerCase()
         if (activeEmail && activeEmail !== String(pending.email || '').trim().toLowerCase()) {
-            pending.email = activeEmail
-            sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
+            sessionStorage.removeItem(pendingSupportKey)
+            setPaymentFailure('Your signed-in account changed. Please start checkout again with this account.')
+            return
         }
 
-        finalizeSupportVerification(pending.orderId, pending, { silent: true })
+        setPaymentFailure('')
+        void finalizeSupportVerification(pending.orderId, pending, { silent: true })
     }, [isAuthenticated, isLoading, user?.email])
 
     const handleSubmit = (event) => {

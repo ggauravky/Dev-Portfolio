@@ -47,7 +47,7 @@ export const pingBackend = async () => {
     } catch (error) {
         // Don't show errors to user - this is a silent background operation
         if (error.name === 'AbortError') {
-            console.warn('⏱️ Backend health check timeout - server might be cold starting')
+            console.info('⏱️ Backend health check timeout - server might be cold starting')
         } else {
             console.warn('⚠️ Backend ping failed (silent):', error.message)
         }

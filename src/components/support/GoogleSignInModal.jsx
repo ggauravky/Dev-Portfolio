@@ -60,8 +60,20 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
     const buttonContainerRef = useRef(null)
     const isMountedRef = useRef(false)
     const { signIn } = useAuth()
+    const googleInitializedRef = useRef(false)
+    const initializedClientIdRef = useRef('')
+    const signInRef = useRef(signIn)
+    const onAuthenticatedRef = useRef(onAuthenticated)
     const [isSigningIn, setIsSigningIn] = useState(false)
     const [isReady, setIsReady] = useState(false)
+
+    useEffect(() => {
+        signInRef.current = signIn
+    }, [signIn])
+
+    useEffect(() => {
+        onAuthenticatedRef.current = onAuthenticated
+    }, [onAuthenticated])
 
     useEffect(() => {
         isMountedRef.current = true
@@ -103,39 +115,44 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
                     return
                 }
 
-                globalThis.window.google.accounts.id.initialize({
-                    client_id: clientId,
-                    callback: async (response) => {
-                        const credential = String(response?.credential || '').trim()
-                        if (!credential) {
-                            toast.error('Google Sign-In failed. Please try again')
-                            return
-                        }
-
-                        setIsSigningIn(true)
-                        try {
-                            const signInResult = await signIn(credential)
-                            const authMessageText = String(signInResult?.authMessage?.text || '').trim()
-
-                            if (authMessageText) {
-                                toast.success(authMessageText)
-                            } else {
-                                toast.success('Signed in with Google')
+                if (!googleInitializedRef.current || initializedClientIdRef.current !== clientId) {
+                    globalThis.window.google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: async (response) => {
+                            const credential = String(response?.credential || '').trim()
+                            if (!credential) {
+                                toast.error('Google Sign-In failed. Please try again')
+                                return
                             }
 
-                            await onAuthenticated?.()
-                        } catch (error) {
-                            toast.error(error?.message || 'Unable to complete Google sign-in')
-                        } finally {
-                            if (isMountedRef.current) {
-                                setIsSigningIn(false)
+                            setIsSigningIn(true)
+                            try {
+                                const signInResult = await signInRef.current(credential)
+                                const authMessageText = String(signInResult?.authMessage?.text || '').trim()
+
+                                if (authMessageText) {
+                                    toast.success(authMessageText)
+                                } else {
+                                    toast.success('Signed in with Google')
+                                }
+
+                                await onAuthenticatedRef.current?.()
+                            } catch (error) {
+                                toast.error(error?.message || 'Unable to complete Google sign-in')
+                            } finally {
+                                if (isMountedRef.current) {
+                                    setIsSigningIn(false)
+                                }
                             }
-                        }
-                    },
-                    auto_select: false,
-                    cancel_on_tap_outside: true,
-                    ux_mode: 'popup',
-                })
+                        },
+                        auto_select: false,
+                        cancel_on_tap_outside: true,
+                        ux_mode: 'popup',
+                    })
+
+                    googleInitializedRef.current = true
+                    initializedClientIdRef.current = clientId
+                }
 
                 buttonContainerRef.current.innerHTML = ''
                 globalThis.window.google.accounts.id.renderButton(buttonContainerRef.current, {
@@ -155,7 +172,7 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
         }
 
         renderGoogleButton()
-    }, [isOpen, signIn, onAuthenticated, onClose])
+    }, [isOpen, onClose])
 
     if (!isOpen) {
         return null
