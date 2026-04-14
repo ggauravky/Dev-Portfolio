@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+﻿// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
 // Unauthorized copying, modification, or distribution of this software,
 // via any medium, is strictly prohibited without the express written
 // consent of the author. See LICENSE for details.
@@ -20,6 +20,7 @@ const toBoolean = (value, fallback) => {
   if (["1", "true", "yes", "on"].includes(normalized)) {
     return true;
   }
+
   if (["0", "false", "no", "off"].includes(normalized)) {
     return false;
   }
@@ -35,13 +36,14 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
-const normalizeTagValue = (value, fallback) => {
-  const normalized = String(value || fallback || "")
+const sanitizeTagValue = (value, fallback = "na") => {
+  const normalized = String(value || fallback)
     .toLowerCase()
     .replaceAll(/[^a-z0-9_-]/g, "-")
     .replaceAll(/-{2,}/g, "-")
     .replaceAll(/^-|-$/g, "")
-    .slice(0, 128);
+    .slice(0, 120);
+
   return normalized || fallback;
 };
 
@@ -68,13 +70,52 @@ const parseAddress = (value) => {
   };
 };
 
+const formatDateTime = (value) => {
+  const parsed = new Date(value || Date.now());
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(parsed);
+};
+
+const formatDate = (value) => {
+  const parsed = new Date(value || Date.now());
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeZone: "Asia/Kolkata",
+  }).format(parsed);
+};
+
+const formatCurrencyInr = (value) => {
+  const amount = Number(value || 0);
+  if (!Number.isFinite(amount)) {
+    return "INR 0";
+  }
+
+  return `INR ${amount.toLocaleString("en-IN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}`;
+};
+
 const getDisplayName = (entity) => {
   const givenName = normalizeEnvString(entity?.givenName);
   if (givenName) {
     return givenName;
   }
 
-  const fullName = normalizeEnvString(entity?.name || entity?.contributorName);
+  const fullName = normalizeEnvString(
+    entity?.displayName || entity?.name || entity?.contributorName || entity?.customerName
+  );
   if (fullName) {
     return fullName.split(/\s+/)[0];
   }
@@ -109,6 +150,8 @@ const EMAIL_HOME_URL = defaultHomeUrl;
 const EMAIL_SUPPORT_URL =
   normalizeEnvString(process.env.EMAIL_SUPPORT_URL) || `${defaultHomeUrl}/contact`;
 const EMAIL_BLOG_URL = normalizeEnvString(process.env.EMAIL_BLOG_URL) || `${defaultHomeUrl}/blog`;
+const EMAIL_ACTIVITY_URL =
+  normalizeEnvString(process.env.EMAIL_ACTIVITY_URL) || `${defaultHomeUrl}/my-activity`;
 
 let brevoClient = null;
 
@@ -140,7 +183,7 @@ const shouldSendWelcomeBackEmail = (user) => {
   return Date.now() - lastSentAt.getTime() >= ONE_DAY_MS;
 };
 
-const buildIdempotencyKey = (...parts) => parts.map((part) => normalizeTagValue(part, "na")).join("-");
+const buildIdempotencyKey = (...parts) => parts.map((part) => sanitizeTagValue(part)).join("-");
 
 const buildEmailLayout = ({
   preheader,
@@ -153,7 +196,12 @@ const buildEmailLayout = ({
   footer,
 }) => {
   const safeBody = (Array.isArray(bodyParagraphs) ? bodyParagraphs : [])
-    .map((paragraph) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#1f2937;">${escapeHtml(paragraph)}</p>`)
+    .map(
+      (paragraph) =>
+        `<p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#1f2937;">${escapeHtml(
+          paragraph
+        )}</p>`
+    )
     .join("");
 
   const safeDetails = (Array.isArray(detailRows) ? detailRows : [])
@@ -212,7 +260,9 @@ const buildEmailLayout = ({
             </tr>
             <tr>
               <td style="padding:28px 30px;">
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#111827;">${escapeHtml(intro)}</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#111827;">${escapeHtml(
+                  intro
+                )}</p>
                 ${safeBody}
                 ${detailsTable}
                 ${cta}
@@ -338,10 +388,9 @@ const sendTransactionalEmail = async ({
   }
 
   const normalizedTags = (Array.isArray(tags) ? tags : [])
-    .map((tag) => normalizeTagValue(tag, "email"))
+    .map((tag) => sanitizeTagValue(tag, "email"))
     .filter(Boolean)
     .slice(0, 12);
-  const attachmentList = normalizeAttachments(attachments);
 
   const payload = {
     sender: {
@@ -355,6 +404,11 @@ const sendTransactionalEmail = async ({
     tags: normalizedTags,
   };
 
+  const normalizedAttachments = normalizeAttachments(attachments);
+  if (normalizedAttachments.length) {
+    payload.attachment = normalizedAttachments;
+  }
+
   if (BREVO_REPLY_TO_EMAIL) {
     payload.replyTo = BREVO_REPLY_TO_NAME
       ? {
@@ -364,10 +418,6 @@ const sendTransactionalEmail = async ({
       : {
           email: BREVO_REPLY_TO_EMAIL,
         };
-  }
-
-  if (attachmentList.length) {
-    payload.attachment = attachmentList;
   }
 
   if (idempotencyKey) {
@@ -458,7 +508,7 @@ const buildWelcomeBackPayload = (user) => {
     heading: `Welcome back, ${displayName}`,
     intro: `Hi ${displayName}, great to have you back.`,
     bodyParagraphs: [
-      "Your account is active and linked to your latest support activity.",
+      "Your account is active and linked to your latest activity.",
       "Continue from where you left off and keep learning.",
     ],
     actionLabel: "Continue",
@@ -509,7 +559,100 @@ const buildNewsletterPayload = (email) => {
   };
 };
 
-// Payment and support transactional email templates have been removed.
+const buildServiceReceiptPayload = (booking) => {
+  const displayName = getDisplayName(booking);
+  const detailRows = [
+    { label: "Service", value: normalizeEnvString(booking?.service) || "Not available" },
+    { label: "Amount", value: formatCurrencyInr(booking?.amount) },
+    { label: "Order ID", value: normalizeEnvString(booking?.orderId) || "Not available" },
+    { label: "Payment ID", value: normalizeEnvString(booking?.paymentId) || "Not available" },
+    { label: "Session Date", value: formatDate(booking?.preferredDate) },
+    { label: "Session Time", value: normalizeEnvString(booking?.preferredTime) || "Not available" },
+    { label: "Paid At", value: formatDateTime(booking?.paidAt || booking?.updatedAt || Date.now()) },
+  ];
+
+  const text = [
+    `Hi ${displayName},`,
+    "",
+    "Thanks for your booking. Your payment was successful.",
+    `Service: ${normalizeEnvString(booking?.service) || "Not available"}`,
+    `Amount: ${formatCurrencyInr(booking?.amount)}`,
+    `Order ID: ${normalizeEnvString(booking?.orderId) || "Not available"}`,
+    `Payment ID: ${normalizeEnvString(booking?.paymentId) || "Not available"}`,
+    "",
+    "Your PDF receipt is attached in this email.",
+    `You can also download it from My Activity: ${EMAIL_ACTIVITY_URL}`,
+    "",
+    "Thanks,",
+    "Gaurav Kumar",
+  ].join("\n");
+
+  const html = buildEmailLayout({
+    preheader: "Your booking payment was successful",
+    heading: "Booking Payment Successful",
+    intro: `Hi ${displayName}, your payment is confirmed.`,
+    bodyParagraphs: [
+      "Thank you for booking a service. Your receipt PDF is attached with this email.",
+      "You can also access the same receipt from My Activity anytime.",
+    ],
+    detailRows,
+    actionLabel: "Open My Activity",
+    actionHref: EMAIL_ACTIVITY_URL,
+    footer: `Need help? Reach us at ${EMAIL_SUPPORT_URL}`,
+  });
+
+  return {
+    subject: `Booking confirmed: ${normalizeEnvString(booking?.service) || "Service"}`,
+    text,
+    html,
+  };
+};
+
+const buildSupportReceiptPayload = (supportPayment) => {
+  const displayName = getDisplayName(supportPayment);
+  const detailRows = [
+    { label: "Contributor", value: normalizeEnvString(supportPayment?.contributorName) || "Supporter" },
+    { label: "Amount", value: formatCurrencyInr(supportPayment?.amount) },
+    { label: "Order ID", value: normalizeEnvString(supportPayment?.orderId) || "Not available" },
+    { label: "Payment ID", value: normalizeEnvString(supportPayment?.paymentId) || "Not available" },
+    { label: "Paid At", value: formatDateTime(supportPayment?.paidAt || supportPayment?.updatedAt || Date.now()) },
+  ];
+
+  const text = [
+    `Hi ${displayName},`,
+    "",
+    "Thanks for supporting my work. Your payment was successful.",
+    `Amount: ${formatCurrencyInr(supportPayment?.amount)}`,
+    `Order ID: ${normalizeEnvString(supportPayment?.orderId) || "Not available"}`,
+    `Payment ID: ${normalizeEnvString(supportPayment?.paymentId) || "Not available"}`,
+    "",
+    "Your PDF receipt is attached in this email.",
+    `You can also download it from My Activity: ${EMAIL_ACTIVITY_URL}`,
+    "",
+    "With gratitude,",
+    "Gaurav Kumar",
+  ].join("\n");
+
+  const html = buildEmailLayout({
+    preheader: "Your support payment was successful",
+    heading: "Support Payment Successful",
+    intro: `Hi ${displayName}, thank you for your support.`,
+    bodyParagraphs: [
+      "Your contribution has been received successfully and your receipt PDF is attached.",
+      "You can always access this receipt again from My Activity.",
+    ],
+    detailRows,
+    actionLabel: "Open My Activity",
+    actionHref: EMAIL_ACTIVITY_URL,
+    footer: `Need support? Reach us at ${EMAIL_SUPPORT_URL}`,
+  });
+
+  return {
+    subject: `Support payment received: ${formatCurrencyInr(supportPayment?.amount)}`,
+    text,
+    html,
+  };
+};
 
 const sendLifecycleEmail = async ({ type, user }) => {
   const email = normalizeEnvString(user?.email).toLowerCase();
@@ -566,6 +709,88 @@ const sendNewsletterThankYouEmail = async ({ email }) => {
   });
 };
 
+const sendServiceReceiptEmail = async ({ booking, attachments = [] }) => {
+  const recipientEmail = normalizeEnvString(booking?.email).toLowerCase();
+  const normalizedOrderId = normalizeEnvString(booking?.orderId);
+
+  if (!recipientEmail) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_recipient",
+    };
+  }
+
+  if (!normalizedOrderId) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_order_id",
+    };
+  }
+
+  if (String(booking?.paymentStatus || "").toLowerCase() !== "paid") {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "payment_not_paid",
+    };
+  }
+
+  const template = buildServiceReceiptPayload(booking);
+
+  return sendTransactionalEmail({
+    to: [{ email: recipientEmail, name: normalizeEnvString(booking?.name) }],
+    subject: template.subject,
+    htmlContent: template.html,
+    textContent: template.text,
+    tags: ["payment", "service", "receipt"],
+    attachments,
+    idempotencyKey: buildIdempotencyKey("receipt", "service", normalizedOrderId),
+  });
+};
+
+const sendSupportReceiptEmail = async ({ supportPayment, attachments = [] }) => {
+  const recipientEmail = normalizeEnvString(supportPayment?.email).toLowerCase();
+  const normalizedOrderId = normalizeEnvString(supportPayment?.orderId);
+
+  if (!recipientEmail) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_recipient",
+    };
+  }
+
+  if (!normalizedOrderId) {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "missing_order_id",
+    };
+  }
+
+  if (String(supportPayment?.paymentStatus || "").toLowerCase() !== "paid") {
+    return {
+      sent: false,
+      skipped: true,
+      reason: "payment_not_paid",
+    };
+  }
+
+  const template = buildSupportReceiptPayload(supportPayment);
+
+  return sendTransactionalEmail({
+    to: [{ email: recipientEmail, name: normalizeEnvString(supportPayment?.contributorName) }],
+    subject: template.subject,
+    htmlContent: template.html,
+    textContent: template.text,
+    tags: ["payment", "support", "receipt"],
+    attachments,
+    idempotencyKey: buildIdempotencyKey("receipt", "support", normalizedOrderId),
+  });
+};
+
 module.exports = {
   ONE_DAY_MS,
   isBrevoConfigured,
@@ -573,4 +798,6 @@ module.exports = {
   sendWelcomeEmail,
   sendWelcomeBackEmail,
   sendNewsletterThankYouEmail,
+  sendServiceReceiptEmail,
+  sendSupportReceiptEmail,
 };

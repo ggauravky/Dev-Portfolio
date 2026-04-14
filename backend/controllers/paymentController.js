@@ -18,6 +18,10 @@ const {
   generateSupportReceiptImage,
 } = require("../utils/receiptImage");
 const {
+  sendServiceReceiptEmail,
+  sendSupportReceiptEmail,
+} = require("../utils/email");
+const {
   isPaymentQueueReady,
   enqueuePaymentReconciliationJob,
   startPaymentQueueWorkers,
@@ -35,7 +39,8 @@ const SERVICE_CATALOG = {
   "ai-data-guidance": { title: "AI / Data Science Guidance", amount: 499 },
 };
 
-const PAYMENT_EMAIL_NOTIFICATIONS_ENABLED = false;
+const PAYMENT_EMAIL_NOTIFICATIONS_ENABLED =
+  String(process.env.PAYMENT_EMAIL_NOTIFICATIONS_ENABLED || "true").trim().toLowerCase() === "true";
 
 const PAYMENT_CONFIG_ERROR_CODE = "PAYMENT_CONFIG_MISSING";
 const CASHFREE_API_VERSION = String(process.env.CASHFREE_API_VERSION || "2023-08-01").trim();
@@ -1320,7 +1325,253 @@ const mapGatewayError = (error, fallbackMessage) => {
   };
 };
 
-// Payment and support transactional emails are intentionally disabled.
+const summarizeReceiptEmailFailure = (value) =>
+  String(value || "email_send_failed")
+    .trim()
+    .slice(0, 160);
+
+const buildServiceReceiptAttachments = async ({ booking, reqLogger }) => {
+  try {
+    const pdfAttachment = await generateServiceConfirmationPdf({ booking });
+    if (String(pdfAttachment?.contentBase64 || "").trim()) {
+      return [pdfAttachment];
+    }
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: booking?.orderId,
+      },
+      "Service receipt PDF generation failed; trying image fallback"
+    );
+  }
+
+  try {
+    const imageAttachment = await generateServiceConfirmationImage({ booking });
+    if (String(imageAttachment?.contentBase64 || "").trim()) {
+      return [imageAttachment];
+    }
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: booking?.orderId,
+      },
+      "Service receipt image fallback generation failed"
+    );
+  }
+
+  return [];
+};
+
+const buildSupportReceiptAttachments = async ({ supportPayment, reqLogger }) => {
+  try {
+    const pdfAttachment = await generateSupportReceiptPdf({ supportPayment });
+    if (String(pdfAttachment?.contentBase64 || "").trim()) {
+      return [pdfAttachment];
+    }
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: supportPayment?.orderId,
+      },
+      "Support receipt PDF generation failed; trying image fallback"
+    );
+  }
+
+  try {
+    const imageAttachment = await generateSupportReceiptImage({ supportPayment });
+    if (String(imageAttachment?.contentBase64 || "").trim()) {
+      return [imageAttachment];
+    }
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        orderId: supportPayment?.orderId,
+      },
+      "Support receipt image fallback generation failed"
+    );
+  }
+
+  return [];
+};
+
+const processServiceReceiptEmail = async ({ bookingId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
+  const normalizedBookingId = String(bookingId || "").trim();
+
+  if (!PAYMENT_EMAIL_NOTIFICATIONS_ENABLED || !normalizedBookingId) {
+    return;
+  }
+
+  try {
+    const booking = await Booking.findById(normalizedBookingId).lean();
+
+    if (booking?.paymentStatus !== "paid") {
+      return;
+    }
+
+    if (booking.receiptEmailSentAt) {
+      return;
+    }
+
+    const attachments = await buildServiceReceiptAttachments({ booking, reqLogger: effectiveLogger });
+    const sendResult = await sendServiceReceiptEmail({
+      booking,
+      attachments,
+    });
+
+    if (!sendResult.sent) {
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            receiptEmailLastAttemptAt: new Date(),
+            receiptEmailError: summarizeReceiptEmailFailure(sendResult.reason),
+          },
+        }
+      );
+
+      if (!sendResult.skipped) {
+        effectiveLogger.warn(
+          {
+            bookingId: normalizedBookingId,
+            reason: sendResult.reason,
+            error: sendResult.error,
+          },
+          "Service receipt email was not delivered"
+        );
+      }
+      return;
+    }
+
+    await Booking.updateOne(
+      { _id: normalizedBookingId },
+      {
+        $set: {
+          receiptEmailSentAt: new Date(),
+          receiptEmailLastAttemptAt: new Date(),
+          receiptEmailRecipient: String(booking.email || "").toLowerCase(),
+          receiptEmailMessageId: String(sendResult.messageId || sendResult.providerId || ""),
+          receiptEmailError: "",
+        },
+      }
+    );
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        bookingId: normalizedBookingId,
+      },
+      "Service receipt email processing failed"
+    );
+
+    try {
+      await Booking.updateOne(
+        { _id: normalizedBookingId },
+        {
+          $set: {
+            receiptEmailLastAttemptAt: new Date(),
+            receiptEmailError: summarizeReceiptEmailFailure("processing_failed"),
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+  }
+};
+
+const processSupportReceiptEmail = async ({ supportPaymentId, reqLogger }) => {
+  const effectiveLogger = reqLogger || logger;
+  const normalizedSupportPaymentId = String(supportPaymentId || "").trim();
+
+  if (!PAYMENT_EMAIL_NOTIFICATIONS_ENABLED || !normalizedSupportPaymentId) {
+    return;
+  }
+
+  try {
+    const supportPayment = await SupportPayment.findById(normalizedSupportPaymentId).lean();
+
+    if (supportPayment?.paymentStatus !== "paid") {
+      return;
+    }
+
+    if (supportPayment.receiptEmailSentAt) {
+      return;
+    }
+
+    const attachments = await buildSupportReceiptAttachments({
+      supportPayment,
+      reqLogger: effectiveLogger,
+    });
+    const sendResult = await sendSupportReceiptEmail({
+      supportPayment,
+      attachments,
+    });
+
+    if (!sendResult.sent) {
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportPaymentId },
+        {
+          $set: {
+            receiptEmailLastAttemptAt: new Date(),
+            receiptEmailError: summarizeReceiptEmailFailure(sendResult.reason),
+          },
+        }
+      );
+
+      if (!sendResult.skipped) {
+        effectiveLogger.warn(
+          {
+            supportPaymentId: normalizedSupportPaymentId,
+            reason: sendResult.reason,
+            error: sendResult.error,
+          },
+          "Support receipt email was not delivered"
+        );
+      }
+      return;
+    }
+
+    await SupportPayment.updateOne(
+      { _id: normalizedSupportPaymentId },
+      {
+        $set: {
+          receiptEmailSentAt: new Date(),
+          receiptEmailLastAttemptAt: new Date(),
+          receiptEmailRecipient: String(supportPayment.email || "").toLowerCase(),
+          receiptEmailMessageId: String(sendResult.messageId || sendResult.providerId || ""),
+          receiptEmailError: "",
+        },
+      }
+    );
+  } catch (error) {
+    effectiveLogger.error(
+      {
+        err: error,
+        supportPaymentId: normalizedSupportPaymentId,
+      },
+      "Support receipt email processing failed"
+    );
+
+    try {
+      await SupportPayment.updateOne(
+        { _id: normalizedSupportPaymentId },
+        {
+          $set: {
+            receiptEmailLastAttemptAt: new Date(),
+            receiptEmailError: summarizeReceiptEmailFailure("processing_failed"),
+          },
+        }
+      );
+    } catch {
+      // Ignore metadata update failures for background email jobs.
+    }
+  }
+};
 
 const buildVerifyRequestContext = ({ req, res, requireAuthMessage, emailMismatchMessage }) => {
   const authIdentity = getAuthenticatedIdentity(req);
@@ -1382,8 +1633,31 @@ const getOwnershipMismatchMessage = ({
   return "";
 };
 
-const queueServiceEmailIfConfigured = () => {};
-const queueSupportEmailIfConfigured = () => {};
+const queueServiceEmailIfConfigured = ({ emailDispatchQueued, bookingId, reqLogger }) => {
+  if (!emailDispatchQueued || !bookingId || !PAYMENT_EMAIL_NOTIFICATIONS_ENABLED) {
+    return;
+  }
+
+  setImmediate(() => {
+    void processServiceReceiptEmail({
+      bookingId,
+      reqLogger,
+    });
+  });
+};
+
+const queueSupportEmailIfConfigured = ({ emailDispatchQueued, supportPaymentId, reqLogger }) => {
+  if (!emailDispatchQueued || !supportPaymentId || !PAYMENT_EMAIL_NOTIFICATIONS_ENABLED) {
+    return;
+  }
+
+  setImmediate(() => {
+    void processSupportReceiptEmail({
+      supportPaymentId,
+      reqLogger,
+    });
+  });
+};
 
 const tryHandleAsyncServiceVerification = async ({
   draftBooking,

@@ -77,6 +77,33 @@ const supportPaymentSchema = new mongoose.Schema(
     paidAt: {
       type: Date,
     },
+    receiptEmailSentAt: {
+      type: Date,
+      default: null,
+    },
+    receiptEmailLastAttemptAt: {
+      type: Date,
+      default: null,
+    },
+    receiptEmailRecipient: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      maxlength: 320,
+      default: "",
+    },
+    receiptEmailMessageId: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+      default: "",
+    },
+    receiptEmailError: {
+      type: String,
+      trim: true,
+      maxlength: 160,
+      default: "",
+    },
     verificationAcceptedAt: {
       type: Date,
     },
