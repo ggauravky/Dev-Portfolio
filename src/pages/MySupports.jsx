@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
@@ -40,14 +40,52 @@ const getStatusBadgeClass = (status) => {
     return 'border-slate-500/35 bg-slate-500/10 text-slate-300'
 }
 
+const parsePaymentSuccessState = (searchParams) => {
+    const source = String(searchParams.get('source') || '').trim().toLowerCase()
+    if (source !== 'payment') {
+        return null
+    }
+
+    const status = String(searchParams.get('status') || '').trim().toLowerCase()
+    if (status && status !== 'success') {
+        return null
+    }
+
+    const flow = String(searchParams.get('flow') || '').trim().toLowerCase()
+    const tab = String(searchParams.get('tab') || '').trim().toLowerCase()
+    const orderId = String(searchParams.get('orderId') || '').trim()
+    const paymentId = String(searchParams.get('paymentId') || '').trim()
+
+    if (!orderId) {
+        return null
+    }
+
+    const resolvedFlow = flow === 'support' ? 'support' : 'service'
+    const isValidTab = tab === 'payments' || tab === 'bookings'
+    let resolvedTab = tab
+
+    if (!isValidTab) {
+        resolvedTab = resolvedFlow === 'support' ? 'payments' : 'bookings'
+    }
+
+    return {
+        flow: resolvedFlow,
+        tab: resolvedTab,
+        orderId,
+        paymentId,
+    }
+}
+
 function MyActivity() {
     const { user, isAuthenticated, isLoading } = useAuth()
+    const [searchParams, setSearchParams] = useSearchParams()
     const [activeTab, setActiveTab] = useState('supports')
     const [loading, setLoading] = useState(true)
     const [supports, setSupports] = useState([])
     const [bookings, setBookings] = useState([])
     const [supportPayments, setSupportPayments] = useState([])
     const [downloadingKey, setDownloadingKey] = useState('')
+    const [paymentSuccessState, setPaymentSuccessState] = useState(null)
 
     useSEO({
         title: 'My Activity - Gaurav Portfolio',
@@ -64,6 +102,21 @@ function MyActivity() {
         ],
         [supports.length, bookings.length, supportPayments.length]
     )
+
+    const queryPaymentSuccessState = useMemo(
+        () => parsePaymentSuccessState(searchParams),
+        [searchParams]
+    )
+
+    useEffect(() => {
+        if (!queryPaymentSuccessState) {
+            setPaymentSuccessState(null)
+            return
+        }
+
+        setPaymentSuccessState(queryPaymentSuccessState)
+        setActiveTab(queryPaymentSuccessState.tab)
+    }, [queryPaymentSuccessState])
 
     useEffect(() => {
         if (isLoading) {
@@ -161,6 +214,28 @@ function MyActivity() {
         }
     }
 
+    const dismissPaymentSuccessState = () => {
+        setPaymentSuccessState(null)
+        const nextParams = new URLSearchParams(searchParams)
+        ;['source', 'status', 'flow', 'tab', 'orderId', 'paymentId'].forEach((key) => {
+            nextParams.delete(key)
+        })
+        setSearchParams(nextParams, { replace: true })
+    }
+
+    const downloadExpectedReceipt = async () => {
+        if (!paymentSuccessState?.orderId) {
+            return
+        }
+
+        if (paymentSuccessState.flow === 'support') {
+            await downloadSupportReceipt(paymentSuccessState.orderId)
+            return
+        }
+
+        await downloadBookingReceipt(paymentSuccessState.orderId)
+    }
+
     const getTabButtonClass = (isActive) => {
         if (isActive) {
             return 'border border-cyan-400/35 bg-cyan-500/10 text-cyan-200'
@@ -227,9 +302,17 @@ function MyActivity() {
                         canDownload,
                         'Download Confirmation PDF'
                     )
+                    const isSuccessOrder = paymentSuccessState?.flow === 'service' && paymentSuccessState?.orderId === item.orderId
 
                     return (
-                        <div key={item.id} className="rounded-2xl border border-slate-700/70 bg-slate-800/55 p-5">
+                        <div
+                            key={item.id}
+                            className={`rounded-2xl border bg-slate-800/55 p-5 ${
+                                isSuccessOrder
+                                    ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
+                                    : 'border-slate-700/70'
+                            }`}
+                        >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <p className="text-lg font-semibold text-slate-100">{item.service}</p>
@@ -275,9 +358,17 @@ function MyActivity() {
                         canDownload,
                         'Download Support Receipt PDF'
                     )
+                    const isSuccessOrder = paymentSuccessState?.flow === 'support' && paymentSuccessState?.orderId === item.orderId
 
                     return (
-                        <div key={item.id} className="rounded-2xl border border-slate-700/70 bg-slate-800/55 p-5">
+                        <div
+                            key={item.id}
+                            className={`rounded-2xl border bg-slate-800/55 p-5 ${
+                                isSuccessOrder
+                                    ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
+                                    : 'border-slate-700/70'
+                            }`}
+                        >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <p className="text-lg font-semibold text-slate-100">Support Contribution</p>
@@ -362,6 +453,41 @@ function MyActivity() {
                 <p className="mt-2 text-slate-400">
                     Welcome {user?.name || 'User'}. Track your blog supports, service purchases, and support contributions in one place.
                 </p>
+
+                {paymentSuccessState ? (
+                    <div className="mt-6 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-4 sm:p-5">
+                        <p className="text-[11px] uppercase tracking-wider text-emerald-200">Payment Confirmed</p>
+                        <h2 className="mt-1 text-lg sm:text-xl font-semibold text-emerald-100">
+                            {paymentSuccessState.flow === 'support'
+                                ? 'Thank you for supporting. Your contribution was successful.'
+                                : 'Congratulations. Your service payment was successful.'}
+                        </h2>
+                        <p className="mt-2 text-sm text-emerald-50/90">
+                            Order ID: {paymentSuccessState.orderId}
+                            {paymentSuccessState.paymentId ? ` | Payment ID: ${paymentSuccessState.paymentId}` : ''}
+                        </p>
+
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            <button
+                                type="button"
+                                onClick={downloadExpectedReceipt}
+                                disabled={Boolean(downloadingKey)}
+                                className="rounded-xl border border-emerald-300/50 bg-emerald-600/20 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {paymentSuccessState.flow === 'support'
+                                    ? 'Download Support Receipt PDF'
+                                    : 'Download Service Confirmation PDF'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={dismissPaymentSuccessState}
+                                className="rounded-xl border border-emerald-200/30 bg-transparent px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                ) : null}
 
                 <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-2">
                     {tabs.map((tab) => {

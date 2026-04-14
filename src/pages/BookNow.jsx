@@ -64,6 +64,7 @@ function BookNow() {
     const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingOrderKey = 'pendingCashfreeOrder'
+    const activityRedirectKeyPrefix = 'paymentActivityOpened:service:'
     const requiresSignIn = isAuthenticated !== true
 
     const currentService = useMemo(
@@ -147,6 +148,40 @@ function BookNow() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
+    }
+
+    const openActivitySuccessTab = (details) => {
+        const orderId = String(details?.orderId || '').trim()
+        if (!orderId || !globalThis.window) {
+            return
+        }
+
+        const redirectKey = `${activityRedirectKeyPrefix}${orderId}`
+        if (sessionStorage.getItem(redirectKey)) {
+            return
+        }
+
+        sessionStorage.setItem(redirectKey, '1')
+
+        const params = new URLSearchParams({
+            source: 'payment',
+            status: 'success',
+            flow: 'service',
+            tab: 'bookings',
+            orderId,
+        })
+
+        const paymentId = String(details?.paymentId || '').trim()
+        if (paymentId) {
+            params.set('paymentId', paymentId)
+        }
+
+        const activityUrl = `/my-activity?${params.toString()}`
+        const openedWindow = globalThis.window.open(activityUrl, '_blank', 'noopener,noreferrer')
+
+        if (!openedWindow) {
+            toast.error('Popup blocked. Open My Activity to download your receipt.')
+        }
     }
 
     const downloadBlob = (content, filename, mimeType) => {
@@ -370,6 +405,7 @@ function BookNow() {
         }
 
         void downloadServiceReceiptPdf(mergedDetails, { silent: true, auto: true })
+        openActivitySuccessTab(mergedDetails)
 
         return true
     }

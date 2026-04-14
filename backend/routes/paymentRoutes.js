@@ -19,7 +19,10 @@ const {
   downloadServiceReceiptImage,
   downloadSupportReceiptImage,
 } = require("../controllers/paymentController");
-const { paymentRateLimiter } = require("../middleware/rateLimiter");
+const {
+  paymentRateLimiter,
+  paymentWebhookRateLimiter,
+} = require("../middleware/rateLimiter");
 const {
   paymentCreateOrderValidationRules,
   paymentVerifyValidationRules,
@@ -47,7 +50,7 @@ const blockIfGatewayDisabled = (req, res, next) => {
   });
 };
 
-router.post("/webhook/cashfree", handleCashfreeWebhook);
+router.post("/webhook/cashfree", paymentWebhookRateLimiter, handleCashfreeWebhook);
 
 router.use(blockIfGatewayDisabled);
 

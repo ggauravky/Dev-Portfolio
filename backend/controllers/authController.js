@@ -368,6 +368,9 @@ exports.googleSignIn = async (req, res) => {
 };
 
 exports.getCurrentSession = async (req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+
   if (!req.authUser) {
     return res.status(200).json({
       success: true,
@@ -454,6 +457,9 @@ exports.updateProfile = async (req, res) => {
 
 exports.logout = async (req, res) => {
   res.clearCookie(AUTH_COOKIE_NAME, getClearCookieOptions());
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.set("Pragma", "no-cache");
+  res.set("Clear-Site-Data", '"cache"');
 
   return res.status(200).json({
     success: true,

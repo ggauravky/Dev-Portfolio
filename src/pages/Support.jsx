@@ -48,6 +48,7 @@ function Support() {
     const [showSignInModal, setShowSignInModal] = useState(false)
 
     const pendingSupportKey = 'pendingSupportOrder'
+    const activityRedirectKeyPrefix = 'paymentActivityOpened:support:'
     const requiresSignIn = isAuthenticated !== true
     const getCheckoutButtonLabel = () => {
         if (isLoading) {
@@ -126,6 +127,40 @@ function Support() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
+    }
+
+    const openActivitySuccessTab = (details) => {
+        const orderId = String(details?.orderId || '').trim()
+        if (!orderId || !globalThis.window) {
+            return
+        }
+
+        const redirectKey = `${activityRedirectKeyPrefix}${orderId}`
+        if (sessionStorage.getItem(redirectKey)) {
+            return
+        }
+
+        sessionStorage.setItem(redirectKey, '1')
+
+        const params = new URLSearchParams({
+            source: 'payment',
+            status: 'success',
+            flow: 'support',
+            tab: 'payments',
+            orderId,
+        })
+
+        const paymentId = String(details?.paymentId || '').trim()
+        if (paymentId) {
+            params.set('paymentId', paymentId)
+        }
+
+        const activityUrl = `/my-activity?${params.toString()}`
+        const openedWindow = globalThis.window.open(activityUrl, '_blank', 'noopener,noreferrer')
+
+        if (!openedWindow) {
+            toast.error('Popup blocked. Open My Activity to download your receipt.')
+        }
     }
 
     const downloadSupportReceipt = async (details, options = {}) => {
@@ -241,6 +276,7 @@ function Support() {
         }
 
         void downloadSupportReceiptPdf(merged, { silent: true, auto: true })
+        openActivitySuccessTab(merged)
 
         return true
     }

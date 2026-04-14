@@ -70,6 +70,19 @@ exports.paymentRateLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Webhook limiter is separate from checkout APIs so gateway retries are allowed
+// while still reducing abuse on public webhook endpoints.
+exports.paymentWebhookRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parsePositiveInt(process.env.PAYMENT_WEBHOOK_RATE_LIMIT_MAX, 120),
+  message: {
+    success: false,
+    message: "Too many webhook requests. Please retry shortly.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Auth route limiter to prevent Google sign-in abuse
 exports.authRateLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,

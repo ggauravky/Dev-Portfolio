@@ -33,16 +33,18 @@ const requestAuthApi = async (endpoint, options = {}) => {
     return payload.data || {}
 }
 
-export const fetchCurrentSession = async () => {
+export const fetchCurrentSession = async (options = {}) => {
     return requestAuthApi('/api/auth/me', {
         method: 'GET',
+        ...options,
     })
 }
 
-export const signInWithGoogleCredential = async (credential) => {
+export const signInWithGoogleCredential = async (credential, options = {}) => {
     return requestAuthApi('/api/auth/google', {
         method: 'POST',
         body: JSON.stringify({ credential }),
+        ...options,
     })
 }
 
@@ -59,22 +61,26 @@ export const fetchPublicAuthConfig = async () => {
     return cachedAuthConfig
 }
 
-export const logoutSession = async () => {
+export const logoutSession = async (options = {}) => {
+    cachedAuthConfig = null
     return requestAuthApi('/api/auth/logout', {
         method: 'POST',
         body: JSON.stringify({}),
+        ...options,
     })
 }
 
-export const fetchAuthProfile = async () => {
+export const fetchAuthProfile = async (options = {}) => {
     return requestAuthApi('/api/auth/profile', {
         method: 'GET',
+        ...options,
     })
 }
 
-export const updateAuthProfile = async (payload) => {
+export const updateAuthProfile = async (payload, options = {}) => {
     return requestAuthApi('/api/auth/profile', {
         method: 'PATCH',
         body: JSON.stringify(payload || {}),
+        ...options,
     })
 }

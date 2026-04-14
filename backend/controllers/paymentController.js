@@ -4,7 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { createHmac, randomBytes, timingSafeEqual } = require("node:crypto");
+const { createHmac, randomBytes, randomUUID, timingSafeEqual } = require("node:crypto");
 const Booking = require("../models/Booking");
 const SupportPayment = require("../models/SupportPayment");
 const { logger } = require("../utils/logger");
@@ -49,6 +49,10 @@ const PAYMENT_ASYNC_RECON_RETRY_BASE_MS =
   Number.parseInt(process.env.PAYMENT_ASYNC_RECON_RETRY_BASE_MS, 10) || 3000;
 const PAYMENT_ASYNC_RECON_RETRY_MAX_MS =
   Number.parseInt(process.env.PAYMENT_ASYNC_RECON_RETRY_MAX_MS, 10) || 20000;
+const CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS =
+  Number.parseInt(process.env.CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS, 10) || 5 * 60 * 1000;
+const CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP =
+  String(process.env.CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP || "true").trim().toLowerCase() === "true";
 const reconciliationJobsInFlight = new Set();
 const CASHFREE_WEBHOOK_SECRET = String(process.env.CASHFREE_WEBHOOK_SECRET || "").trim();
 let cachedFetch = typeof globalThis.fetch === "function" ? globalThis.fetch : null;
@@ -100,6 +104,62 @@ const timingSafeStringEqual = (left, right) => {
   }
 
   return timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const parseWebhookTimestampMs = (value) => {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return 0;
+  }
+
+  if (/^\d+$/.test(raw)) {
+    const numeric = Number.parseInt(raw, 10);
+    if (!Number.isFinite(numeric) || numeric <= 0) {
+      return 0;
+    }
+
+    // Gateways may send unix seconds or unix milliseconds.
+    return numeric >= 1_000_000_000_000 ? numeric : numeric * 1000;
+  }
+
+  const parsed = Date.parse(raw);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const isWebhookTimestampWithinSkew = (timestampValue) => {
+  const timestampMs = parseWebhookTimestampMs(timestampValue);
+  if (!timestampMs) {
+    return false;
+  }
+
+  return Math.abs(Date.now() - timestampMs) <= CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS;
+};
+
+const rejectWebhookTimestampIfInvalid = ({ req, res, reqLogger }) => {
+  const webhookTimestamp = getWebhookHeaderValue(req, "x-webhook-timestamp", "x-cf-timestamp");
+
+  if (!CASHFREE_WEBHOOK_REQUIRE_TIMESTAMP) {
+    return false;
+  }
+
+  if (isWebhookTimestampWithinSkew(webhookTimestamp)) {
+    return false;
+  }
+
+  reqLogger.warn(
+    {
+      webhookTimestamp,
+      maxSkewMs: CASHFREE_WEBHOOK_TIMESTAMP_MAX_SKEW_MS,
+    },
+    "Rejected Cashfree webhook due to missing or stale timestamp"
+  );
+
+  res.status(401).json({
+    success: false,
+    message: "Invalid webhook timestamp",
+  });
+
+  return true;
 };
 
 const isCashfreeWebhookSignatureValid = ({ req, webhookSecret, rawBody }) => {
@@ -199,20 +259,29 @@ const getCashfreeConfig = () => {
   };
 };
 
-const callCashfreeApi = async ({ method, endpoint, body, config }) => {
+const callCashfreeApi = async ({ method, endpoint, body, config, requestId, idempotencyKey }) => {
   const fetchClient = await getFetchClient();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), CASHFREE_TIMEOUT_MS);
+  const normalizedMethod = String(method || "GET").trim().toUpperCase();
+  const resolvedRequestId = String(requestId || randomUUID()).trim();
+  const resolvedIdempotencyKey = String(idempotencyKey || "").trim();
+  const headers = {
+    "Content-Type": "application/json",
+    "x-api-version": CASHFREE_API_VERSION,
+    "x-client-id": config.appId,
+    "x-client-secret": config.secretKey,
+    "x-request-id": resolvedRequestId,
+  };
+
+  if (resolvedIdempotencyKey && ["POST", "PUT", "PATCH", "DELETE"].includes(normalizedMethod)) {
+    headers["x-idempotency-key"] = resolvedIdempotencyKey;
+  }
 
   try {
     const response = await fetchClient(`${config.baseUrl}${endpoint}`, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-version": CASHFREE_API_VERSION,
-        "x-client-id": config.appId,
-        "x-client-secret": config.secretKey,
-      },
+      method: normalizedMethod,
+      headers,
       body: body ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
@@ -2768,6 +2837,10 @@ exports.handleCashfreeWebhook = async (req, res) => {
   }
 
   const rawBody = getWebhookRawBody(req);
+  if (rejectWebhookTimestampIfInvalid({ req, res, reqLogger })) {
+    return;
+  }
+
   const signatureValid = isCashfreeWebhookSignatureValid({
     req,
     webhookSecret: CASHFREE_WEBHOOK_SECRET,
@@ -2953,6 +3026,8 @@ exports.createOrder = async (req, res) => {
       method: "POST",
       endpoint: "/pg/orders",
       config,
+      requestId: randomUUID(),
+      idempotencyKey: randomUUID(),
       body: {
         order_id: orderId,
         order_amount: selectedService.amount,
@@ -3362,6 +3437,8 @@ exports.createSupportOrder = async (req, res) => {
       method: "POST",
       endpoint: "/pg/orders",
       config,
+      requestId: randomUUID(),
+      idempotencyKey: randomUUID(),
       body: {
         order_id: orderId,
         order_amount: normalizedAmount,
