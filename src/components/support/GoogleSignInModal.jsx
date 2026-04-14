@@ -5,6 +5,7 @@ import useAuth from '../../hooks/useAuth'
 import { fetchPublicAuthConfig } from '../../services/auth'
 
 let googleScriptPromise = null
+let initializedGoogleClientId = ''
 
 const loadGoogleScript = () => {
     if (globalThis.window === undefined) {
@@ -60,8 +61,6 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
     const buttonContainerRef = useRef(null)
     const isMountedRef = useRef(false)
     const { signIn } = useAuth()
-    const googleInitializedRef = useRef(false)
-    const initializedClientIdRef = useRef('')
     const signInRef = useRef(signIn)
     const onAuthenticatedRef = useRef(onAuthenticated)
     const [isSigningIn, setIsSigningIn] = useState(false)
@@ -115,7 +114,7 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
                     return
                 }
 
-                if (!googleInitializedRef.current || initializedClientIdRef.current !== clientId) {
+                if (initializedGoogleClientId !== clientId) {
                     globalThis.window.google.accounts.id.initialize({
                         client_id: clientId,
                         callback: async (response) => {
@@ -150,8 +149,7 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
                         ux_mode: 'popup',
                     })
 
-                    googleInitializedRef.current = true
-                    initializedClientIdRef.current = clientId
+                    initializedGoogleClientId = clientId
                 }
 
                 buttonContainerRef.current.innerHTML = ''

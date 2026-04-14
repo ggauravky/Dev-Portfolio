@@ -9,21 +9,7 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import PropTypes from 'prop-types'
 
-// ─── Copyright watermark — embedded in the compiled bundle ───────────────────
-// Visible in DevTools Console to anyone who inspects the running app.
-console.log(
-    '%c© 2026 Gaurav Kumar Yadav — All Rights Reserved.',
-    'color:#60a5fa;font-weight:bold;font-size:15px;font-family:monospace;'
-)
-console.log(
-    '%cUnauthorized copying, modification, or redistribution is strictly prohibited.\n%cSee: https://github.com/ggauravky/Dev-Portfolio/blob/main/LICENSE',
-    'color:#f87171;font-size:12px;font-family:monospace;',
-    'color:#94a3b8;font-size:11px;font-family:monospace;'
-)
-// ─────────────────────────────────────────────────────────────────────────────
 import { Toaster } from 'react-hot-toast'
-import { Analytics } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/react'
 import './App.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -279,10 +265,6 @@ function App() {
                     <AnimatedRoutes />
                 </AppLayout>
             </ErrorBoundary>
-
-            {/* Vercel Analytics & Speed Insights */}
-            <Analytics />
-            <SpeedInsights />   
 
         </Router>
     )

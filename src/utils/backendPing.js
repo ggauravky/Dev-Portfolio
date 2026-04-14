@@ -36,21 +36,9 @@ export const pingBackend = async () => {
         
         clearTimeout(timeoutId)
         
-        if (response.ok) {
-            const data = await response.json()
-            console.log('✅ Backend wakeup successful:', data.message)
-            return true
-        } else {
-            console.warn('⚠️ Backend health check returned non-OK status:', response.status)
-            return false
-        }
-    } catch (error) {
-        // Don't show errors to user - this is a silent background operation
-        if (error.name === 'AbortError') {
-            console.info('⏱️ Backend health check timeout - server might be cold starting')
-        } else {
-            console.warn('⚠️ Backend ping failed (silent):', error.message)
-        }
+        return response.ok
+    } catch {
+        // Keep ping operation silent for end users.
         return false
     }
 }
@@ -72,7 +60,6 @@ export const pingBackendWithRetry = async (maxRetries = 2, delayMs = 3000) => {
         
         // If not the last attempt, wait before retrying
         if (attempt < maxRetries) {
-            console.log(`🔄 Retry attempt ${attempt}/${maxRetries - 1} in ${delayMs/1000}s...`)
             await new Promise(resolve => setTimeout(resolve, delayMs))
         }
     }
@@ -96,8 +83,6 @@ export const startPeriodicPing = (intervalMinutes = 10) => {
         pingBackend()
     }, intervalMs)
     
-    console.log(`🔔 Periodic backend pinging started (every ${intervalMinutes} minutes)`)
-    
     return intervalId
 }
 
@@ -108,6 +93,5 @@ export const startPeriodicPing = (intervalMinutes = 10) => {
 export const stopPeriodicPing = (intervalId) => {
     if (intervalId) {
         clearInterval(intervalId)
-        console.log('🛑 Periodic backend pinging stopped')
     }
 }

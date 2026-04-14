@@ -94,7 +94,15 @@
                 },
                 {
                     "key": "Permissions-Policy",
-                    "value": "camera=(), microphone=(), geolocation=()"
+                    "value": "camera=(), microphone=(), geolocation=(), accelerometer=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\"), gyroscope=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\"), magnetometer=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\")"
+                },
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "same-origin-allow-popups"
+                },
+                {
+                    "key": "Cross-Origin-Embedder-Policy",
+                    "value": "unsafe-none"
                 },
                 {
                     "key": "Strict-Transport-Security",
