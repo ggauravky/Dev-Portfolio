@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
@@ -14,6 +15,136 @@ import {
 const normalizeFlow = (value) => (String(value || '').trim().toLowerCase() === 'support' ? 'support' : 'service')
 
 const getStorageKey = (flow) => `paymentSuccess:${flow}`
+const CALLBACK_BOARD_MIN_DURATION_MS = 1600
+const HYDRATION_BOARD_TIMEOUT_MS = 30000
+
+const getProcessingSteps = (flow) =>
+    flow === 'support'
+        ? ['Creating secure session', 'Verifying support payment', 'Preparing receipt and activity links']
+        : ['Creating secure session', 'Verifying booking payment', 'Preparing confirmation and receipt links']
+
+const getProcessingStepClassName = ({ isActive, isCompleted }) => {
+    if (isActive) {
+        return 'border-cyan-500/35 bg-cyan-500/10 text-cyan-100'
+    }
+
+    if (isCompleted) {
+        return 'border-emerald-500/35 bg-emerald-500/10 text-emerald-100'
+    }
+
+    return 'border-slate-700 bg-slate-800/60 text-slate-400'
+}
+
+const getProcessingStepBadge = ({ isActive, isCompleted, index }) => {
+    if (isCompleted) {
+        return 'OK'
+    }
+
+    if (isActive) {
+        return '.'
+    }
+
+    return String(index + 1)
+}
+
+const buildActivityUrl = (details, effectiveFlow) => {
+    if (!details?.orderId) {
+        return '/my-activity'
+    }
+
+    const activityParams = new URLSearchParams({
+        source: 'payment',
+        status: 'success',
+        flow: effectiveFlow,
+        tab: 'payments',
+        orderId: String(details.orderId || '').trim(),
+    })
+
+    const paymentId = String(details.paymentId || '').trim()
+    if (paymentId) {
+        activityParams.set('paymentId', paymentId)
+    }
+
+    return `/my-activity?${activityParams.toString()}`
+}
+
+function ProcessingBoard({
+    effectiveFlow,
+    isHydrationBoardVisible,
+    processingStepIndex,
+    processingSteps,
+}) {
+    const heading =
+        effectiveFlow === 'support'
+            ? 'Finalizing your support confirmation'
+            : 'Finalizing your booking confirmation'
+
+    const subtitle = isHydrationBoardVisible
+        ? 'Fetching your latest verified transaction details from server.'
+        : 'Preparing your confirmation screen with receipt actions.'
+
+    const progressWidth = `${((processingStepIndex + 1) / processingSteps.length) * 100}%`
+
+    return (
+        <div className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-sm px-4 py-6">
+            <div className="mx-auto flex min-h-full max-w-xl items-center justify-center">
+                <div className="w-full overflow-hidden rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8 shadow-[0_30px_120px_rgba(2,132,199,0.2)]">
+                    <div className="inline-flex items-center rounded-full border border-cyan-500/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200">
+                        Processing Payment
+                    </div>
+                    <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100">{heading}</h2>
+                    <p className="mt-2 text-sm sm:text-base text-slate-300">{subtitle}</p>
+
+                    <div className="mt-5 h-2 w-full rounded-full bg-slate-800/90">
+                        <div
+                            className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 transition-all duration-700"
+                            style={{ width: progressWidth }}
+                        />
+                    </div>
+
+                    <ul className="mt-5 space-y-2.5">
+                        {processingSteps.map((step, index) => {
+                            const isActive = index === processingStepIndex
+                            const isCompleted = index < processingStepIndex
+                            const stepClassName = getProcessingStepClassName({
+                                isActive,
+                                isCompleted,
+                            })
+                            const stepBadge = getProcessingStepBadge({
+                                isActive,
+                                isCompleted,
+                                index,
+                            })
+
+                            return (
+                                <li
+                                    key={step}
+                                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors ${stepClassName}`}
+                                >
+                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
+                                        {stepBadge}
+                                    </span>
+                                    <span>{step}</span>
+                                </li>
+                            )
+                        })}
+                    </ul>
+
+                    <p className="mt-4 text-xs text-slate-500">
+                        Please keep this page open while we finish the final confirmation checks.
+                    </p>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+ProcessingBoard.propTypes = {
+    effectiveFlow: PropTypes.string.isRequired,
+    isHydrationBoardVisible: PropTypes.bool.isRequired,
+    processingStepIndex: PropTypes.number.isRequired,
+    processingSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
+}
 
 const saveBlobAsFile = (blob, filename) => {
     const url = URL.createObjectURL(blob)
@@ -52,6 +183,7 @@ const escapeHtml = (value) =>
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#39;')
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function PaymentSuccess() {
     const navigate = useNavigate()
     const location = useLocation()
@@ -59,6 +191,7 @@ function PaymentSuccess() {
     const { isAuthenticated, isLoading, user } = useAuth()
     const [params] = useSearchParams()
     const flow = normalizeFlow(params.get('flow') || location.state?.flow)
+    const checkoutOrigin = String(location.state?.checkoutOrigin || '').trim().toLowerCase()
 
     useSEO({
         title: flow === 'support' ? 'Support Payment Success | Gaurav Kumar Yadav' : 'Booking Payment Success | Gaurav Kumar Yadav',
@@ -85,8 +218,92 @@ function PaymentSuccess() {
     const [isHydratingDetails, setIsHydratingDetails] = useState(false)
     const [detailsLoadError, setDetailsLoadError] = useState('')
     const [receiptDownloadError, setReceiptDownloadError] = useState('')
+    const [isCallbackBoardVisible, setIsCallbackBoardVisible] = useState(false)
+    const [isHydrationTimedOut, setIsHydrationTimedOut] = useState(false)
+    const [processingStepIndex, setProcessingStepIndex] = useState(0)
     const autoDownloadKeyRef = useRef('')
+    const callbackBoardTimerRef = useRef(null)
+    const hydrationBoardTimerRef = useRef(null)
+    const stepIntervalRef = useRef(null)
+    const callbackBoardKeyRef = useRef('')
     const effectiveFlow = normalizeFlow(details?.type || flow)
+    const processingSteps = useMemo(() => getProcessingSteps(effectiveFlow), [effectiveFlow])
+    const isHydrationBoardVisible = isHydratingDetails && isAuthenticated && !detailsLoadError && !isHydrationTimedOut
+    const isProcessingBoardVisible = isCallbackBoardVisible || isHydrationBoardVisible
+
+    useEffect(
+        () => () => {
+            clearTimeout(callbackBoardTimerRef.current)
+            callbackBoardTimerRef.current = null
+
+            clearTimeout(hydrationBoardTimerRef.current)
+            hydrationBoardTimerRef.current = null
+
+            clearInterval(stepIntervalRef.current)
+            stepIntervalRef.current = null
+        },
+        []
+    )
+
+    useEffect(() => {
+        const callbackKey = `${flow}:${routeTransactionId || location.key || 'payment-success'}`
+        if (checkoutOrigin !== 'callback-success' || callbackBoardKeyRef.current === callbackKey) {
+            return
+        }
+
+        callbackBoardKeyRef.current = callbackKey
+        setIsCallbackBoardVisible(true)
+        clearTimeout(callbackBoardTimerRef.current)
+
+        callbackBoardTimerRef.current = setTimeout(() => {
+            setIsCallbackBoardVisible(false)
+            callbackBoardTimerRef.current = null
+        }, CALLBACK_BOARD_MIN_DURATION_MS)
+    }, [checkoutOrigin, flow, location.key, routeTransactionId])
+
+    useEffect(() => {
+        if (!isHydrationBoardVisible) {
+            clearTimeout(hydrationBoardTimerRef.current)
+            hydrationBoardTimerRef.current = null
+            setIsHydrationTimedOut(false)
+            return
+        }
+
+        clearTimeout(hydrationBoardTimerRef.current)
+
+        hydrationBoardTimerRef.current = setTimeout(() => {
+            setIsHydrationTimedOut(true)
+            setDetailsLoadError((previous) =>
+                previous || 'Loading is taking longer than expected. Please refresh this page.'
+            )
+            setIsHydratingDetails(false)
+        }, HYDRATION_BOARD_TIMEOUT_MS)
+
+        return () => {
+            clearTimeout(hydrationBoardTimerRef.current)
+            hydrationBoardTimerRef.current = null
+        }
+    }, [isHydrationBoardVisible])
+
+    useEffect(() => {
+        if (!isProcessingBoardVisible) {
+            setProcessingStepIndex(0)
+            clearInterval(stepIntervalRef.current)
+            stepIntervalRef.current = null
+            return
+        }
+
+        clearInterval(stepIntervalRef.current)
+
+        stepIntervalRef.current = setInterval(() => {
+            setProcessingStepIndex((previous) => (previous + 1) % processingSteps.length)
+        }, 1200)
+
+        return () => {
+            clearInterval(stepIntervalRef.current)
+            stepIntervalRef.current = null
+        }
+    }, [isProcessingBoardVisible, processingSteps.length])
 
     useEffect(() => {
         const stateDetails = location.state?.details
@@ -117,6 +334,7 @@ function PaymentSuccess() {
         let isCancelled = false
 
         const hydrateDetails = async () => {
+            setIsHydrationTimedOut(false)
             setIsHydratingDetails(true)
             setDetailsLoadError('')
 
@@ -168,26 +386,7 @@ function PaymentSuccess() {
         }
     }, [flow, isAuthenticated, isLoading, routeTransactionId, user?.email])
 
-    const activityUrl = useMemo(() => {
-        if (!details?.orderId) {
-            return '/my-activity'
-        }
-
-        const activityParams = new URLSearchParams({
-            source: 'payment',
-            status: 'success',
-            flow: effectiveFlow,
-            tab: effectiveFlow === 'support' ? 'payments' : 'bookings',
-            orderId: String(details.orderId || '').trim(),
-        })
-
-        const paymentId = String(details.paymentId || '').trim()
-        if (paymentId) {
-            activityParams.set('paymentId', paymentId)
-        }
-
-        return `/my-activity?${activityParams.toString()}`
-    }, [details, effectiveFlow])
+    const activityUrl = useMemo(() => buildActivityUrl(details, effectiveFlow), [details, effectiveFlow])
 
     const downloadReceiptImage = async (options = {}) => {
         const { silent = false, auto = false } = options
@@ -289,10 +488,6 @@ function PaymentSuccess() {
     }
 
     const downloadInvitationCard = () => {
-        if (!details) {
-            return
-        }
-
         const safeName = escapeHtml(details.name)
         const safeService = escapeHtml(details.service)
         const safeDate = escapeHtml(formatDateForDisplay(details.preferredDate))
@@ -339,13 +534,14 @@ function PaymentSuccess() {
     }
 
     const downloadCalendarInvite = () => {
-        if (!details?.preferredDate || !details?.preferredTime || !details?.orderId) {
-            toast.error('Calendar details are incomplete')
-            return
-        }
+        const preferredDate = String(details?.preferredDate || '').trim() || new Date().toISOString().slice(0, 10)
+        const preferredTime = String(details?.preferredTime || '').trim() || '10:00'
+        const orderId = String(details?.orderId || details?.paymentId || 'booking').trim()
+        const paymentId = String(details?.paymentId || orderId).trim()
+        const service = String(details?.service || 'Service Session').trim()
 
-        const [hours, minutes] = String(details.preferredTime || '10:00').split(':').map((value) => Number.parseInt(value, 10) || 0)
-        const start = new Date(details.preferredDate)
+        const [hours, minutes] = preferredTime.split(':').map((value) => Number.parseInt(value, 10) || 0)
+        const start = new Date(preferredDate)
         start.setHours(hours, minutes, 0, 0)
         const end = new Date(start.getTime() + 60 * 60 * 1000)
 
@@ -361,17 +557,17 @@ function PaymentSuccess() {
             'VERSION:2.0',
             'PRODID:-//Gaurav Kumar Yadav//Service Booking//EN',
             'BEGIN:VEVENT',
-            `UID:${details.orderId}@ggauravky.vercel.app`,
+            `UID:${orderId}@ggauravky.vercel.app`,
             `DTSTAMP:${toUtc(new Date())}`,
             `DTSTART:${toUtc(start)}`,
             `DTEND:${toUtc(end)}`,
-            `SUMMARY:${details.service} - Booking Session`,
-            `DESCRIPTION:Booking ID ${details.orderId} | Payment ID ${details.paymentId}`,
+            `SUMMARY:${service} - Booking Session`,
+            `DESCRIPTION:Booking ID ${orderId} | Payment ID ${paymentId}`,
             'END:VEVENT',
             'END:VCALENDAR',
         ].join('\r\n')
 
-        downloadBlob(ics, `booking-calendar-${details.orderId}.ics`, 'text/calendar;charset=utf-8')
+        downloadBlob(ics, `booking-calendar-${orderId}.ics`, 'text/calendar;charset=utf-8')
         toast.success('Calendar file downloaded')
     }
 
@@ -393,6 +589,15 @@ function PaymentSuccess() {
         <div className="min-h-screen bg-slate-900 relative overflow-hidden">
             <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
             <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+
+            {isProcessingBoardVisible ? (
+                <ProcessingBoard
+                    effectiveFlow={effectiveFlow}
+                    isHydrationBoardVisible={isHydrationBoardVisible}
+                    processingStepIndex={processingStepIndex}
+                    processingSteps={processingSteps}
+                />
+            ) : null}
 
             <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
                 <div className="mb-6 flex items-center justify-between gap-3">

@@ -382,6 +382,7 @@ function BookNow() {
         navigate(`/payment-success/${transactionId}?flow=service&orderId=${successOrderId}`, {
             state: {
                 flow: 'service',
+                checkoutOrigin: 'callback-success',
                 details: successDetails,
             },
         })

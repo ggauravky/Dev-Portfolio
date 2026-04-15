@@ -1,15 +1,56 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
 import { fetchMyActivityTimeline } from '../services/activity'
+import { fetchMySupports } from '../services/blogSupport'
 import {
     fetchServiceReceiptImage,
     fetchServiceReceiptPdf,
     fetchSupportReceiptImage,
     fetchSupportReceiptPdf,
 } from '../services/payment'
+
+const PAYMENT_INTERNAL_ACTIONS = new Set([
+    'order_created',
+    'reconciliation_started',
+    'user_email_sent',
+    'admin_email_sent',
+    'pdf_generated',
+    'receipt_downloaded',
+])
+
+const PAYMENT_ACTION_RANK = {
+    payment_success: 4,
+    payment_failed: 3,
+    payment_record: 2,
+}
+
+const STATUS_RANK = {
+    success: 4,
+    pending: 3,
+    failed: 2,
+    info: 1,
+}
+
+const normalizeActivityTab = (value) => {
+    const normalized = String(value || '').trim().toLowerCase()
+
+    if (['payments', 'bookings'].includes(normalized)) {
+        return 'payments'
+    }
+
+    if (['blog-likes', 'supports', 'blog'].includes(normalized)) {
+        return 'blog-likes'
+    }
+
+    if (['logins', 'login', 'login-activity'].includes(normalized)) {
+        return 'logins'
+    }
+
+    return 'all'
+}
 
 const humanizeToken = (value, fallback = 'Event') => {
     const raw = String(value || '')
@@ -42,6 +83,25 @@ const formatDateTime = (value) => {
     })
 }
 
+const formatDate = (value) => {
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return 'Not available'
+    }
+
+    return parsed.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    })
+}
+
+const toEventTimestampMs = (entry) => {
+    const value = entry?.timestamp || entry?.createdAt || entry?.updatedAt || ''
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime()
+}
+
 const saveBlobAsFile = (blob, filename) => {
     const url = URL.createObjectURL(blob)
     const link = globalThis.document.createElement('a')
@@ -71,55 +131,315 @@ const getStatusBadgeClass = (status) => {
     return 'border-slate-600/60 bg-slate-800/70 text-slate-300'
 }
 
-const getEventIcon = (event) => {
-    const normalizedAction = String(event?.actionType || '').trim().toLowerCase()
+const getFlowFromPaymentEvent = (event) => {
+    const normalizedReceiptKind = String(
+        event?.receipt?.kind || event?.receiptKind || event?.type || ''
+    )
+        .trim()
+        .toLowerCase()
+
+    return normalizedReceiptKind === 'support' ? 'support' : 'service'
+}
+
+const getPaymentCardTitle = ({ flow, actionType, fallbackTitle }) => {
+    const flowLabel = flow === 'support' ? 'Support Contribution' : 'Service Booking'
+
+    if (actionType === 'payment_success') {
+        return `${flowLabel} Confirmed`
+    }
+
+    if (actionType === 'payment_failed') {
+        return `${flowLabel} Failed`
+    }
+
+    if (fallbackTitle) {
+        return fallbackTitle
+    }
+
+    return `${flowLabel} Update`
+}
+
+const getEventIcon = (item) => {
+    if (item.cardType === 'blog') {
+        return '#'
+    }
+
+    if (item.cardType === 'login') {
+        return '@'
+    }
+
+    const normalizedAction = String(item?.actionType || '').trim().toLowerCase()
 
     if (normalizedAction.includes('success')) {
-        return '✓'
+        return 'OK'
     }
 
     if (normalizedAction.includes('failed')) {
         return '!'
     }
 
-    if (normalizedAction.includes('email')) {
-        return '@'
-    }
-
-    if (normalizedAction.includes('receipt')) {
-        return '#'
-    }
-
-    return '•'
+    return '$'
 }
 
-const isPendingEvent = (event) => {
-    const normalizedStatus = String(event?.status || '').trim().toLowerCase()
-    return normalizedStatus === 'pending'
+const aggregatePaymentCards = (events) => {
+    const groupsByOrderId = new Map()
+
+    events.forEach((item) => {
+        const domain = String(item?.domain || '').trim().toLowerCase()
+        if (domain !== 'payment') {
+            return
+        }
+
+        const actionType = String(item?.actionType || '').trim().toLowerCase()
+        if (PAYMENT_INTERNAL_ACTIONS.has(actionType)) {
+            return
+        }
+
+        const groupKey = String(
+            item?.orderId ||
+            item?.receipt?.orderId ||
+            item?.transactionId ||
+            item?.paymentId ||
+            item?.id ||
+            ''
+        ).trim()
+
+        if (!groupKey) {
+            return
+        }
+
+        if (!groupsByOrderId.has(groupKey)) {
+            groupsByOrderId.set(groupKey, [])
+        }
+
+        groupsByOrderId.get(groupKey).push(item)
+    })
+
+    const cards = []
+
+    groupsByOrderId.forEach((groupEvents, orderId) => {
+        const sorted = [...groupEvents].sort((left, right) => {
+            const leftActionRank = PAYMENT_ACTION_RANK[String(left?.actionType || '').trim().toLowerCase()] || 0
+            const rightActionRank = PAYMENT_ACTION_RANK[String(right?.actionType || '').trim().toLowerCase()] || 0
+            if (rightActionRank !== leftActionRank) {
+                return rightActionRank - leftActionRank
+            }
+
+            const leftStatusRank = STATUS_RANK[String(left?.status || '').trim().toLowerCase()] || 0
+            const rightStatusRank = STATUS_RANK[String(right?.status || '').trim().toLowerCase()] || 0
+            if (rightStatusRank !== leftStatusRank) {
+                return rightStatusRank - leftStatusRank
+            }
+
+            return toEventTimestampMs(right) - toEventTimestampMs(left)
+        })
+
+        const representative = sorted[0]
+        const flow = getFlowFromPaymentEvent(representative)
+        const actionType = String(representative?.actionType || '').trim().toLowerCase()
+        const fallbackStatus = String(representative?.status || 'info').trim().toLowerCase()
+        const resolvedStatus =
+            actionType === 'payment_success'
+                ? 'success'
+                : actionType === 'payment_failed'
+                    ? 'failed'
+                    : fallbackStatus
+
+        const amountCandidate = sorted.find((entry) => {
+            const amount = Number(entry?.amount)
+            return Number.isFinite(amount) && amount > 0
+        })
+
+        const paymentId = String(
+            representative?.paymentId ||
+            sorted.find((entry) => String(entry?.paymentId || '').trim())?.paymentId ||
+            ''
+        ).trim()
+
+        const transactionId = String(
+            representative?.transactionId || paymentId || orderId
+        ).trim()
+
+        const receiptCarrier = sorted.find(
+            (entry) => entry?.receipt?.kind && entry?.receipt?.orderId
+        )
+
+        const receiptKind = String(
+            receiptCarrier?.receipt?.kind ||
+            representative?.receipt?.kind ||
+            representative?.receiptKind ||
+            flow
+        )
+            .trim()
+            .toLowerCase()
+
+        const receiptOrderId = String(
+            receiptCarrier?.receipt?.orderId ||
+            representative?.receipt?.orderId ||
+            representative?.receiptOrderId ||
+            orderId
+        ).trim()
+
+        cards.push({
+            id: `payment:${orderId}`,
+            cardType: 'payment',
+            domain: 'payment',
+            actionType: actionType || 'payment_record',
+            title: getPaymentCardTitle({
+                flow,
+                actionType,
+                fallbackTitle: String(representative?.title || '').trim(),
+            }),
+            status: resolvedStatus,
+            amount: Number(amountCandidate?.amount || 0),
+            currency: String(representative?.currency || 'INR').trim(),
+            timestamp: representative?.timestamp || representative?.createdAt || representative?.updatedAt,
+            orderId,
+            paymentId,
+            transactionId,
+            flow,
+            receipt:
+                receiptOrderId && receiptKind
+                    ? {
+                        kind: receiptKind,
+                        orderId: receiptOrderId,
+                    }
+                    : null,
+            metadata: {
+                eventCount: groupEvents.length,
+            },
+        })
+    })
+
+    return cards.sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
 }
+
+const buildLoginCards = (events) =>
+    events
+        .filter((item) => String(item?.domain || '').trim().toLowerCase() === 'auth')
+        .filter((item) => String(item?.actionType || '').trim().toLowerCase() === 'login_success')
+        .map((item) => {
+            const isNewUser = Boolean(item?.metadata?.isNewUser)
+
+            return {
+                id: `login:${String(item?.id || item?.timestamp || item?.createdAt || Math.random())}`,
+                cardType: 'login',
+                domain: 'auth',
+                actionType: 'login_success',
+                title: isNewUser ? 'Google sign-in completed for new account' : 'Google sign-in completed',
+                status: 'success',
+                timestamp: item?.timestamp || item?.createdAt || item?.updatedAt,
+                metadata: item?.metadata || {},
+            }
+        })
+        .sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
+
+const buildBlogCards = (supports) =>
+    (Array.isArray(supports) ? supports : [])
+        .map((item, index) => {
+            const blogSource = item?.blog || item?.blogSnapshot || {}
+            const slug = String(blogSource?.slug || '').trim()
+            const title = String(blogSource?.title || 'Supported blog post').trim()
+
+            return {
+                id: `blog:${String(item?.id || slug || item?.createdAt || index)}`,
+                cardType: 'blog',
+                domain: 'blog',
+                actionType: 'blog_support_added',
+                title: `Supported blog: ${title}`,
+                status: 'success',
+                timestamp: item?.createdAt || item?.updatedAt,
+                metadata: {
+                    slug,
+                    blogTitle: title,
+                    supportCount: Number(blogSource?.supportCount || 0),
+                },
+            }
+        })
+        .sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
 
 function ActivityTimeline() {
     const { user, isLoading, isAuthenticated } = useAuth()
+    const [searchParams, setSearchParams] = useSearchParams()
 
     useSEO({
         title: 'My Activity | Gaurav Kumar Yadav',
-        description: 'Unified payment, receipt, and account activity timeline with downloadable receipts.',
-        keywords: 'activity timeline, payments, receipts, order history',
+        description: 'Track payments, blog supports, and sign-in history in one organized activity center.',
+        keywords: 'activity, payments, blog supports, login history, receipts',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
     const [timeline, setTimeline] = useState([])
+    const [blogSupports, setBlogSupports] = useState([])
     const [isPageLoading, setIsPageLoading] = useState(true)
     const [pageError, setPageError] = useState('')
     const [downloadingKey, setDownloadingKey] = useState('')
 
-    const hasPendingEvents = useMemo(() => timeline.some((item) => isPendingEvent(item)), [timeline])
+    const activeTab = normalizeActivityTab(searchParams.get('tab'))
+    const highlightedOrderId = String(searchParams.get('orderId') || '').trim()
+    const flowFromQuery = normalizeFlow(searchParams.get('flow'))
+    const showPaymentSuccessHint =
+        String(searchParams.get('source') || '').trim().toLowerCase() === 'payment' &&
+        String(searchParams.get('status') || '').trim().toLowerCase() === 'success'
+
+    const transformedCards = useMemo(() => {
+        const paymentCards = aggregatePaymentCards(timeline)
+        const loginCards = buildLoginCards(timeline)
+        const blogCards = buildBlogCards(blogSupports)
+        const allCards = [...paymentCards, ...blogCards, ...loginCards].sort(
+            (left, right) => toEventTimestampMs(right) - toEventTimestampMs(left)
+        )
+
+        return {
+            paymentCards,
+            loginCards,
+            blogCards,
+            allCards,
+        }
+    }, [timeline, blogSupports])
+
+    const hasPendingPayments = useMemo(
+        () => transformedCards.paymentCards.some((card) => card.status === 'pending'),
+        [transformedCards.paymentCards]
+    )
+
+    const tabs = useMemo(
+        () => [
+            { key: 'all', label: `All Activity (${transformedCards.allCards.length})` },
+            { key: 'payments', label: `Payments (${transformedCards.paymentCards.length})` },
+            { key: 'blog-likes', label: `Blog Likes (${transformedCards.blogCards.length})` },
+            { key: 'logins', label: `Login Activity (${transformedCards.loginCards.length})` },
+        ],
+        [
+            transformedCards.allCards.length,
+            transformedCards.blogCards.length,
+            transformedCards.loginCards.length,
+            transformedCards.paymentCards.length,
+        ]
+    )
+
+    const cardsForTab = useMemo(() => {
+        if (activeTab === 'payments') {
+            return transformedCards.paymentCards
+        }
+
+        if (activeTab === 'blog-likes') {
+            return transformedCards.blogCards
+        }
+
+        if (activeTab === 'logins') {
+            return transformedCards.loginCards
+        }
+
+        return transformedCards.allCards
+    }, [activeTab, transformedCards])
 
     const loadTimeline = async ({ silent = false } = {}) => {
         if (!isAuthenticated) {
             setTimeline([])
-            setIsPageLoading(false)
+            setBlogSupports([])
             setPageError('')
+            setIsPageLoading(false)
             return
         }
 
@@ -127,22 +447,37 @@ function ActivityTimeline() {
             setIsPageLoading(true)
         }
 
-        try {
-            const response = await fetchMyActivityTimeline({ limit: 120 })
-            setTimeline(Array.isArray(response?.items) ? response.items : [])
+        const [timelineResult, supportsResult] = await Promise.allSettled([
+            fetchMyActivityTimeline({ limit: 120 }),
+            fetchMySupports(),
+        ])
+
+        if (timelineResult.status === 'fulfilled') {
+            const items = Array.isArray(timelineResult.value?.items) ? timelineResult.value.items : []
+            setTimeline(items)
             setPageError('')
-        } catch (error) {
-            const message = String(error?.message || 'Unable to load your activity timeline right now.')
-            setPageError(message)
+        } else {
+            const timelineMessage = String(
+                timelineResult.reason?.message || 'Unable to load your activity timeline right now.'
+            )
 
-            if (silent) {
-                return
+            if (!silent) {
+                toast.error(timelineMessage)
             }
-
-            toast.error(message)
-        } finally {
-            setIsPageLoading(false)
+            setPageError(timelineMessage)
         }
+
+        if (supportsResult.status === 'fulfilled') {
+            const supportItems = Array.isArray(supportsResult.value?.items) ? supportsResult.value.items : []
+            setBlogSupports(supportItems)
+        } else if (!silent) {
+            const supportsMessage = String(
+                supportsResult.reason?.message || 'Unable to load blog support activity right now.'
+            )
+            toast.error(supportsMessage)
+        }
+
+        setIsPageLoading(false)
     }
 
     useEffect(() => {
@@ -154,7 +489,7 @@ function ActivityTimeline() {
     }, [isAuthenticated, isLoading])
 
     useEffect(() => {
-        if (!hasPendingEvents || !isAuthenticated || isLoading) {
+        if (!hasPendingPayments || !isAuthenticated || isLoading) {
             return
         }
 
@@ -165,21 +500,48 @@ function ActivityTimeline() {
         return () => {
             clearInterval(timerId)
         }
-    }, [hasPendingEvents, isAuthenticated, isLoading])
+    }, [hasPendingPayments, isAuthenticated, isLoading])
 
-    const downloadReceipt = async ({ item, format }) => {
-        const receipt = item?.receipt
+    useEffect(() => {
+        const currentTab = String(searchParams.get('tab') || '').trim().toLowerCase()
+        if (!currentTab) {
+            return
+        }
+
+        const normalizedTab = normalizeActivityTab(currentTab)
+        if (normalizedTab === currentTab) {
+            return
+        }
+
+        const nextParams = new URLSearchParams(searchParams)
+        nextParams.set('tab', normalizedTab)
+        setSearchParams(nextParams, { replace: true })
+    }, [searchParams, setSearchParams])
+
+    const updateActiveTab = (nextTab) => {
+        const normalizedTab = normalizeActivityTab(nextTab)
+        const nextParams = new URLSearchParams(searchParams)
+
+        if (normalizedTab === 'all') {
+            nextParams.delete('tab')
+        } else {
+            nextParams.set('tab', normalizedTab)
+        }
+
+        setSearchParams(nextParams, { replace: true })
+    }
+
+    const downloadReceipt = async ({ receipt, format }) => {
         const orderId = String(receipt?.orderId || '').trim()
         const kind = String(receipt?.kind || '').trim().toLowerCase()
 
         if (!orderId || !kind || !user?.email) {
-            toast.error('Receipt metadata is incomplete for this activity entry.')
+            toast.error('Receipt metadata is incomplete for this payment card.')
             return
         }
 
         const extension = format === 'pdf' ? 'pdf' : 'svg'
         const key = `${format}:${kind}:${orderId}`
-
         setDownloadingKey(key)
 
         try {
@@ -204,6 +566,176 @@ function ActivityTimeline() {
         }
     }
 
+    const getTabButtonClass = (isActive) => {
+        if (isActive) {
+            return 'border-cyan-400/35 bg-cyan-500/10 text-cyan-200'
+        }
+
+        return 'border-transparent bg-slate-800/80 text-slate-300 hover:border-slate-600'
+    }
+
+    const renderPaymentCard = (card) => {
+        const statusToken = String(card.status || 'info').toLowerCase()
+        const showReceiptActions = Boolean(card.receipt?.kind && card.receipt?.orderId)
+        const pdfDownloadKey = `pdf:${card.receipt?.kind}:${card.receipt?.orderId}`
+        const imageDownloadKey = `image:${card.receipt?.kind}:${card.receipt?.orderId}`
+        const isHighlighted = highlightedOrderId && highlightedOrderId === card.orderId
+        const flowLabel = card.flow === 'support' ? 'Support Contribution' : 'Service Booking'
+
+        return (
+            <article
+                key={card.id}
+                className={`rounded-2xl border bg-slate-800/65 p-5 ${
+                    isHighlighted
+                        ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
+                        : 'border-slate-700/75'
+                }`}
+            >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                                {getEventIcon(card)}
+                            </span>
+                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.title}</p>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-400">
+                            {flowLabel} • {formatDateTime(card.timestamp)} • {humanizeToken(card.actionType)}
+                        </p>
+                    </div>
+                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(statusToken)}`}>
+                        {statusToken}
+                    </span>
+                </div>
+
+                <div className="mt-3 grid gap-1 text-sm text-slate-300">
+                    {Number.isFinite(Number(card.amount)) && Number(card.amount) > 0 ? (
+                        <p><span className="text-slate-400">Amount:</span> INR {Number(card.amount).toLocaleString('en-IN')}</p>
+                    ) : null}
+                    <p><span className="text-slate-400">Order ID:</span> {card.orderId}</p>
+                    {card.paymentId ? <p><span className="text-slate-400">Payment ID:</span> {card.paymentId}</p> : null}
+                    {card.transactionId ? <p><span className="text-slate-400">Transaction:</span> {card.transactionId}</p> : null}
+                </div>
+
+                {showReceiptActions ? (
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        <button
+                            type="button"
+                            disabled={downloadingKey === pdfDownloadKey}
+                            onClick={() => {
+                                void downloadReceipt({ receipt: card.receipt, format: 'pdf' })
+                            }}
+                            className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-60 transition-colors"
+                        >
+                            {downloadingKey === pdfDownloadKey ? 'Downloading PDF...' : 'Download PDF Receipt'}
+                        </button>
+                        <button
+                            type="button"
+                            disabled={downloadingKey === imageDownloadKey}
+                            onClick={() => {
+                                void downloadReceipt({ receipt: card.receipt, format: 'image' })
+                            }}
+                            className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-60 transition-colors"
+                        >
+                            {downloadingKey === imageDownloadKey ? 'Downloading Image...' : 'Download Image Receipt'}
+                        </button>
+
+                        {card.transactionId ? (
+                            <Link
+                                to={`/payment-success/${encodeURIComponent(card.transactionId)}?flow=${card.flow}&orderId=${encodeURIComponent(card.orderId)}`}
+                                className="inline-flex items-center justify-center rounded-xl border border-slate-600 px-4 py-2.5 text-xs font-semibold text-slate-100 hover:border-slate-500 transition-colors"
+                            >
+                                Open Success Page
+                            </Link>
+                        ) : null}
+                    </div>
+                ) : null}
+            </article>
+        )
+    }
+
+    const renderBlogCard = (card) => {
+        const slug = String(card.metadata?.slug || '').trim()
+        const content = (
+            <article
+                key={card.id}
+                className="rounded-2xl border border-slate-700/75 bg-slate-800/65 p-5 hover:border-cyan-500/40 transition-colors"
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                                {getEventIcon(card)}
+                            </span>
+                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.metadata?.blogTitle}</p>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-400">Supported on {formatDateTime(card.timestamp)}</p>
+                    </div>
+                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
+                        supported
+                    </span>
+                </div>
+
+                <div className="mt-3 text-sm text-slate-300">
+                    <p><span className="text-slate-400">Post:</span> {card.metadata?.blogTitle}</p>
+                    {Number(card.metadata?.supportCount) > 0 ? (
+                        <p><span className="text-slate-400">Supporters:</span> {Number(card.metadata.supportCount).toLocaleString('en-IN')}</p>
+                    ) : null}
+                </div>
+            </article>
+        )
+
+        if (!slug) {
+            return content
+        }
+
+        return (
+            <Link key={card.id} to={`/blog/${slug}`} className="block">
+                {content}
+            </Link>
+        )
+    }
+
+    const renderLoginCard = (card) => {
+        const provider = String(card.metadata?.provider || 'google').toUpperCase()
+        const isNewUser = Boolean(card.metadata?.isNewUser)
+
+        return (
+            <article key={card.id} className="rounded-2xl border border-slate-700/75 bg-slate-800/65 p-5">
+                <div className="flex items-start justify-between gap-3">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                                {getEventIcon(card)}
+                            </span>
+                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.title}</p>
+                        </div>
+                        <p className="mt-1 text-xs text-slate-400">{provider} • {formatDateTime(card.timestamp)}</p>
+                    </div>
+                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
+                        success
+                    </span>
+                </div>
+
+                <div className="mt-3 text-sm text-slate-300">
+                    <p>{isNewUser ? 'First sign-in for this account.' : 'Returning account sign-in completed.'}</p>
+                </div>
+            </article>
+        )
+    }
+
+    const renderCard = (card) => {
+        if (card.cardType === 'payment') {
+            return renderPaymentCard(card)
+        }
+
+        if (card.cardType === 'blog') {
+            return renderBlogCard(card)
+        }
+
+        return renderLoginCard(card)
+    }
+
     if (isLoading || isPageLoading) {
         return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
@@ -220,7 +752,7 @@ function ActivityTimeline() {
                 <div className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-slate-800/70 p-8 text-center">
                     <h1 className="text-3xl font-black text-slate-100">Sign In Required</h1>
                     <p className="mt-3 text-slate-300">
-                        Sign in with your Google account to view your unified payment and receipt activity timeline.
+                        Sign in with your Google account to view your activity history.
                     </p>
                     <div className="mt-5">
                         <Link
@@ -243,10 +775,10 @@ function ActivityTimeline() {
             <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p className="text-[11px] uppercase tracking-wider text-cyan-300">Unified Timeline</p>
+                        <p className="text-[11px] uppercase tracking-wider text-cyan-300">Activity Center</p>
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-100">My Activity</h1>
                         <p className="mt-2 text-slate-300 text-sm sm:text-base">
-                            Payments, receipts, and related events from one source of truth.
+                            Payments, blog likes, and sign-in events organized in one clean view.
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -268,109 +800,55 @@ function ActivityTimeline() {
                     </div>
                 </div>
 
+                {showPaymentSuccessHint ? (
+                    <div className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                        Payment confirmation completed. Your latest transaction is now available under Payments.
+                        {highlightedOrderId ? ` Order ID: ${highlightedOrderId}` : ''}
+                        {flowFromQuery === 'support' ? ' (Support)' : flowFromQuery === 'service' ? ' (Service)' : ''}
+                    </div>
+                ) : null}
+
                 {pageError ? (
                     <div className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
                         {pageError}
                     </div>
                 ) : null}
 
-                {!timeline.length ? (
-                    <div className="rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">
-                        No timeline events yet. Complete a payment and this page will show your full activity.
+                <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-2">
+                    {tabs.map((tab) => {
+                        const isActive = activeTab === tab.key
+
+                        return (
+                            <button
+                                key={tab.key}
+                                type="button"
+                                onClick={() => updateActiveTab(tab.key)}
+                                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${getTabButtonClass(isActive)}`}
+                            >
+                                {tab.label}
+                            </button>
+                        )
+                    })}
+                </div>
+
+                {!cardsForTab.length ? (
+                    <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">
+                        {activeTab === 'payments'
+                            ? 'No payment activity yet. Complete a booking or support contribution to see your payment cards here.'
+                            : activeTab === 'blog-likes'
+                                ? 'No blog likes yet. Support a blog post and it will appear here.'
+                                : activeTab === 'logins'
+                                    ? 'No login activity found yet.'
+                                    : 'No activity yet. Your latest actions will appear here once available.'}
                     </div>
                 ) : (
-                    <div className="grid gap-4">
-                        {timeline.map((item) => {
-                            const statusToken = String(item.status || 'info').toLowerCase()
-                            const showReceiptActions = Boolean(item.receipt?.kind && item.receipt?.orderId)
-                            const transactionId = String(item.transactionId || '').trim()
-                            const flow = String(item.receipt?.kind || item.type || 'service').trim().toLowerCase() === 'support'
-                                ? 'support'
-                                : 'service'
-
-                            const pdfDownloadKey = `pdf:${item.receipt?.kind}:${item.receipt?.orderId}`
-                            const imageDownloadKey = `image:${item.receipt?.kind}:${item.receipt?.orderId}`
-
-                            return (
-                                <article
-                                    key={item.id}
-                                    className="rounded-2xl border border-slate-700/75 bg-slate-800/65 p-5"
-                                >
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-xs text-slate-200">
-                                                    {getEventIcon(item)}
-                                                </span>
-                                                <p className="text-base sm:text-lg font-semibold text-slate-100">
-                                                    {item.title || humanizeToken(item.actionType)}
-                                                </p>
-                                            </div>
-                                            <p className="mt-1 text-xs text-slate-400">
-                                                {humanizeToken(item.domain, 'Payment')} • {humanizeToken(item.actionType)} • {formatDateTime(item.timestamp)}
-                                            </p>
-                                        </div>
-                                        <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(statusToken)}`}>
-                                            {statusToken}
-                                        </span>
-                                    </div>
-
-                                    <div className="mt-3 grid gap-1 text-sm text-slate-300">
-                                        {Number.isFinite(Number(item.amount)) && Number(item.amount) > 0 ? (
-                                            <p><span className="text-slate-400">Amount:</span> INR {Number(item.amount).toLocaleString('en-IN')}</p>
-                                        ) : null}
-                                        {item.orderId ? (
-                                            <p><span className="text-slate-400">Order ID:</span> {item.orderId}</p>
-                                        ) : null}
-                                        {item.paymentId ? (
-                                            <p><span className="text-slate-400">Payment ID:</span> {item.paymentId}</p>
-                                        ) : null}
-                                        {transactionId ? (
-                                            <p><span className="text-slate-400">Transaction:</span> {transactionId}</p>
-                                        ) : null}
-                                    </div>
-
-                                    {showReceiptActions ? (
-                                        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                                            <button
-                                                type="button"
-                                                disabled={downloadingKey === pdfDownloadKey}
-                                                onClick={() => {
-                                                    void downloadReceipt({ item, format: 'pdf' })
-                                                }}
-                                                className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-60 transition-colors"
-                                            >
-                                                {downloadingKey === pdfDownloadKey ? 'Downloading PDF...' : 'Download PDF Receipt'}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                disabled={downloadingKey === imageDownloadKey}
-                                                onClick={() => {
-                                                    void downloadReceipt({ item, format: 'image' })
-                                                }}
-                                                className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-60 transition-colors"
-                                            >
-                                                {downloadingKey === imageDownloadKey ? 'Downloading Image...' : 'Download Image Receipt'}
-                                            </button>
-
-                                            {transactionId ? (
-                                                <Link
-                                                    to={`/payment-success/${encodeURIComponent(transactionId)}?flow=${flow}&orderId=${encodeURIComponent(String(item.orderId || '').trim())}`}
-                                                    className="inline-flex items-center justify-center rounded-xl border border-slate-600 px-4 py-2.5 text-xs font-semibold text-slate-100 hover:border-slate-500 transition-colors"
-                                                >
-                                                    Open Success Page
-                                                </Link>
-                                            ) : null}
-                                        </div>
-                                    ) : null}
-                                </article>
-                            )
-                        })}
-                    </div>
+                    <div className="mt-8 grid gap-4">{cardsForTab.map((card) => renderCard(card))}</div>
                 )}
             </div>
         </div>
     )
 }
+
+const normalizeFlow = (value) => (String(value || '').trim().toLowerCase() === 'support' ? 'support' : 'service')
 
 export default ActivityTimeline

@@ -254,6 +254,7 @@ function Support() {
         navigate(`/payment-success/${transactionId}?flow=support&orderId=${successOrderId}`, {
             state: {
                 flow: 'support',
+                checkoutOrigin: 'callback-success',
                 details: successDetails,
             },
         })
