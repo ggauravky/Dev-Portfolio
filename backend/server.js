@@ -29,11 +29,19 @@ const mlLogRoutes = require("./routes/mlLogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const blogSupportRoutes = require("./routes/blogSupportRoutes");
+const activityRoutes = require("./routes/activityRoutes");
 const { closePaymentQueueWorkers, getPaymentQueueStatus } = require("./queues/paymentQueue");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
+const { validateEnvironment } = require("./config/env");
 const { getRetentionPolicy } = require("../shared/chatPrivacy.cjs");
+
+const envValidation = validateEnvironment({ strict: true });
+for (const warning of envValidation.warnings) {
+  logger.warn({ warning }, "Environment validation warning");
+}
+logger.info({ flags: envValidation.flags }, "Environment configuration validated");
 
 // Initialize express app
 const app = express();
@@ -139,6 +147,7 @@ app.use("/api/ml-log", mlLogRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", blogSupportRoutes);
+app.use("/api/activity", activityRoutes);
 
 // Root route
 app.get("/", (req, res) => {

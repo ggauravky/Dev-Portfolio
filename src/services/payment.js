@@ -118,6 +118,20 @@ export const fetchPaymentStatus = async (orderId, email) => {
     return data.data
 }
 
+export const fetchTransactionStatus = async (transactionId) => {
+    const normalizedTransactionId = String(transactionId || '').trim()
+    const response = await fetch(
+        `${API_URL}/api/payment/transaction/${encodeURIComponent(normalizedTransactionId)}`,
+        {
+            method: 'GET',
+            credentials: 'include',
+        }
+    )
+
+    const data = await assertResponse(response)
+    return data.data
+}
+
 const assertBlobResponse = async (response, fallbackMessage = 'Unable to download receipt file') => {
     if (!response.ok) {
         let data = null

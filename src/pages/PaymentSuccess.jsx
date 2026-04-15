@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
 import {
+    fetchTransactionStatus,
     fetchServiceReceiptImage,
     fetchServiceReceiptPdf,
     fetchSupportReceiptImage,
@@ -53,6 +55,8 @@ const escapeHtml = (value) =>
 function PaymentSuccess() {
     const navigate = useNavigate()
     const location = useLocation()
+    const { transactionId: routeTransactionId } = useParams()
+    const { isAuthenticated, isLoading, user } = useAuth()
     const [params] = useSearchParams()
     const flow = normalizeFlow(params.get('flow') || location.state?.flow)
 
@@ -78,8 +82,11 @@ function PaymentSuccess() {
     })
 
     const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
+    const [isHydratingDetails, setIsHydratingDetails] = useState(false)
+    const [detailsLoadError, setDetailsLoadError] = useState('')
     const [receiptDownloadError, setReceiptDownloadError] = useState('')
     const autoDownloadKeyRef = useRef('')
+    const effectiveFlow = normalizeFlow(details?.type || flow)
 
     useEffect(() => {
         const stateDetails = location.state?.details
@@ -97,6 +104,70 @@ function PaymentSuccess() {
         }
     }, [flow, location.state])
 
+    useEffect(() => {
+        if (!routeTransactionId || isLoading) {
+            return
+        }
+
+        if (!isAuthenticated || !user?.email) {
+            setDetailsLoadError('Please sign in with your payment account to view this transaction.')
+            return
+        }
+
+        let isCancelled = false
+
+        const hydrateDetails = async () => {
+            setIsHydratingDetails(true)
+            setDetailsLoadError('')
+
+            try {
+                const transaction = await fetchTransactionStatus(routeTransactionId)
+                if (isCancelled || !transaction) {
+                    return
+                }
+
+                const transactionFlow = normalizeFlow(transaction.type || flow)
+
+                setDetails((previous) => {
+                    const mergedDetails = {
+                        ...previous,
+                        ...transaction,
+                        type: transactionFlow,
+                        flow: transactionFlow,
+                        orderId: String(transaction.orderId || previous?.orderId || '').trim(),
+                        paymentId: String(
+                            transaction.paymentId ||
+                            transaction.transactionId ||
+                            previous?.paymentId ||
+                            routeTransactionId
+                        ).trim(),
+                        email: String(transaction.email || previous?.email || user.email || '').trim(),
+                    }
+
+                    sessionStorage.setItem(getStorageKey(transactionFlow), JSON.stringify(mergedDetails))
+                    return mergedDetails
+                })
+            } catch (error) {
+                if (isCancelled) {
+                    return
+                }
+
+                const message = String(error?.message || 'Unable to load payment details right now.')
+                setDetailsLoadError(message)
+            } finally {
+                if (!isCancelled) {
+                    setIsHydratingDetails(false)
+                }
+            }
+        }
+
+        void hydrateDetails()
+
+        return () => {
+            isCancelled = true
+        }
+    }, [flow, isAuthenticated, isLoading, routeTransactionId, user?.email])
+
     const activityUrl = useMemo(() => {
         if (!details?.orderId) {
             return '/my-activity'
@@ -105,8 +176,8 @@ function PaymentSuccess() {
         const activityParams = new URLSearchParams({
             source: 'payment',
             status: 'success',
-            flow,
-            tab: flow === 'support' ? 'payments' : 'bookings',
+            flow: effectiveFlow,
+            tab: effectiveFlow === 'support' ? 'payments' : 'bookings',
             orderId: String(details.orderId || '').trim(),
         })
 
@@ -116,7 +187,7 @@ function PaymentSuccess() {
         }
 
         return `/my-activity?${activityParams.toString()}`
-    }, [details, flow])
+    }, [details, effectiveFlow])
 
     const downloadReceiptImage = async (options = {}) => {
         const { silent = false, auto = false } = options
@@ -131,11 +202,11 @@ function PaymentSuccess() {
         setIsDownloadingReceipt(true)
 
         try {
-            const blob = flow === 'support'
+            const blob = effectiveFlow === 'support'
                 ? await fetchSupportReceiptImage(details.orderId, details.email)
                 : await fetchServiceReceiptImage(details.orderId, details.email)
 
-            const filenamePrefix = flow === 'support' ? 'support-receipt' : 'service-confirmation'
+            const filenamePrefix = effectiveFlow === 'support' ? 'support-receipt' : 'service-confirmation'
             saveBlobAsFile(blob, `${filenamePrefix}-${details.orderId}.svg`)
 
             setReceiptDownloadError(
@@ -163,6 +234,28 @@ function PaymentSuccess() {
         }
     }
 
+    const handlePdfDownloadFailure = async ({ error, auto, silent }) => {
+        if (auto) {
+            const downloadedFallback = await downloadReceiptImage({ silent: true, auto: true })
+            if (downloadedFallback) {
+                return true
+            }
+        }
+
+        const message = String(error?.message || 'Unable to download receipt PDF')
+        setReceiptDownloadError(
+            auto
+                ? 'Automatic PDF download was blocked. Use the image backup receipt button below.'
+                : message
+        )
+
+        if (!silent) {
+            toast.error(message)
+        }
+
+        return false
+    }
+
     const downloadReceiptPdf = async (options = {}) => {
         const { silent = false, auto = false } = options
 
@@ -176,11 +269,11 @@ function PaymentSuccess() {
         setIsDownloadingReceipt(true)
 
         try {
-            const blob = flow === 'support'
+            const blob = effectiveFlow === 'support'
                 ? await fetchSupportReceiptPdf(details.orderId, details.email)
                 : await fetchServiceReceiptPdf(details.orderId, details.email)
 
-            const filenamePrefix = flow === 'support' ? 'support-receipt' : 'service-confirmation'
+            const filenamePrefix = effectiveFlow === 'support' ? 'support-receipt' : 'service-confirmation'
             saveBlobAsFile(blob, `${filenamePrefix}-${details.orderId}.pdf`)
             setReceiptDownloadError('')
 
@@ -189,24 +282,7 @@ function PaymentSuccess() {
             }
             return true
         } catch (error) {
-            if (auto) {
-                const downloadedFallback = await downloadReceiptImage({ silent: true, auto: true })
-                if (downloadedFallback) {
-                    return true
-                }
-            }
-
-            const message = String(error?.message || 'Unable to download receipt PDF')
-            setReceiptDownloadError(
-                auto
-                    ? 'Automatic PDF download was blocked. Use the image backup receipt button below.'
-                    : message
-            )
-
-            if (!silent) {
-                toast.error(message)
-            }
-            return false
+            return handlePdfDownloadFailure({ error, auto, silent })
         } finally {
             setIsDownloadingReceipt(false)
         }
@@ -304,14 +380,14 @@ function PaymentSuccess() {
             return
         }
 
-        const autoDownloadKey = `${flow}:${details.orderId}`
+        const autoDownloadKey = `${effectiveFlow}:${details.orderId}`
         if (autoDownloadKeyRef.current === autoDownloadKey) {
             return
         }
 
         autoDownloadKeyRef.current = autoDownloadKey
         void downloadReceiptPdf({ silent: true, auto: true })
-    }, [details, flow])
+    }, [details, effectiveFlow])
 
     return (
         <div className="min-h-screen bg-slate-900 relative overflow-hidden">
@@ -322,7 +398,7 @@ function PaymentSuccess() {
                 <div className="mb-6 flex items-center justify-between gap-3">
                     <button
                         type="button"
-                        onClick={() => navigate(flow === 'support' ? '/support' : '/booknow')}
+                        onClick={() => navigate(effectiveFlow === 'support' ? '/support' : '/booknow')}
                         className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
                     >
                         <span>{'<-'}</span>
@@ -335,7 +411,7 @@ function PaymentSuccess() {
 
                 <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8">
                     <h1 className="text-3xl sm:text-4xl font-black text-slate-100">
-                        {flow === 'support' ? 'Support Payment Confirmed' : 'Booking Payment Confirmed'}
+                        {effectiveFlow === 'support' ? 'Support Payment Confirmed' : 'Booking Payment Confirmed'}
                     </h1>
                     <p className="mt-2 text-slate-300 text-sm sm:text-base">
                         Payment is verified successfully. Thank you, and check your mail for updates.
@@ -344,16 +420,24 @@ function PaymentSuccess() {
                         This page is your next step: download your receipt files and open My Activity if you need history.
                     </p>
 
-                    {!details ? (
-                        <div className="mt-6 rounded-2xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-                            Payment details are not available right now. Please open My Activity to view your latest transaction.
+                    {isHydratingDetails ? (
+                        <div className="mt-3 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+                            Loading latest payment details from server...
                         </div>
-                    ) : (
+                    ) : null}
+
+                    {detailsLoadError ? (
+                        <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                            {detailsLoadError}
+                        </div>
+                    ) : null}
+
+                    {details ? (
                         <>
                             <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">
                                 <p><span className="text-slate-400">Order ID:</span> {details.orderId}</p>
                                 <p><span className="text-slate-400">Payment ID:</span> {details.paymentId || 'Not available'}</p>
-                                {flow === 'support' ? (
+                                {effectiveFlow === 'support' ? (
                                     <>
                                         <p><span className="text-slate-400">Name:</span> {details.contributorName || details.contributor || 'Supporter'}</p>
                                         <p><span className="text-slate-400">Amount:</span> INR {details.amount}</p>
@@ -390,7 +474,7 @@ function PaymentSuccess() {
                                 </button>
                             </div>
 
-                            {flow === 'service' ? (
+                            {effectiveFlow === 'service' ? (
                                 <div className="mt-3 grid gap-3 sm:grid-cols-2">
                                     <button
                                         type="button"
@@ -415,6 +499,10 @@ function PaymentSuccess() {
                                 </div>
                             ) : null}
                         </>
+                    ) : (
+                        <div className="mt-6 rounded-2xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                            Payment details are not available right now. Please open My Activity to view your latest transaction.
+                        </div>
                     )}
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -425,7 +513,7 @@ function PaymentSuccess() {
                             Open My Activity
                         </Link>
                         <Link
-                            to={flow === 'support' ? '/services' : '/services'}
+                            to="/services"
                             className="inline-flex justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
                         >
                             Explore Services

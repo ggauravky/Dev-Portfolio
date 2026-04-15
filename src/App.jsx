@@ -41,6 +41,7 @@ const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
 const BookNow = lazy(() => import('./pages/BookNow'))
 const Support = lazy(() => import('./pages/Support'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
+const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -161,6 +162,7 @@ function AnimatedRoutes() {
                 <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
                 <Route path="/booknow"                    element={<R><BookNow /></R>} />
                 <Route path="/support"                    element={<R><Support /></R>} />
+                <Route path="/payment-success/:transactionId" element={<R><PaymentSuccess /></R>} />
                 <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
                 <Route path="/payment-under-construction" element={<R><UnderConstruction variant="payment" /></R>} />
                 <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
@@ -172,7 +174,7 @@ function AnimatedRoutes() {
                 <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
                 <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
                 <Route path="/contact"                    element={<R><Contact /></R>} />
-                <Route path="/my-activity"               element={<R><MySupports /></R>} />
+                <Route path="/my-activity"               element={<R><ActivityTimeline /></R>} />
                 <Route path="/my-supports"                element={<R><MySupports /></R>} />
                 <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />

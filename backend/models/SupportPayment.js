@@ -104,6 +104,26 @@ const supportPaymentSchema = new mongoose.Schema(
       maxlength: 160,
       default: "",
     },
+    adminEmailSentAt: {
+      type: Date,
+      default: null,
+    },
+    adminEmailLastAttemptAt: {
+      type: Date,
+      default: null,
+    },
+    adminEmailMessageId: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+      default: "",
+    },
+    adminEmailError: {
+      type: String,
+      trim: true,
+      maxlength: 160,
+      default: "",
+    },
     verificationAcceptedAt: {
       type: Date,
     },

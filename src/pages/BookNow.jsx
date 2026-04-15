@@ -377,7 +377,9 @@ function BookNow() {
         }
 
         const successOrderId = encodeURIComponent(successDetails.orderId)
-        navigate(`/payment-success?flow=service&orderId=${successOrderId}`, {
+        const transactionId = encodeURIComponent(String(successDetails.paymentId || successDetails.orderId || '').trim())
+
+        navigate(`/payment-success/${transactionId}?flow=service&orderId=${successOrderId}`, {
             state: {
                 flow: 'service',
                 details: successDetails,
@@ -764,24 +766,32 @@ function BookNow() {
                     environment: order.environment,
                 })
 
-                if (checkoutResult?.error) {
-                    throw new Error(
-                        `Payment was not completed. ${checkoutResult.error.message || 'Checkout was cancelled or failed.'} No booking has been confirmed yet.`
-                    )
-                }
-
                 if (checkoutResult?.paymentDetails?.cf_payment_id) {
                     pending.paymentId = String(checkoutResult.paymentDetails.cf_payment_id)
                     sessionStorage.setItem(pendingOrderKey, JSON.stringify(pending))
+                }
+
+                if (checkoutResult?.error) {
+                    const recovered = await finalizeOrderVerification(order.orderId, pending, {
+                        silent: true,
+                    })
+
+                    if (recovered) {
+                        return
+                    }
+
+                    const checkoutMessage = String(checkoutResult.error.message || '').trim()
+                    throw new Error(
+                        checkoutMessage
+                            ? `Payment window closed: ${checkoutMessage}. We are still verifying your payment in background. Keep this page open, or check My Activity.`
+                            : 'Payment window closed before confirmation. We are still verifying your payment in background. Keep this page open, or check My Activity.'
+                    )
                 }
 
                 await finalizeOrderVerification(order.orderId, pending)
             } catch (error) {
                 const message = error?.message || 'Unable to start secure checkout'
                 setPaymentFailure(message)
-                if (isTerminalPaymentFailure(message)) {
-                    sessionStorage.removeItem(pendingOrderKey)
-                }
                 toast.error(message)
             } finally {
                 setIsSubmitting(false)

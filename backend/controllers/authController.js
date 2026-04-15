@@ -10,8 +10,8 @@ const { logger } = require("../utils/logger");
 const {
   sendWelcomeEmail,
   sendWelcomeBackEmail,
-  shouldSendWelcomeBackEmail,
 } = require("../utils/email");
+const { recordActivityEvent } = require("../services/activityService");
 const {
   AUTH_COOKIE_NAME,
   issueSessionToken,
@@ -55,6 +55,11 @@ const buildUserPayload = (user) => {
 const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
 const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
 const normalizeDisplayName = (value) => normalizeText(value, 120);
+const LOGIN_EMAIL_MAX_ATTEMPTS =
+  Number.parseInt(process.env.LOGIN_EMAIL_MAX_ATTEMPTS, 10) || 3;
+const LOGIN_EMAIL_RETRY_BASE_MS =
+  Number.parseInt(process.env.LOGIN_EMAIL_RETRY_BASE_MS, 10) || 2000;
+
 const buildAuthLifecycleMessage = (isNewUser) => {
   if (isNewUser) {
     return {
@@ -141,7 +146,45 @@ const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
   );
 };
 
-const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
+const delay = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const dispatchLifecycleEmailWithRetry = async ({ isNewUser, userSnapshot }) => {
+  const maxAttempts = Math.max(1, LOGIN_EMAIL_MAX_ATTEMPTS);
+  let lastResult = {
+    sent: false,
+    skipped: true,
+    reason: "not_attempted",
+  };
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const result = isNewUser
+      ? await sendWelcomeEmail({ user: userSnapshot })
+      : await sendWelcomeBackEmail({
+          user: userSnapshot,
+          loginEventId: userSnapshot.loginEventId,
+        });
+
+    lastResult = {
+      ...result,
+      attempt,
+    };
+
+    if (result.sent || result.skipped) {
+      return lastResult;
+    }
+
+    if (attempt < maxAttempts) {
+      await delay(LOGIN_EMAIL_RETRY_BASE_MS * attempt);
+    }
+  }
+
+  return lastResult;
+};
+
+const scheduleLifecycleLoginEmail = ({ user, isNewUser, loginEventId, reqLogger }) => {
   const userSnapshot = {
     _id: String(user._id),
     id: String(user._id),
@@ -151,58 +194,14 @@ const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
     familyName: user.familyName,
     picture: user.picture,
     lastWelcomeBackEmailAt: user.lastWelcomeBackEmailAt,
+    loginEventId: normalizeText(loginEventId, 120),
   };
 
   setImmediate(async () => {
     try {
-      if (isNewUser) {
-        const result = await sendWelcomeEmail({
-          user: userSnapshot,
-        });
-
-        if (!result.sent) {
-          if (!result.skipped) {
-            reqLogger.warn(
-              {
-                userId: userSnapshot._id,
-                reason: result.reason,
-                error: result.error,
-              },
-              "Welcome email was not delivered"
-            );
-          }
-          return;
-        }
-
-        await markLifecycleEmailSent({
-          userId: userSnapshot._id,
-          type: "welcome",
-          providerId: result.providerId,
-        });
-
-        reqLogger.info(
-          {
-            userId: userSnapshot._id,
-            emailId: result.providerId,
-            idempotencyKey: result.idempotencyKey,
-          },
-          "Welcome email sent"
-        );
-        return;
-      }
-
-      if (!shouldSendWelcomeBackEmail(userSnapshot)) {
-        reqLogger.debug(
-          {
-            userId: userSnapshot._id,
-          },
-          "Welcome-back email skipped due to daily limit"
-        );
-        return;
-      }
-
-      const result = await sendWelcomeBackEmail({
-        user: userSnapshot,
+      const result = await dispatchLifecycleEmailWithRetry({
+        isNewUser,
+        userSnapshot,
       });
 
       if (!result.sent) {
@@ -212,8 +211,9 @@ const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
               userId: userSnapshot._id,
               reason: result.reason,
               error: result.error,
+              attempt: result.attempt,
             },
-            "Welcome-back email was not delivered"
+            isNewUser ? "Welcome email was not delivered" : "Welcome-back email was not delivered"
           );
         }
         return;
@@ -221,7 +221,7 @@ const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
 
       await markLifecycleEmailSent({
         userId: userSnapshot._id,
-        type: "welcome_back",
+        type: isNewUser ? "welcome" : "welcome_back",
         providerId: result.providerId,
       });
 
@@ -230,13 +230,40 @@ const scheduleLifecycleLoginEmail = ({ user, isNewUser, reqLogger }) => {
           userId: userSnapshot._id,
           emailId: result.providerId,
           idempotencyKey: result.idempotencyKey,
+          attempt: result.attempt,
         },
-        "Welcome-back email sent"
+        isNewUser ? "Welcome email sent" : "Welcome-back email sent"
       );
     } catch (error) {
       reqLogger.error({ err: error, userId: userSnapshot._id }, "Lifecycle email processing failed");
     }
   });
+};
+
+const recordLoginActivityEvent = async ({ user, isNewUser, loginEventId, reqLogger }) => {
+  try {
+    await recordActivityEvent({
+      eventKey: `auth:login:${normalizeText(loginEventId, 120)}`,
+      userId: user?._id || null,
+      userEmail: user?.email,
+      domain: "auth",
+      actionType: "login_success",
+      title: isNewUser ? "Google sign-in completed (new account)" : "Google sign-in completed",
+      status: "success",
+      metadata: {
+        provider: "google",
+        isNewUser: Boolean(isNewUser),
+      },
+    });
+  } catch (error) {
+    reqLogger.warn(
+      {
+        err: error,
+        userId: user?._id,
+      },
+      "Failed to persist login activity event"
+    );
+  }
 };
 
 exports.getPublicAuthConfig = async (req, res) => {
@@ -349,11 +376,21 @@ exports.googleSignIn = async (req, res) => {
       gid: user.googleId,
     });
 
+    const loginEventId = `${String(user._id)}_${Date.now()}`;
+
     res.cookie(AUTH_COOKIE_NAME, sessionToken, getSessionCookieOptions());
+
+    await recordLoginActivityEvent({
+      user,
+      isNewUser,
+      loginEventId,
+      reqLogger,
+    });
 
     scheduleLifecycleLoginEmail({
       user,
       isNewUser,
+      loginEventId,
       reqLogger,
     });
 

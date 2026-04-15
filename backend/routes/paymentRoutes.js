@@ -14,6 +14,7 @@ const {
   getMyBookings,
   getMySupportPayments,
   getPaymentStatus,
+  getTransactionStatus,
   downloadServiceReceipt,
   downloadSupportReceipt,
   downloadServiceReceiptImage,
@@ -91,6 +92,12 @@ router.post(
 );
 router.get("/my-bookings", paymentRateLimiter, requireAuth, getMyBookings);
 router.get("/my-support-payments", paymentRateLimiter, requireAuth, getMySupportPayments);
+router.get(
+  "/transaction/:transactionId",
+  paymentRateLimiter,
+  requireAuth,
+  getTransactionStatus
+);
 router.get(
   "/status/:orderId",
   paymentRateLimiter,

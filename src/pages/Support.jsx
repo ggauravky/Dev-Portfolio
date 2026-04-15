@@ -249,7 +249,9 @@ function Support() {
         }
 
         const successOrderId = encodeURIComponent(successDetails.orderId)
-        navigate(`/payment-success?flow=support&orderId=${successOrderId}`, {
+        const transactionId = encodeURIComponent(String(successDetails.paymentId || successDetails.orderId || '').trim())
+
+        navigate(`/payment-success/${transactionId}?flow=support&orderId=${successOrderId}`, {
             state: {
                 flow: 'support',
                 details: successDetails,
@@ -623,9 +625,25 @@ function Support() {
                     environment: order.environment,
                 })
 
+                if (checkoutResult?.paymentDetails?.cf_payment_id) {
+                    pending.paymentId = String(checkoutResult.paymentDetails.cf_payment_id)
+                    sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
+                }
+
                 if (checkoutResult?.error) {
+                    const recovered = await finalizeSupportVerification(order.orderId, pending, {
+                        silent: true,
+                    })
+
+                    if (recovered) {
+                        return
+                    }
+
+                    const checkoutMessage = String(checkoutResult.error.message || '').trim()
                     throw new Error(
-                        `Payment was not completed. ${checkoutResult.error.message || 'Checkout was cancelled or failed.'} No support amount has been confirmed.`
+                        checkoutMessage
+                            ? `Payment window closed: ${checkoutMessage}. We are still verifying your payment in background. Keep this page open, or check My Activity.`
+                            : 'Payment window closed before confirmation. We are still verifying your payment in background. Keep this page open, or check My Activity.'
                     )
                 }
 
@@ -633,9 +651,6 @@ function Support() {
             } catch (error) {
                 const message = error?.message || 'Unable to start support checkout'
                 setPaymentFailure(message)
-                if (isTerminalPaymentFailure(message)) {
-                    sessionStorage.removeItem(pendingSupportKey)
-                }
                 toast.error(message)
             } finally {
                 setIsSubmitting(false)
