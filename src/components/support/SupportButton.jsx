@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { fetchSupportStatus, supportBlogPost } from '../../services/blogSupport'
+import { trackEvent } from '../../utils/analytics'
 
 const GoogleSignInModal = lazy(() => import('./GoogleSignInModal'))
 
@@ -105,6 +106,12 @@ function SupportButton({ slug, title, content = '' }) {
         if (isFetching || isSubmitting) {
             return
         }
+
+        void trackEvent('blog_support_click', {
+            slug: normalizedSlug,
+            is_authenticated: Boolean(isAuthenticated),
+            already_supported: Boolean(supported),
+        })
 
         if (!isAuthenticated) {
             setIsModalOpen(true)

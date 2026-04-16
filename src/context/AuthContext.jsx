@@ -6,6 +6,7 @@ import {
     signInWithGoogleCredential,
     updateAuthProfile,
 } from '../services/auth'
+import { trackEvent } from '../utils/analytics'
 
 const AuthContext = createContext(null)
 
@@ -104,6 +105,17 @@ export function AuthProvider({ children }) {
 
             const nextUser = data.user || null
             setUser(nextUser)
+
+            const authMessageText = String(data?.authMessage?.text || '')
+            const isNewUser =
+                Boolean(data?.authMessage?.isNewUser) ||
+                /new account|welcome/i.test(authMessageText)
+
+            void trackEvent('google_login_success', {
+                provider: 'google',
+                is_new_user: isNewUser,
+            })
+
             return {
                 user: nextUser,
                 authMessage: data.authMessage || null,

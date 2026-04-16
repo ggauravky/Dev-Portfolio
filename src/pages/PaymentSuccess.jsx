@@ -11,6 +11,7 @@ import {
     fetchSupportReceiptImage,
     fetchSupportReceiptPdf,
 } from '../services/payment'
+import { trackEvent, trackEventOnce } from '../utils/analytics'
 
 const normalizeFlow = (value) => (String(value || '').trim().toLowerCase() === 'support' ? 'support' : 'service')
 
@@ -226,6 +227,7 @@ function PaymentSuccess() {
     const hydrationBoardTimerRef = useRef(null)
     const stepIntervalRef = useRef(null)
     const callbackBoardKeyRef = useRef('')
+    const trackedSuccessEventKeyRef = useRef('')
     const effectiveFlow = normalizeFlow(details?.type || flow)
     const processingSteps = useMemo(() => getProcessingSteps(effectiveFlow), [effectiveFlow])
     const isHydrationBoardVisible = isHydratingDetails && isAuthenticated && !detailsLoadError && !isHydrationTimedOut
@@ -414,6 +416,13 @@ function PaymentSuccess() {
                     : ''
             )
 
+            void trackEvent('receipt_download', {
+                flow: effectiveFlow,
+                format: 'image',
+                order_id: String(details.orderId || '').trim(),
+                auto,
+            })
+
             if (!silent) {
                 toast.success('Receipt image downloaded')
             }
@@ -475,6 +484,13 @@ function PaymentSuccess() {
             const filenamePrefix = effectiveFlow === 'support' ? 'support-receipt' : 'service-confirmation'
             saveBlobAsFile(blob, `${filenamePrefix}-${details.orderId}.pdf`)
             setReceiptDownloadError('')
+
+            void trackEvent('receipt_download', {
+                flow: effectiveFlow,
+                format: 'pdf',
+                order_id: String(details.orderId || '').trim(),
+                auto,
+            })
 
             if (!silent) {
                 toast.success('Receipt PDF downloaded')
@@ -584,6 +600,56 @@ function PaymentSuccess() {
         autoDownloadKeyRef.current = autoDownloadKey
         void downloadReceiptPdf({ silent: true, auto: true })
     }, [details, effectiveFlow])
+
+    useEffect(() => {
+        const orderId = String(details?.orderId || '').trim()
+        if (!orderId) {
+            return
+        }
+
+        const paymentId = String(details?.paymentId || '').trim()
+        const eventKey = `${effectiveFlow}:${orderId}:${paymentId || 'missing-payment-id'}`
+        if (trackedSuccessEventKeyRef.current === eventKey) {
+            return
+        }
+
+        trackedSuccessEventKeyRef.current = eventKey
+
+        const amountValue = Number(details?.amount)
+        const baseEventData = {
+            flow: effectiveFlow,
+            order_id: orderId,
+            payment_id: paymentId,
+        }
+
+        if (Number.isFinite(amountValue) && amountValue > 0) {
+            baseEventData.amount = amountValue
+        }
+
+        void trackEventOnce({
+            eventName: 'payment_success',
+            eventData: baseEventData,
+            eventKey: `payment_success:${eventKey}`,
+        })
+
+        if (effectiveFlow === 'support') {
+            void trackEventOnce({
+                eventName: 'support_jar_conversion',
+                eventData: baseEventData,
+                eventKey: `support_jar_conversion:${eventKey}`,
+            })
+            return
+        }
+
+        void trackEventOnce({
+            eventName: 'service_purchase_conversion',
+            eventData: {
+                ...baseEventData,
+                service: String(details?.service || '').trim(),
+            },
+            eventKey: `service_purchase_conversion:${eventKey}`,
+        })
+    }, [details?.amount, details?.orderId, details?.paymentId, details?.service, effectiveFlow])
 
     return (
         <div className="min-h-screen bg-slate-900 relative overflow-hidden">

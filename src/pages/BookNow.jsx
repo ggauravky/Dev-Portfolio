@@ -21,6 +21,7 @@ import {
 import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
 import GoogleSignInModal from '../components/support/GoogleSignInModal'
+import { trackEvent } from '../utils/analytics'
 
 const getMinBookDate = () => {
     const date = new Date()
@@ -761,6 +762,13 @@ function BookNow() {
                     amount: currentService.amount,
                 }
                 sessionStorage.setItem(pendingOrderKey, JSON.stringify(pending))
+
+                void trackEvent('service_payment_started', {
+                    flow: 'service',
+                    order_id: String(order.orderId || '').trim(),
+                    service_slug: String(currentService.slug || '').trim(),
+                    amount: Number(currentService.amount || 0),
+                })
 
                 const checkoutResult = await openCashfreeCheckout({
                     paymentSessionId: order.paymentSessionId,

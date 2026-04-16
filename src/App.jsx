@@ -21,6 +21,7 @@ import CursorSpotlight from './components/CursorSpotlight'
 import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
 import { pingBackend } from './utils/backendPing'
+import { initializeAnalytics, trackPageView } from './utils/analytics'
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'))
@@ -94,6 +95,23 @@ function ScrollToTop() {
             window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
         }
     }, [pathname, hash])
+
+    return null
+}
+
+function AnalyticsRouteTracker() {
+    const { pathname, search } = useLocation()
+    const lastRouteRef = useRef('')
+
+    useEffect(() => {
+        const routeKey = `${pathname}${search}`
+        if (lastRouteRef.current === routeKey) {
+            return
+        }
+
+        lastRouteRef.current = routeKey
+        void trackPageView({ pathname, search })
+    }, [pathname, search])
 
     return null
 }
@@ -211,6 +229,7 @@ function App() {
     // Ping backend as soon as JS loads (even during splash)
     useEffect(() => {
         pingBackend()
+        initializeAnalytics()
     }, [])
 
     if (!appReady) {
@@ -222,6 +241,7 @@ function App() {
             <ScrollProgress />
             <CursorSpotlight />
             <ScrollToTop />
+            <AnalyticsRouteTracker />
             <Toaster
                 position="top-center"
                 reverseOrder={false}

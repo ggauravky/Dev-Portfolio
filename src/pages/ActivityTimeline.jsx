@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
@@ -11,6 +11,7 @@ import {
     fetchSupportReceiptImage,
     fetchSupportReceiptPdf,
 } from '../services/payment'
+import { trackEvent } from '../utils/analytics'
 
 const PAYMENT_INTERNAL_ACTIONS = new Set([
     'order_created',
@@ -181,6 +182,62 @@ const getEventIcon = (item) => {
     return '$'
 }
 
+const resolvePaymentStatus = (actionType, fallbackStatus) => {
+    if (actionType === 'payment_success') {
+        return 'success'
+    }
+
+    if (actionType === 'payment_failed') {
+        return 'failed'
+    }
+
+    return fallbackStatus
+}
+
+const getFlowHintLabel = (flow) => {
+    if (flow === 'support') {
+        return ' (Support)'
+    }
+
+    if (flow === 'service') {
+        return ' (Service)'
+    }
+
+    return ''
+}
+
+const getEmptyStateMessage = (tab) => {
+    if (tab === 'payments') {
+        return 'No payment activity yet. Complete a booking or support contribution to see your payment cards here.'
+    }
+
+    if (tab === 'blog-likes') {
+        return 'No blog likes yet. Support a blog post and it will appear here.'
+    }
+
+    if (tab === 'logins') {
+        return 'No login activity found yet.'
+    }
+
+    return 'No activity yet. Your latest actions will appear here once available.'
+}
+
+const fetchReceiptBlobForTimeline = ({ kind, format, orderId, email }) => {
+    if (kind === 'support') {
+        if (format === 'pdf') {
+            return fetchSupportReceiptPdf(orderId, email)
+        }
+
+        return fetchSupportReceiptImage(orderId, email)
+    }
+
+    if (format === 'pdf') {
+        return fetchServiceReceiptPdf(orderId, email)
+    }
+
+    return fetchServiceReceiptImage(orderId, email)
+}
+
 const aggregatePaymentCards = (events) => {
     const groupsByOrderId = new Map()
 
@@ -238,12 +295,7 @@ const aggregatePaymentCards = (events) => {
         const flow = getFlowFromPaymentEvent(representative)
         const actionType = String(representative?.actionType || '').trim().toLowerCase()
         const fallbackStatus = String(representative?.status || 'info').trim().toLowerCase()
-        const resolvedStatus =
-            actionType === 'payment_success'
-                ? 'success'
-                : actionType === 'payment_failed'
-                    ? 'failed'
-                    : fallbackStatus
+        const resolvedStatus = resolvePaymentStatus(actionType, fallbackStatus)
 
         const amountCandidate = sorted.find((entry) => {
             const amount = Number(entry?.amount)
@@ -358,6 +410,7 @@ const buildBlogCards = (supports) =>
         })
         .sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function ActivityTimeline() {
     const { user, isLoading, isAuthenticated } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
@@ -378,6 +431,7 @@ function ActivityTimeline() {
     const activeTab = normalizeActivityTab(searchParams.get('tab'))
     const highlightedOrderId = String(searchParams.get('orderId') || '').trim()
     const flowFromQuery = normalizeFlow(searchParams.get('flow'))
+    const lastTrackedActivityViewRef = useRef('')
     const showPaymentSuccessHint =
         String(searchParams.get('source') || '').trim().toLowerCase() === 'payment' &&
         String(searchParams.get('status') || '').trim().toLowerCase() === 'success'
@@ -518,6 +572,25 @@ function ActivityTimeline() {
         setSearchParams(nextParams, { replace: true })
     }, [searchParams, setSearchParams])
 
+    useEffect(() => {
+        if (isLoading || !isAuthenticated) {
+            return
+        }
+
+        const viewKey = `${activeTab}:${highlightedOrderId || 'none'}`
+        if (lastTrackedActivityViewRef.current === viewKey) {
+            return
+        }
+
+        lastTrackedActivityViewRef.current = viewKey
+
+        void trackEvent('activity_page_view', {
+            tab: activeTab,
+            has_highlighted_order: Boolean(highlightedOrderId),
+            flow_hint: flowFromQuery,
+        })
+    }, [activeTab, flowFromQuery, highlightedOrderId, isAuthenticated, isLoading])
+
     const updateActiveTab = (nextTab) => {
         const normalizedTab = normalizeActivityTab(nextTab)
         const nextParams = new URLSearchParams(searchParams)
@@ -545,18 +618,23 @@ function ActivityTimeline() {
         setDownloadingKey(key)
 
         try {
-            const blob = await (
-                kind === 'support'
-                    ? format === 'pdf'
-                        ? fetchSupportReceiptPdf(orderId, user.email)
-                        : fetchSupportReceiptImage(orderId, user.email)
-                    : format === 'pdf'
-                        ? fetchServiceReceiptPdf(orderId, user.email)
-                        : fetchServiceReceiptImage(orderId, user.email)
-            )
+            const blob = await fetchReceiptBlobForTimeline({
+                kind,
+                format,
+                orderId,
+                email: user.email,
+            })
 
             const prefix = kind === 'support' ? 'support-receipt' : 'service-confirmation'
             saveBlobAsFile(blob, `${prefix}-${orderId}.${extension}`)
+
+            void trackEvent('receipt_download', {
+                flow: kind,
+                format: extension === 'pdf' ? 'pdf' : 'image',
+                order_id: orderId,
+                source: 'activity_timeline',
+            })
+
             toast.success(format === 'pdf' ? 'Receipt PDF downloaded' : 'Receipt image downloaded')
         } catch (error) {
             const message = String(error?.message || 'Unable to download receipt')
@@ -565,6 +643,10 @@ function ActivityTimeline() {
             setDownloadingKey('')
         }
     }
+
+    const flowHintLabel = getFlowHintLabel(flowFromQuery)
+    const emptyStateMessage = getEmptyStateMessage(activeTab)
+    const hasCardsForTab = cardsForTab.length > 0
 
     const getTabButtonClass = (isActive) => {
         if (isActive) {
@@ -804,7 +886,7 @@ function ActivityTimeline() {
                     <div className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
                         Payment confirmation completed. Your latest transaction is now available under Payments.
                         {highlightedOrderId ? ` Order ID: ${highlightedOrderId}` : ''}
-                        {flowFromQuery === 'support' ? ' (Support)' : flowFromQuery === 'service' ? ' (Service)' : ''}
+                        {flowHintLabel}
                     </div>
                 ) : null}
 
@@ -831,18 +913,12 @@ function ActivityTimeline() {
                     })}
                 </div>
 
-                {!cardsForTab.length ? (
-                    <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">
-                        {activeTab === 'payments'
-                            ? 'No payment activity yet. Complete a booking or support contribution to see your payment cards here.'
-                            : activeTab === 'blog-likes'
-                                ? 'No blog likes yet. Support a blog post and it will appear here.'
-                                : activeTab === 'logins'
-                                    ? 'No login activity found yet.'
-                                    : 'No activity yet. Your latest actions will appear here once available.'}
-                    </div>
-                ) : (
+                {hasCardsForTab ? (
                     <div className="mt-8 grid gap-4">{cardsForTab.map((card) => renderCard(card))}</div>
+                ) : (
+                    <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">
+                        {emptyStateMessage}
+                    </div>
                 )}
             </div>
         </div>
