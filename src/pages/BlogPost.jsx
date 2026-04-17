@@ -10,7 +10,6 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import SupportButton from '../components/support/SupportButton'
-import './Blog.css'
 import './BlogPost.css'
 
 function BlogPost() {
@@ -274,7 +273,7 @@ function BlogPost() {
 
                 {/* Blog Content */}
                 <div
-                    className="blog-post-content max-w-none mb-12"
+                    className="blog-post-content blog-content max-w-none mb-12"
                     dangerouslySetInnerHTML={{ __html: blog.content }}
                 />
 

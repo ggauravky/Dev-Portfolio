@@ -379,6 +379,122 @@ export const projectsData = [
             "SQL injection is trivially easy without parameterized queries — learned to always use %s placeholders, never string formatting",
             "PythonAnywhere's free tier CPU quota resets daily — long-running queries can trigger throttling unexpectedly"
         ]
+    },
+    {
+        id: 15,
+        slug: "buildmyteam",
+        featured: true,
+        title: "BuildMyTeam",
+        description: "Production-oriented collaboration platform for colleges to manage hackathons, team formation, join requests, and team workspaces with secure role-based access.",
+        techStack: ["React", "Node.js", "Express", "MongoDB", "JWT", "Tailwind CSS", "TanStack Query", "Zod"],
+        categories: ["Full Stack"],
+        github: "https://github.com/ggauravky/BuildMyTeam",
+        demo: "https://buildmyteam.vercel.app/",
+        image: "/images/projects/truecert.png",
+        screenshots: ["/images/projects/truecert.png"],
+        problem: "Student hackathon collaboration is usually fragmented across WhatsApp, spreadsheets, and random forms. Team discovery is chaotic, join requests are untracked, and admins have no centralized visibility into users, teams, and event participation.",
+        solution: "Built a full-stack platform where students can discover hackathons, create teams, request to join via unique team codes, and collaborate through a shared workspace. Admins can approve/reject new users, monitor teams, and manage hackathon records from one dashboard.",
+        architecture: "React (Vite) frontend with protected routes and query-driven state management ↔ Express REST API (auth, teams, hackathons, join requests, notifications, admin ops) ↔ MongoDB (users, teams, requests, events). Deployed with frontend on Vercel and backend on Render.",
+        keyDecisions: [
+            "Introduced a pending-user approval lifecycle so only vetted users can participate in team workflows",
+            "Used join-code based team onboarding to simplify invites while still enforcing leader approval",
+            "Added notification priorities and read/unread states so important team actions are not missed",
+            "Applied Zod-based request validation and backend RBAC checks to secure all privileged operations",
+            "Split frontend and backend deployments to keep scaling and release cycles independent"
+        ],
+        lessonsLearned: [
+            "Join-request state transitions need strict server-side guards to prevent duplicate approvals",
+            "Team collaboration tools become sticky only when discovery and onboarding are frictionless",
+            "Role and status checks must happen in middleware, not only in UI route guards",
+            "Operational dashboards should expose both user and team context to reduce admin decision time"
+        ]
+    },
+    {
+        id: 16,
+        slug: "focusguard",
+        featured: true,
+        title: "FocusGuard",
+        description: "AI-powered real-time attention monitor that detects sustained phone-looking behavior from webcam input and triggers alerts to reduce distraction and mindless scrolling.",
+        techStack: ["Python", "OpenCV", "YOLOv4-tiny", "NumPy", "Computer Vision"],
+        categories: ["AI/ML", "Python"],
+        github: "https://github.com/ggauravky/FocusGuard",
+        demo: "#",
+        image: "/images/projects/focus.png",
+        screenshots: ["/images/projects/focus.png"],
+        problem: "People often lose focus while studying or working because attention drifts to phone usage. Most productivity tools are passive checklists that do not detect distraction behavior in real time.",
+        solution: "Built a webcam-based monitoring pipeline that combines face detection and phone detection. When the system infers sustained phone-looking behavior for a configurable time window, it triggers an immediate audio alert and on-screen warning to interrupt distraction loops.",
+        architecture: "Python app captures webcam frames → OpenCV + Haar features detect face/eyes/lips → YOLOv4-tiny detects phone class → geometric heuristics estimate phone-looking condition → timer-based confirmation logic fires audio alert via platform-specific beep fallback.",
+        keyDecisions: [
+            "Adopted a phone-first detection strategy so alerts depend on detected phone context rather than generic gaze drift",
+            "Used YOLOv4-tiny through OpenCV DNN for lightweight real-time object detection on regular laptops",
+            "Implemented threshold-based continuous-timer logic to reduce false alerts from brief glances",
+            "Kept tuning parameters (confidence and threshold duration) configurable at runtime for different environments",
+            "Added Windows beep fallback handling to keep alerts reliable across machine setups"
+        ],
+        lessonsLearned: [
+            "Webcam lighting variance heavily affects confidence thresholds and must be tuned per user environment",
+            "Geometry-based attention heuristics work well for practical use but are not equivalent to full eye-tracking",
+            "Real-time UX needs clear state labels (no phone, phone too far, looking at phone) for trust and debugging",
+            "Model download and startup experience should be optimized to reduce first-run friction"
+        ]
+    },
+    {
+        id: 17,
+        slug: "truecert",
+        featured: true,
+        title: "TrueCert",
+        description: "Secure digital certificate issuance and verification platform with QR-based public validation, tamper detection, analytics, and issuer dashboard workflows.",
+        techStack: ["React", "Node.js", "Express", "MongoDB", "JWT", "Cloudinary", "QR Code"],
+        categories: ["Full Stack"],
+        github: "https://github.com/ggauravky/TrueCert",
+        demo: "#",
+        image: "/images/projects/truecert.png",
+        screenshots: ["/images/projects/truecert.png"],
+        problem: "Traditional certificate workflows are easy to forge and hard to verify. Institutions need a reliable way to issue certificates, validate authenticity publicly, and track verification activity without manual intervention.",
+        solution: "Developed a SaaS-style issuance system where authenticated issuers generate certificates with unique IDs, QR links, and SHA-256 signatures. Public users can verify authenticity instantly, while issuers can revoke compromised records and review scan analytics.",
+        architecture: "React frontend (issuer dashboard + public verification pages) ↔ Express API (auth, certificate lifecycle, verification, analytics) ↔ MongoDB (issuer/certificate/scan data) + Cloudinary for generated PDF and media storage. Deployed on Vercel + Render.",
+        keyDecisions: [
+            "Created unique certificate identifiers with signed verification metadata to prevent easy forgery",
+            "Used short-lived signed PDF access tokens with optional session binding for controlled document access",
+            "Integrated QR-driven verification URLs to reduce friction for recruiters and institutions",
+            "Added revocation and expiry handling directly in verification responses for transparent trust status",
+            "Captured scan analytics (device and location context) to provide measurable certificate usage insights"
+        ],
+        lessonsLearned: [
+            "Verification systems need both cryptographic integrity checks and clear human-readable status messaging",
+            "Certificate generation pipelines should validate uploaded assets strictly to avoid malformed output",
+            "Public verification endpoints require careful rate limiting because they are high-traffic by design",
+            "Issuer dashboards are significantly more useful when analytics are tied to recent verification events"
+        ]
+    },
+    {
+        id: 18,
+        slug: "fire-detection-alert-system",
+        featured: true,
+        title: "Fire Detection Alert System",
+        description: "Real-time computer-vision fire detection pipeline that analyzes webcam streams and triggers instant audio alerts using multi-stage confirmation logic.",
+        techStack: ["Python", "OpenCV", "NumPy", "Pygame", "pyttsx3"],
+        categories: ["AI/ML", "Python"],
+        github: "https://github.com/ggauravky/fire-detection-alert-system",
+        demo: "#",
+        image: "/images/projects/fire.png",
+        screenshots: ["/images/projects/fire.png"],
+        problem: "Educational fire-detection demos often either over-trigger on bright objects or miss actual flame patterns. A practical prototype needs real-time detection with fewer false positives and immediate user feedback.",
+        solution: "Implemented a layered vision approach combining HSV color filtering, brightness checks, motion analysis, and contour evaluation. Only when fire-like characteristics persist across multiple frames does the system trigger an audible alert and visual warning.",
+        architecture: "Webcam stream → frame preprocessing → HSV fire-color masking + brightness thresholding + frame differencing (motion) → contour-based candidate extraction → multi-frame confirmation gate → audio alert playback and on-screen bounding boxes.",
+        keyDecisions: [
+            "Used multi-stage detection instead of single-threshold logic to improve reliability in noisy scenes",
+            "Added frame-confirmation gating to reduce transient false positives from lighting flickers",
+            "Kept sensitivity parameters configurable for area thresholds and color ranges across environments",
+            "Separated alert-audio generation from detection runtime for cleaner operational flow",
+            "Focused on real-time visual feedback to make model behavior explainable while testing"
+        ],
+        lessonsLearned: [
+            "Lighting conditions dramatically influence HSV-based detection and require calibration guidance",
+            "Small contour noise can trigger false alarms unless area thresholds are tuned conservatively",
+            "Audio alert design must balance urgency with usability in repeated test scenarios",
+            "Computer-vision prototypes are valuable for learning but should not replace certified fire safety systems"
+        ]
     }
 ]
 
