@@ -43,9 +43,9 @@ const workflow = [
 
 function About() {
     useSEO({
-        title: 'About - Gaurav Kumar Yadav | Python and AI Developer',
-        description: 'Learn about Gaurav Kumar Yadav, a BCA student and aspiring Python, AI, and Full-Stack Developer from Lucknow. Explore background, goals, and coding consistency through GitHub and LeetCode.',
-        keywords: 'Gaurav Kumar Yadav, About, Python Developer, AI Developer, Full Stack Developer, BCA Student, Lucknow, IIT Mandi',
+        title: 'About Gaurav Kumar Yadav | BBDU Lucknow | AI/ML and Web Developer',
+        description: 'Learn about Gaurav Kumar Yadav, a BCA student at BBDU Lucknow, India, focused on AI/ML and web development. Explore his background, project mindset, and growth journey.',
+        keywords: 'Gaurav Kumar Yadav BBDU, Gaurav Lucknow developer, Gaurav AI ML developer, Gaurav web developer India, BCA AI ML student India',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
@@ -61,12 +61,16 @@ function About() {
                     </p>
 
                     <h1 className="text-3xl font-extrabold tracking-tight text-slate-100 sm:text-4xl lg:text-5xl">
-                        Building Practical AI and Web Solutions
+                        About Gaurav Kumar Yadav
                     </h1>
 
                     <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-300 sm:text-lg">
                         I am Gaurav Kumar Yadav from Lucknow, focused on Python, AI/ML, and full-stack development.
                         My goal is to build useful products, learn fast from real-world problems, and grow into a high-impact engineering role.
+                    </p>
+
+                    <p className="mt-3 max-w-3xl text-sm text-slate-400 sm:text-base">
+                        BCA student at BBD University (BBDU), Lucknow, Uttar Pradesh, India.
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-2">

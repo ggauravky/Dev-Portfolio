@@ -23,9 +23,9 @@ function Home() {
 
     // SEO Optimization
     useSEO({
-        title: 'Gaurav Kumar Yadav | Best Python & AI Developer in Lucknow | Full Stack Portfolio',
-        description: 'Gaurav Kumar Yadav - Top Python Developer, AI/ML Engineer & Full Stack Developer from Lucknow, India. Explore innovative projects in Data Science, Machine Learning, React, Node.js & MongoDB. Award-winning portfolio of a student developer specializing in artificial intelligence, deep learning, and modern web development. Hire for internships, freelance & collaboration.',
-        keywords: 'Gaurav Kumar Yadav, best developer in Lucknow, top Python developer India, AI developer Lucknow, best portfolio website, Gaurav Portfolio, developer portfolio, Python developer, AI engineer, machine learning developer, data science portfolio, full stack developer Lucknow, React developer India, Node.js developer, best student developer, web developer Lucknow, freelance developer India, hire Python developer, hire AI developer, MERN stack developer, software engineer Lucknow, best coder Lucknow, top programmer India, Gaurav Yadav developer, ggauravky, best developer portfolio 2026, AI projects portfolio, Lucknow IT developer, UP developer, Indian developer portfolio, BCA developer, BBDU developer, coding portfolio, tech blog India, JavaScript developer',
+        title: 'Gaurav Kumar Yadav | AI/ML Developer & Web Developer | BBDU Lucknow | Portfolio',
+        description: 'Gaurav Kumar Yadav is a BCA student at BBD University (BBDU), Lucknow, India, building AI/ML and web development projects. Explore portfolio case studies in machine learning, data science basics, React, MERN stack, and Python.',
+        keywords: 'Gaurav Kumar Yadav, Gaurav Kumar Yadav BBDU, Gaurav Lucknow developer, Gaurav AI ML developer, Gaurav web developer India, ggauravky portfolio, BCA AI ML student India, AI ML developer Lucknow, frontend developer portfolio India, MERN stack developer student, machine learning beginner projects',
         ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
     })
 
@@ -42,7 +42,7 @@ function Home() {
     const featuredBlogs = useMemo(() => blogsData.filter(blog => blog.featured), [])
 
     return (
-        <div className="home-page bg-slate-900 overflow-x-hidden w-full">
+        <main className="home-page bg-slate-900 overflow-x-hidden w-full">
             {/* Hero Section */}
             <section className="hero-section relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10 lg:pt-14 lg:pb-0 overflow-hidden w-full">
                 {/* Subtle Animated Background */}
@@ -77,7 +77,14 @@ function Home() {
                                 <span className="block bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
                                     Yadav
                                 </span>
+                                <span className="block mt-2 text-base sm:text-xl lg:text-2xl font-semibold text-slate-200">
+                                    AI/ML Developer and Web Developer
+                                </span>
                             </h1>
+
+                            <h2 className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto lg:mx-0">
+                                BCA student at BBD University (BBDU), building practical AI/ML and MERN solutions from Lucknow, Uttar Pradesh, India.
+                            </h2>
 
                             {/* Role Tags - Compact inline pills */}
                             <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
@@ -113,7 +120,7 @@ function Home() {
                             <div className="flex flex-col gap-2">
                                 <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 text-sm text-slate-300">
                                     <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
-                                    <span>Student Developer from <span className="text-blue-400 font-semibold">Lucknow, India</span></span>
+                                    <span>BCA Student at <span className="text-blue-400 font-semibold">BBDU Lucknow, Uttar Pradesh, India</span></span>
                                 </div>
                                 
                                 <div className="inline-flex items-center justify-center lg:justify-start gap-2 px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg w-fit mx-auto lg:mx-0">
@@ -170,7 +177,7 @@ function Home() {
                                     <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-80 lg:h-80 xl:w-[340px] xl:h-[340px] rounded-full overflow-hidden border-[3px] border-blue-500/30 shadow-2xl shadow-blue-500/20 group-hover:border-purple-500/50 transition-all duration-500 ring-2 ring-blue-500/15 ring-offset-2 ring-offset-slate-900">
                                         <img
                                             src="/images/profile.jpg"
-                                            alt="Gaurav Kumar Yadav"
+                                            alt="Gaurav Kumar Yadav portfolio - AI ML developer and web developer in Lucknow India"
                                             loading="eager"
                                             decoding="async"
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -232,7 +239,7 @@ function Home() {
                                 <svg className="w-16 h-16 mx-auto text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                                 <h3 className="text-3xl font-bold text-blue-400 mb-5 group-hover:text-blue-300 transition-colors">Who I Am</h3>
                                 <p className="text-slate-300 leading-relaxed text-base md:text-lg">
-                                    I'm a <span className="text-blue-400 font-semibold">BCA 2nd year student</span> passionate about AI, Data Science, and Software Development. I love solving real-world problems with code and building innovative solutions that make a meaningful impact.
+                                    I am <span className="text-blue-400 font-semibold">Gaurav Kumar Yadav</span>, a BCA student at BBD University (BBDU), Lucknow. I am focused on becoming an AI/ML Developer and Web Developer by solving real-world problems with practical, user-first software.
                                 </p>
                                 <div className="mt-6 flex flex-wrap gap-2">
                                     <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm">Student</span>
@@ -250,7 +257,7 @@ function Home() {
                                 <svg className="w-16 h-16 mx-auto text-purple-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56 5.84a14.98 14.98 0 00-2.58-5.96m0 0a14.98 14.98 0 00-5.96-2.58" /></svg>
                                 <h3 className="text-3xl font-bold text-purple-400 mb-5 group-hover:text-purple-300 transition-colors">What I Do</h3>
                                 <p className="text-slate-300 leading-relaxed text-base md:text-lg">
-                                    I specialize in <span className="text-purple-400 font-semibold">machine learning models</span>, building powerful Python applications, and creating modern, responsive web experiences using React and cutting-edge technologies.
+                                    I build <span className="text-purple-400 font-semibold">machine learning beginner projects</span>, data science foundations, and production-ready web interfaces with React, Node.js, and MERN stack workflows powered by Python.
                                 </p>
                                 <div className="mt-6 flex flex-wrap gap-2">
                                     <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-purple-300 text-sm">AI/ML</span>
@@ -259,6 +266,13 @@ function Home() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 p-6 md:p-8">
+                        <h3 className="text-2xl md:text-3xl font-bold text-cyan-300 mb-3">Career Goal</h3>
+                        <p className="text-slate-200 leading-relaxed text-base md:text-lg max-w-4xl mx-auto">
+                            My goal is to grow into a high-impact AI/ML engineer and full-stack product developer who can design reliable solutions for startups and teams. I am actively looking for internships and project collaborations where I can apply Machine Learning, Data Science basics, React, MERN stack, and Python to solve meaningful problems.
+                        </p>
                     </div>
 
                     {/* Stats Section - GitHub & LeetCode */}
@@ -442,7 +456,7 @@ function Home() {
                                 <div className="card-img-wrap relative h-40 bg-slate-700 overflow-hidden">
                                     <LazyImage
                                         src={project.image}
-                                        alt={project.title}
+                                        alt={`${project.title} by Gaurav Kumar Yadav - web developer portfolio India`}
                                         className="w-full h-full object-cover card-img-zoom"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
@@ -525,7 +539,7 @@ function Home() {
                                 <div className="card-img-wrap relative h-40 bg-slate-700 overflow-hidden">
                                     <LazyImage
                                         src={blog.image}
-                                        alt={blog.title}
+                                        alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer projects and insights`}
                                         className="w-full h-full object-cover card-img-zoom"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60"></div>
@@ -581,7 +595,7 @@ function Home() {
                         Let's Work Together
                     </h2>
                     <p className="text-slate-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-                        Have a project in mind? Let's discuss how we can work together to bring your ideas to life.
+                        Based in Lucknow, Uttar Pradesh, India. Have a project in mind? Let us discuss how we can turn your idea into a practical product.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-6 justify-center">
                         <Link to="/contact" className="group relative bg-gradient-to-r from-blue-500 to-purple-500 px-10 py-5 rounded-xl font-semibold text-lg hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 overflow-hidden">
@@ -598,7 +612,7 @@ function Home() {
                     </div>
                 </ScrollReveal>
             </section>
-        </div>
+        </main>
     )
 }
 

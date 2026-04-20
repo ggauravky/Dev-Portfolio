@@ -20,9 +20,9 @@ const BLOGS_LOAD_STEP = 3
 
 function Blog() {
     useSEO({
-        title: 'Blog - Gaurav Portfolio | Tech Articles, Python Tutorials & AI Insights',
-        description: 'Read Gaurav Portfolio Blog! Discover tech insights, Python tutorials, AI/ML articles, Web Development guides, Data Science tips, and developer journey stories by Gaurav Kumar Yadav. Learn from real-world projects, coding tutorials, and industry best practices. Stay updated with the latest in technology.',
-        keywords: 'Gaurav Portfolio Blog, Portfolio Blog, Tech Blog, Python Tutorials, AI ML Blog, Web Development Blog, Student Developer Blog, Coding Tips, Data Science Articles, Programming Guide, Developer Journey, Technology Articles, Coding Tutorials Blog',
+        title: 'Blog | Gaurav Kumar Yadav | AI/ML Developer and Web Developer Insights',
+        description: 'Read AI/ML and web development articles by Gaurav Kumar Yadav, a BCA student developer from BBDU Lucknow, India. Explore practical learning notes, project breakdowns, and developer portfolio insights.',
+        keywords: 'Gaurav Kumar Yadav blog, AI ML developer Lucknow, web developer portfolio India, BCA AI ML student India, machine learning beginner projects, MERN stack developer student',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
         additionalJsonLd: {
             '@type': 'ItemList',
@@ -211,11 +211,19 @@ function Blog() {
                 {/* Header */}
                 <div className="text-center mb-12 animate-fadeIn">
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                        My Blog
+                        Blog by Gaurav Kumar Yadav
                     </h1>
                     <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-                        Thoughts, tutorials, and insights about web development, AI, and my coding journey
+                        AI/ML and web development insights from a BCA student at BBDU Lucknow, Uttar Pradesh, India.
                     </p>
+                    <div className="mt-4">
+                        <Link
+                            to="/services"
+                            className="inline-flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-300 hover:border-cyan-400 hover:text-cyan-200 transition-all duration-300"
+                        >
+                            Need help implementing? Explore Services
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Search Bar */}
@@ -333,7 +341,7 @@ function Blog() {
                                     <div className="card-img-wrap relative h-48 bg-slate-700 overflow-hidden">
                                         <LazyImage
                                             src={blog.image}
-                                            alt={blog.title}
+                                            alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer and web developer blog India`}
                                             sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                                             fetchPriority={index < 2 ? 'high' : 'auto'}
                                             className="w-full h-full object-cover card-img-zoom"

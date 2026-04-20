@@ -125,31 +125,20 @@ const useSEO = ({
             name: 'Gaurav Kumar Yadav',
             url: siteUrl,
             image: `${siteUrl}/images/profile.jpg`,
-            jobTitle: 'Python Developer, AI Engineer & Full Stack Developer',
-            description: 'Best Python Developer, AI/ML Engineer and Full Stack Developer from Lucknow, India. Top-rated student developer specializing in Data Science, Machine Learning, Deep Learning, React, Node.js and modern web technologies.',
-            alumniOf: [
-                {
-                    '@type': 'EducationalOrganization',
-                    name: 'BBDU University',
-                    department: 'Computer Applications'
-                },
-                {
-                    '@type': 'Organization',
-                    name: 'IIT Mandi',
-                    description: 'AI & Data Science Certification'
-                }
-            ],
+            jobTitle: 'AI/ML Developer & Web Developer',
+            description: 'Gaurav Kumar Yadav is a BCA student at BBD University (BBDU), Lucknow, India, focused on AI/ML and web development projects.',
+            alumniOf: 'BBD University Lucknow',
             address: {
                 '@type': 'PostalAddress',
                 addressLocality: 'Lucknow',
                 addressRegion: 'Uttar Pradesh',
-                addressCountry: 'IN'
+                addressCountry: 'India'
             },
-            knowsAbout: ['Python', 'Artificial Intelligence', 'Machine Learning', 'Deep Learning', 'Data Science', 'React', 'Node.js', 'Full Stack Development', 'MongoDB', 'MERN Stack', 'TensorFlow', 'Flask', 'REST APIs'],
+            knowsAbout: ['Machine Learning', 'Artificial Intelligence', 'Web Development', 'Full Stack Development', 'React', 'Python', 'MERN Stack', 'Data Science basics'],
             knowsLanguage: ['English', 'Hindi'],
             sameAs: [
                 'https://github.com/ggauravky',
-                'https://www.linkedin.com/in/gauravkumaryadav05',
+                'https://www.linkedin.com/in/gauravky/',
                 'https://twitter.com/ggauravky'
             ]
         }
@@ -162,7 +151,7 @@ const useSEO = ({
             .map((segment, index, arr) => {
                 const itemPath = `/${arr.slice(0, index + 1).join('/')}`
                 const name = segment
-                    .replaceAll(/-/g, ' ')
+                    .replaceAll('-', ' ')
                     .replaceAll(/\b\w/g, (char) => char.toUpperCase())
                 return {
                     '@type': 'ListItem',
@@ -194,7 +183,7 @@ const useSEO = ({
                     name: author || 'Gaurav Kumar Yadav',
                     url: siteUrl,
                     image: `${siteUrl}/images/profile.jpg`,
-                    jobTitle: 'Python Developer | AI & Data Science Enthusiast'
+                    jobTitle: 'AI/ML Developer & Web Developer'
                 },
                 publisher: {
                     '@type': 'Person',
@@ -225,15 +214,15 @@ const useSEO = ({
                         '@type': 'WebSite',
                         '@id': `${siteUrl}/#website`,
                         url: siteUrl,
-                        name: 'Gaurav Portfolio - Gaurav Kumar Yadav',
-                        alternateName: ['Gaurav Portfolio', 'Gaurav Kumar Yadav Portfolio', 'Portfolio Gaurav'],
-                        description: 'Professional developer portfolio featuring Python, AI/ML, Data Science, and Full Stack projects by Gaurav Kumar Yadav',
-                        inLanguage: 'en-US',
+                        name: 'Gaurav Kumar Yadav Portfolio',
+                        alternateName: ['ggauravky portfolio', 'Gaurav Kumar Yadav BBDU portfolio', 'Gaurav Lucknow developer portfolio'],
+                        description: 'Portfolio of Gaurav Kumar Yadav, AI/ML developer and web developer from Lucknow, India.',
+                        inLanguage: 'en-IN',
                         potentialAction: {
                             '@type': 'SearchAction',
                             target: {
                                 '@type': 'EntryPoint',
-                                urlTemplate: `${siteUrl}/blog?search={search_term_string}`
+                                urlTemplate: `${siteUrl}/projects?q={search_term_string}`
                             },
                             'query-input': 'required name=search_term_string'
                         }
@@ -268,7 +257,7 @@ const useSEO = ({
                     {
                         '@type': 'Organization',
                         '@id': `${siteUrl}/#organization`,
-                        name: 'Gaurav Portfolio',
+                        name: 'ggauravky portfolio',
                         alternateName: 'Gaurav Kumar Yadav Portfolio',
                         url: siteUrl,
                         logo: {
@@ -287,7 +276,7 @@ const useSEO = ({
                         },
                         sameAs: [
                             'https://github.com/ggauravky',
-                            'https://www.linkedin.com/in/gauravkumaryadav05',
+                            'https://www.linkedin.com/in/gauravky/',
                             'https://twitter.com/ggauravky'
                         ]
                     }

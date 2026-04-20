@@ -99,9 +99,9 @@ function BlogPost() {
 
     // SEO for individual blog post - MUST be called before any conditional returns
     useSEO({
-        title: blog ? `${blog.title} - Blog | Gaurav Kumar Yadav` : 'Blog Post | Gaurav Kumar Yadav',
+        title: blog ? `${blog.title} | AI/ML and Web Dev Blog | Gaurav Kumar Yadav` : 'Blog Post | Gaurav Kumar Yadav',
         description: blog ? blog.excerpt : 'Loading blog post...',
-        keywords: blog ? blog.tags.join(', ') : '',
+        keywords: blog ? `${blog.tags.join(', ')}, Gaurav Kumar Yadav, AI ML developer Lucknow, web developer India` : '',
         ogImage: blog ? (blog.ogImage || 'https://ggauravky.vercel.app/images/profile.jpg') : 'https://ggauravky.vercel.app/images/profile.jpg',
         type: 'article',
         author: 'Gaurav Kumar Yadav',
@@ -211,6 +211,15 @@ function BlogPost() {
                         </div>
                     </div>
 
+                    {/* Featured Image */}
+                    <div className="w-full h-96 bg-slate-800 rounded-2xl overflow-hidden mt-8">
+                        <img
+                            src={blog.image}
+                            alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer and web developer blog`}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 mt-6">
                         {blog.tags.map((tag) => (
@@ -269,6 +278,27 @@ function BlogPost() {
                         title={blog.title}
                         content={blog.content}
                     />
+                </div>
+
+                <div className="mb-8 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-5">
+                    <h2 className="text-lg font-bold text-cyan-300 mb-2">Want help implementing this in your own project?</h2>
+                    <p className="text-slate-300 text-sm mb-4">
+                        Explore my implementation services for AI/ML and web development, or contact me directly to discuss your goal.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        <Link
+                            to="/services"
+                            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                        >
+                            Explore Services
+                        </Link>
+                        <Link
+                            to="/contact"
+                            className="inline-flex items-center justify-center rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-cyan-400/40 hover:text-cyan-300 transition-all duration-300"
+                        >
+                            Contact Me
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Blog Content */}

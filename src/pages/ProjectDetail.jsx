@@ -43,7 +43,7 @@ function ProjectDetail() {
             ? `${project.title} — Case Study | Gaurav Kumar Yadav`
             : 'Project | Gaurav Kumar Yadav',
         description: project ? project.description : 'Explore a project case study by Gaurav Kumar Yadav.',
-        keywords: project ? project.techStack.join(', ') : '',
+        keywords: project ? `${project.techStack.join(', ')}, Gaurav Kumar Yadav, AI ML developer Lucknow, web developer India, ggauravky portfolio` : '',
         ogImage: project ? `https://ggauravky.vercel.app${project.image}` : 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 
@@ -85,7 +85,7 @@ function ProjectDetail() {
             <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
                 <LazyImage
                     src={project.image}
-                    alt={project.title}
+                    alt={`${project.title} by Gaurav Kumar Yadav - web developer portfolio India`}
                     sizes="100vw"
                     fetchPriority="high"
                     className="w-full h-full object-cover"
@@ -258,7 +258,7 @@ function ProjectDetail() {
                                         <div key={i} className="rounded-xl overflow-hidden border border-slate-700/40 hover:border-purple-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10">
                                             <LazyImage
                                                 src={src}
-                                                alt={`${project.title} screenshot ${i + 1}`}
+                                                alt={`${project.title} screenshot ${i + 1} - Gaurav Kumar Yadav portfolio`}
                                                 sizes="(min-width: 640px) 50vw, 100vw"
                                                 className="w-full h-56 sm:h-64 object-cover hover:scale-105 transition-transform duration-500"
                                             />
@@ -286,7 +286,7 @@ function ProjectDetail() {
                                     <div className="card-img-wrap h-36 overflow-hidden">
                                         <LazyImage
                                             src={rel.image}
-                                            alt={rel.title}
+                                            alt={`${rel.title} project by Gaurav Kumar Yadav`}
                                             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                                             className="w-full h-full object-cover card-img-zoom"
                                         />

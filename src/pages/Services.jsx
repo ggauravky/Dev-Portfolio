@@ -15,9 +15,9 @@ import { servicesData } from '../data/servicesData'
 
 function Services() {
     useSEO({
-        title: 'Services - Work With Me | Gaurav Kumar Yadav',
-        description: 'Book mentorship, resume review, debugging help, portfolio review, and full stack development services.',
-        keywords: 'developer services, mentorship, resume review, debugging help, portfolio review, full stack development',
+        title: 'Services | Gaurav Kumar Yadav | AI/ML and Web Development Support',
+        description: 'Work with Gaurav Kumar Yadav for mentorship, debugging, portfolio reviews, and full-stack delivery support. AI/ML and web development guidance from a BCA student developer in Lucknow, India.',
+        keywords: 'Gaurav Kumar Yadav services, AI ML developer Lucknow, web developer India, mentorship for developers, MERN stack developer student, portfolio review service, debugging help',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
@@ -80,7 +80,7 @@ function Services() {
                         </h1>
                         <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl">
                             Real services, transparent pricing, and delivery-focused execution.
-                            Explore every service in detail before booking.
+                            Explore every service in detail before booking. Available for remote work across India, with a base in Lucknow, Uttar Pradesh.
                         </p>
 
                         <div className="flex flex-wrap items-center gap-2.5">
@@ -95,6 +95,12 @@ function Services() {
                                 className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
                             >
                                 Open Support Jar
+                            </Link>
+                            <Link
+                                to="/contact"
+                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold border border-slate-600 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 transition-all duration-300"
+                            >
+                                Contact Me
                             </Link>
                         </div>
 

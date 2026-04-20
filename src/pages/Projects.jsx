@@ -12,9 +12,9 @@ import { projectsData, projectCategories } from '../data/projectsData'
 
 function Projects() {
     useSEO({
-        title: 'Projects - Gaurav Portfolio | Python, AI/ML & Full Stack Development Projects',
-        description: 'Explore Gaurav Portfolio Projects! Student developer portfolio featuring innovative Python projects, AI/ML applications, Data Science tools, and Full Stack web applications by Gaurav Kumar Yadav. Projects include AI Video Editing platform, Real-Time Chat App, MERN stack applications, Data Analysis dashboards, and more. Portfolio showcasing real-world solutions. Open for internships and freelance work.',
-        keywords: 'Gaurav Portfolio Projects, Portfolio Projects, Python Projects, AI ML Projects, Data Science Projects, Full Stack Projects, React Projects, Node.js Projects, Student Developer Portfolio, AI Video Editor, Web Applications, Internship Portfolio, Developer Projects, Portfolio Gallery',
+        title: 'Projects | Gaurav Kumar Yadav | AI/ML and Web Developer Portfolio',
+        description: 'Explore portfolio case studies by Gaurav Kumar Yadav, a BCA student at BBDU Lucknow, India. AI/ML and web development projects built with Python, React, Node.js, and MERN stack tools.',
+        keywords: 'Gaurav Kumar Yadav projects, Gaurav AI ML developer, Gaurav web developer India, ggauravky portfolio, AI ML developer Lucknow, MERN stack developer student, machine learning beginner projects',
         ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png',
         additionalJsonLd: {
             '@type': 'ItemList',
@@ -82,10 +82,10 @@ function Projects() {
                 {/* Header */}
                 <div className="text-center mb-12 animate-fadeIn">
                     <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                        My Projects
+                        Projects by Gaurav Kumar Yadav
                     </h1>
                     <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-                        Real-world applications built with modern technologies and best practices
+                        AI/ML and web development case studies from a BCA student developer based in Lucknow, Uttar Pradesh, India.
                     </p>
                 </div>
 
@@ -183,7 +183,7 @@ function Projects() {
                                 <div className="card-img-wrap relative h-56 bg-slate-700/50 overflow-hidden">
                                     <LazyImage
                                         src={project.image}
-                                        alt={project.title}
+                                        alt={`${project.title} case study by Gaurav Kumar Yadav - AI ML and web developer portfolio`}
                                         sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
                                         fetchPriority={index < 2 ? 'high' : 'auto'}
                                         className="w-full h-full object-cover card-img-zoom"
