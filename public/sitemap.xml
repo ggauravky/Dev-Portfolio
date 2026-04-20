@@ -173,18 +173,6 @@
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://ggauravky.vercel.app/blog/my-journey-ai-ml-developer-bbdu-lucknow</loc>
-        <lastmod>2026-04-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://ggauravky.vercel.app/blog/how-i-built-my-developer-portfolio-using-react-and-ai-tools</loc>
-        <lastmod>2026-04-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
         <loc>https://ggauravky.vercel.app/projects/smartmess</loc>
         <lastmod>2026-04-20</lastmod>
         <changefreq>monthly</changefreq>

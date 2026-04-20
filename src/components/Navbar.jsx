@@ -233,16 +233,17 @@ function Navbar() {
 
                         {/* Desktop Resume button */}
                         <a
-                            href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
+                            href="/resume.pdf"
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label="Open resume PDF in a new tab"
                             className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/40 hover:shadow-cyan-500/60 hover:scale-105 text-sm xl:text-base cursor-pointer whitespace-nowrap group relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                             <svg className="w-4 h-4 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            <span className="relative z-10">Resume</span>
+                            <span className="relative z-10">View Resume</span>
                         </a>
 
                         {isAuthenticated && user
@@ -347,16 +348,17 @@ function Navbar() {
                     {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
 
                     <a
-                        href="https://drive.google.com/file/d/12p8A0rchFoZ1q2JlQJEaAWiGiXhSq3ev/view?usp=sharing"
+                        href="/resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
+                        aria-label="Open resume PDF in a new tab"
                         onClick={closeMenu}
                         className="flex items-center justify-center gap-2.5 w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-base rounded-2xl transition-all duration-300 shadow-lg shadow-cyan-500/30 active:scale-95"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Download Resume
+                        View Resume
                     </a>
                     <p className="text-slate-600 text-xs text-center flex items-center justify-center gap-1.5">
                         Made with <svg className="w-4 h-4 text-red-400 animate-pulse inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> by Gaurav

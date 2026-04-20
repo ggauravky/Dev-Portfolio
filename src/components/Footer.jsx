@@ -17,6 +17,7 @@ function Footer() {
             { name: 'Projects', path: '/projects' },
             { name: 'Services', path: '/services' },
             { name: 'Blog', path: '/blog' },
+            { name: 'Updates', path: '/updates' },
             { name: 'Skills', path: '/skills' },
             { name: 'Contact', path: '/contact' }
         ],

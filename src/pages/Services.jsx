@@ -94,7 +94,7 @@ function Services() {
                                 to="/support"
                                 className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
                             >
-                                Open Support Jar
+                                ❤️ Support My Work
                             </Link>
                             <Link
                                 to="/contact"
@@ -363,7 +363,7 @@ function Services() {
                                 to="/support"
                                 className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300"
                             >
-                                Open Support Jar
+                                ❤️ Support My Work
                             </Link>
                         </div>
                     </div>

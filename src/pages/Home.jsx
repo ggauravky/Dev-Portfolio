@@ -29,8 +29,13 @@ function Home() {
         ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
     })
 
-    // Featured projects for home page - driven by featured:true flag in projectsData
-    const featuredProjects = useMemo(() => projectsData.filter(p => p.featured), [])
+    // Keep homepage featured projects fixed and ordered
+    const featuredProjects = useMemo(() => {
+        const orderedSlugs = ['smartmess', 'real-time-chat-app', 'buildmyteam']
+        return orderedSlugs
+            .map((slug) => projectsData.find((project) => project.slug === slug))
+            .filter(Boolean)
+    }, [])
 
     const skills = useMemo(() => ({
         ai: ["Python", "Machine Learning", "Data Analysis", "Pandas", "NumPy"],
@@ -266,13 +271,6 @@ function Home() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="mt-8 rounded-3xl border border-cyan-500/30 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10 p-6 md:p-8">
-                        <h3 className="text-2xl md:text-3xl font-bold text-cyan-300 mb-3">Career Goal</h3>
-                        <p className="text-slate-200 leading-relaxed text-base md:text-lg max-w-4xl mx-auto">
-                            My goal is to grow into a high-impact AI/ML engineer and full-stack product developer who can design reliable solutions for startups and teams. I am actively looking for internships and project collaborations where I can apply Machine Learning, Data Science basics, React, MERN stack, and Python to solve meaningful problems.
-                        </p>
                     </div>
 
                     {/* Stats Section - GitHub & LeetCode */}

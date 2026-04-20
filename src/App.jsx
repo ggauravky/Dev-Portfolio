@@ -45,6 +45,7 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
+const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Refund = lazy(() => import('./pages/Refund'))
@@ -176,6 +177,7 @@ function AnimatedRoutes() {
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
                 <Route path="/blog"                       element={<R><Blog /></R>} />
                 <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
+                <Route path="/updates"                    element={<R><Updates /></R>} />
                 <Route path="/services"                   element={<R><Services /></R>} />
                 <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
                 <Route path="/booknow"                    element={<R><BookNow /></R>} />
