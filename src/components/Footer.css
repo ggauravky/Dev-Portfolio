@@ -6,170 +6,49 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Footer Animations */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Footer specific styles */
-footer {
+.footer-shell {
   width: 100%;
   position: relative;
 }
 
-footer h3,
-footer h4 {
-  letter-spacing: -0.02em;
+.footer-main-grid {
+  align-items: start;
 }
 
-footer a {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.footer-link,
+.footer-back-to-top {
+  will-change: transform;
 }
 
-footer a:hover {
-  transform: translateY(-2px);
+.footer-link:hover,
+.footer-back-to-top:hover {
+  transform: translateY(-1px);
 }
 
-/* Grid improvements */
-footer .grid {
-  display: grid;
-  gap: 1rem;
-}
-
-/* Smooth animations on load */
-footer > div {
-  animation: slideUp 0.8s ease-out;
-}
-
-/* Tablet optimization */
-@media (max-width: 1024px) and (min-width: 769px) {
-  footer h3 {
-    font-size: 1.75rem;
-  }
-
-  footer h4 {
-    font-size: 1.125rem;
-  }
-
-  footer .grid {
-    gap: 1.5rem;
-  }
-}
-
-/* Mobile optimization */
 @media (max-width: 768px) {
-  footer {
-    padding: 0;
-  }
-
-  footer h3 {
-    font-size: 1.5rem;
-    line-height: 1.3;
-  }
-
-  footer h4 {
-    font-size: 1rem;
-  }
-
-  footer p {
-    font-size: 0.875rem;
-    line-height: 1.6;
-  }
-
-  footer a {
-    font-size: 0.875rem;
-  }
-
-  footer .grid {
-    gap: 1rem;
-  }
-
-  /* Stack social grid to 2 columns on mobile */
-  footer .grid.grid-cols-4 {
-    grid-template-columns: repeat(2, 1fr);
+  .footer-main-grid {
+    row-gap: 2rem;
   }
 }
 
-/* Extra small devices */
-@media (max-width: 480px) {
-  footer h3 {
-    font-size: 1.25rem;
-  }
-
-  footer h4 {
-    font-size: 0.95rem;
-  }
-
-  footer p,
-  footer a {
-    font-size: 0.8rem;
-  }
-
-  footer .grid {
-    gap: 0.75rem;
-  }
-
-  /* Reduce padding on small screens */
-  footer > div {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-}
-
-/* High contrast mode support */
 @media (prefers-contrast: high) {
-  footer {
-    border-color: #fff;
+  .footer-shell {
+    border-top-color: #ffffff;
   }
 
-  footer a:hover {
+  .footer-link:hover,
+  .footer-back-to-top:hover {
     text-decoration: underline;
   }
 }
 
-/* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  footer *,
-  footer *::before,
-  footer *::after {
+  .footer-shell *,
+  .footer-shell *::before,
+  .footer-shell *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

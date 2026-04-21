@@ -8,8 +8,6 @@ import { Link } from 'react-router-dom'
 import './Footer.css'
 
 function Footer() {
-    const currentYear = new Date().getFullYear()
-
     const footerLinks = {
         quickLinks: [
             { name: 'Home', path: '/' },
@@ -19,158 +17,102 @@ function Footer() {
             { name: 'Blog', path: '/blog' },
             { name: 'Updates', path: '/updates' },
             { name: 'Skills', path: '/skills' },
-            { name: 'Contact', path: '/contact' }
+            { name: 'Contact', path: '/contact' },
         ],
         legal: [
             { name: 'Privacy Policy', path: '/privacy' },
             { name: 'Terms of Service', path: '/terms' },
-            { name: 'Refund Policy', path: '/refund' }
-        ]
+            { name: 'Refund Policy', path: '/refund' },
+        ],
+    }
+
+    const handleBackToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     return (
-        <footer className="relative bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-700/50 backdrop-blur-sm overflow-hidden">
-            {/* Enhanced Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-950/30 via-purple-950/20 to-slate-900/50"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent"></div>
-            
-            {/* Animated background elements */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+        <footer className="footer-shell relative overflow-hidden border-t border-slate-700/60 bg-gradient-to-b from-slate-900 to-slate-950">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" aria-hidden="true" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-blue-950/25 via-slate-900/45 to-slate-900/65" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-900/20 via-transparent to-transparent" />
+            <div className="pointer-events-none absolute -left-24 top-0 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
 
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-                {/* Main Footer Content - Enhanced */}
-                <div className="text-center mb-20">
-                    <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-6 animate-text-gradient">
-                        Gaurav Kumar Yadav
-                    </h3>
-                    {/* Role badges — SVG icons replace emoji for a professional look */}
-                    <div className="flex flex-wrap justify-center items-center gap-3 mb-6">
-                        {/* Python */}
-                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-blue-500/10 border border-blue-500/25 rounded-full text-blue-300 text-sm font-semibold">
-                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M11.914 0C5.82 0 6.2 2.656 6.2 2.656l.007 2.752h5.814v.826H3.9S0 5.789 0 11.969c0 6.18 3.403 5.96 3.403 5.96h2.034v-2.867s-.11-3.402 3.35-3.402h5.766s3.24.052 3.24-3.13V3.188S18.27 0 11.914 0zm-3.26 1.838a1.051 1.051 0 1 1 0 2.101 1.05 1.05 0 0 1 0-2.101z" fill="#4B91CC"/>
-                                <path d="M12.086 24c6.094 0 5.714-2.656 5.714-2.656l-.007-2.752H12v-.826h8.1S24 18.211 24 12.031c0-6.18-3.403-5.96-3.403-5.96H18.56v2.867s.114 3.402-3.347 3.402H9.448s-3.24-.052-3.24 3.13v5.342S5.73 24 12.086 24zm3.26-1.838a1.051 1.051 0 1 1 0-2.101 1.051 1.051 0 0 1 0 2.1z" fill="#FFD444"/>
-                            </svg>
-                            Python Developer
-                        </span>
-
-                        <span className="text-slate-600 hidden sm:inline">·</span>
-
-                        {/* AI & Data Science */}
-                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-purple-500/10 border border-purple-500/25 rounded-full text-purple-300 text-sm font-semibold">
-                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#c084fc" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
-                                <path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
-                            </svg>
-                            AI & Data Science
-                        </span>
-
-                        <span className="text-slate-600 hidden sm:inline">·</span>
-
-                        {/* Full Stack Developer */}
-                        <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-cyan-500/10 border border-cyan-500/25 rounded-full text-cyan-300 text-sm font-semibold">
-                            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3"/>
-                            </svg>
-                            Full Stack Developer
-                        </span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-sm sm:text-base">
-                        <p className="text-slate-400 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg> Based in Lucknow, India
+            <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+                <div className="footer-main-grid grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12 xl:grid-cols-3 xl:gap-16">
+                    <section className="min-w-0 text-center md:text-left">
+                        <h3 className="text-2xl font-black tracking-tight text-slate-100 sm:text-3xl">
+                            Gaurav Kumar Yadav
+                        </h3>
+                        <p className="mt-3 text-sm font-semibold text-cyan-300 sm:text-base">
+                            AI/ML & Web Developer building real-world projects
                         </p>
-                        <span className="hidden sm:inline text-slate-600">|</span>
-                        <p className="text-green-400 font-bold flex items-center gap-2 px-4 py-2 bg-green-500/10 rounded-lg border border-green-500/30">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>{' '}
-                            Open for Internships & Freelance
+                        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400 md:mx-0">
+                            Building practical, user-focused digital products with modern frontend, data, and problem-solving workflows.
                         </p>
-                    </div>
-                </div>
+                    </section>
 
-                {/* Quick Links & CTA - Enhanced Grid Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-16 mb-20 max-w-6xl mx-auto">
-                    {/* Quick Links */}
-                    <div className="text-center md:text-left">
-                        <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-8 flex items-center justify-center md:justify-start gap-2">
-                            <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                    <section className="min-w-0 text-center md:text-left">
+                        <h4 className="text-base font-bold uppercase tracking-[0.12em] text-slate-200 sm:text-lg">
                             Quick Navigation
                         </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            {footerLinks.quickLinks.map((link) => (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className="group text-slate-400 hover:text-blue-400 transition-all duration-300 text-sm sm:text-base hover:translate-x-1 inline-block font-medium relative"
-                                >
-                                    <span className="relative z-10">{link.name}</span>
-                                    <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+                        <nav aria-label="Footer quick navigation" className="mt-4">
+                            <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-2 text-sm sm:gap-y-3 sm:text-base md:justify-items-start">
+                                {footerLinks.quickLinks.map((link) => (
+                                    <li key={link.path}>
+                                        <Link
+                                            to={link.path}
+                                            className="footer-link group inline-flex min-h-[44px] items-center text-slate-400 transition-colors duration-300 hover:text-blue-400"
+                                        >
+                                            <span className="relative">
+                                                {link.name}
+                                                <span className="absolute -bottom-1 left-0 h-[2px] w-0 bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-300 group-hover:w-full" />
+                                            </span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                    </section>
 
-                    {/* CTA Section - Enhanced */}
-                    <div className="text-center md:text-right">
-                        <h4 className="text-xl sm:text-2xl font-bold text-slate-200 mb-6 flex items-center justify-center md:justify-end gap-2">
-                            <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                            Let's Work Together
+                    <section className="min-w-0 text-center md:col-span-2 md:text-left xl:col-span-1">
+                        <h4 className="text-sm font-bold uppercase tracking-[0.12em] text-slate-300 sm:text-base">
+                            Legal / Extra
                         </h4>
-                        <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
-                            Have a project in mind? Need a skilled developer? <br className="hidden sm:inline" />
-                            <span className="text-blue-400 font-semibold">Let's build something amazing!</span>
-                        </p>
-                        <Link
-                            to="/contact"
-                            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 hover:from-blue-500 hover:via-purple-500 hover:to-cyan-500 rounded-2xl font-bold transition-all duration-300 hover:scale-110 text-base sm:text-lg shadow-2xl hover:shadow-purple-500/60 relative overflow-hidden"
+                        <ul className="mt-4 space-y-1.5 text-xs sm:text-sm">
+                            {footerLinks.legal.map((link) => (
+                                <li key={link.path}>
+                                    <Link
+                                        to={link.path}
+                                        className="footer-link inline-flex min-h-[40px] items-center text-slate-500 transition-colors duration-300 hover:text-blue-400"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <button
+                            type="button"
+                            onClick={handleBackToTop}
+                            className="footer-back-to-top mt-6 inline-flex min-h-[44px] items-center rounded-xl border border-slate-700/70 bg-slate-800/60 px-4 text-sm font-medium text-slate-300 transition-all duration-300 hover:border-cyan-500/50 hover:text-cyan-300"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
-                            <span className="relative z-10">Let's Talk</span>
-                            <svg className="w-5 h-5 relative z-10 group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
-                        </Link>
-                    </div>
+                            Back to top ↑
+                        </button>
+                    </section>
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-slate-700/50 pt-10 mt-10">
-                    <div className="flex flex-col items-center gap-6 text-center">
-                        {/* Legal Links */}
-                        <div className="flex flex-wrap gap-6 justify-center text-sm sm:text-base">
-                            {footerLinks.legal.map((link) => (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className="text-slate-400 hover:text-blue-400 transition-all duration-200 hover:scale-105 font-medium"
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* Copyright */}
-                        <div className="space-y-2">
-                            <p className="text-slate-300 text-sm sm:text-base">
-                                © {currentYear} <span className="font-bold text-blue-400">Gaurav Kumar Yadav</span>. All rights reserved.
-                            </p>
-                            <p className="text-slate-500 text-xs sm:text-sm">
-                                Built with <svg className="w-4 h-4 text-red-400 inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> using React, Vite, Tailwind CSS &amp; Node.js
-                            </p>
-                        </div>
-
-                        {/* Developer Tag */}
-                        <p className="text-slate-600 text-xs sm:text-sm border-t border-slate-800/30 pt-4 w-full">
+                <div className="mt-10 border-t border-slate-700/60 pt-6 sm:pt-7">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                        <p className="text-sm text-slate-300 sm:text-base">
+                            © 2026 Gaurav Kumar Yadav. All rights reserved.
+                        </p>
+                        <p className="text-xs text-slate-500 sm:text-sm">
                             Designed & Developed by <Link to="/admin" className="text-slate-500 hover:text-blue-400 transition-colors duration-200 font-medium">Gaurav Kumar Yadav</Link> | Student Developer Portfolio 2026
                         </p>
                     </div>
                 </div>
             </div>
-
-            {/* Floating Background Elements */}
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -z-10"></div>
         </footer>
     )
 }
