@@ -94,15 +94,15 @@ function Lab() {
                             <svg className="w-8 h-8 mb-3 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
                             <h3 className="text-white font-semibold text-lg mb-1">Consistency Dashboard</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                This module is temporarily under maintenance while data reliability and rendering consistency are being improved.
+                                Track live GitHub and LeetCode consistency metrics in a clean, real-time dashboard.
                             </p>
                             <div className="flex flex-wrap gap-2 mt-3">
                                 <span className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20">GitHub Heatmap</span>
                                 <span className="text-xs px-2 py-0.5 bg-amber-500/10 text-amber-400 rounded-full border border-amber-500/20">LeetCode Stats</span>
                             </div>
                         </div>
-                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-amber-600/20 text-amber-300 rounded-full border border-amber-500/30 font-semibold">
-                            Under Maintenance
+                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-emerald-600/20 text-emerald-300 rounded-full border border-emerald-500/30 font-semibold">
+                            Live
                         </span>
                     </Link>
 

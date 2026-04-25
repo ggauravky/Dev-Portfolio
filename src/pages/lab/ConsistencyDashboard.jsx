@@ -10,6 +10,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import useSEO from '../../hooks/useSEO'
 
 const GITHUB_USERNAME = 'ggauravky'
@@ -19,7 +20,7 @@ const LEETCODE_USERNAME = 'gauravky'
 // github-readme-stats.vercel.app public instance is heavily rate-limited →
 // using github-profile-summary-cards (different project, different rate limits)
 // for GitHub Stats and Top Languages instead.
-const STREAK_IMG       = `https://nirzak-streak-stats.vercel.app/?user=${GITHUB_USERNAME}&theme=dark&hide_border=true&background=0f172a&ring=22d3ee&fire=a855f7&currStreakLabel=22d3ee&currStreakNum=f1f5f9&sideLabels=94a3b8&sideNums=f1f5f9&stroke=30363d&dates=64748b&card_width=500`
+const STREAK_IMG       = `https://github-readme-streak-stats.herokuapp.com?user=${GITHUB_USERNAME}&theme=dark`
 const GITHUB_STATS_IMG = `https://github-profile-summary-cards.vercel.app/api/cards/stats?username=${GITHUB_USERNAME}&theme=github_dark`
 const TOP_LANGS_IMG    = `https://github-profile-summary-cards.vercel.app/api/cards/repos-per-language?username=${GITHUB_USERNAME}&theme=github_dark`
 const ACTIVITY_IMG     = `https://github-readme-activity-graph.vercel.app/graph?username=${GITHUB_USERNAME}&bg_color=0f172a&color=7fdbca&line=c792ea&point=ffeb95&area=true&hide_border=true&area_color=c792ea`
@@ -69,6 +70,14 @@ function StatsImage({ src, alt, skeletonH = 'h-44', fallbackHref, className = ''
     )
 }
 
+StatsImage.propTypes = {
+    src: PropTypes.string.isRequired,
+    alt: PropTypes.string.isRequired,
+    skeletonH: PropTypes.string,
+    fallbackHref: PropTypes.string,
+    className: PropTypes.string,
+}
+
 // ── Section heading ───────────────────────────────────────────────────────────
 function SectionHeading({ icon, title, subtitle, href, linkLabel }) {
     return (
@@ -97,6 +106,14 @@ function SectionHeading({ icon, title, subtitle, href, linkLabel }) {
     )
 }
 
+SectionHeading.propTypes = {
+    icon: PropTypes.node.isRequired,
+    title: PropTypes.string.isRequired,
+    subtitle: PropTypes.string,
+    href: PropTypes.string,
+    linkLabel: PropTypes.string,
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function ConsistencyDashboard() {
     useSEO({
@@ -113,12 +130,7 @@ export default function ConsistencyDashboard() {
         try {
             await navigator.clipboard.writeText(text)
         } catch {
-            const el = document.createElement('textarea')
-            el.value = text
-            document.body.appendChild(el)
-            el.select()
-            document.execCommand('copy')
-            document.body.removeChild(el)
+            globalThis.prompt('Copy and share your stats text:', text)
         }
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
@@ -153,7 +165,7 @@ export default function ConsistencyDashboard() {
                 <div className="text-center mb-14">
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-sm font-semibold mb-6">
                         <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                        Live Data
+                        <span>Live Data</span>
                     </div>
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-5">
                         <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
@@ -297,7 +309,7 @@ export default function ConsistencyDashboard() {
                 <div className="text-center pt-6 border-t border-slate-800/80 mt-4">
                     <p className="text-slate-500 text-sm flex flex-wrap justify-center gap-x-3 gap-y-1">
                         <span>Stats powered by</span>
-                        <a href="https://git.io/streak-stats" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors">nirzak-streak-stats</a>
+                        <a href="https://github.com/DenverCoder1/github-readme-streak-stats" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors">github-readme-streak-stats</a>
                         <span className="text-slate-700">·</span>
                         <a href="https://github.com/vn7n24fzkq/github-profile-summary-cards" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cyan-400 transition-colors">profile-summary-cards</a>
                         <span className="text-slate-700">·</span>
