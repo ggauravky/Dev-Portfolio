@@ -1,403 +1,404 @@
-// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Unauthorized copying, modification, or distribution of this software,
-// via any medium, is strictly prohibited without the express written
-// consent of the author. See LICENSE for details.
-// Source: https://github.com/ggauravky/Dev-Portfolio
-
-﻿// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// GauravChatbot â€” full viewport AI chat, messages-only scrolls, responsive
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import useSEO from '../../hooks/useSEO'
 import ChatMessage from '../../components/chat/ChatMessage'
 import TypingIndicator from '../../components/chat/TypingIndicator'
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const SESSION_STORAGE_KEY = 'gaurav-chatbot-session-id'
+const MESSAGES_STORAGE_KEY = 'gaurav-chatbot-messages'
+const FALLBACK_MESSAGE = "I'm having trouble right now, please try again."
 
-// In production, force same-origin API so requests go to Vercel /api/chat.
-// In development, allow explicit chat API override, then fallback to local backend.
-const API_URL = (
-    import.meta.env.PROD
-        ? ''
-        : import.meta.env.VITE_CHAT_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:5000'
-).replace(/\/$/, '')
-
-const SUGGESTION_CHIPS = [
-    'Tell me about yourself',
+const SUGGESTED_QUESTIONS = [
     'What projects have you built?',
-    'What is TaskNexus?',
-    'Are you open for internships?',
-    'What AI skills do you have?',
+    'What technologies do you use?',
+    'Tell me about your experience',
+    'What services do you offer?',
 ]
 
-const makeMsg = (role, content) => ({
-    id: `${Date.now()}-${Math.random()}`,
+const buildId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+
+const createMessage = (role, content, extra = {}) => ({
+    id: extra.id || buildId(),
     role,
     content,
-    timestamp: new Date(),
+    timestamp: extra.timestamp || new Date(),
+    sources: Array.isArray(extra.sources) ? extra.sources : [],
+    intro: Boolean(extra.intro),
+    followUpSuggestions: Array.isArray(extra.followUpSuggestions) ? extra.followUpSuggestions : [],
+    userIntent: extra.userIntent || null,
 })
 
-const INITIAL_AI_MESSAGE = makeMsg(
-    'ai',
-    "Hey! I'm Gaurav — a BCA student from Lucknow building things in AI/ML and full-stack development.\n\nAsk me anything — what I've built, what I know, or whether I'm available. Happy to chat!"
-)
+const createIntroMessage = () =>
+    createMessage(
+        'ai',
+        "I'm Gaurav's portfolio assistant. Ask me about projects, skills, services, blogs, journey, work style, or career direction. I only answer from portfolio data, so if something is not in the knowledge base, I'll say so.",
+        {
+            id: 'gaurav-chatbot-intro',
+            intro: true,
+        }
+    )
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const reviveMessages = (raw) => {
+    try {
+        const parsed = JSON.parse(raw)
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            return [createIntroMessage()]
+        }
+
+        return parsed.map((message) =>
+            createMessage(message.role, message.content, {
+                id: message.id,
+                timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
+                sources: message.sources,
+                intro: message.intro,
+            })
+        )
+    } catch {
+        return [createIntroMessage()]
+    }
+}
+
+const readInitialMessages = () => {
+    // Always start fresh - no persistent chat history
+    return [createIntroMessage()]
+}
+
+const readSessionId = () => {
+    if (globalThis.window === undefined) {
+        return `gaurav-${Date.now()}`
+    }
+
+    const existing = sessionStorage.getItem(SESSION_STORAGE_KEY)
+    if (existing) {
+        return existing
+    }
+
+    const generated =
+        globalThis.crypto?.randomUUID?.() ||
+        `gaurav-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    sessionStorage.setItem(SESSION_STORAGE_KEY, generated)
+    return generated
+}
 
 function GauravChatbot() {
     useSEO({
-        title: "Gaurav's AI Chatbot - Lab | Portfolio Powered by Gemini",
+        title: "Gaurav's AI Chatbot - Lab | Portfolio RAG Assistant",
         description:
-            'Chat with an AI version of Gaurav Kumar Yadav. Ask about his skills, projects, education, and availability. Powered by Google Gemini.',
+            'Ask Gaurav Kumar Yadav\'s portfolio chatbot about projects, skills, services, blogs, and journey. Powered by structured RAG and DeepSeek.',
         keywords:
-            'Gaurav AI Chatbot, Portfolio Chatbot, Gaurav Kumar Yadav AI, Gemini Chatbot, Developer Chatbot, AI Portfolio',
+            'Gaurav chatbot, portfolio AI assistant, Gaurav Kumar Yadav projects, DeepSeek chatbot, RAG portfolio assistant',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
-    const [messages, setMessages] = useState([INITIAL_AI_MESSAGE])
+    const [messages, setMessages] = useState(readInitialMessages)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState(null)
-    const [chipsVisible, setChipsVisible] = useState(true)
-    const [isFocused, setIsFocused] = useState(false)
+    const [sessionId] = useState(readSessionId)
 
-    // Stable session ID for this page visit — groups all turns from one visitor together
-    const sessionIdRef = useRef(`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`)
-    // Count of user messages sent in this session (for messageIndex analytics)
-    const msgCountRef = useRef(0)
-
-    const messagesEndRef = useRef(null)
     const textareaRef = useRef(null)
+    const scrollAnchorRef = useRef(null)
 
-    // â”€â”€ Smooth scroll to latest message â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const scrollToBottom = useCallback(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }, [])
+    const apiBase = useMemo(
+        () => (import.meta.env.VITE_CHATBOT_API_URL || import.meta.env.VITE_API_URL || '').replace(/\/$/, ''),
+        []
+    )
+    const endpoint = apiBase ? `${apiBase}/api/chatbot` : '/api/chatbot'
 
-    useEffect(() => {
-        scrollToBottom()
-    }, [messages, isLoading, scrollToBottom])
+    const userMessageCount = messages.filter((message) => message.role === 'user').length
+    const showSuggestions = userMessageCount === 0
 
-    // â”€â”€ Auto-resize textarea â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    const resizeTextarea = useCallback(() => {
-        const el = textareaRef.current
-        if (!el) return
-        el.style.height = 'auto'
-        el.style.height = `${Math.min(el.scrollHeight, 140)}px`
-    }, [])
+    // Chat history persists only in current session; refreshing clears all messages
+    // All messages are stored in database for analytics, but not displayed after page reload
 
     useEffect(() => {
-        resizeTextarea()
-    }, [input, resizeTextarea])
+        scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, [messages, isLoading])
 
-    // â"€â"€ Send message â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-    const sendMessage = useCallback(
-        async (text) => {
-            const trimmed = (text || input).trim()
-            if (!trimmed || isLoading) return
+    useEffect(() => {
+        const textarea = textareaRef.current
+        if (!textarea) {
+            return
+        }
 
-            setChipsVisible(false)
-            setError(null)
-            setInput('')
+        textarea.style.height = 'auto'
+        textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`
+    }, [input])
 
-            setMessages((prev) => [...prev, makeMsg('user', trimmed)])
-            setIsLoading(true)
+    const sendMessage = async (value = input) => {
+        const trimmed = value.trim()
+        if (!trimmed || isLoading) {
+            return
+        }
 
-            if (textareaRef.current) textareaRef.current.style.height = 'auto'
+        const userMessage = createMessage('user', trimmed)
+        const optimisticMessages = [...messages, userMessage]
 
+        setMessages(optimisticMessages)
+        setInput('')
+        setIsLoading(true)
+
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
+        }
+
+        try {
+            const controller = new AbortController()
+            const timeoutId = setTimeout(() => controller.abort(), 22000)
+            const history = messages
+                .filter((message) => !message.intro)
+                .slice(-8)
+                .map((message) => ({
+                    role: message.role === 'ai' ? 'assistant' : 'user',
+                    content: message.content,
+                    sources: message.role === 'ai' ? message.sources : [],
+                }))
+
+            let response
             try {
-                // Build conversation history for multi-turn context (skip the initial AI greeting)
-                const historySnapshot = messages
-                    .filter((m) => m.id !== INITIAL_AI_MESSAGE.id)
-                    .slice(-12)
-                    .map((m) => ({ role: m.role === 'ai' ? 'model' : 'user', text: m.content }))
+                response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: trimmed,
+                        history,
+                        sessionId,
+                    }),
+                    signal: controller.signal,
+                })
+            } finally {
+                clearTimeout(timeoutId)
+            }
 
-                const currentIndex = msgCountRef.current;
-                msgCountRef.current += 1;
+            const data = await response.json().catch(() => ({}))
+            if (!response.ok || !data.success || !String(data.reply || '').trim()) {
+                throw new Error(data.reply || FALLBACK_MESSAGE)
+            }
 
-                const controller = new AbortController()
-                const timeoutId =
-                    typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
-                        ? null
-                        : setTimeout(() => controller.abort(), 25000)
-                const signal =
-                    typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
-                        ? AbortSignal.timeout(25000)
-                        : controller.signal
+            setMessages((previous) => {
+                const replyText = String(data.reply).trim()
+                const last = previous.at(-1)
 
-                let response
-                try {
-                    response = await fetch(`${API_URL}/api/chat`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            message: trimmed,
-                            history: historySnapshot,
-                            sessionId: sessionIdRef.current,
-                            messageIndex: currentIndex,
-                        }),
-                        signal,
+                // If an intro already exists in the conversation, avoid re-adding intro-like replies
+                const hasIntro = previous.some((m) => m.intro === true || m.id === 'gaurav-chatbot-intro')
+                const isIntroLike = replyText.toLowerCase().includes("portfolio assistant") || replyText.toLowerCase().includes("ask me about")
+                if (hasIntro && isIntroLike) {
+                    // update existing intro message's timestamp and merge sources/followups instead of adding a new intro
+                    const updated = previous.map((m) => {
+                        if (m.intro === true || m.id === 'gaurav-chatbot-intro') {
+                            return createMessage('ai', m.content, {
+                                id: m.id,
+                                timestamp: new Date(),
+                                sources: Array.isArray(data.sources) && data.sources.length ? data.sources : m.sources,
+                                followUpSuggestions: data.followUpSuggestions || m.followUpSuggestions || [],
+                                userIntent: data.userIntent || m.userIntent || null,
+                            })
+                        }
+                        return m
                     })
-                } finally {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId)
-                    }
+                    return updated
                 }
 
-                const data = await response.json()
-                if (!response.ok || !data.success) throw new Error(data.reply || 'Something went wrong.')
-                setMessages((prev) => [...prev, makeMsg('ai', data.reply)])
-            } catch (err) {
-                setError(
-                    err.name === 'TimeoutError' || err.name === 'AbortError'
-                        ? 'Request timed out. Please try again.'
-                        : err.message || 'Failed to reach the server.'
-                )
-            } finally {
-                setIsLoading(false)
-                textareaRef.current?.focus()
-            }
-        },
-        [input, isLoading, messages]
-    )
+                // Avoid adding duplicate consecutive assistant replies (helps when backend repeats the same text)
+                if (last?.role === 'ai' && String(last.content).trim() === replyText) {
+                    const updated = [...previous]
+                    updated[updated.length - 1] = createMessage('ai', replyText, {
+                        id: last.id,
+                        timestamp: new Date(),
+                        sources: data.sources,
+                        followUpSuggestions: data.followUpSuggestions || [],
+                        userIntent: data.userIntent || null,
+                    })
+                    return updated
+                }
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            sendMessage()
+                return [
+                    ...previous,
+                    createMessage('ai', replyText, {
+                        sources: data.sources,
+                        followUpSuggestions: data.followUpSuggestions || [],
+                        userIntent: data.userIntent || null,
+                    }),
+                ]
+            })
+        } catch (error) {
+            const fallbackReply =
+                error?.name === 'AbortError'
+                    ? FALLBACK_MESSAGE
+                    : String(error?.message || FALLBACK_MESSAGE)
+
+            setMessages((previous) => [
+                ...previous,
+                createMessage('ai', fallbackReply),
+            ])
+        } finally {
+            setIsLoading(false)
+            textareaRef.current?.focus()
         }
     }
 
-    const canSend = input.trim().length > 0 && !isLoading
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault()
+            void sendMessage()
+        }
+    }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     return (
         <>
             <style>{`
-                @keyframes msgSlideUp {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to   { opacity: 1; }
-                }
-                .msg-enter  { animation: msgSlideUp 0.22s ease-out both; }
-                .fade-in    { animation: fadeIn 0.2s ease-out both; }
+                :root { --safe-area-inset-bottom: env(safe-area-inset-bottom); }
 
-                .messages-scroll::-webkit-scrollbar       { width: 4px; }
-                .messages-scroll::-webkit-scrollbar-track { background: transparent; }
-                .messages-scroll::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-                .messages-scroll::-webkit-scrollbar-thumb:hover { background: #334155; }
+                .chat-shell {
+                    background:
+                        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 24%),
+                        radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.14), transparent 28%),
+                        linear-gradient(180deg, #020617 0%, #020817 48%, #020617 100%);
+                }
 
-                .input-wrap {
-                    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+                .chat-scroll::-webkit-scrollbar {
+                    width: 6px;
                 }
-                .input-wrap.focused {
-                    border-color: rgba(99,102,241,0.55);
-                    box-shadow: 0 0 0 3px rgba(99,102,241,0.14), 0 2px 16px rgba(99,102,241,0.10);
-                }
-                .send-btn {
-                    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-                }
-                .send-btn:hover:not(:disabled) { transform: scale(1.07); }
-                .send-btn:active:not(:disabled) { transform: scale(0.95); }
 
-                .chip-btn {
-                    transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s, box-shadow 0.18s;
+                .chat-scroll::-webkit-scrollbar-thumb {
+                    background: rgba(71, 85, 105, 0.9);
+                    border-radius: 999px;
                 }
-                .chip-btn:active:not(:disabled) { transform: scale(0.95); }
+
+                /* ensure bottom input area respects device safe area (notch) */
+                .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
+                .input-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
             `}</style>
 
-            {/* â”€â”€ Full-viewport shell â€” ONLY messages area scrolls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-            <div
-                className="flex flex-col bg-slate-950 relative"
-                style={{ height: '100dvh', minHeight: '-webkit-fill-available' }}
-            >
-                {/* Ambient glows */}
-                <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-                    <div className="absolute -top-40 right-0 w-72 h-72 bg-indigo-700/5 rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 -left-20 w-72 h-72 bg-cyan-700/5 rounded-full blur-3xl" />
-                </div>
+            <div className="chat-shell flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden">
+                <header className="border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-xl">
+                    <div className="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-4 sm:px-6">
+                        <Link
+                            to="/lab"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/80 text-slate-300 transition-colors hover:border-cyan-500/40 hover:text-cyan-200"
+                            aria-label="Back to Lab"
+                        >
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </Link>
 
-                {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-                <header className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl z-20">
-                    {/* Back */}
-                    <Link
-                        to="/lab"
-                        className="flex items-center gap-1.5 text-slate-500 hover:text-slate-200 text-sm transition-colors duration-200 group flex-shrink-0 mr-1"
-                        aria-label="Back to Lab"
-                    >
-                        <svg className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span className="hidden sm:inline text-xs">Lab</span>
-                    </Link>
-
-                    {/* Avatar */}
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-lg shadow-indigo-500/25 ring-2 ring-indigo-500/20">
-                        G
-                    </div>
-
-                    {/* Name + status */}
-                    <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold text-sm leading-tight">Gaurav&apos;s AI</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                            </span>
-                            <span className="text-emerald-400 text-xs">Online · Powered by Gemini</span>
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-bold text-white shadow-lg shadow-cyan-900/30">
+                            G
                         </div>
-                    </div>
 
-                    {/* Info badge â€” desktop */}
-                    <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-slate-800/80 border border-slate-700/60 rounded-full text-slate-400 text-xs">
-                        <svg className="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                            <path strokeLinecap="round" strokeWidth="2" d="M12 8v4m0 4h.01" />
-                        </svg>
-                        Ask anything about me
+                        <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-slate-100 sm:text-base">Gaurav Portfolio AI</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                                <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
+                                    RAG + DeepSeek
+                                </span>
+                                <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-cyan-200">
+                                    Portfolio-only answers
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
-                {/* â”€â”€ Scrollable messages area â€” ONLY this scrolls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-                <div
-                    className="flex-1 overflow-y-auto messages-scroll overscroll-contain"
-                    style={{ minHeight: 0 }}
-                >
-                    <div className="max-w-2xl mx-auto w-full px-3 sm:px-5 pt-5 pb-3 flex flex-col gap-3">
+                <div className="chat-scroll flex-1 overflow-y-auto">
+                    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6 pb-28 sm:px-6 sm:pb-6">
+                        <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-4 sm:p-5">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                <span>Production Feature</span>
+                                <span className="rounded-full border border-slate-700 px-2 py-0.5 tracking-normal text-slate-300">
+                                    Fast retrieval
+                                </span>
+                                <span className="rounded-full border border-slate-700 px-2 py-0.5 tracking-normal text-slate-300">
+                                    Mongo conversation history
+                                </span>
+                            </div>
+                            <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-[15px]">
+                                This assistant only answers from Gaurav's structured portfolio knowledge base.
+                                Unrelated questions are blocked, and missing details are not invented.
+                            </p>
+                        </div>
 
-                        {messages.map((msg) => (
+                        {messages.map((message) => (
                             <ChatMessage
-                                key={msg.id}
-                                role={msg.role}
-                                content={msg.content}
-                                timestamp={msg.timestamp}
+                                key={message.id}
+                                role={message.role}
+                                content={message.content}
+                                timestamp={message.timestamp}
+                                sources={message.sources}
+                                                            followUpSuggestions={message.followUpSuggestions}
+                                                            onSuggestionClick={(suggestion) => void sendMessage(suggestion)}
                             />
                         ))}
 
-                        {/* Typing indicator */}
-                        {isLoading && <TypingIndicator />}
-
-                        {/* Error banner */}
-                        {error && (
-                            <div className="fade-in flex items-start gap-3 px-4 py-3 bg-red-500/8 border border-red-500/20 rounded-2xl text-sm">
-                                <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-red-300 leading-snug">{error}</p>
-                                    <a
-                                        href="https://ggauravky.vercel.app/contact"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-red-400/60 hover:text-red-300 underline text-xs mt-1 inline-block transition-colors"
-                                    >
-                                        Contact Gaurav directly →
-                                    </a>
+                        {showSuggestions && !isLoading && (
+                            <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-4 sm:p-5">
+                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                                    Suggested Questions
+                                </p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {SUGGESTED_QUESTIONS.map((question) => (
+                                        <button
+                                            key={question}
+                                            onClick={() => void sendMessage(question)}
+                                            className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100 transition-all hover:-translate-y-0.5 hover:border-cyan-400/50 hover:bg-cyan-500/15"
+                                        >
+                                            {question}
+                                        </button>
+                                    ))}
                                 </div>
-                                <button
-                                    onClick={() => setError(null)}
-                                    className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-red-400 hover:text-red-200 hover:bg-red-500/15 transition-all"
-                                    aria-label="Dismiss"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
                             </div>
                         )}
 
-                        {/* Scroll anchor */}
-                        <div ref={messagesEndRef} className="h-1 w-full" />
+                        {isLoading && <TypingIndicator />}
+
+                        <div ref={scrollAnchorRef} />
                     </div>
                 </div>
 
-                {/* â”€â”€ Suggestion chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-                {chipsVisible && (
-                    <div className="flex-shrink-0 border-t border-slate-800/50">
-                        <div className="max-w-2xl mx-auto w-full px-3 sm:px-5 py-2.5">
-                            <p className="text-slate-700 text-[10px] font-semibold uppercase tracking-widest mb-2">
-                                Quick questions
-                            </p>
-                            <div className="flex flex-wrap gap-1.5">
-                                {SUGGESTION_CHIPS.map((chip) => (
-                                    <button
-                                        key={chip}
-                                        onClick={() => sendMessage(chip)}
-                                        disabled={isLoading}
-                                        className="chip-btn px-3 py-1.5 bg-slate-800/70 hover:bg-slate-700/80 border border-slate-700/50 hover:border-indigo-500/40 text-slate-400 hover:text-slate-100 text-xs rounded-full disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-sm hover:shadow-indigo-500/10"
-                                    >
-                                        {chip}
-                                    </button>
-                                ))}
+                <div className="sm:static fixed inset-x-0 bottom-0 z-20 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+                    <div className="mx-auto w-full max-w-4xl px-4 py-4 sm:px-6 sm:py-4 pb-safe-area input-safe">
+                        <div className="rounded-[28px] border border-slate-800 bg-slate-900/75 p-3 shadow-2xl shadow-black/25">
+                            <div className="flex items-end gap-3">
+                                <textarea
+                                    ref={textareaRef}
+                                    value={input}
+                                    onChange={(event) => setInput(event.target.value.slice(0, 1000))}
+                                    onKeyDown={handleKeyDown}
+                                    rows={1}
+                                    disabled={isLoading}
+                                    placeholder="Ask me about my projects, skills, or journey..."
+                                    className="max-h-40 min-h-[52px] flex-1 resize-none bg-transparent px-3 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 sm:text-[15px]"
+                                />
+
+                                <button
+                                    onClick={() => void sendMessage()}
+                                    disabled={isLoading || !input.trim()}
+                                    className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl transition-all ${
+                                        isLoading || !input.trim()
+                                            ? 'cursor-not-allowed bg-slate-800 text-slate-600'
+                                            : 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-900/30 hover:-translate-y-0.5'
+                                    }`}
+                                    aria-label="Send message"
+                                >
+                                    {isLoading ? (
+                                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                                        </svg>
+                                    )}
+                                </button>
                             </div>
                         </div>
-                    </div>
-                )}
 
-                {/* â”€â”€ Input area â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-                <div className="flex-shrink-0 border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-xl z-20">
-                    <div className="max-w-2xl mx-auto w-full px-3 sm:px-5 pt-3 pb-3 sm:pb-4">
-
-                        {/* Glow container */}
-                        <div className={`input-wrap flex items-end gap-2 rounded-2xl border bg-slate-900/70 px-3 py-2 ${isFocused ? 'focused' : 'border-slate-800'}`}>
-                            <textarea
-                                ref={textareaRef}
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                onFocus={() => setIsFocused(true)}
-                                onBlur={() => setIsFocused(false)}
-                                placeholder="Ask me about my skills, projects, or availabilityâ€¦"
-                                disabled={isLoading}
-                                rows={1}
-                                maxLength={1000}
-                                aria-label="Chat input"
-                                className="flex-1 bg-transparent text-slate-200 placeholder-slate-600 text-sm sm:text-[15px] resize-none outline-none leading-relaxed py-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                style={{ minHeight: '28px', maxHeight: '140px', overflowY: 'auto' }}
-                            />
-
-                            {/* Send button */}
-                            <button
-                                onClick={() => sendMessage()}
-                                disabled={!canSend}
-                                aria-label="Send message"
-                                className={`send-btn flex-shrink-0 mb-0.5 w-9 h-9 rounded-xl flex items-center justify-center ${
-                                    canSend
-                                        ? 'bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35'
-                                        : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                                }`}
-                            >
-                                {isLoading ? (
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                    </svg>
-                                ) : (
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M5 12h14M12 5l7 7-7 7" />
-                                    </svg>
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Below-input row */}
-                        <div className="flex items-center justify-between mt-1.5 px-0.5">
-                            <p className="text-slate-700 text-[11px] hidden sm:block">
-                                <kbd className="px-1 py-0.5 bg-slate-800 border border-slate-700/80 rounded text-slate-600 font-mono text-[10px]">Enter</kbd>
-                                {' '}send ·{' '}
-                                <kbd className="px-1 py-0.5 bg-slate-800 border border-slate-700/80 rounded text-slate-600 font-mono text-[10px]">Shift+Enter</kbd>
-                                {' '}new line
-                            </p>
-                            <p className="text-slate-700 text-[11px] sm:hidden">
-                                Answers from real portfolio data
-                            </p>
-                            {input.length > 0 && (
-                                <span className={`text-[11px] tabular-nums transition-colors duration-200 ${input.length > 900 ? 'text-amber-400' : 'text-slate-700'}`}>
-                                    {input.length}/1000
-                                </span>
-                            )}
+                        <div className="mt-2 flex items-center justify-between gap-3 px-1 text-[11px] text-slate-500">
+                            <span>Enter to send. Shift + Enter for a new line.</span>
+                            <span>{input.length}/1000</span>
                         </div>
                     </div>
                 </div>

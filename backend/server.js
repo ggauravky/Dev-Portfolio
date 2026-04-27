@@ -96,7 +96,7 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-Key"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Admin-Key", "X-Session-Id"],
 };
 
 app.use(cors(corsOptions));
@@ -133,7 +133,7 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     chatAnalytics: {
       retentionDays: retentionPolicy.retentionDays,
-      policyEndpoint: "/api/chat/privacy-policy",
+      policyEndpoint: "/api/chatbot/privacy-policy",
     },
     paymentQueue: getPaymentQueueStatus(),
   });
@@ -143,6 +143,7 @@ app.get("/health", (req, res) => {
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/chatbot", chatRoutes);
 app.use("/api/ml-log", mlLogRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", authRoutes);

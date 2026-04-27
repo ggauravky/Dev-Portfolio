@@ -21,7 +21,7 @@ Backend:
 
 - Node.js + Express
 - MongoDB + Mongoose
-- Gemini API integration
+- DeepSeek API + JSON RAG integration
 - Security middleware (Helmet, rate-limit, mongo-sanitize, validators)
 
 Observability:
@@ -103,8 +103,11 @@ NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 
 # Chatbot
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.0-flash
+DEEPSEEK_API_KEY=your_deepseek_api_key
+DEEPSEEK_MODEL=deepseek-v4-flash
+CHATBOT_TIMEOUT_MS=18000
+CHATBOT_CACHE_TTL_MS=300000
+CHATBOT_MODEL_COOLDOWN_MS=600000
 
 # Chat analytics privacy
 CHATLOG_RETENTION_DAYS=60
@@ -225,7 +228,9 @@ Backend (Render):
 - POST /api/newsletter/subscribe
 - POST /api/newsletter/unsubscribe
 - POST /api/chat
+- POST /api/chatbot
 - GET /api/chat/privacy-policy
+- GET /api/chatbot/privacy-policy
 
 ## SEO and Indexing
 

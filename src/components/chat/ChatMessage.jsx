@@ -21,7 +21,7 @@ const formatTime = (date) => {
  * role: 'user' → right-aligned blue/indigo bubble
  * role: 'ai'   → left-aligned dark bubble with G avatar
  */
-function ChatMessage({ role, content, timestamp = null }) {
+function ChatMessage({ role, content, timestamp = null, sources = [], followUpSuggestions = [], onSuggestionClick = null }) {
     const isUser = role === 'user'
     const time = formatTime(timestamp)
 
@@ -42,7 +42,7 @@ function ChatMessage({ role, content, timestamp = null }) {
             </div>
 
             {/* Bubble + timestamp */}
-            <div className={`flex flex-col gap-1 max-w-[78%] sm:max-w-[72%] ${isUser ? 'items-end' : 'items-start'}`}>
+            <div className={`flex flex-col gap-1 max-w-[86%] sm:max-w-[72%] ${isUser ? 'items-end' : 'items-start'}`}>
                 <div className={`px-4 py-2.5 rounded-2xl text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words ${
                     isUser
                         ? 'bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-br-sm shadow-md shadow-indigo-500/20'
@@ -57,6 +57,33 @@ function ChatMessage({ role, content, timestamp = null }) {
                         {time}
                     </span>
                 )}
+
+                {!isUser && Array.isArray(sources) && sources.length > 0 && (
+                    <div className="flex flex-wrap gap-1 px-1">
+                        {sources.slice(0, 3).map((source) => (
+                            <span
+                                key={`${source.section}-${source.title}`}
+                                className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[10px] text-cyan-200"
+                            >
+                                {source.title}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                
+                {!isUser && Array.isArray(followUpSuggestions) && followUpSuggestions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2 pt-2 border-t border-slate-700/20">
+                        {followUpSuggestions.map((suggestion) => (
+                            <button
+                                key={suggestion}
+                                onClick={() => onSuggestionClick?.(suggestion)}
+                                className="w-full sm:w-auto text-sm rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-purple-300 hover:border-purple-400/50 hover:bg-purple-500/20 transition-all text-center"
+                            >
+                                {suggestion}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -65,7 +92,13 @@ function ChatMessage({ role, content, timestamp = null }) {
 ChatMessage.propTypes = {
     role: PropTypes.oneOf(['user', 'ai']).isRequired,
     content: PropTypes.string.isRequired,
-    timestamp: PropTypes.instanceOf(Date),
+        followUpSuggestions: PropTypes.arrayOf(PropTypes.string),
+        onSuggestionClick: PropTypes.func,
+    timestamp: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.string]),
+    sources: PropTypes.arrayOf(PropTypes.shape({
+        section: PropTypes.string,
+        title: PropTypes.string,
+    })),
 }
 
 export default ChatMessage

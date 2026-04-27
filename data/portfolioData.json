@@ -1,0 +1,820 @@
+{
+  "metadata": {
+    "version": "2026-04-27",
+    "lastUpdated": "2026-04-27",
+    "owner": "Gaurav Kumar Yadav",
+    "description": "Canonical knowledge base for Gaurav Kumar Yadav's portfolio chatbot. Update this file first, then sync derived copies if needed.",
+    "chatbotPersonality": {
+      "forRecruiters": {
+        "tone": "Professional, confident, result-focused",
+        "emphasis": ["skills", "projects", "measurable impact", "availability", "work style"],
+        "responseStyle": "Direct, clear, business-minded. Emphasize results and shipping."
+      },
+      "forStudents": {
+        "tone": "Friendly, helpful, beginner-friendly, motivating",
+        "emphasis": ["learning journey", "how things work", "practical tips", "mindset", "building"],
+        "responseStyle": "Approachable, encouraging. Break down concepts simply. Share learning path."
+      },
+      "forGeneral": {
+        "tone": "Conversational, clear, slightly enthusiastic",
+        "emphasis": ["projects", "about Gaurav", "services", "journey"],
+        "responseStyle": "Warm, clear, engaging. Not robotic. Use simple language."
+      }
+    },
+    "signaturePhrase": "Let me break it down simply…",
+    "personalityTraits": ["Builder mindset", "Practical learner", "Focused on real-world projects", "Consistent execution", "Clean code advocate"]
+  },
+  "profile": {
+    "name": "Gaurav Kumar Yadav",
+    "preferredName": "Gaurav",
+    "headline": "AI/ML Engineer, Full-Stack Developer, and BCA student",
+    "role": "AI/ML Developer and Full-Stack Web Developer",
+    "location": "Lucknow, Uttar Pradesh, India",
+    "bio": "I am Gaurav Kumar Yadav, a BCA student from Lucknow focused on AI/ML, Python, and full-stack product development. I prefer build-first learning, ship real projects publicly, and care about clean engineering, useful products, and long-term growth.",
+    "education": [
+      {
+        "degree": "Bachelor of Computer Applications (BCA)",
+        "institution": "Babu Banarasi Das University (BBDU)",
+        "location": "Lucknow, India",
+        "status": "Ongoing"
+      },
+      {
+        "degree": "AI/ML Program",
+        "institution": "IIT Mandi x Masai School",
+        "status": "Completed",
+        "focus": [
+          "Machine Learning",
+          "Artificial Intelligence",
+          "Deep Learning",
+          "Data Science"
+        ]
+      }
+    ],
+    "availability": {
+      "openTo": [
+        "Internships",
+        "Entry-level roles",
+        "Freelance projects",
+        "Remote work",
+        "Open-source and AI collaborations"
+      ],
+      "targetRoles": [
+        "AI/ML Intern",
+        "Software Developer Intern",
+        "Full-Stack Developer Intern"
+      ],
+      "workModes": [
+        "Remote",
+        "Hybrid",
+        "On-site"
+      ]
+    },
+    "currentFocus": [
+      "Data Structures and Algorithms",
+      "Advanced AI/ML concepts",
+      "MERN stack scalability",
+      "System design fundamentals",
+      "Building production-oriented projects"
+    ],
+    "strengths": [
+      "Build-first learning and public proof of work",
+      "End-to-end full-stack development with React, Node.js, and MongoDB",
+      "Python-based AI/ML and automation projects",
+      "Strong consistency, documentation, and practical execution"
+    ],
+    "contact": {
+      "email": "kumar.gaurav.yadav2007@gmail.com",
+      "portfolio": "https://ggauravky.vercel.app",
+      "github": "https://github.com/ggauravky",
+      "linkedin": "https://linkedin.com/in/ggauravky",
+      "contactPage": "https://ggauravky.vercel.app/contact"
+    }
+  },
+  "skills": {
+    "summary": [
+      "Python, JavaScript, Java, C, SQL",
+      "React, Tailwind CSS, HTML5, CSS3, responsive frontend development",
+      "Node.js, Express.js, Flask, REST APIs, JWT authentication",
+      "MongoDB, MySQL",
+      "Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn",
+      "Git, GitHub, VS Code, Postman, Jupyter, Google Colab, Kaggle"
+    ],
+    "categories": [
+      {
+        "name": "Programming Languages",
+        "items": ["Python", "JavaScript", "Java", "C", "SQL"]
+      },
+      {
+        "name": "Frontend Development",
+        "items": ["React.js", "HTML5", "CSS3", "Tailwind CSS", "Bootstrap", "Responsive Design"]
+      },
+      {
+        "name": "Backend Development",
+        "items": ["Node.js", "Express.js", "Flask", "REST APIs", "JWT Authentication"]
+      },
+      {
+        "name": "Databases",
+        "items": ["MongoDB", "MySQL"]
+      },
+      {
+        "name": "Data Science and AI",
+        "items": [
+          "Pandas",
+          "NumPy",
+          "Matplotlib",
+          "Seaborn",
+          "Scikit-learn",
+          "Machine Learning",
+          "Data Analysis",
+          "Data Preprocessing",
+          "Feature Engineering",
+          "Model Training"
+        ]
+      },
+      {
+        "name": "Cloud and Platforms",
+        "items": ["Google Cloud Platform", "AWS Basics", "Google Colab", "Kaggle"]
+      },
+      {
+        "name": "Tools",
+        "items": ["Git", "GitHub", "VS Code", "Postman", "Jupyter Notebooks"]
+      },
+      {
+        "name": "Soft Skills",
+        "items": ["Problem Solving", "Team Collaboration", "Self Learning", "Time Management", "Communication"]
+      }
+    ]
+  },
+  "projects": [
+    {
+      "slug": "dev-portfolio-platform",
+      "title": "Dev Portfolio Platform",
+      "category": "Full Stack - SaaS",
+      "featured": true,
+      "isCaseStudy": true,
+      "summary": "A dynamic, full-stack portfolio platform with Google authentication, Stripe/Cashfree payment integration, blog support, activity tracking, and an AI chatbot.",
+      "problem": "Most portfolios are static and don't demonstrate real-world engineering skills or visitor interaction. Developers struggle to showcase end-to-end systems, payment processing, or live user engagement.",
+      "solution": "Built a full-stack SaaS-level portfolio platform with:\n- Google OAuth authentication\n- Payment system integration (Cashfree/Stripe)\n- Blog support with comments\n- Activity tracking for visitor engagement\n- AI chatbot integration (RAG + DeepSeek)\n- Admin dashboard for content management\n- Newsletter subscription system",
+      "impact": "- Demonstrates real-world SaaS architecture and engineering depth\n- Handles actual user interactions (payments, subscriptions, support tickets)\n- Shows scalability, security (JWT, payments, CORS), and production-grade tooling\n- Live platform with genuine user engagement and analytics",
+      "realWorldUsage": "Used as a live portfolio by Gaurav to attract recruiters and clients. Visitors can explore projects, book services, engage via chatbot, and understand full-stack capabilities in real time.",
+      "highlights": [
+        "Google OAuth + JWT authentication",
+        "Stripe and Cashfree payment processing",
+        "Blog system with support tickets",
+        "Activity event tracking and analytics",
+        "AI chatbot with RAG retrieval",
+        "Newsletter management",
+        "Admin dashboard for operations",
+        "Responsive React frontend"
+      ],
+      "architecture": "Frontend: React, Tailwind, Vite on Vercel. Backend: Node.js/Express, MongoDB, payment webhooks. Chatbot: DeepSeek API with RAG retrieval.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Stripe/Cashfree", "DeepSeek API", "Tailwind CSS", "Vercel", "Render"],
+      "links": {
+        "github": "https://github.com/ggauravky/Dev-Portfolio",
+        "demo": "https://ggauravky.vercel.app"
+      }
+    },
+    {
+      "slug": "ai-chatbot-rag",
+      "title": "Personal AI Chatbot (RAG + DeepSeek)",
+      "category": "AI/ML - Conversational",
+      "featured": true,
+      "isCaseStudy": true,
+      "summary": "A production-ready AI chatbot powered by RAG (Retrieval-Augmented Generation) and DeepSeek API. Answers questions about projects, skills, services with context-aware accuracy.",
+      "problem": "Visitors to portfolio sites don't want to scroll through entire portfolios to understand skills and projects. Static FAQs are outdated. Chatbots hallucinate or give inaccurate information.",
+      "solution": "Built a RAG-based chatbot that:\n- Retrieves answers only from structured JSON knowledge base\n- Uses keyword matching + semantic scoring for relevance\n- Integrates DeepSeek API for conversational responses\n- Stores all conversations in MongoDB for analytics\n- Implements guardrails to prevent off-topic answers\n- Caches responses to reduce API calls",
+      "impact": "- Instant answers to portfolio questions (projects, skills, services)\n- Improves user engagement and time-on-site\n- Reduces support inquiries by answering common questions\n- Provides analytics on what visitors care about\n- No hallucination - answers only from verified data",
+      "realWorldUsage": "Live on portfolio at /lab/gaurav-chatbot. Visitors ask: 'What projects have you built?', 'What technologies do you use?', 'Can you help with debugging?', 'What's your experience?'",
+      "highlights": [
+        "RAG retrieval from JSON knowledge base",
+        "Keyword + semantic similarity scoring",
+        "DeepSeek API integration with fallback",
+        "Rate limiting (30 msgs/10 min per IP)",
+        "MongoDB conversation persistence",
+        "Prompt injection detection",
+        "Response caching (5 min TTL)",
+        "Circuit breaker for API failures"
+      ],
+      "architecture": "Frontend: React chat UI with session state. Backend: Node.js/Express with RAG pipeline. LLM: DeepSeek API. Database: MongoDB for conversation history.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "DeepSeek API", "RAG", "JavaScript", "Tailwind CSS"],
+      "links": {
+        "demo": "https://ggauravky.vercel.app/lab/gaurav-chatbot"
+      }
+    },
+    {
+      "slug": "service-platform",
+      "title": "Service & Support Platform",
+      "category": "Full Stack - Business",
+      "featured": true,
+      "isCaseStudy": true,
+      "summary": "Integrated service delivery platform with service selection, secure payments, booking management, activity tracking, and automated receipts.",
+      "problem": "Freelancers and consultants struggle to manage clients, payments, and service delivery in one cohesive system. Each platform (booking, payments, support) requires separate integrations.",
+      "solution": "Created an integrated service platform with:\n- Service catalog with descriptions and pricing\n- Booking and scheduling system\n- Secure payment processing\n- Support ticket tracking\n- Activity event logging\n- Automated receipt generation\n- Client communication workflows",
+      "impact": "- Streamlined client interaction from discovery to delivery\n- Demonstrates real business use-case with revenue model\n- Shows backend + payment integration expertise\n- Built-in analytics for service performance\n- Professional client experience",
+      "realWorldUsage": "Used on Gaurav's portfolio for service offerings. Clients can browse mentorship, debugging help, resume review, and development services, then book and pay seamlessly.",
+      "highlights": [
+        "Service discovery and filtering",
+        "Booking with timeline management",
+        "Secure payment integration",
+        "Support ticket system",
+        "Activity tracking and notifications",
+        "Receipt and invoice generation",
+        "Admin dashboard for operations",
+        "Client communication threads"
+      ],
+      "architecture": "Frontend: Service listing and booking flows. Backend: Service management APIs, payment webhooks, ticket system. Database: MongoDB for all operational data.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "Stripe/Cashfree", "PDF generation", "Email service"],
+      "links": {
+        "demo": "https://ggauravky.vercel.app/services"
+      }
+    },
+    {
+      "slug": "smartmess",
+      "title": "SmartMess",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "A hostel mess management platform with real-time menu visibility, digital attendance, feedback, complaints, and an admin analytics dashboard.",
+      "problem": "Hostel mess workflows were manual, students had poor menu visibility, and administrators lacked structured data on attendance, complaints, and food quality.",
+      "highlights": [
+        "Real-time breakfast, lunch, snacks, and dinner menus",
+        "Student feedback and rating system",
+        "Digital attendance tracking",
+        "Complaint portal with status updates",
+        "Admin analytics dashboard"
+      ],
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Vercel"],
+      "links": {
+        "github": "https://github.com/ggauravky/SmartMess",
+        "demo": "https://smartmesslms.vercel.app/"
+      }
+    },
+    {
+      "slug": "dev-portfolio-admin-panel",
+      "title": "Dev Portfolio Admin Panel",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "An admin dashboard for managing portfolio backend data like contact messages and newsletter subscriptions with JWT auth, filtering, analytics, and CRUD operations.",
+      "highlights": [
+        "JWT-protected admin access",
+        "Search, sort, and filter workflows",
+        "CRUD support for operational data",
+        "Professional analytics dashboard"
+      ],
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Tailwind CSS", "Vercel"],
+      "links": {
+        "github": "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
+        "demo": "https://ggauravkyadmin.vercel.app"
+      }
+    },
+    {
+      "slug": "real-time-chat-app",
+      "title": "Real-Time Chat App",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "A real-time chat application with JWT authentication, Socket.IO messaging, online status, media uploads, and a modern interface.",
+      "highlights": [
+        "Socket.IO based real-time messaging",
+        "JWT-secured authentication",
+        "Online and offline status indicators",
+        "Cloudinary media uploads",
+        "Theme customization"
+      ],
+      "techStack": ["React", "Node.js", "Socket.IO", "MongoDB", "JWT", "Cloudinary"],
+      "links": {
+        "github": "https://github.com/ggauravky/chat-app",
+        "demo": "https://chat-app-6ly8.onrender.com/"
+      }
+    },
+    {
+      "slug": "buildmyteam",
+      "title": "BuildMyTeam",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "A collaboration platform for colleges to manage hackathons, team formation, join requests, and team workspaces with role-based access.",
+      "highlights": [
+        "Hackathon discovery and team creation",
+        "Join-code based onboarding",
+        "Join request workflows",
+        "Admin controls and role-based access",
+        "Shared collaboration workspace"
+      ],
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Tailwind CSS", "TanStack Query", "Zod"],
+      "links": {
+        "github": "https://github.com/ggauravky/BuildMyTeam",
+        "demo": "https://buildmyteam.vercel.app/"
+      }
+    },
+    {
+      "slug": "truecert",
+      "title": "TrueCert",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "A secure certificate issuance and verification platform with QR validation, tamper detection, revocation support, and issuer analytics.",
+      "highlights": [
+        "Unique certificate IDs",
+        "QR-based public verification",
+        "Revocation and expiry handling",
+        "Issuer dashboard and scan analytics"
+      ],
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Cloudinary", "QR Code"],
+      "links": {
+        "github": "https://github.com/ggauravky/TrueCert",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "focusguard",
+      "title": "FocusGuard",
+      "category": "AI/ML",
+      "featured": true,
+      "summary": "An AI-powered attention monitor that detects sustained phone-looking behavior from webcam input and triggers alerts to reduce distraction.",
+      "highlights": [
+        "Webcam-based monitoring",
+        "YOLOv4-tiny phone detection",
+        "Real-time attention heuristics",
+        "Alerting for distraction loops"
+      ],
+      "techStack": ["Python", "OpenCV", "YOLOv4-tiny", "NumPy", "Computer Vision"],
+      "links": {
+        "github": "https://github.com/ggauravky/FocusGuard",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "fire-detection-alert-system",
+      "title": "Fire Detection Alert System",
+      "category": "AI/ML",
+      "featured": true,
+      "summary": "A real-time computer vision prototype that analyzes webcam streams and triggers audio alerts using multi-stage fire confirmation logic.",
+      "highlights": [
+        "HSV color filtering and brightness checks",
+        "Motion analysis and contour evaluation",
+        "Multi-frame confirmation logic",
+        "Instant audio alerting"
+      ],
+      "techStack": ["Python", "OpenCV", "NumPy", "Pygame", "pyttsx3"],
+      "links": {
+        "github": "https://github.com/ggauravky/fire-detection-alert-system",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "aireel-studio",
+      "title": "AIReel Studio",
+      "category": "Python and AI/ML",
+      "summary": "An AI-powered video editing platform focused on captions, smart edits, and creator-oriented automation.",
+      "highlights": [
+        "Automatic caption generation",
+        "Video processing with ffmpeg",
+        "AI-driven creator workflows",
+        "Social media optimization"
+      ],
+      "techStack": ["Python", "Flask", "ffmpeg", "ElevenLabs API", "AI/ML"],
+      "links": {
+        "github": "https://github.com/ggauravky/My-all-Python-Projects-",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "mern-product-store",
+      "title": "MERN Product Store",
+      "category": "Full Stack",
+      "summary": "A product management app with CRUD operations, theme switching, animations, and a polished responsive experience.",
+      "highlights": [
+        "Full CRUD product management",
+        "Dark and light mode",
+        "Responsive UI",
+        "Framer Motion interactions"
+      ],
+      "techStack": ["React", "Node.js", "MongoDB", "Express", "Chakra UI", "Framer Motion"],
+      "links": {
+        "github": "https://github.com/ggauravky/mern-product-store",
+        "demo": "https://g-mern-product-store.onrender.com/"
+      }
+    },
+    {
+      "slug": "notes-app",
+      "title": "Notes App",
+      "category": "Full Stack",
+      "summary": "A notes application with add, edit, delete support, timestamps, and MongoDB-backed persistence.",
+      "highlights": [
+        "Note CRUD flows",
+        "Updated timestamps",
+        "MongoDB storage",
+        "Backend API integration"
+      ],
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "REST API"],
+      "links": {
+        "github": "https://github.com/ggauravky/notes-app-mern-stack",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "python-grocery-store",
+      "title": "Python Grocery Store Application",
+      "category": "Full Stack and Python",
+      "summary": "A grocery store management system using Python, Flask, MySQL, and a three-tier architecture.",
+      "highlights": [
+        "Inventory and order management",
+        "Customer workflows",
+        "Three-tier architecture",
+        "Live deployment on PythonAnywhere"
+      ],
+      "techStack": ["Python", "Flask", "MySQL", "HTML5", "CSS3", "JavaScript"],
+      "links": {
+        "github": "https://github.com/ggauravky/python-grocery-store",
+        "demo": "https://gauravky.pythonanywhere.com/static/index.html"
+      }
+    }
+  ],
+  "services": [
+    {
+      "slug": "website-development",
+      "title": "Website Development",
+      "category": "Build Services",
+      "priceLabel": "INR 1499 - INR 1999",
+      "summary": "Fully responsive, modern website with clean UI/UX, React frontend, Node.js backend integration, and deployment support.",
+      "deliverables": "Fully responsive website, clean UI/UX design, backend integration (if needed), deployment support, minor revisions included",
+      "timeline": "3–7 days depending on complexity",
+      "idealFor": ["Students", "Startups", "Personal brands", "Small businesses"],
+      "includes": ["Design + development", "Deployment support", "Minor revisions", "Mobile responsiveness"],
+      "successMetrics": ["Fast loading (<3s)", "Mobile-friendly", "Clean design", "Client satisfaction"],
+      "bestFor": [
+        "Landing pages",
+        "Portfolio sites",
+        "Business websites"
+      ]
+    },
+    {
+      "slug": "portfolio-development",
+      "title": "Portfolio Development",
+      "category": "Build Services",
+      "priceLabel": "INR 1499 - INR 1999",
+      "summary": "Modern portfolio website with project showcase, resume integration, and contact workflows.",
+      "deliverables": "Custom portfolio design, project showcase components, resume integration, contact form setup, deployment",
+      "timeline": "2–4 days",
+      "idealFor": ["Students and job seekers", "Freelancers", "Career changers"],
+      "includes": ["Custom design", "Hosting setup", "Content guidance", "SEO basics"],
+      "successMetrics": ["Better recruiter visibility", "Improved presentation", "Higher callback rate"],
+      "bestFor": [
+        "Job seekers",
+        "Freshers",
+        "Career switchers"
+      ]
+    },
+    {
+      "slug": "mentorship",
+      "title": "Mentorship",
+      "category": "Career and Growth",
+      "priceLabel": "INR 49",
+      "summary": "One-to-one mentorship for roadmap clarity, focused execution, and role-aligned growth.",
+      "deliverables": "1-hour mentorship session, personalized roadmap, technical guidance, growth strategy",
+      "timeline": "Session within 24-48 hours after booking; roadmap shared the same day.",
+      "idealFor": ["Beginners in CS", "Self-taught developers", "Students preparing for internships"],
+      "includes": ["Strategy call", "Custom roadmap", "Technical Q&A", "Follow-up notes"],
+      "successMetrics": ["Clear direction", "Actionable steps", "Confidence boost"],
+      "bestFor": [
+        "Beginners in CS or self-taught developers",
+        "Students preparing for internships",
+        "Developers stuck in tutorial loops"
+      ]
+    },
+    {
+      "slug": "resume-review",
+      "title": "Resume Review",
+      "category": "Career and Growth",
+      "priceLabel": "INR 99",
+      "summary": "ATS-aware resume feedback focused on sharper project impact and better interview conversion.",
+      "deliverables": "Detailed written feedback, ATS optimization, project bullet improvement, LinkedIn profile audit",
+      "timeline": "Detailed review within 24 hours.",
+      "idealFor": ["Students and freshers", "Low callback rates", "Career switchers"],
+      "includes": ["Written feedback document", "ATS optimization", "LinkedIn audit", "1 revision round"],
+      "successMetrics": ["Increased callbacks", "Better presentation", "ATS score improvement"],
+      "bestFor": [
+        "Students and freshers applying for roles",
+        "Developers with low callback rates",
+        "Candidates needing stronger project bullets"
+      ]
+    },
+    {
+      "slug": "debugging-help",
+      "title": "Debugging Help",
+      "category": "Code and Engineering",
+      "priceLabel": "INR 99",
+      "summary": "Root-cause analysis and practical fix guidance for bugs in React, MERN, deployment, or integrations.",
+      "deliverables": "Root-cause analysis, fix implementation guidance, prevention strategies, code review",
+      "timeline": "Same-day support in most cases after intake review.",
+      "idealFor": ["MERN and React developers", "Deployment issues", "Students under deadline"],
+      "includes": ["Problem analysis", "Solution path", "Implementation help", "Prevention tips"],
+      "successMetrics": ["Bug fixed", "Prevention learned", "No recurrence"],
+      "bestFor": [
+        "MERN and React issues",
+        "API and deployment bugs",
+        "Students under project deadlines"
+      ]
+    },
+    {
+      "slug": "portfolio-review",
+      "title": "Portfolio Review",
+      "category": "Career and Growth",
+      "priceLabel": "INR 99",
+      "summary": "A portfolio audit focused on narrative, trust signals, readability, and recruiter-facing clarity.",
+      "deliverables": "Detailed portfolio audit, narrative feedback, trust signal recommendations, redesign suggestions",
+      "timeline": "Detailed review within 24-48 hours.",
+      "idealFor": ["Fresher portfolios", "Low engagement", "Career switchers"],
+      "includes": ["Full audit", "Feedback document", "Redesign suggestions", "Content guidance"],
+      "successMetrics": ["Better engagement", "Clearer narrative", "Improved recruiter response"],
+      "bestFor": [
+        "Fresher portfolios with low engagement",
+        "Developers preparing for internships or job switches",
+        "Freelancers building online credibility"
+      ]
+    },
+    {
+      "slug": "frontend-development",
+      "title": "Frontend Development",
+      "category": "Build Services",
+      "priceLabel": "INR 1499 - INR 1999",
+      "summary": "Responsive frontend delivery with React, Tailwind, clean component structure, and performance-focused implementation.",
+      "deliverables": "React components, responsive design, animation, state management, performance optimization",
+      "timeline": "Basic agreed scope delivered in 3-5 days.",
+      "idealFor": ["Landing pages", "Dashboards", "MVP frontends"],
+      "includes": ["Component development", "Performance tuning", "Animation", "Responsive design"],
+      "successMetrics": ["Fast load time", "Mobile-friendly", "Clean code"],
+      "bestFor": [
+        "Landing pages and portfolios",
+        "Dashboards and admin interfaces",
+        "MVP frontend modules"
+      ]
+    },
+    {
+      "slug": "backend-development",
+      "title": "Backend Development",
+      "category": "Build Services",
+      "priceLabel": "INR 1499 - INR 1999",
+      "summary": "Secure backend systems with API design, validation, authentication, database integration, and logging baselines.",
+      "deliverables": "REST APIs, authentication system, database schema, validation, error handling, deployment",
+      "timeline": "Core API module delivered in 3-6 days.",
+      "idealFor": ["MVP backends", "API upgrades", "System cleanup"],
+      "includes": ["API design", "Authentication", "Database setup", "Error handling"],
+      "successMetrics": ["Secure APIs", "Clean architecture", "Good performance"],
+      "bestFor": [
+        "Portfolio backend upgrades",
+        "MVP API development",
+        "System cleanup and hardening"
+      ]
+    },
+    {
+      "slug": "fullstack-development",
+      "title": "Full Stack Development",
+      "category": "Build Services",
+      "priceLabel": "INR 3499 - INR 3999",
+      "summary": "End-to-end frontend and backend delivery with milestones, deployment support, and launch-ready structure.",
+      "deliverables": "Complete frontend + backend, database setup, deployment, launch support, documentation",
+      "timeline": "Delivered in milestone phases based on approved scope.",
+      "idealFor": ["Startup MVPs", "Freelance products", "Portfolio projects"],
+      "includes": ["Full development", "Deployment", "Documentation", "Launch support"],
+      "successMetrics": ["On-time delivery", "Quality code", "Production-ready"],
+      "bestFor": [
+        "Startup MVPs",
+        "Freelance product builds",
+        "Portfolio-grade full-stack projects"
+      ]
+    },
+    {
+      "slug": "ai-data-guidance",
+      "title": "AI / Data Science Guidance",
+      "category": "Specialized Guidance",
+      "priceLabel": "INR 499 - INR 999",
+      "summary": "Practical AI and data science guidance for project framing, experimentation, evaluation, and implementation planning.",
+      "deliverables": "Project strategy call, implementation roadmap, technical guidance, resource recommendations",
+      "timeline": "Guidance call and execution plan delivered within 48 hours.",
+      "idealFor": ["ML project builders", "Beginner ML engineers", "AI implementation teams"],
+      "includes": ["Strategy session", "Roadmap document", "Technical guidance", "Resource list"],
+      "successMetrics": ["Clear project path", "Actionable plan", "Confidence boost"],
+      "bestFor": [
+        "Students building major projects",
+        "Beginner ML engineers seeking direction",
+        "Teams evaluating AI implementation"
+      ]
+    }
+  ],
+  "blogs": [
+    {
+      "slug": "ai-inside-every-tool-future",
+      "title": "What Will the World Look Like When Every Tool Has AI Inside It?",
+      "date": "2025-09-21",
+      "category": "Artificial Intelligence",
+      "summary": "A reflection on a future where AI is built directly into everyday software tools instead of acting as a separate add-on.",
+      "tags": ["AI", "Future", "Productivity", "Technology"]
+    },
+    {
+      "slug": "hidden-ai-war-cybercriminals-2025",
+      "title": "The Hidden AI War: How Cybercriminals Are Using AI Against You in 2025",
+      "date": "2025-08-10",
+      "category": "Cybersecurity",
+      "summary": "A post about AI-powered cybercrime, prompt injection, deepfakes, and practical ways individuals and teams can defend themselves.",
+      "tags": ["Cybersecurity", "AI", "Security", "Threats", "Defense"]
+    },
+    {
+      "slug": "traditional-cybersecurity-dead-ai-revolution",
+      "title": "Is Traditional Cybersecurity Dead? Welcome to the AI-Powered Digital Defense Revolution",
+      "date": "2025-07-21",
+      "category": "AI & Cybersecurity",
+      "summary": "A discussion about AI-driven cyberattacks, AI-based defense systems, and the move toward zero-trust and adaptive security.",
+      "tags": ["AI", "Cybersecurity", "Future", "Defense", "Zero-Trust"]
+    },
+    {
+      "slug": "certificates-computer-science-2025-guide",
+      "title": "Do Certificates Really Work in Computer Science? The Ultimate 2025 Student Guide",
+      "date": "2025-07-05",
+      "category": "Career & Education",
+      "summary": "A student-focused article on whether certificates help in computer science, and how they compare with projects and real work.",
+      "tags": ["Certificates", "Career", "Students", "Computer-Science", "Jobs"]
+    },
+    {
+      "slug": "learning-to-code-beyond-syntax",
+      "title": "I Thought Learning to Code Was Just Syntax. I Was Wrong.",
+      "date": "2026-01-05",
+      "category": "Career & Education",
+      "summary": "A personal learning reflection about moving beyond syntax into debugging, problem solving, and building real projects.",
+      "tags": ["LearningToCode", "DevJourney", "StudentLife", "BuildInPublic"]
+    },
+    {
+      "slug": "stop-asking-which-language-is-best",
+      "title": "Stop Asking 'Which Programming Language is BEST?' - Ask THIS Instead",
+      "date": "2026-01-18",
+      "category": "Career & Education",
+      "summary": "Advice for beginners on choosing technologies based on what they want to build rather than chasing a universally 'best' language.",
+      "tags": ["Programming", "Beginners", "CareerAdvice", "Consistency"]
+    },
+    {
+      "slug": "india-talent-ai-chatgpt-deepseek-future",
+      "title": "India Has the Talent... So Why Don't We Have Our Own AI Like ChatGPT or DeepSeek Yet?",
+      "date": "2026-01-26",
+      "category": "Artificial Intelligence",
+      "summary": "A student perspective on India's AI ecosystem, product mindset, research culture, and what it may take to build globally important AI systems.",
+      "tags": ["AI", "India", "Innovation", "Students", "DeepSeek"]
+    }
+  ],
+  "journey": [
+    {
+      "stage": "Foundation",
+      "title": "BCA journey in Lucknow",
+      "summary": "Gaurav is a BCA student at BBDU in Lucknow, building a strong base in computer science while learning through projects and public work."
+    },
+    {
+      "stage": "AI/ML learning",
+      "title": "Structured AI/ML upskilling",
+      "summary": "He completed an AI/ML program through IIT Mandi x Masai School focused on machine learning, AI, deep learning, and data science fundamentals."
+    },
+    {
+      "stage": "Build-first growth",
+      "title": "From learning to shipping",
+      "summary": "Instead of staying in tutorials, he moved into real product building across full-stack apps, Python tools, AI prototypes, and portfolio-grade public work."
+    },
+    {
+      "stage": "Product-oriented projects",
+      "title": "Portfolio with practical systems",
+      "summary": "His project work now includes collaboration platforms, admin systems, real-time communication apps, certificate verification systems, and AI/computer vision projects."
+    },
+    {
+      "stage": "Current direction",
+      "title": "Internships, systems, and AI-focused growth",
+      "summary": "He is currently focused on DSA, advanced AI/ML, MERN scalability, and system design while staying open to internships, freelance work, and collaboration."
+    }
+  ],
+  "experience": [
+    {
+      "type": "Self-directed product building",
+      "summary": "Gaurav has built public projects across full-stack, AI/ML, Python, and frontend categories, with a strong focus on shipping usable systems instead of staying in tutorial-only learning.",
+      "evidence": [
+        "Full-stack apps with authentication, analytics, and admin flows",
+        "Real-time communication with Socket.IO",
+        "AI and computer vision prototypes in Python",
+        "Public demos, GitHub repositories, and portfolio-ready case studies"
+      ]
+    },
+    {
+      "type": "Structured AI/ML training",
+      "summary": "He completed an AI/ML program through IIT Mandi x Masai School covering machine learning, AI, deep learning, and data science fundamentals.",
+      "evidence": [
+        "Machine learning and deep learning concepts",
+        "Data science workflow exposure",
+        "Applied learning through projects and experiments"
+      ]
+    }
+  ],
+  "interests": [
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Full-Stack Development",
+    "Developer Tools",
+    "Automation",
+    "SaaS products",
+    "Open Source",
+    "AI chatbots and LLM applications"
+  ],
+  "achievements": [
+    "Completed an AI/ML program through IIT Mandi x Masai School",
+    "Built public projects across AI/ML, Python, full-stack, and frontend categories",
+    "Developed a real-time chat app with Socket.IO and production-style features",
+    "Built portfolio and admin tooling with practical operational workflows",
+    "Maintains a build-in-public portfolio and active GitHub presence"
+  ],
+  "voice": {
+    "identity": "I am Gaurav Kumar Yadav, a BCA student from Lucknow focused on AI/ML, Python, and full-stack development.",
+    "tone": "direct, thoughtful, and build-first",
+    "whatMakesMeDifferent": "I do not stop at tutorials. I prefer build-first learning, public proof of work, and consistent execution through real shipped projects.",
+    "workStyle": "I learn fundamentals quickly, apply them through small real projects, then improve and document the system until it becomes portfolio-grade.",
+    "consistency": "I focus on disciplined daily progress through structured learning, regular DSA practice, and steady project execution rather than irregular bursts of effort.",
+    "debuggingApproach": "When something breaks, I isolate the failing part, check assumptions, inspect logs, and work toward the root cause instead of relying on random fixes.",
+    "shortTermGoals": "In the next 6 to 12 months, I want to deepen DSA, strengthen AI/ML fundamentals, contribute to meaningful production work, and earn a strong internship.",
+    "longTermGoals": "In the long term, I want to become a strong AI-focused software engineer building intelligent, scalable products and eventually grow TaskNexus into a reliable platform.",
+    "preferredEnvironment": "I work best in learning-focused, fast-moving teams that value ownership, clean engineering, experimentation, and continuous improvement.",
+    "industriesOfInterest": [
+      "AI products",
+      "SaaS platforms",
+      "Developer tools",
+      "Automation-driven products"
+    ],
+    "strongestSkill": "One of my strongest skills is building end-to-end full-stack applications with solid backend integration and practical product thinking.",
+    "currentlyLearning": "I am currently improving Data Structures and Algorithms, advanced AI/ML concepts, MERN scalability, and system design fundamentals.",
+    "bestProject": "One of my strongest projects is the Real-Time Chat App because it combines authentication, real-time communication, online presence, media uploads, and production-style full-stack architecture.",
+    "hardestChallenge": "One of the toughest challenges I faced was handling real-time synchronization and async flow issues in my chat application. It taught me careful state handling, event timing, and systematic debugging.",
+    "excitedAbout": "I am most excited by real-time systems, intelligent automation, AI-powered product features, and full-stack workflows that directly improve user experience.",
+    "forRecruiters": "I bring consistency, proof of work, and an engineering mindset. I am not only learning for interviews - I am learning to build useful systems that can hold up in real environments.",
+    "openToOpportunities": "Yes. I am open to internships, entry-level roles, freelance work, and collaborations across remote, hybrid, or on-site setups.",
+    "teamCommunication": "I prefer clear communication, early questions, documentation, and async-friendly collaboration so the work stays easy to understand and extend.",
+    "funFact": "I believe daily small wins compound. I prefer consistency over intensity."
+  },
+  "initiatives": [
+    {
+      "name": "TaskNexus",
+      "status": "In progress",
+      "summary": "TaskNexus is a service-based platform idea that aims to connect clients with skilled freelancers while simplifying task assignment, quality checks, and delivery."
+    }
+  ],
+  "faq": [
+    {
+      "question": "What technologies do you use?",
+      "answer": "I mainly work with React and JavaScript for frontend development, Node.js and Express for backend APIs, Python for AI/ML and data work, and MongoDB for databases. I'm also experienced with authentication (JWT), real-time communication (Socket.IO), payment processing (Stripe, Cashfree), and AI integration (DeepSeek API).",
+      "category": "skills",
+      "priority": "high"
+    },
+    {
+      "question": "Are you available for internships or freelance work?",
+      "answer": "Yes, I'm actively open to internships, entry-level developer roles, freelance projects, remote work, and collaborations. I'm flexible with remote, hybrid, or on-site setups. You can reach out through the contact page or book a mentorship session to discuss opportunities.",
+      "category": "availability",
+      "priority": "high"
+    },
+    {
+      "question": "What kind of projects have you built?",
+      "answer": "I've built full-stack applications including a dynamic portfolio platform with payments and chatbot integration, real-time chat applications with Socket.IO, service platforms with booking systems, hostel management systems, certificate verification platforms, and AI/computer vision prototypes in Python. Most of my projects are publicly available on GitHub.",
+      "category": "projects",
+      "priority": "high"
+    },
+    {
+      "question": "Can you help beginners with web development?",
+      "answer": "Yes, absolutely. I offer mentorship, debugging help, resume reviews, and guidance for beginners getting into web development. My approach is practical and build-first - I believe in learning by shipping real projects rather than staying in tutorials. I'm open to helping students with project guidance and concepts.",
+      "category": "services",
+      "priority": "medium"
+    },
+    {
+      "question": "How can I contact you or book your services?",
+      "answer": "You can reach me through several ways: 1) Visit the contact page on my portfolio for direct messaging, 2) Book services like mentorship, debugging, or resume review directly on the portfolio, 3) Connect with me on LinkedIn at linkedin.com/in/ggauravky, 4) Check out my GitHub at github.com/ggauravky, or 5) Email me at kumar.gaurav.yadav2007@gmail.com.",
+      "category": "contact",
+      "priority": "high"
+    },
+    {
+      "question": "What is your approach to learning and growth?",
+      "answer": "I follow a build-first mentality. Instead of staying in tutorials, I learn concepts and immediately apply them to real projects. I ship publicly, document my work, and iterate based on feedback. I focus on consistent daily progress through DSA practice, structured learning, and building real systems rather than irregular bursts of effort.",
+      "category": "mindset",
+      "priority": "medium"
+    },
+    {
+      "question": "What makes you different from other developers?",
+      "answer": "My strongest differentiators are: 1) Consistency - I don't rely on motivation, I build discipline and routine, 2) Public proof of work - all my projects are shipped and documented, 3) Build-first mindset - I learn by creating real systems, not just studying, 4) Full-stack capability - I can handle frontend, backend, databases, and AI integration end-to-end.",
+      "category": "differentiators",
+      "priority": "medium"
+    },
+    {
+      "question": "What's your strongest project and why?",
+      "answer": "One of my strongest projects is the Real-Time Chat Application because it combines multiple complex systems: JWT-based authentication, Socket.IO for real-time messaging, MongoDB for persistence, Cloudinary for media uploads, and a polished React frontend. It taught me about async state management, event-driven architecture, and production-style full-stack engineering.",
+      "category": "projects",
+      "priority": "low"
+    },
+    {
+      "question": "What are you currently learning?",
+      "answer": "I'm currently focused on Data Structures and Algorithms (DSA), advanced AI/ML concepts, MERN stack scalability and optimization, system design fundamentals, and building production-oriented projects that can scale.",
+      "category": "learning",
+      "priority": "low"
+    },
+    {
+      "question": "What kind of team environment do you prefer?",
+      "answer": "I prefer learning-focused and fast-moving teams that value: 1) Ownership and autonomy, 2) Clean engineering and code quality, 3) Experimentation and iteration, 4) Continuous improvement, 5) Clear communication and documentation. I work best in environments where the team cares about growth and shipping quality work.",
+      "category": "work-culture",
+      "priority": "low"
+    }
+  ]
+}

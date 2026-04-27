@@ -45,6 +45,7 @@ const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
+const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
 const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -170,7 +171,7 @@ function AnimatedRoutes() {
                 <Route path="/"                           element={<R><Home /></R>} />
                 <Route path="/about"                      element={<R><About /></R>} />
                 <Route path="/lab"                        element={<R><Lab /></R>} />
-                <Route path="/lab/gaurav-chatbot"         element={<R><UnderConstruction variant="lab-chatbot" /></R>} />
+                <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
                 <Route path="/lab/ml-demos"               element={<R><UnderConstruction variant="lab-ml" /></R>} />
                 <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />

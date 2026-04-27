@@ -12,10 +12,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.join(__dirname, "..");
 
-const sourceFile = path.join(rootDir, "backend", "data", "gauravData.json");
+const sourceFile = path.join(rootDir, "data", "portfolioData.json");
 const targets = [
-  path.join(rootDir, "public", "data", "gauravData.json"),
-  path.join(rootDir, "api", "data", "gauravData.json"),
+  path.join(rootDir, "backend", "data", "portfolioData.json"),
+  path.join(rootDir, "public", "data", "portfolioData.json"),
+  path.join(rootDir, "api", "data", "portfolioData.json"),
 ];
 
 const readSource = () => {

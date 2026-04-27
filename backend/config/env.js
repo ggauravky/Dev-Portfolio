@@ -62,6 +62,12 @@ const validateEnvironment = ({ strict = true } = {}) => {
     );
   }
 
+  if (!hasValue(process.env.DEEPSEEK_API_KEY)) {
+    warnings.push(
+      "DEEPSEEK_API_KEY is missing. The portfolio chatbot endpoint will return a temporary failure message."
+    );
+  }
+
   const cashfreeEnv = normalizeEnv(process.env.CASHFREE_ENV).toUpperCase();
   if (paymentGatewayEnabled && !["SANDBOX", "PRODUCTION"].includes(cashfreeEnv)) {
     warnings.push(

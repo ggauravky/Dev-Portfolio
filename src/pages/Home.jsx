@@ -87,10 +87,6 @@ function Home() {
                                 </span>
                             </h1>
 
-                            <h2 className="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto lg:mx-0">
-                                BCA student at BBD University (BBDU), building practical AI/ML and MERN solutions from Lucknow, Uttar Pradesh, India.
-                            </h2>
-
                             {/* Role Tags - Compact inline pills */}
                             <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
                                 {/* Python Developer */}

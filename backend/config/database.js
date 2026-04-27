@@ -49,7 +49,7 @@ const connectDatabase = async (retries = 3) => {
     }
 
     // ⚠️  Non-fatal: log the failure but do NOT exit.
-    // Routes that don't need MongoDB (e.g. /api/chat) will keep working.
+    // Routes that don't need MongoDB (e.g. /api/chatbot) will keep working.
     logger.warn(
       "MongoDB unavailable. Server will run in limited mode (chat API still works)."
     );

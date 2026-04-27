@@ -54,11 +54,15 @@ function Lab() {
                             <svg className="w-8 h-8 mb-3 text-blue-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg>
                             <h3 className="text-white font-semibold text-lg mb-1">AI Chatbot</h3>
                             <p className="text-slate-400 text-sm leading-relaxed">
-                                This module is temporarily under maintenance while response quality and stability are being improved.
+                                Ask portfolio-focused questions about projects, skills, services, blogs, and Gaurav's journey with a RAG-powered assistant.
                             </p>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                <span className="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-300 rounded-full border border-blue-500/20">DeepSeek</span>
+                                <span className="text-xs px-2 py-0.5 bg-cyan-500/10 text-cyan-300 rounded-full border border-cyan-500/20">Local JSON RAG</span>
+                            </div>
                         </div>
-                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-amber-600/20 text-amber-300 rounded-full border border-amber-500/30 font-semibold">
-                            Under Maintenance
+                        <span className="absolute top-4 right-4 text-xs px-2 py-1 bg-emerald-600/20 text-emerald-300 rounded-full border border-emerald-500/30 font-semibold">
+                            Live
                         </span>
                     </Link>
 
