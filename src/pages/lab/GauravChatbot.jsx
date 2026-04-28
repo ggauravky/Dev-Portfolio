@@ -15,6 +15,13 @@ const SUGGESTED_QUESTIONS = [
     'What services do you offer?',
 ]
 
+const MAINTENANCE_OPTIONS = [
+    'Show me your top projects',
+    'What services do you offer?',
+    'Share your availability and work style',
+    'How can I contact you?',
+]
+
 const buildId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 
 const createMessage = (role, content, extra = {}) => ({
@@ -93,6 +100,7 @@ function GauravChatbot() {
     const [messages, setMessages] = useState(readInitialMessages)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [showMaintenance, setShowMaintenance] = useState(true)
     const [sessionId] = useState(readSessionId)
 
     const textareaRef = useRef(null)
@@ -245,6 +253,12 @@ function GauravChatbot() {
         }
     }
 
+    const handleMaintenanceOption = (text) => {
+        setInput(text)
+        setShowMaintenance(false)
+        textareaRef.current?.focus()
+    }
+
     return (
         <>
             <style>{`
@@ -266,10 +280,153 @@ function GauravChatbot() {
                     border-radius: 999px;
                 }
 
+                .maintenance-backdrop {
+                    background:
+                        radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.14), transparent 38%),
+                        radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.16), transparent 42%),
+                        rgba(2, 6, 23, 0.82);
+                }
+
+                .maintenance-dialog {
+                    position: relative;
+                    overflow: hidden;
+                }
+
+                .maintenance-dialog::before {
+                    content: '';
+                    position: absolute;
+                    inset: -40% 10% 30% -30%;
+                    background: conic-gradient(from 120deg, rgba(34, 211, 238, 0.25), rgba(59, 130, 246, 0.15), rgba(168, 85, 247, 0.25));
+                    opacity: 0.65;
+                    filter: blur(40px);
+                }
+
+                .maintenance-dialog::after {
+                    content: '';
+                    position: absolute;
+                    inset: 1px;
+                    border-radius: 24px;
+                    background:
+                        linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.92)),
+                        linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(2, 6, 23, 0.9));
+                }
+
+                .maintenance-content {
+                    position: relative;
+                    z-index: 1;
+                }
+
                 /* ensure bottom input area respects device safe area (notch) */
                 .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
                 .input-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
             `}</style>
+
+            {showMaintenance && (
+                <div className="maintenance-backdrop fixed inset-0 z-30 flex items-center justify-center px-4 py-6 backdrop-blur-sm">
+                    <dialog
+                        open
+                        className="maintenance-dialog w-full max-w-3xl rounded-[28px] border border-slate-800/80 p-1 shadow-[0_30px_120px_rgba(2,6,23,0.65)]"
+                        aria-label="Maintenance notice"
+                    >
+                        <div className="maintenance-content max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-[24px] border border-white/5 bg-slate-950/80 p-5 sm:p-6">
+                            <div className="flex flex-wrap items-start justify-between gap-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-semibold text-white shadow-lg shadow-cyan-900/40">
+                                        UP
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+                                            Maintenance Notice
+                                        </p>
+                                        <h2 className="mt-2 text-lg font-semibold text-slate-100 sm:text-xl">
+                                            Upgrading the portfolio assistant
+                                        </h2>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowMaintenance(false)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:border-cyan-500/40 hover:text-cyan-200"
+                                    aria-label="Close maintenance notice"
+                                >
+                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="mt-5 grid gap-6 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                                <div className="space-y-4">
+                                    <p className="text-sm leading-6 text-slate-300">
+                                        We are improving response quality. For now, answers can be shorter or less detailed.
+                                        You can still explore verified portfolio answers safely.
+                                    </p>
+
+                                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/60 p-4">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                            What you can do now
+                                        </p>
+                                        <div className="mt-3 space-y-2 text-sm text-slate-200">
+                                            <div className="flex items-start gap-2">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-cyan-400" />
+                                                <span>Browse top projects and impact highlights.</span>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-blue-400" />
+                                                <span>See services, timelines, and ideal engagement fit.</span>
+                                            </div>
+                                            <div className="flex items-start gap-2">
+                                                <span className="mt-1 h-2 w-2 rounded-full bg-violet-400" />
+                                                <span>Ask about availability or preferred work style.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                                        <span className="rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-1">
+                                            Safe responses only
+                                        </span>
+                                        <span className="rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-1">
+                                            No hallucinated info
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-slate-900/60 via-slate-950/70 to-slate-950/90 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                                            Quick options
+                                        </p>
+                                        <span className="text-[11px] text-slate-400">Tap to prefill</span>
+                                    </div>
+                                    <div className="mt-3 grid gap-2">
+                                        {MAINTENANCE_OPTIONS.map((option) => (
+                                            <button
+                                                key={option}
+                                                onClick={() => handleMaintenanceOption(option)}
+                                                className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-left text-sm text-cyan-100 transition hover:-translate-y-0.5 hover:border-cyan-400/50 hover:bg-cyan-500/20"
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                                <div className="text-xs text-slate-500">
+                                    Thanks for your patience. Full-quality mode is returning soon.
+                                </div>
+                                <button
+                                    onClick={() => setShowMaintenance(false)}
+                                    className="rounded-full border border-slate-700 px-5 py-2 text-sm text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-100"
+                                >
+                                    Continue anyway
+                                </button>
+                            </div>
+                        </div>
+                    </dialog>
+                </div>
+            )}
 
             <div className="chat-shell flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden">
                 <header className="border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-xl">
