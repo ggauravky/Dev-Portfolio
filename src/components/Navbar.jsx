@@ -182,7 +182,7 @@ function Navbar() {
             <nav className={`w-[94%] max-w-7xl mx-auto z-50 transition-all duration-500`}>
                 <div className={`px-5 py-3 rounded-full border transition-all duration-300 backdrop-blur-md ${
                     scrolled
-                        ? 'shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95 max-w-5xl mx-auto'
+                        ? 'shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95 max-w-6xl mx-auto'
                         : 'shadow-xl shadow-black/20 bg-obsidian-card/75 border-obsidian-border/50 max-w-7xl'
                 }`}>
                     <div className="flex items-center justify-between">
