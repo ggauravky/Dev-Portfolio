@@ -12,12 +12,13 @@ import StickyMobileCTA from '../components/StickyMobileCTA'
 
 function SectionCard({ title, items }) {
     return (
-        <div className="rounded-2xl border border-slate-700/70 bg-slate-800/60 p-5 sm:p-6">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-100 mb-4">{title}</h3>
-            <ul className="space-y-3">
+        <div className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+            <h3 className="text-lg sm:text-xl font-display font-bold uppercase text-white mb-6 border-b border-obsidian-border pb-4">{title}</h3>
+            <ul className="space-y-4">
                 {items.map((item) => (
-                    <li key={item} className="text-slate-300 text-sm sm:text-base flex gap-2.5 leading-relaxed">
-                        <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+                    <li key={item} className="text-zinc-300 text-sm sm:text-base flex items-start gap-2.5 leading-relaxed">
+                        <span className="text-toxic font-mono shrink-0 select-none">→</span>
                         <span>{item}</span>
                     </li>
                 ))}
@@ -37,17 +38,17 @@ function PricingFaq({ items }) {
     }
 
     return (
-        <div className="mt-4 rounded-xl border border-slate-700/70 bg-slate-900/60 p-3.5">
-            <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Pricing Micro-FAQ</p>
-            <div className="space-y-2">
+        <div className="mt-6 rounded-lg border border-obsidian-border bg-obsidian/50 p-4">
+            <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-3">// Pricing Micro-FAQ</p>
+            <div className="space-y-2.5">
                 {items.map((item) => (
-                    <details key={item.question} className="group rounded-lg border border-slate-700/70 bg-slate-800/60 px-3 py-2.5">
-                        <summary className="cursor-pointer list-none text-xs text-slate-200 font-semibold flex items-center justify-between gap-2">
+                    <details key={item.question} className="group rounded border border-obsidian-border bg-obsidian-card px-4 py-3">
+                        <summary className="cursor-pointer list-none text-xs text-zinc-200 font-semibold flex items-center justify-between gap-2">
                             <span>{item.question}</span>
-                            <span className="text-slate-400 group-open:hidden">+</span>
-                            <span className="text-slate-400 hidden group-open:inline">-</span>
+                            <span className="text-zinc-500 group-open:hidden">+</span>
+                            <span className="text-zinc-500 hidden group-open:inline">-</span>
                         </summary>
-                        <p className="mt-2 text-xs text-slate-400 leading-relaxed">{item.answer}</p>
+                        <p className="mt-2.5 text-xs text-zinc-400 leading-relaxed font-mono">{item.answer}</p>
                     </details>
                 ))}
             </div>
@@ -91,69 +92,73 @@ function ServiceDetail({ forcedSlug = '' }) {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-24 right-0 w-[420px] h-[420px] rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 left-0 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+        <main className="service-detail-page min-h-screen bg-obsidian relative overflow-x-hidden w-full">
+            {/* Ambient background */}
+            <div className="absolute inset-0 pointer-events-none z-0">
+                <div className="absolute top-40 right-0 w-[420px] h-[420px] rounded-full bg-toxic/5 blur-3xl" />
+                <div className="absolute bottom-40 left-0 w-[420px] h-[420px] rounded-full bg-cyber/5 blur-3xl" />
+            </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28">
+                {/* Back button */}
                 <div className="mb-8 sm:mb-10">
                     <Link
                         to="/services"
-                        className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
+                        className="inline-flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-toxic transition-colors uppercase tracking-wider"
                     >
-                        <span>←</span>
-                        <span>Back to Services</span>
+                        <span>← Back to Services</span>
                     </Link>
                 </div>
 
-                <section className="rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/70 via-slate-900/80 to-slate-900/90 p-6 sm:p-8 lg:p-10 mb-8 sm:mb-10">
-                    <div className="flex flex-wrap items-center gap-3 mb-5">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
+                <section className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-10 lg:p-12 mb-8 sm:mb-10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+                    <div className="relative z-10 flex flex-wrap items-center gap-2 mb-6">
+                        <span className="px-2.5 py-1 bg-toxic text-obsidian text-[10px] font-mono font-bold rounded uppercase border border-obsidian whitespace-nowrap">
                             {service.category}
                         </span>
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+                        <span className="px-2.5 py-1 bg-cyber text-obsidian text-[10px] font-mono font-bold rounded uppercase border border-obsidian whitespace-nowrap">
                             Secure Booking
                         </span>
                         {service.badge ? (
-                            <span className="px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase border border-blue-500/30 bg-blue-500/10 text-blue-300">
+                            <span className="px-2.5 py-1 bg-obsidian border border-obsidian-border text-zinc-400 text-[10px] font-mono font-bold rounded uppercase whitespace-nowrap">
                                 {service.badge}
                             </span>
                         ) : null}
                     </div>
 
-                    <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-                        <div className="lg:col-span-2">
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-slate-100 mb-4">
+                    <div className="grid lg:grid-cols-3 gap-8 items-start relative z-10">
+                        <div className="lg:col-span-2 space-y-6">
+                            <h1 className="text-3xl sm:text-4xl lg:text-6xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter text-white">
                                 {service.title}
                             </h1>
-                            <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-3xl">
+                            <p className="text-zinc-300 text-base sm:text-lg leading-relaxed">
                                 {service.summary}
                             </p>
                             {service.outcomePromise ? (
-                                <div className="mt-4 inline-flex items-start rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-2.5 text-sm text-cyan-100">
-                                    {service.outcomePromise}
+                                <div className="inline-flex items-start rounded border border-toxic/20 bg-toxic/5 px-4 py-3 text-xs sm:text-sm font-semibold text-toxic font-mono">
+                                    // {service.outcomePromise}
                                 </div>
                             ) : null}
 
-                            <div className="mt-5 grid sm:grid-cols-2 gap-3.5">
-                                <div className="rounded-2xl border border-slate-700/70 bg-slate-900/45 p-4">
-                                    <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Who this is for</p>
+                            <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5">
+                                    <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-3">// Who this is for</p>
                                     <ul className="space-y-2">
                                         {(service.whoThisIsFor || service.bestFor || []).slice(0, 3).map((item) => (
-                                            <li key={item} className="text-sm text-slate-300 flex gap-2.5 leading-relaxed">
-                                                <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+                                            <li key={item} className="text-xs sm:text-sm text-zinc-300 flex items-start gap-2 leading-relaxed">
+                                                <span className="text-toxic font-mono shrink-0">→</span>
                                                 <span>{item}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
 
-                                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4">
-                                    <p className="text-[11px] uppercase tracking-widest text-emerald-300 mb-2">Expected result</p>
+                                <div className="rounded border border-emerald-500/20 bg-emerald-500/5 p-5">
+                                    <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 mb-3">// Expected result</p>
                                     <ul className="space-y-2">
                                         {(service.expectedResults || []).slice(0, 3).map((item) => (
-                                            <li key={item} className="text-sm text-emerald-100 flex gap-2.5 leading-relaxed">
-                                                <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-emerald-300" />
+                                            <li key={item} className="text-xs sm:text-sm text-emerald-200 flex items-start gap-2 leading-relaxed">
+                                                <span className="text-emerald-400 font-mono shrink-0">→</span>
                                                 <span>{item}</span>
                                             </li>
                                         ))}
@@ -161,17 +166,17 @@ function ServiceDetail({ forcedSlug = '' }) {
                                 </div>
                             </div>
 
-                            <div className="mt-3.5 rounded-2xl border border-blue-500/25 bg-blue-500/10 p-4">
-                                <div className="grid sm:grid-cols-2 gap-3.5">
+                            <div className="rounded border border-cyber/20 bg-cyber/5 p-6">
+                                <div className="grid sm:grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-[11px] uppercase tracking-widest text-blue-300 mb-1.5">Delivery window</p>
-                                        <p className="text-sm text-blue-100 leading-relaxed">{service.deliveryWindow || service.timeline}</p>
+                                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyber mb-1.5">// Delivery window</p>
+                                        <p className="text-sm text-white font-semibold leading-relaxed">{service.deliveryWindow || service.timeline}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[11px] uppercase tracking-widest text-blue-300 mb-1.5">Exact deliverables</p>
-                                        <ul className="space-y-1.5">
+                                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-cyber mb-1.5">// Exact deliverables</p>
+                                        <ul className="space-y-1 text-xs text-zinc-300">
                                             {(service.exactDeliverables || service.deliverables || []).slice(0, 2).map((item) => (
-                                                <li key={item} className="text-sm text-blue-100 leading-relaxed">• {item}</li>
+                                                <li key={item} className="leading-relaxed">• {item}</li>
                                             ))}
                                         </ul>
                                     </div>
@@ -179,28 +184,30 @@ function ServiceDetail({ forcedSlug = '' }) {
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/60 p-5 sm:p-6">
-                            <p className="text-xs uppercase tracking-widest text-slate-500 mb-1">Pricing</p>
-                            <p className="text-2xl sm:text-3xl font-extrabold text-cyan-300">{service.priceLabel}</p>
-                            <p className="text-xs text-slate-400 mt-3">Secure checkout via Cashfree. Supports UPI, cards, and netbanking.</p>
+                        <div className="rounded-lg border border-obsidian-border bg-obsidian/45 p-6 space-y-4">
+                            <div>
+                                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-1">// Pricing</p>
+                                <p className="text-3xl font-display font-black text-toxic">{service.priceLabel}</p>
+                            </div>
+                            <p className="text-xs text-zinc-400 font-mono leading-relaxed">// Secure checkout via Cashfree. UPI, cards, and netbanking supported.</p>
 
-                            <div className="mt-4 grid grid-cols-1 gap-2">
-                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">No card or UPI PIN stored on this portfolio</div>
-                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Verification done on backend before confirmation</div>
+                            <div className="grid grid-cols-1 gap-2 pt-2 text-[10px] font-mono uppercase text-zinc-500">
+                                <div className="rounded border border-obsidian-border bg-obsidian px-3 py-2">No payment pin stored here</div>
+                                <div className="rounded border border-obsidian-border bg-obsidian px-3 py-2">Manual check before confirmation</div>
                             </div>
 
                             <PricingFaq items={service.pricingFaq || []} />
 
-                            <div className="mt-5 flex flex-col gap-3">
+                            <div className="flex flex-col gap-2.5 pt-4">
                                 <Link
                                     to={`/booknow?service=${service.slug}`}
-                                    className="inline-flex justify-center items-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.02]"
+                                    className="w-full text-center bg-toxic hover:bg-white text-obsidian font-bold px-4 py-3.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
                                 >
                                     Book This Service
                                 </Link>
                                 <Link
                                     to="/projects"
-                                    className="inline-flex justify-center items-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-200 border border-slate-700 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                    className="w-full text-center border border-zinc-850 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-4 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
                                 >
                                     See Related Projects
                                 </Link>
@@ -208,7 +215,7 @@ function ServiceDetail({ forcedSlug = '' }) {
                                     href="https://github.com/ggauravky"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex justify-center items-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-200 border border-slate-700 hover:border-slate-500 hover:text-white transition-colors"
+                                    className="w-full text-center border border-zinc-850 hover:border-cyber text-zinc-300 hover:text-cyber font-bold px-4 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
                                 >
                                     View GitHub Work
                                 </a>
@@ -217,71 +224,74 @@ function ServiceDetail({ forcedSlug = '' }) {
                     </div>
                 </section>
 
-                <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 sm:mb-10">
-                    <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 p-4">
-                        <p className="text-[11px] uppercase tracking-widest text-slate-500">Step 1</p>
-                        <p className="text-sm text-slate-200 mt-1">Review full service details and confirm fit</p>
+                <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 sm:mb-10">
+                    <div className="rounded border border-obsidian-border bg-obsidian-card p-5">
+                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500">// Step 1</p>
+                        <p className="text-sm font-semibold text-white mt-1">Review full service details and confirm fit</p>
                     </div>
-                    <div className="rounded-xl border border-slate-700/70 bg-slate-800/60 p-4">
-                        <p className="text-[11px] uppercase tracking-widest text-slate-500">Step 2</p>
-                        <p className="text-sm text-slate-200 mt-1">Book securely with your preferred schedule</p>
+                    <div className="rounded border border-obsidian-border bg-obsidian-card p-5">
+                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500">// Step 2</p>
+                        <p className="text-sm font-semibold text-white mt-1">Book securely with your preferred schedule</p>
                     </div>
-                    <div className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 p-4">
-                        <p className="text-[11px] uppercase tracking-widest text-cyan-300">Step 3</p>
-                        <p className="text-sm text-cyan-100 mt-1">Get confirmation and start execution quickly</p>
+                    <div className="rounded border border-toxic/20 bg-toxic/5 p-5">
+                        <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-toxic">// Step 3</p>
+                        <p className="text-sm font-semibold text-toxic mt-1">Get confirmation and start execution quickly</p>
                     </div>
                 </section>
 
-                <section className="grid md:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
+                <section className="grid md:grid-cols-2 gap-6 mb-8 sm:mb-10">
                     <SectionCard title="What You Get" items={service.exactDeliverables || service.deliverables} />
                     <SectionCard title="Core Features" items={service.features} />
                     <SectionCard title="What You Need to Provide" items={service.youProvide} />
                     <SectionCard title="Best For" items={service.whoThisIsFor || service.bestFor} />
                 </section>
 
-                <section className="rounded-2xl border border-slate-700/70 bg-slate-800/55 p-6 sm:p-7 mb-8 sm:mb-10">
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-3">Process and Trust</h2>
-                    <div className="grid lg:grid-cols-2 gap-5 sm:gap-6">
-                        <ul className="space-y-3 text-slate-300 text-sm sm:text-base">
-                            <li className="flex gap-2.5"><span className="text-cyan-400">01</span><span>Scope confirmation before execution</span></li>
-                            <li className="flex gap-2.5"><span className="text-cyan-400">02</span><span>Transparent communication and status updates</span></li>
-                            <li className="flex gap-2.5"><span className="text-cyan-400">03</span><span>Delivery focused on production quality</span></li>
-                            <li className="flex gap-2.5"><span className="text-cyan-400">04</span><span>Clear handover, notes, and actionable next steps</span></li>
-                        </ul>
-                        <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 sm:p-5">
-                            <p className="text-sm text-slate-300 leading-relaxed">
-                                Timeline: {service.timeline}
-                            </p>
-                            <p className="text-xs text-slate-400 mt-3">
-                                For confidence, check my work quality in the Projects section and public repositories before booking.
-                            </p>
-                            <div className="mt-4 grid grid-cols-1 gap-2">
-                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Data is used only for booking and delivery communication</div>
-                                <div className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-3 py-2 text-xs text-slate-300">Payment confirmation is verified before service is marked booked</div>
+                <section className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-8 mb-8 sm:mb-10">
+                    <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+                    <div className="relative z-10">
+                        <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white mb-6 border-b border-obsidian-border pb-4">// Process and Trust</h2>
+                        <div className="grid lg:grid-cols-2 gap-6">
+                            <ul className="space-y-4 text-zinc-300 text-sm sm:text-base">
+                                <li className="flex gap-2.5"><span className="text-toxic font-mono">01</span><span>Scope confirmation before execution</span></li>
+                                <li className="flex gap-2.5"><span className="text-toxic font-mono">02</span><span>Transparent communication and status updates</span></li>
+                                <li className="flex gap-2.5"><span className="text-toxic font-mono">03</span><span>Delivery focused on production quality</span></li>
+                                <li className="flex gap-2.5"><span className="text-toxic font-mono">04</span><span>Clear handover, notes, and actionable next steps</span></li>
+                            </ul>
+                            <div className="rounded border border-obsidian-border bg-obsidian p-5 space-y-4">
+                                <p className="text-sm font-semibold text-white leading-relaxed">
+                                    Timeline: {service.timeline}
+                                </p>
+                                <p className="text-xs text-zinc-400 leading-relaxed font-mono">
+                                    // For confidence, check my work quality in the Projects section and public repositories before booking.
+                                </p>
+                                <div className="grid grid-cols-1 gap-2 pt-2 text-[10px] font-mono uppercase text-zinc-500">
+                                    <div className="rounded border border-obsidian-border bg-obsidian-card px-3 py-2">Data is used only for booking and delivery communication</div>
+                                    <div className="rounded border border-obsidian-border bg-obsidian-card px-3 py-2">Payment confirmation is verified before service is marked booked</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
                 {service.proofArtifact ? (
-                    <section className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-slate-900 to-slate-800 p-6 sm:p-7 mb-8 sm:mb-10">
-                        <p className="text-[11px] uppercase tracking-widest text-cyan-300 mb-2">Proof Artifact</p>
-                        <h2 className="text-xl sm:text-2xl font-bold text-slate-100">Validate Before You Book</h2>
-                        <p className="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
+                    <section className="relative overflow-hidden rounded-lg border border-cyber/20 bg-cyber/5 p-6 sm:p-8 mb-8 sm:mb-10">
+                        <p className="text-[10px] font-mono font-bold text-cyber uppercase tracking-widest mb-2">// Proof Artifact</p>
+                        <h2 className="text-2xl font-display font-bold uppercase text-white mb-2">Validate Before You Book</h2>
+                        <p className="text-zinc-300 text-sm sm:text-base mt-2 leading-relaxed">
                             {service.proofArtifact.summary}
                         </p>
-                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+                        <div className="mt-6 flex flex-wrap gap-4 max-w-2xl">
                             <a
                                 href={service.proofArtifact.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                                className="group relative px-6 py-3 bg-cyber text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 text-center overflow-hidden inline-flex items-center justify-center font-mono"
                             >
                                 {service.proofArtifact.label}
                             </a>
                             <Link
                                 to="/projects"
-                                className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                className="group relative px-6 py-3 border border-zinc-700 hover:border-cyber rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-cyber hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyber/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
                             >
                                 Open Live Project Gallery
                             </Link>
@@ -289,21 +299,21 @@ function ServiceDetail({ forcedSlug = '' }) {
                     </section>
                 ) : null}
 
-                <section className="rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-slate-800/80 via-slate-900/90 to-slate-800/80 p-6 sm:p-8 text-center">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-100 mb-3">Ready to Start {service.title}?</h2>
-                    <p className="text-slate-300 max-w-2xl mx-auto">
+                <section className="relative overflow-hidden rounded-lg border border-toxic/20 bg-toxic/5 p-8 text-center">
+                    <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white mb-3">Ready to Start {service.title}?</h2>
+                    <p className="text-zinc-400 text-sm max-w-2xl mx-auto leading-relaxed mb-6">
                         Go to the Services page and book securely. If you want to evaluate my experience first, explore projects and GitHub profile.
                     </p>
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+                    <div className="flex flex-wrap gap-4 justify-center">
                         <Link
                             to={`/booknow?service=${service.slug}`}
-                            className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                            className="group relative px-6 py-3 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 text-center overflow-hidden inline-flex items-center justify-center font-mono"
                         >
                             Book This Service
                         </Link>
                         <Link
                             to="/projects"
-                            className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-semibold text-slate-200 border border-slate-700 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                            className="group relative px-6 py-3 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
                         >
                             Open Projects
                         </Link>
@@ -319,7 +329,7 @@ function ServiceDetail({ forcedSlug = '' }) {
                     secondaryTo="/contact"
                 />
             </div>
-        </div>
+        </main>
     )
 }
 

@@ -233,26 +233,26 @@ function ImageAnalyzer() {
     }, [imageReady, isAnalyzing, previewUrl])
 
     const modelBadge = useMemo(() => {
-        if (modelState === 'ready') return { label: 'Model Ready', cls: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10' }
-        if (modelState === 'loading') return { label: 'Loading Model', cls: 'text-amber-300 border-amber-500/40 bg-amber-500/10' }
-        if (modelState === 'error') return { label: 'Model Error', cls: 'text-rose-300 border-rose-500/40 bg-rose-500/10' }
-        return { label: 'Model Idle', cls: 'text-slate-300 border-slate-500/30 bg-slate-700/30' }
+        if (modelState === 'ready') return { label: 'Model Ready', cls: 'text-toxic border-toxic/40 bg-toxic/10' }
+        if (modelState === 'loading') return { label: 'Loading Model', cls: 'text-amber-400 border-amber-500/40 bg-amber-500/10' }
+        if (modelState === 'error') return { label: 'Model Error', cls: 'text-rose-400 border-rose-500/40 bg-rose-500/10' }
+        return { label: 'Model Idle', cls: 'text-[#a1a1aa] border-[#1a1a22]/30 bg-[#0e0e11]/30' }
     }, [modelState])
 
     return (
-        <div className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-cyan-500/40 hover:bg-slate-800/80 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/5 to-blue-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+        <div className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg hover:border-cyber/30 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyber/5 to-toxic/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 
             <div className="relative space-y-4">
                 <div className="flex items-start justify-between gap-3">
                     <div>
-                        <svg className="w-8 h-8 text-cyan-400 mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
-                        <h3 className="text-white font-semibold text-lg">AI Image Analyzer</h3>
-                        <p className="text-slate-400 text-sm mt-1">
+                        <svg className="w-8 h-8 text-cyber mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                        <h3 className="text-white font-display font-bold text-lg uppercase tracking-tight">AI Image Analyzer</h3>
+                        <p className="text-[#a1a1aa] text-sm mt-1">
                             Real MobileNet classification in-browser with TensorFlow.js.
                         </p>
                     </div>
-                    <span className={`text-xs px-2 py-1 rounded-full border ${modelBadge.cls}`}>
+                    <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-1 rounded-md border ${modelBadge.cls}`}>
                         {modelBadge.label}
                     </span>
                 </div>
@@ -265,7 +265,7 @@ function ImageAnalyzer() {
                     className="hidden"
                 />
 
-                <div className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
+                <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-3">
                     {previewUrl ? (
                         <div className="space-y-3">
                             <img
@@ -277,15 +277,15 @@ function ImageAnalyzer() {
                                     setImageReady(false)
                                     setError('Failed to load image preview.')
                                 }}
-                                className="w-full h-44 object-cover rounded-lg border border-slate-700/70"
+                                className="w-full h-44 object-cover rounded-md border border-[#1a1a22]"
                             />
-                            <div className="text-xs text-slate-400 truncate">
+                            <div className="text-xs text-[#a1a1aa] font-mono truncate">
                                 {selectedFile?.name} · {selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB` : ''}
                             </div>
                         </div>
                     ) : (
-                        <div className="h-44 rounded-lg border border-dashed border-slate-700/70 flex items-center justify-center text-center px-4">
-                            <p className="text-slate-500 text-sm">
+                        <div className="h-44 rounded-lg border border-dashed border-[#1a1a22] flex items-center justify-center text-center px-4 bg-[#070708]">
+                            <p className="text-zinc-600 text-sm font-mono">
                                 Upload a JPG/PNG/WEBP image (max 8MB), then run analysis.
                             </p>
                         </div>
@@ -296,7 +296,7 @@ function ImageAnalyzer() {
                     <button
                         type="button"
                         onClick={openFilePicker}
-                        className="px-3 py-2 text-sm rounded-lg bg-slate-700/80 hover:bg-slate-700 text-slate-100 border border-slate-600/70 transition-colors"
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-[#1a1a22] hover:bg-[#252530] text-white border border-[#2a2a35] transition-colors"
                     >
                         {previewUrl ? 'Replace Image' : 'Upload Image'}
                     </button>
@@ -305,7 +305,7 @@ function ImageAnalyzer() {
                         type="button"
                         onClick={analyzeImage}
                         disabled={!previewUrl || !imageReady || isAnalyzing || modelState === 'loading'}
-                        className="px-3 py-2 text-sm rounded-lg bg-cyan-600/90 hover:bg-cyan-500 text-white border border-cyan-500/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-cyber text-black font-bold border border-cyber/50 hover:bg-cyber/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isAnalyzing ? 'Analyzing...' : 'Analyze'}
                     </button>
@@ -314,33 +314,33 @@ function ImageAnalyzer() {
                         type="button"
                         onClick={resetSelection}
                         disabled={isAnalyzing}
-                        className="px-3 py-2 text-sm rounded-lg bg-transparent text-slate-300 hover:text-white border border-slate-600/70 hover:border-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-transparent text-[#a1a1aa] hover:text-white border border-[#1a1a22] hover:border-[#2a2a35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Reset
                     </button>
                 </div>
 
-                <div className="text-xs text-slate-400">
-                    {statusText}
+                <div className="text-xs text-[#a1a1aa] font-mono">
+                    // {statusText}
                 </div>
 
                 {error && (
-                    <div className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
-                        {error}
+                    <div className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-md px-3 py-2 font-mono">
+                        Error: {error}
                     </div>
                 )}
 
                 {predictions.length > 0 && (
-                    <div className="rounded-xl border border-slate-700/70 bg-slate-900/70 p-3 space-y-2">
-                        <p className="text-sm text-cyan-300 font-medium">
+                    <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-3 space-y-2">
+                        <p className="text-sm text-cyber font-mono font-medium">
                             Top Prediction: {predictions[0].className}
-                            <span className="text-slate-300 font-normal"> ({formatConfidence(predictions[0].probability)})</span>
+                            <span className="text-white font-normal"> ({formatConfidence(predictions[0].probability)})</span>
                         </p>
-                        <ul className="space-y-1.5 text-sm">
+                        <ul className="space-y-1.5 text-sm font-mono">
                             {predictions.slice(0, 3).map((prediction) => (
-                                <li key={prediction.className} className="flex items-center justify-between text-slate-300">
-                                    <span className="pr-3">{prediction.className}</span>
-                                    <span className="text-cyan-300 font-medium">{formatConfidence(prediction.probability)}</span>
+                                <li key={prediction.className} className="flex items-center justify-between text-[#a1a1aa]">
+                                    <span className="pr-3 text-xs">{prediction.className}</span>
+                                    <span className="text-cyber text-xs font-medium">{formatConfidence(prediction.probability)}</span>
                                 </li>
                             ))}
                         </ul>

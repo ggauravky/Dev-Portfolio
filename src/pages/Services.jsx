@@ -25,6 +25,7 @@ function Services() {
     const coreServices = useMemo(() => allServices.filter((service) => service.category === 'Career and Growth' || service.category === 'Code and Engineering'), [allServices])
     const buildServices = useMemo(() => allServices.filter((service) => service.category === 'Build Services' || service.category === 'Specialized Guidance'), [allServices])
     const comparisonServices = useMemo(() => allServices, [allServices])
+    
     const testimonials = useMemo(() => [
         {
             quote: 'The resume review removed generic lines and improved ATS readability. I started receiving shortlist calls in the next application cycle.',
@@ -64,112 +65,112 @@ function Services() {
     ], [])
 
     return (
-        <div className="services-page min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute top-[35%] left-[42%] h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
+        <main className="services-page min-h-screen bg-obsidian relative overflow-hidden w-full">
+            {/* Background Orbs */}
+            <div className="absolute top-20 right-10 w-96 h-96 bg-toxic/5 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 left-10 w-96 h-96 bg-cyber/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-14">
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10">
+                <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-center">
                     <ScrollReveal className="space-y-6 min-w-0">
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-semibold tracking-widest uppercase">
+                        <span className="inline-flex items-center gap-2 text-toxic text-xs font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">
                             Verified Services
                         </span>
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight text-slate-100">
-                            Build With Confidence
+                        <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter text-white">
+                            Build With <span className="text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">Confidence</span>
                         </h1>
-                        <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-xl">
-                            Real services, transparent pricing, and delivery-focused execution.
-                            Explore every service in detail before booking. Available for remote work across India, with a base in Lucknow, Uttar Pradesh.
+                        <p className="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl">
+                            Real services, transparent pricing, and delivery-focused execution. Available for remote collaboration.
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="flex flex-wrap items-center gap-3">
                             <Link
                                 to="/booknow?service=fullstack-development"
-                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                                className="group relative px-6 py-3.5 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 text-center overflow-hidden inline-flex items-center justify-center font-mono"
                             >
                                 Book Service
                             </Link>
                             <Link
                                 to="/support"
-                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                                className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
                             >
                                 ❤️ Support My Work
                             </Link>
                             <Link
                                 to="/contact"
-                                className="inline-flex items-center justify-center whitespace-nowrap px-4 py-2.5 rounded-lg text-sm font-semibold border border-slate-600 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-300 transition-all duration-300"
+                                className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
                             >
                                 Contact Me
                             </Link>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
-                            <div className="rounded-full border border-slate-700/80 bg-slate-800/60 px-3 py-1.5 text-[11px] text-slate-300">
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            <div className="rounded border border-obsidian-border bg-obsidian px-3 py-1.5 text-[10px] font-mono uppercase text-zinc-400">
                                 Clear scope before payment
                             </div>
-                            <div className="rounded-full border border-slate-700/80 bg-slate-800/60 px-3 py-1.5 text-[11px] text-slate-300">
+                            <div className="rounded border border-obsidian-border bg-obsidian px-3 py-1.5 text-[10px] font-mono uppercase text-zinc-400">
                                 Mobile-friendly delivery updates
                             </div>
-                            <div className="rounded-full border border-cyan-500/35 bg-cyan-500/10 px-3 py-1.5 text-[11px] text-cyan-200">
+                            <div className="rounded border border-toxic/20 bg-toxic/5 px-3 py-1.5 text-[10px] font-mono uppercase text-toxic">
                                 Secure checkout via Cashfree
                             </div>
                         </div>
 
-                        <div className="pt-2 max-w-3xl">
-                            <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">Jump to service</p>
-                            <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                            {allServices.map((service) => (
-                                <Link
-                                    key={service.slug}
-                                    to={service.path}
-                                    className="inline-flex shrink-0 items-center justify-center whitespace-nowrap text-xs leading-none px-3 py-2 rounded-full border border-slate-700/70 bg-slate-800/65 text-slate-300 hover:text-cyan-300 hover:border-cyan-500/40 transition-all duration-300 hover:-translate-y-0.5"
-                                >
-                                    {service.title}
-                                </Link>
-                            ))}
+                        <div className="pt-4 max-w-3xl">
+                            <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-3">// Jump to service</p>
+                            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                                {allServices.map((service) => (
+                                    <Link
+                                        key={service.slug}
+                                        to={service.path}
+                                        className="inline-flex shrink-0 items-center justify-center whitespace-nowrap text-[10px] font-mono uppercase tracking-wider px-3.5 py-2.5 rounded border border-obsidian-border bg-obsidian-card text-zinc-400 hover:text-toxic hover:border-toxic/30 transition-all duration-300 hover:-translate-y-0.5"
+                                    >
+                                        {service.title}
+                                    </Link>
+                                ))}
                             </div>
                         </div>
                     </ScrollReveal>
 
                     <ScrollReveal delay={100} className="relative min-w-0">
-                        <div className="rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/70 to-slate-900/80 p-6 sm:p-8 shadow-2xl shadow-black/40">
-                            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
-                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Projects Done</p>
-                                    <p className="text-base sm:text-2xl font-bold text-cyan-300 mt-1">20+</p>
+                        <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 shadow-2xl">
+                            <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+                            <div className="grid grid-cols-2 gap-3.5 sm:gap-4 relative z-10">
+                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
+                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Projects Done</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">20+</p>
                                 </div>
-                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
-                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Quick Response</p>
-                                    <p className="text-base sm:text-2xl font-bold text-blue-300 mt-1">&lt; 24h</p>
+                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
+                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Quick Response</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">&lt; 24h</p>
                                 </div>
-                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
-                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">Secure Checkout</p>
-                                    <p className="text-base sm:text-2xl font-bold text-purple-300 mt-1">Cashfree</p>
+                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
+                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Secure Checkout</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Cashfree</p>
                                 </div>
-                                <div className="min-w-0 rounded-xl border border-slate-700 bg-slate-800/60 px-2.5 py-2 sm:p-4">
-                                    <p className="text-slate-400 text-[10px] uppercase tracking-[0.12em] leading-tight">View Details</p>
-                                    <p className="text-base sm:text-2xl font-bold text-emerald-300 mt-1">8 Detailed</p>
+                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
+                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">View Details</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">8 Detailed</p>
                                 </div>
                             </div>
-                            <p className="mt-3 sm:mt-5 text-[11px] sm:text-sm leading-relaxed text-slate-400">
-                                Every service has a detailed page with deliverables, process, and trust signals.
+                            <p className="mt-4 text-xs font-mono uppercase tracking-wider text-zinc-500 relative z-10">
+                                // Every service page lists full deliverables, process details, and trust signals.
                             </p>
                         </div>
                     </ScrollReveal>
                 </div>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-2 sm:pb-4">
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <TrustStrip variant="services" />
             </section>
 
-            <section id="core-services" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <section id="core-services" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">Career and Debug Services</h2>
-                    <p className="text-slate-400 mb-8">Affordable, practical, and execution-focused support for students and early-career developers.</p>
+                    <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Career and Debug Services</span>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold uppercase text-white mb-8">Affordable Support</h2>
                 </ScrollReveal>
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-7">
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
                     {coreServices.map((service, index) => (
                         <ScrollReveal key={service.slug} delay={index * 70}>
                             <ServiceCard service={service} />
@@ -178,12 +179,12 @@ function Services() {
                 </div>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">Build and Delivery Services</h2>
-                    <p className="text-slate-400 mb-8">Product-grade implementation with clear milestones, secure practices, and transparent communication.</p>
+                    <span className="inline-block text-cyber text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyber/5 rounded-full border border-cyber/15">Build and Delivery Services</span>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold uppercase text-white mb-8">Product Implementation</h2>
                 </ScrollReveal>
-                <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
                     {buildServices.map((service, index) => (
                         <ScrollReveal key={service.slug} delay={index * 80}>
                             <ServiceCard service={service} featured={service.slug === 'fullstack-development'} />
@@ -192,76 +193,85 @@ function Services() {
                 </div>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            {/* Comparison section */}
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
-                    <div className="rounded-3xl border border-slate-700/70 bg-slate-800/70 p-6 sm:p-8">
-                        <h3 className="text-2xl sm:text-3xl font-black text-slate-100">Service Comparison</h3>
-                        <p className="text-slate-400 text-sm sm:text-base mt-2">Pick faster by comparing price, delivery time, best fit, deliverable style, and support level.</p>
+                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
+                        <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+                        <div className="relative z-10">
+                            <h3 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white mb-2">Service Comparison</h3>
+                            <p className="text-zinc-500 font-mono text-xs uppercase tracking-wider mb-6">// Price, timeline, deliverables, and support comparison</p>
 
-                        <div className="mt-5 overflow-x-auto rounded-2xl border border-slate-700/70">
-                            <table className="min-w-[880px] w-full text-left text-sm">
-                                <thead className="bg-slate-900/80">
-                                    <tr className="text-slate-300">
-                                        <th className="px-4 py-3 font-semibold">Service</th>
-                                        <th className="px-4 py-3 font-semibold">Price</th>
-                                        <th className="px-4 py-3 font-semibold">Delivery Time</th>
-                                        <th className="px-4 py-3 font-semibold">Best For</th>
-                                        <th className="px-4 py-3 font-semibold">Deliverable</th>
-                                        <th className="px-4 py-3 font-semibold">Support Level</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {comparisonServices.map((service) => (
-                                        <tr key={service.slug} className="border-t border-slate-700/70 bg-slate-900/45 text-slate-200 align-top">
-                                            <td className="px-4 py-3.5">
-                                                <Link to={service.path} className="font-semibold text-cyan-300 hover:text-cyan-200 transition-colors">
-                                                    {service.title}
-                                                </Link>
-                                            </td>
-                                            <td className="px-4 py-3.5">{service.priceLabel}</td>
-                                            <td className="px-4 py-3.5">{service.deliveryWindow || service.timeline}</td>
-                                            <td className="px-4 py-3.5">{(service.whoThisIsFor || service.bestFor || [])[0]}</td>
-                                            <td className="px-4 py-3.5">{service.comparisonDeliverable || (service.exactDeliverables || [])[0] || 'Defined in detail page'}</td>
-                                            <td className="px-4 py-3.5">{service.supportLevel || 'Standard support'}</td>
+                            <div className="overflow-x-auto rounded border border-obsidian-border">
+                                <table className="min-w-[880px] w-full text-left text-xs font-mono">
+                                    <thead className="bg-obsidian">
+                                        <tr className="text-zinc-500 uppercase border-b border-obsidian-border font-bold">
+                                            <th className="px-4 py-4.5">Service</th>
+                                            <th className="px-4 py-4.5">Price</th>
+                                            <th className="px-4 py-4.5">Delivery Time</th>
+                                            <th className="px-4 py-4.5">Best For</th>
+                                            <th className="px-4 py-4.5">Deliverable</th>
+                                            <th className="px-4 py-4.5">Support Level</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {comparisonServices.map((service) => (
+                                            <tr key={service.slug} className="border-t border-obsidian-border bg-obsidian-card/40 text-zinc-300 align-top hover:bg-obsidian-card/75 transition-colors">
+                                                <td className="px-4 py-4">
+                                                    <Link to={service.path} className="font-display font-bold uppercase text-toxic hover:text-white transition-colors">
+                                                        {service.title}
+                                                    </Link>
+                                                </td>
+                                                <td className="px-4 py-4 font-bold text-white">{service.priceLabel}</td>
+                                                <td className="px-4 py-4">{service.deliveryWindow || service.timeline}</td>
+                                                <td className="px-4 py-4 text-zinc-400">{(service.whoThisIsFor || service.bestFor || [])[0]}</td>
+                                                <td className="px-4 py-4 text-zinc-400">{service.comparisonDeliverable || (service.exactDeliverables || [])[0] || 'Defined in detail page'}</td>
+                                                <td className="px-4 py-4">{service.supportLevel || 'Standard support'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </ScrollReveal>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            {/* Why choose me */}
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
-                    <div className="rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-slate-900 p-6 sm:p-8 lg:p-10 mb-8">
-                        <h3 className="text-2xl sm:text-3xl font-black text-slate-100 mb-5">Why choose me</h3>
-                        <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
-                            <div className="rounded-2xl border border-cyan-500/20 bg-slate-900/55 p-4 sm:p-5">
-                                <p className="text-cyan-300 text-sm font-bold uppercase tracking-widest mb-2">Execution First</p>
-                                <p className="text-slate-200 text-sm sm:text-base">Actionable delivery, not generic consultation. You get concrete outcomes and implementation guidance.</p>
-                            </div>
-                            <div className="rounded-2xl border border-blue-500/20 bg-slate-900/55 p-4 sm:p-5">
-                                <p className="text-blue-300 text-sm font-bold uppercase tracking-widest mb-2">Transparent Proof</p>
-                                <p className="text-slate-200 text-sm sm:text-base">Projects and GitHub work are public. You can verify quality before spending even one rupee.</p>
-                            </div>
-                            <div className="rounded-2xl border border-violet-500/20 bg-slate-900/55 p-4 sm:p-5">
-                                <p className="text-violet-300 text-sm font-bold uppercase tracking-widest mb-2">Clear Communication</p>
-                                <p className="text-slate-200 text-sm sm:text-base">Scope and timeline are discussed before execution. You always know what is being delivered.</p>
-                            </div>
-                            <div className="rounded-2xl border border-emerald-500/20 bg-slate-900/55 p-4 sm:p-5">
-                                <p className="text-emerald-300 text-sm font-bold uppercase tracking-widest mb-2">Secure Process</p>
-                                <p className="text-slate-200 text-sm sm:text-base">Booking flow and delivery communication are being upgraded with reliability in mind.</p>
+                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 lg:p-10 mb-8">
+                        <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none pointer-events-none"></div>
+                        <div className="relative z-10">
+                            <h3 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white mb-6">Why Choose Me</h3>
+                            <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-toxic/20 transition-all">
+                                    <p className="text-toxic text-xs font-mono font-bold uppercase tracking-widest mb-2">// Execution First</p>
+                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Actionable deliverables, not generic consultation. You get concrete outcomes and code implementation guidance.</p>
+                                </div>
+                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-cyber/20 transition-all">
+                                    <p className="text-cyber text-xs font-mono font-bold uppercase tracking-widest mb-2">// Transparent Proof</p>
+                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Projects and GitHub repositories are fully public. You can verify quality standards before booking.</p>
+                                </div>
+                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-toxic/20 transition-all">
+                                    <p className="text-toxic text-xs font-mono font-bold uppercase tracking-widest mb-2">// Clear Communication</p>
+                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Scope and milestones are aligned before payment. You always know what is being delivered.</p>
+                                </div>
+                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-cyber/20 transition-all">
+                                    <p className="text-cyber text-xs font-mono font-bold uppercase tracking-widest mb-2">// Secure Process</p>
+                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Payments are processed securely via Cashfree, with restricted data usage standards.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </ScrollReveal>
 
+                {/* Testimonials */}
                 <ScrollReveal delay={120}>
-                    <div className="rounded-3xl border border-slate-700/70 bg-slate-800/70 p-6 sm:p-8">
-                        <div className="flex items-center justify-between gap-3 mb-5">
-                            <h3 className="text-2xl sm:text-3xl font-black text-slate-100">What clients say</h3>
-                            <span className="text-xs text-slate-500 uppercase tracking-widest">Live Feedback</span>
+                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
+                        <div className="flex items-center justify-between gap-3 mb-6">
+                            <h3 className="text-xl sm:text-2xl font-display font-bold uppercase text-white">What Clients Say</h3>
+                            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// Live Feedback</span>
                         </div>
 
                         <div className="group overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
@@ -269,11 +279,15 @@ function Services() {
                                 {[...testimonials, ...testimonials].map((item, index) => (
                                     <blockquote
                                         key={`${item.name}-${index}`}
-                                        className="w-[300px] sm:w-[360px] rounded-2xl border border-slate-700 bg-slate-900/70 p-4 sm:p-5"
+                                        className="w-[300px] sm:w-[360px] rounded-lg border border-obsidian-border bg-obsidian p-5 flex flex-col justify-between"
                                     >
-                                        <p className="text-slate-200 text-sm leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
-                                        <footer className="mt-3 text-xs text-cyan-300">{item.name} · {item.role} · {item.city}</footer>
-                                        <p className="mt-2 text-[11px] text-emerald-300">Result: {item.result}</p>
+                                        <div>
+                                            <p className="text-zinc-300 text-sm leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
+                                        </div>
+                                        <div className="mt-4">
+                                            <footer className="text-xs font-mono text-toxic uppercase tracking-wider">{item.name} · {item.role}</footer>
+                                            <p className="mt-1.5 text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Result: {item.result}</p>
+                                        </div>
                                     </blockquote>
                                 ))}
                             </div>
@@ -282,45 +296,47 @@ function Services() {
                 </ScrollReveal>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+            {/* Payments Panel */}
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
-                    <div className="relative overflow-hidden rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-slate-800/85 via-slate-900/90 to-slate-900 p-6 sm:p-8">
-                        <div className="absolute -top-12 -right-12 h-36 w-36 rounded-full bg-cyan-500/15 blur-3xl pointer-events-none" />
-                        <div className="absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-10">
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
 
-                        <div className="relative z-10 grid lg:grid-cols-3 gap-6 lg:gap-7 items-start">
-                            <div className="lg:col-span-2">
-                                <p className="text-xs text-cyan-300 uppercase tracking-[0.2em] font-semibold mb-3">Secure payments and trust</p>
-                                <h3 className="text-2xl sm:text-3xl font-black text-slate-100 mb-4 leading-tight">Protected Checkout. Clear Privacy. Public Proof.</h3>
+                        <div className="relative z-10 grid lg:grid-cols-3 gap-8 items-start">
+                            <div className="lg:col-span-2 space-y-6">
+                                <div>
+                                    <p className="text-[10px] font-mono font-bold text-toxic uppercase tracking-[0.2em] mb-2">// Payments & Trust</p>
+                                    <h3 className="text-2xl sm:text-4xl font-display font-bold uppercase text-white leading-[0.95] tracking-tighter">Protected Checkout.</h3>
+                                </div>
 
-                                <div className="grid sm:grid-cols-2 gap-3.5 sm:gap-4">
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
-                                        <p className="text-cyan-300 font-semibold text-sm mb-1">Cashfree Checkout</p>
-                                        <p className="text-slate-300 text-sm">Live secure payments with UPI, cards, wallets, netbanking, and pay later.</p>
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Cashfree Checkout</p>
+                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Live secure payments with UPI, cards, wallets, netbanking, and pay later.</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
-                                        <p className="text-blue-300 font-semibold text-sm mb-1">Card data safety</p>
-                                        <p className="text-slate-300 text-sm">No card data is stored on this portfolio.</p>
+                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-cyber font-mono font-bold text-xs uppercase tracking-wider mb-1">Card Data Safety</p>
+                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">No card credentials are processed or stored on this portfolio server.</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
-                                        <p className="text-violet-300 font-semibold text-sm mb-1">Limited data usage</p>
-                                        <p className="text-slate-300 text-sm">Booking information is used only for service delivery and communication.</p>
+                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Limited Data Usage</p>
+                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Booking info is exclusively used for shipping service outcomes.</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/50 p-4">
-                                        <p className="text-emerald-300 font-semibold text-sm mb-1">Transparent credibility</p>
-                                        <p className="text-slate-300 text-sm">Public project proof available in Projects and GitHub profile.</p>
+                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-cyber font-mono font-bold text-xs uppercase tracking-wider mb-1">Credibility Proof</p>
+                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Direct code metrics and repository proofs are public in GitHub.</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-4 sm:p-5">
-                                <p className="text-slate-100 text-sm font-semibold">Verify before booking</p>
-                                <p className="text-slate-300 text-xs mt-1.5">Check live work and repository quality before making payment.</p>
+                            <div className="rounded-lg border border-cyber/20 bg-cyber/5 p-6 space-y-4">
+                                <p className="text-white font-display font-bold uppercase text-lg">Verify First</p>
+                                <p className="text-zinc-400 text-xs leading-relaxed font-mono">// Check live repository quality metrics before booking.</p>
 
-                                <div className="mt-4 grid grid-cols-1 gap-3">
+                                <div className="flex flex-col gap-3 pt-2">
                                     <Link
                                         to="/projects"
-                                        className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300 hover:scale-[1.02]"
+                                        className="w-full text-center bg-cyber hover:bg-white text-obsidian font-bold px-4 py-2.5 rounded-full transition-all duration-300 text-xs uppercase tracking-wider font-mono"
                                     >
                                         Open Projects
                                     </Link>
@@ -328,7 +344,7 @@ function Services() {
                                         href="https://github.com/ggauravky"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-400/50 hover:text-cyan-300 transition-all duration-300"
+                                        className="w-full text-center border border-zinc-850 hover:border-cyber text-zinc-300 hover:text-cyber font-bold px-4 py-2.5 rounded-full transition-all duration-300 text-xs uppercase tracking-wider font-mono"
                                     >
                                         Open GitHub
                                     </a>
@@ -336,32 +352,33 @@ function Services() {
                             </div>
                         </div>
 
-                        <div className="relative z-10 mt-5 flex items-center justify-center lg:justify-start gap-2 text-[11px] sm:text-xs text-slate-400">
-                            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                            <span>Cashfree secure checkout + minimal data handling + verifiable public work</span>
+                        <div className="relative z-10 mt-6 flex items-center justify-center lg:justify-start gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                            <span className="h-1.5 w-1.5 rounded-full bg-toxic" />
+                            <span>Cashfree Checkout + Verified Public Work Only</span>
                         </div>
                     </div>
                 </ScrollReveal>
             </section>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 sm:pb-20">
+            {/* Bottom CTA */}
+            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
                 <ScrollReveal>
-                    <div className="rounded-3xl border border-slate-700/80 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-cyan-600/10 p-8 sm:p-10 text-center">
-                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-100">Ready to build something real?</h2>
-                        <p className="text-slate-300 mt-3 max-w-2xl mx-auto">
-                            Choose any service and review full details before booking. Premium quality, clean delivery, and practical outcomes.
+                    <div className="bg-obsidian-card border border-obsidian-border rounded-lg p-8 sm:p-12 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
+                        <h2 className="text-3xl sm:text-4xl font-display font-bold uppercase text-white mb-3">Ready to Build Something Real?</h2>
+                        <p className="text-zinc-400 text-sm sm:text-base mb-8 max-w-xl mx-auto leading-relaxed">
+                            Review process details on the service page, align the scope, and begin shipping.
                         </p>
-                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+                        <div className="flex flex-wrap gap-4 justify-center">
                             <Link
                                 to="/booknow?service=fullstack-development"
-                                className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-105"
+                                className="group relative px-8 py-4 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 text-center overflow-hidden inline-flex items-center justify-center font-mono"
                             >
-                                <span>Book Now</span>
-                                <span>→</span>
+                                Book Now
                             </Link>
                             <Link
                                 to="/support"
-                                className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-400 transition-all duration-300"
+                                className="group relative px-8 py-4 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
                             >
                                 ❤️ Support My Work
                             </Link>
@@ -385,7 +402,7 @@ function Services() {
                     100% { transform: translateX(-50%); }
                 }
             `}</style>
-        </div>
+        </main>
     )
 }
 

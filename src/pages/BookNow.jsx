@@ -811,53 +811,54 @@ function BookNow() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-24 right-0 w-[420px] h-[420px] rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 left-0 w-[420px] h-[420px] rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-obsidian relative overflow-hidden">
+            {/* Ambient gradients */}
+            <div className="absolute -top-24 right-0 w-[420px] h-[420px] rounded-full bg-toxic/5 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 left-0 w-[420px] h-[420px] rounded-full bg-cyber/5 blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
                 <div className="mb-8">
-                    <Link to="/services" className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200 transition-colors">
+                    <Link to="/services" className="inline-flex items-center gap-2 text-xs font-mono tracking-wider text-slate-400 hover:text-toxic transition-colors">
                         <span>←</span>
                         <span>Back to Services</span>
                     </Link>
                 </div>
 
                 <div className="mb-6 flex flex-wrap items-center gap-2.5">
-                    <span className="inline-flex items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-300">
+                    <span className="inline-flex items-center rounded-md border border-toxic/30 bg-toxic/5 px-3 py-1 text-[10px] font-mono tracking-wider uppercase text-toxic">
                         Secure Checkout
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                    <span className="inline-flex items-center rounded-md border border-obsidian-border bg-obsidian-card/85 px-3 py-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
                         Instant Booking Confirmation
                     </span>
-                    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-300">
+                    <span className="inline-flex items-center rounded-md border border-obsidian-border bg-obsidian-card/85 px-3 py-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
                         Invitation + Calendar Download
                     </span>
                 </div>
 
                 <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
-                    <section className="lg:col-span-3 rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-900 p-6 sm:p-8">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-100">Book a Service</h1>
-                        <p className="text-slate-400 mt-2">Fill details and continue with secure Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.</p>
+                    <section className="lg:col-span-3 rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-8">
+                        <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-100 tracking-tight">Book a Service</h1>
+                        <p className="text-slate-400 mt-2 text-sm">Fill details and continue with secure Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.</p>
 
-                        <div className="mt-4 rounded-xl border border-slate-700/80 bg-slate-900/45 px-4 py-3">
-                            <p className="text-xs text-slate-400 uppercase tracking-wider">Step 1</p>
-                            <p className="text-sm text-slate-200 mt-1">Share your details and preferred schedule to create a secure payment order.</p>
+                        <div className="mt-4 rounded-md border border-obsidian-border bg-obsidian/30 px-4 py-3 font-sans">
+                            <p className="text-[10px] font-mono text-toxic uppercase tracking-wider">Step 1</p>
+                            <p className="text-sm text-slate-300 mt-1">Share your details and preferred schedule to create a secure payment order.</p>
                         </div>
 
                         {paymentFailure ? (
-                            <div className="mt-4 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                            <div className="mt-4 rounded-md border border-cyber/35 bg-cyber/10 px-4 py-3 text-sm font-mono text-cyber">
                                 {paymentFailure}
                             </div>
                         ) : null}
 
                         {requiresSignIn ? (
-                            <div className="mt-4 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-                                <p>Sign in with Google to continue. Your email is auto-filled and locked for secure booking history.</p>
+                            <div className="mt-4 rounded-md border border-toxic/35 bg-toxic/10 px-4 py-3 text-sm text-toxic/90">
+                                <p className="font-sans">Sign in with Google to continue. Your email is auto-filled and locked for secure booking history.</p>
                                 <button
                                     type="button"
                                     onClick={() => setShowSignInModal(true)}
-                                    className="mt-2 inline-flex items-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition-colors"
+                                    className="mt-2 inline-flex items-center rounded-md border border-toxic bg-toxic/10 px-3 py-1.5 text-xs font-mono font-bold tracking-wider uppercase text-toxic hover:bg-toxic hover:text-black hover:shadow-[0_0_15px_rgba(197,248,42,0.2)] transition-all"
                                 >
                                     Sign In with Google
                                 </button>
@@ -867,7 +868,7 @@ function BookNow() {
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="name" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Full Name</label>
+                                    <label htmlFor="name" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Full Name</label>
                                     <input
                                         id="name"
                                         name="name"
@@ -877,11 +878,11 @@ function BookNow() {
                                         disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Your full name"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 placeholder:text-zinc-750 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-sans text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Email</label>
+                                    <label htmlFor="email" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Email</label>
                                     <input
                                         id="email"
                                         name="email"
@@ -892,15 +893,15 @@ function BookNow() {
                                         maxLength={120}
                                         required
                                         placeholder="Sign in with Google to auto-fill"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-400 placeholder:text-zinc-750 focus:outline-none font-sans text-sm cursor-not-allowed opacity-75"
                                     />
-                                    <p className="mt-1 text-[11px] text-slate-500">Email is locked to your signed-in Google account.</p>
+                                    <p className="mt-1 text-[10px] font-mono text-slate-500">Email is locked to your signed-in Google account.</p>
                                 </div>
                             </div>
 
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="phone" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Phone</label>
+                                    <label htmlFor="phone" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Phone</label>
                                     <input
                                         id="phone"
                                         name="phone"
@@ -915,11 +916,11 @@ function BookNow() {
                                         disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="10-digit number"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 placeholder:text-zinc-750 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-mono text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="service" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Service</label>
+                                    <label htmlFor="service" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Service</label>
                                     <select
                                         id="service"
                                         name="service"
@@ -927,10 +928,10 @@ function BookNow() {
                                         onChange={handleChange}
                                         disabled={requiresSignIn || isLoading}
                                         required
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-sans text-sm"
                                     >
                                         {servicesData.map((service) => (
-                                            <option key={service.slug} value={service.slug}>
+                                            <option key={service.slug} value={service.slug} className="bg-obsidian text-slate-100">
                                                 {service.title} ({service.priceLabel})
                                             </option>
                                         ))}
@@ -940,7 +941,7 @@ function BookNow() {
 
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="preferredDate" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Preferred Date</label>
+                                    <label htmlFor="preferredDate" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Preferred Date</label>
                                     <input
                                         id="preferredDate"
                                         name="preferredDate"
@@ -950,12 +951,12 @@ function BookNow() {
                                         onChange={handleChange}
                                         disabled={requiresSignIn || isLoading}
                                         required
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-mono text-sm"
                                     />
-                                    <p className="text-xs text-slate-500 mt-1">Earliest booking is after 2 days from today.</p>
+                                    <p className="text-[10px] font-mono text-slate-500 mt-1">Earliest booking is after 2 days from today.</p>
                                 </div>
                                 <div>
-                                    <label htmlFor="preferredTime" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Preferred Time</label>
+                                    <label htmlFor="preferredTime" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Preferred Time</label>
                                     <input
                                         id="preferredTime"
                                         name="preferredTime"
@@ -964,13 +965,13 @@ function BookNow() {
                                         onChange={handleChange}
                                         disabled={requiresSignIn || isLoading}
                                         required
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-mono text-sm"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label htmlFor="projectBrief" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Project Brief</label>
+                                <label htmlFor="projectBrief" className="block text-[10px] font-mono tracking-wider uppercase text-slate-400 mb-1.5">Project Brief</label>
                                 <textarea
                                     id="projectBrief"
                                     name="projectBrief"
@@ -980,52 +981,52 @@ function BookNow() {
                                     disabled={requiresSignIn || isLoading}
                                     maxLength={1200}
                                     placeholder="Share your requirement, deadline, goals, and any important context."
-                                    className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 resize-none"
+                                    className="w-full rounded-md border border-obsidian-border bg-obsidian-light/50 px-4 py-3 text-slate-100 placeholder:text-zinc-750 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/30 transition-all font-sans text-sm resize-none"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={isSubmitting || requiresSignIn || isLoading}
-                                className="w-full rounded-xl px-5 py-3.5 font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.01]"
+                                className="w-full rounded-md border border-toxic/40 bg-toxic/10 hover:bg-toxic hover:text-black font-semibold text-toxic px-5 py-3.5 hover:shadow-[0_0_20px_rgba(197,248,42,0.25)] transition-all duration-300 uppercase tracking-wider font-mono text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic/10 disabled:hover:text-toxic disabled:hover:shadow-none"
                             >
                                 {checkoutButtonLabel}
                             </button>
                         </form>
                     </section>
 
-                    <aside className="lg:col-span-2 rounded-3xl border border-cyan-500/20 bg-slate-800/65 p-6 sm:p-7 h-fit sticky top-28">
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-300">Booking Summary</p>
-                        <h2 className="text-xl sm:text-2xl font-bold text-slate-100">{currentService.title}</h2>
-                        <p className="text-cyan-300 text-2xl font-extrabold mt-3">{currentService.priceLabel}</p>
-                        <p className="text-xs text-slate-400 mt-2">Gateway status: live via Cashfree</p>
+                    <aside className="lg:col-span-2 rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-7 h-fit sticky top-28">
+                        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-toxic">Booking Summary</p>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-100 mt-2">{currentService.title}</h2>
+                        <p className="text-cyber text-2xl font-display font-extrabold mt-3">{currentService.priceLabel}</p>
+                        <p className="text-[10px] font-mono text-slate-500 mt-2">Gateway status: live via Cashfree</p>
 
                         <ul className="mt-5 space-y-3">
                             {currentService.features.slice(0, 3).map((item) => (
-                                <li key={item} className="text-slate-300 text-sm flex gap-2">
-                                    <span className="mt-[7px] h-2 w-2 rounded-full bg-cyan-400 shrink-0" />
+                                <li key={item} className="text-slate-350 text-sm flex gap-2">
+                                    <span className="text-toxic font-mono text-xs select-none">→</span>
                                     <span>{item}</span>
                                 </li>
                             ))}
                         </ul>
 
-                        <div className="mt-6 rounded-2xl border border-slate-700 bg-slate-900/60 p-4">
-                            <p className="text-sm text-slate-200">Current update</p>
-                            <ul className="mt-2 space-y-2 text-xs text-slate-400">
-                                <li>Server-side order creation and verification enabled</li>
-                                <li>Supports UPI, cards, netbanking, wallets, and pay later</li>
-                                <li>No card or UPI PIN data is stored on this website</li>
+                        <div className="mt-6 rounded-md border border-obsidian-border bg-obsidian/45 p-4">
+                            <p className="text-xs font-mono uppercase text-slate-300">Trust & Security</p>
+                            <ul className="mt-2 space-y-2 text-[11px] font-sans text-slate-450">
+                                <li>• Server-side order creation and verification enabled</li>
+                                <li>• Supports UPI, cards, netbanking, wallets, and pay later</li>
+                                <li>• No card or UPI PIN data is stored on this website</li>
                             </ul>
                         </div>
 
                         <div className="mt-5 grid grid-cols-1 gap-2.5">
-                            <Link to="/support" className="rounded-xl border border-cyan-500/35 px-4 py-2.5 text-sm text-cyan-200 hover:border-cyan-400 hover:text-cyan-100 transition-colors text-center bg-cyan-500/5">
+                            <Link to="/support" className="rounded-md border border-toxic/30 bg-toxic/5 px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-toxic hover:bg-toxic hover:text-black transition-all text-center">
                                 Support Jar (Any Amount)
                             </Link>
-                            <Link to="/projects" className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors text-center">
+                            <Link to="/projects" className="rounded-md border border-obsidian-border px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-slate-300 hover:border-toxic/30 hover:text-toxic transition-all text-center">
                                 See Projects
                             </Link>
-                            <Link to="/contact" className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:border-slate-500 hover:text-white transition-colors text-center">
+                            <Link to="/contact" className="rounded-md border border-obsidian-border px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-slate-300 hover:border-toxic/30 hover:text-toxic transition-all text-center">
                                 Contact Me
                             </Link>
                         </div>
@@ -1046,44 +1047,44 @@ function BookNow() {
                 />
 
                 {paymentSuccess ? (
-                    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm px-4 py-8 overflow-y-auto">
-                        <div className="relative max-w-2xl mx-auto overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8">
-                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-emerald-500/20 blur-3xl" />
-                            <div className="pointer-events-none absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-cyan-500/20 blur-3xl" />
+                    <div className="fixed inset-0 z-50 bg-obsidian/85 backdrop-blur-md px-4 py-8 overflow-y-auto">
+                        <div className="relative max-w-2xl mx-auto overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-8">
+                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-toxic/10 blur-3xl" />
+                            <div className="pointer-events-none absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-cyber/10 blur-3xl" />
 
                             <div className="relative">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest uppercase text-emerald-200">
-                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-200">OK</span>
+                                <div className="inline-flex items-center gap-2 rounded-md border border-toxic/30 bg-toxic/5 px-3.5 py-1.5 text-[10px] font-mono tracking-widest uppercase text-toxic">
+                                    <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-toxic/20 text-toxic text-[9px] font-bold">✓</span>
                                     <span>Payment Confirmed</span>
                                 </div>
 
-                                <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100">Your Booking Is Confirmed</h2>
-                                <p className="mt-2 text-slate-300 text-sm sm:text-base">
+                                <h2 className="mt-4 text-2xl sm:text-3xl font-display font-bold text-slate-100 tracking-tight">Your Booking Is Confirmed</h2>
+                                <p className="mt-2 text-slate-300 text-sm">
                                     Payment verification is complete. Save your invitation and calendar file to keep session details handy.
                                 </p>
-                                <p className="mt-2 text-xs text-slate-400">
+                                <p className="mt-2 text-[11px] font-sans text-slate-450">
                                     Your confirmation PDF starts downloading automatically. Thank you for booking, and check your mail for updates.
                                 </p>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
-                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Service</p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-100">{paymentSuccess.service}</p>
+                                    <div className="rounded-md border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Service</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-200">{paymentSuccess.service}</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
-                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Session Date</p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-100">{formatDateForDisplay(paymentSuccess.preferredDate)}</p>
+                                    <div className="rounded-md border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Session Date</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-200">{formatDateForDisplay(paymentSuccess.preferredDate)}</p>
                                     </div>
-                                    <div className="rounded-2xl border border-slate-700/80 bg-slate-800/70 p-4">
-                                        <p className="text-[11px] uppercase tracking-wider text-slate-400">Session Time</p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-100">{paymentSuccess.preferredTime}</p>
+                                    <div className="rounded-md border border-obsidian-border bg-obsidian/45 p-4">
+                                        <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Session Time</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-200">{paymentSuccess.preferredTime}</p>
                                     </div>
                                 </div>
 
-                                <div className="mt-4 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300">
-                                    <p><span className="text-slate-400">Order ID:</span> {paymentSuccess.orderId}</p>
-                                    <p><span className="text-slate-400">Booking ID:</span> {paymentSuccess.bookingId}</p>
-                                    <p><span className="text-slate-400">Payment ID:</span> {paymentSuccess.paymentId}</p>
+                                <div className="mt-4 rounded-md border border-obsidian-border bg-obsidian/45 p-4 text-xs font-mono text-slate-300 space-y-1">
+                                    <p><span className="text-slate-500">Order ID:</span> {paymentSuccess.orderId}</p>
+                                    <p><span className="text-slate-500">Booking ID:</span> {paymentSuccess.bookingId}</p>
+                                    <p><span className="text-slate-500">Payment ID:</span> {paymentSuccess.paymentId}</p>
                                 </div>
 
                                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -1091,23 +1092,23 @@ function BookNow() {
                                         type="button"
                                         disabled={isDownloadingReceipt}
                                         onClick={() => downloadServiceReceiptPdf(paymentSuccess)}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase tracking-wider font-semibold text-black bg-toxic hover:bg-toxic/95 hover:shadow-[0_0_15px_rgba(197,248,42,0.25)] transition-all disabled:opacity-50"
                                     >
-                                        {isDownloadingReceipt ? 'Downloading PDF...' : 'Download Confirmation PDF'}
+                                        {isDownloadingReceipt ? 'Downloading...' : 'Download PDF'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => downloadInvitationCard(paymentSuccess)}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase tracking-wider font-semibold text-slate-200 border border-obsidian-border hover:border-toxic hover:text-toxic transition-all"
                                     >
-                                        Download Invitation Pass
+                                        Download Pass
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => downloadCalendarInvite(paymentSuccess)}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase tracking-wider font-semibold text-slate-200 border border-obsidian-border hover:border-toxic hover:text-toxic transition-all"
                                     >
-                                        Download Calendar File
+                                        Download ICS
                                     </button>
                                 </div>
 
@@ -1116,14 +1117,14 @@ function BookNow() {
                                         type="button"
                                         disabled={isDownloadingReceipt}
                                         onClick={() => downloadServiceReceiptImage(paymentSuccess)}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                        className="w-full rounded-md px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-slate-400 border border-obsidian-border hover:text-slate-200 transition-colors"
                                     >
-                                        {isDownloadingReceipt ? 'Downloading Image Receipt...' : 'Download Image Backup Receipt'}
+                                        {isDownloadingReceipt ? 'Downloading Image...' : 'Download Image Backup Receipt'}
                                     </button>
                                 </div>
 
                                 {receiptDownloadError ? (
-                                    <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                    <div className="mt-3 rounded-md border border-cyber/30 bg-cyber/5 px-3 py-2 text-xs font-mono text-cyber">
                                         {receiptDownloadError}
                                     </div>
                                 ) : null}
@@ -1132,7 +1133,7 @@ function BookNow() {
                                     <button
                                         type="button"
                                         onClick={() => copyConfirmationSummary(paymentSuccess)}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors"
+                                        className="w-full rounded-md px-4 py-2.5 text-xs font-mono uppercase tracking-wider text-toxic border border-toxic/20 bg-toxic/5 hover:bg-toxic/10 transition-colors"
                                     >
                                         Copy Booking Details
                                     </button>
@@ -1146,14 +1147,14 @@ function BookNow() {
                                             setReceiptDownloadError('')
                                             setForm((prev) => ({ ...prev, projectBrief: '' }))
                                         }}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase tracking-wider text-slate-300 border border-obsidian-border hover:text-white transition-colors"
                                     >
                                         Close
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => navigate('/services')}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase tracking-wider text-black bg-cyber hover:bg-cyber/90 hover:shadow-[0_0_15px_rgba(255,93,0,0.25)] transition-all"
                                     >
                                         Explore More Services
                                     </button>

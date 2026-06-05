@@ -6,49 +6,64 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Legal Pages Responsive Styles */
+/* Legal Pages Styling Overhaul */
 
-/* Improved list styling for mobile */
+.legal-content {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom list styling with Space Mono arrows */
 .legal-content ul {
-  @apply list-disc list-inside space-y-2 ml-2 sm:ml-4;
+  list-style-type: none;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
 }
 
 .legal-content ul li {
-  @apply text-sm sm:text-base text-slate-300 leading-relaxed;
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 0.75rem;
+  @apply text-sm sm:text-base text-[#a1a1aa] leading-relaxed;
+}
+
+.legal-content ul li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #c5f82a; /* toxic */
+  font-family: 'Space Mono', monospace;
+  font-weight: bold;
 }
 
 .legal-content ul li strong {
-  @apply text-slate-200;
+  @apply text-white font-semibold;
 }
 
-/* Section headings responsive */
+/* Headings styles */
 .legal-content h2 {
-  @apply text-xl sm:text-2xl font-bold flex items-center gap-2 flex-wrap;
-}
-
-.legal-content h2 span:first-child {
-  @apply text-2xl sm:text-3xl shrink-0;
+  @apply text-xl sm:text-2xl font-display font-bold text-white border-b border-[#1a1a22] pb-3 flex items-center gap-3 flex-wrap;
 }
 
 .legal-content h3 {
-  @apply text-base sm:text-lg font-semibold text-slate-200;
+  @apply text-base sm:text-lg font-display font-bold text-white mt-6 mb-3 uppercase tracking-wider text-xs;
 }
 
-/* Paragraphs responsive */
+/* Paragraphs */
 .legal-content p {
-  @apply text-sm sm:text-base text-slate-300 leading-relaxed;
+  @apply text-sm sm:text-base text-[#a1a1aa] leading-relaxed;
 }
 
-/* Contact boxes responsive */
-.legal-content .contact-box {
-  @apply bg-slate-800/50 p-3 sm:p-4 rounded-lg border border-slate-700/50;
-}
-
-.legal-content .contact-box p {
-  @apply text-xs sm:text-sm text-slate-300;
-}
-
-/* Links responsive */
+/* Links */
 .legal-content a {
-  @apply break-words;
+  @apply text-[#c5f82a] hover:text-[#ff5d00] transition-colors duration-200 underline underline-offset-4 decoration-toxic/30 hover:decoration-cyber/30 break-words;
+}
+
+/* Contact block inside legal pages */
+.legal-content .contact-box {
+  @apply bg-[#070708] p-5 rounded-lg border border-[#1a1a22] mt-4 font-mono text-xs text-[#a1a1aa] space-y-2;
+}
+
+.legal-content .contact-box strong {
+  @apply text-white;
 }

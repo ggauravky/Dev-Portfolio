@@ -118,18 +118,18 @@ const getStatusBadgeClass = (status) => {
     const normalized = String(status || '').trim().toLowerCase()
 
     if (normalized === 'success') {
-        return 'border-emerald-500/35 bg-emerald-500/10 text-emerald-200'
+        return 'border-[#c5f82a]/30 bg-[#c5f82a]/10 text-[#c5f82a]'
     }
 
     if (normalized === 'pending') {
-        return 'border-amber-500/35 bg-amber-500/10 text-amber-200'
+        return 'border-[#ff5d00]/30 bg-[#ff5d00]/10 text-[#ff5d00]'
     }
 
     if (normalized === 'failed') {
-        return 'border-rose-500/35 bg-rose-500/10 text-rose-200'
+        return 'border-rose-500/30 bg-rose-500/10 text-rose-300'
     }
 
-    return 'border-slate-600/60 bg-slate-800/70 text-slate-300'
+    return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa]'
 }
 
 const getFlowFromPaymentEvent = (event) => {
@@ -650,10 +650,10 @@ function ActivityTimeline() {
 
     const getTabButtonClass = (isActive) => {
         if (isActive) {
-            return 'border-cyan-400/35 bg-cyan-500/10 text-cyan-200'
+            return 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
         }
 
-        return 'border-transparent bg-slate-800/80 text-slate-300 hover:border-slate-600'
+        return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa] hover:border-[#c5f82a]/30 hover:text-white'
     }
 
     const renderPaymentCard = (card) => {
@@ -667,47 +667,47 @@ function ActivityTimeline() {
         return (
             <article
                 key={card.id}
-                className={`rounded-2xl border bg-slate-800/65 p-5 ${
+                className={`rounded-md border bg-[#0e0e11] p-6 transition-all duration-200 ${
                     isHighlighted
-                        ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
-                        : 'border-slate-700/75'
+                        ? 'border-[#c5f82a]/30 shadow-[2px_2px_0px_0px_rgba(197,248,42,0.15)]'
+                        : 'border-[#1a1a22]'
                 }`}
             >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
                                 {getEventIcon(card)}
                             </span>
-                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.title}</p>
+                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.title}</p>
                         </div>
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">
                             {flowLabel} • {formatDateTime(card.timestamp)} • {humanizeToken(card.actionType)}
                         </p>
                     </div>
-                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(statusToken)}`}>
+                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(statusToken)}`}>
                         {statusToken}
                     </span>
                 </div>
 
-                <div className="mt-3 grid gap-1 text-sm text-slate-300">
+                <div className="mt-3.5 grid gap-1.5 text-xs font-mono text-[#a1a1aa] leading-relaxed">
                     {Number.isFinite(Number(card.amount)) && Number(card.amount) > 0 ? (
-                        <p><span className="text-slate-400">Amount:</span> INR {Number(card.amount).toLocaleString('en-IN')}</p>
+                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {Number(card.amount).toLocaleString('en-IN')}</p>
                     ) : null}
-                    <p><span className="text-slate-400">Order ID:</span> {card.orderId}</p>
-                    {card.paymentId ? <p><span className="text-slate-400">Payment ID:</span> {card.paymentId}</p> : null}
-                    {card.transactionId ? <p><span className="text-slate-400">Transaction:</span> {card.transactionId}</p> : null}
+                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {card.orderId}</p>
+                    {card.paymentId ? <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {card.paymentId}</p> : null}
+                    {card.transactionId ? <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Transaction:</span> {card.transactionId}</p> : null}
                 </div>
 
                 {showReceiptActions ? (
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                         <button
                             type="button"
                             disabled={downloadingKey === pdfDownloadKey}
                             onClick={() => {
                                 void downloadReceipt({ receipt: card.receipt, format: 'pdf' })
                             }}
-                            className="rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-2.5 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20 disabled:opacity-60 transition-colors"
+                            className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 disabled:opacity-60 transition-colors"
                         >
                             {downloadingKey === pdfDownloadKey ? 'Downloading PDF...' : 'Download PDF Receipt'}
                         </button>
@@ -717,7 +717,7 @@ function ActivityTimeline() {
                             onClick={() => {
                                 void downloadReceipt({ receipt: card.receipt, format: 'image' })
                             }}
-                            className="rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-2.5 text-xs font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-60 transition-colors"
+                            className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#ff5d00] hover:border-[#ff5d00]/30 disabled:opacity-60 transition-colors"
                         >
                             {downloadingKey === imageDownloadKey ? 'Downloading Image...' : 'Download Image Receipt'}
                         </button>
@@ -725,7 +725,7 @@ function ActivityTimeline() {
                         {card.transactionId ? (
                             <Link
                                 to={`/payment-success/${encodeURIComponent(card.transactionId)}?flow=${card.flow}&orderId=${encodeURIComponent(card.orderId)}`}
-                                className="inline-flex items-center justify-center rounded-xl border border-slate-600 px-4 py-2.5 text-xs font-semibold text-slate-100 hover:border-slate-500 transition-colors"
+                                className="inline-flex items-center justify-center rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-white hover:border-white transition-colors"
                             >
                                 Open Success Page
                             </Link>
@@ -741,27 +741,27 @@ function ActivityTimeline() {
         const content = (
             <article
                 key={card.id}
-                className="rounded-2xl border border-slate-700/75 bg-slate-800/65 p-5 hover:border-cyan-500/40 transition-colors"
+                className="rounded-md border border-[#1a1a22] bg-[#0e0e11] p-6 hover:border-[#c5f82a]/30 transition-colors duration-200"
             >
                 <div className="flex items-start justify-between gap-3">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
                                 {getEventIcon(card)}
                             </span>
-                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.metadata?.blogTitle}</p>
+                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.metadata?.blogTitle}</p>
                         </div>
-                        <p className="mt-1 text-xs text-slate-400">Supported on {formatDateTime(card.timestamp)}</p>
+                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">Supported on {formatDateTime(card.timestamp)}</p>
                     </div>
-                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
+                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
                         supported
                     </span>
                 </div>
 
-                <div className="mt-3 text-sm text-slate-300">
-                    <p><span className="text-slate-400">Post:</span> {card.metadata?.blogTitle}</p>
+                <div className="mt-3.5 text-xs font-mono text-[#a1a1aa] leading-relaxed space-y-1">
+                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Post:</span> {card.metadata?.blogTitle}</p>
                     {Number(card.metadata?.supportCount) > 0 ? (
-                        <p><span className="text-slate-400">Supporters:</span> {Number(card.metadata.supportCount).toLocaleString('en-IN')}</p>
+                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Supporters:</span> {Number(card.metadata.supportCount).toLocaleString('en-IN')}</p>
                     ) : null}
                 </div>
             </article>
@@ -783,23 +783,23 @@ function ActivityTimeline() {
         const isNewUser = Boolean(card.metadata?.isNewUser)
 
         return (
-            <article key={card.id} className="rounded-2xl border border-slate-700/75 bg-slate-800/65 p-5">
+            <article key={card.id} className="rounded-md border border-[#1a1a22] bg-[#0e0e11] p-6">
                 <div className="flex items-start justify-between gap-3">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 text-[10px] text-slate-200">
+                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
                                 {getEventIcon(card)}
                             </span>
-                            <p className="text-base sm:text-lg font-semibold text-slate-100">{card.title}</p>
+                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.title}</p>
                         </div>
-                        <p className="mt-1 text-xs text-slate-400">{provider} • {formatDateTime(card.timestamp)}</p>
+                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">{provider} • {formatDateTime(card.timestamp)}</p>
                     </div>
-                    <span className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
+                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
                         success
                     </span>
                 </div>
 
-                <div className="mt-3 text-sm text-slate-300">
+                <div className="mt-3.5 text-xs font-mono text-[#a1a1aa] leading-relaxed">
                     <p>{isNewUser ? 'First sign-in for this account.' : 'Returning account sign-in completed.'}</p>
                 </div>
             </article>
@@ -820,8 +820,8 @@ function ActivityTimeline() {
 
     if (isLoading || isPageLoading) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
-                <div className="rounded-2xl border border-slate-700 bg-slate-800/70 px-6 py-5 text-slate-200">
+            <div className="min-h-screen bg-[#070708] flex items-center justify-center px-4">
+                <div className="rounded-md border border-[#1a1a22] bg-[#16161a] px-6 py-5 text-[#a1a1aa] font-mono text-xs uppercase tracking-wider">
                     Loading activity timeline...
                 </div>
             </div>
@@ -830,16 +830,16 @@ function ActivityTimeline() {
 
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-slate-900 px-4 py-16">
-                <div className="mx-auto max-w-3xl rounded-3xl border border-slate-700 bg-slate-800/70 p-8 text-center">
-                    <h1 className="text-3xl font-black text-slate-100">Sign In Required</h1>
-                    <p className="mt-3 text-slate-300">
+            <div className="min-h-screen bg-[#070708] px-4 py-16 flex items-center justify-center">
+                <div className="mx-auto max-w-3xl w-full rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-8 text-center">
+                    <h1 className="text-3xl font-display font-bold text-white">Sign In Required</h1>
+                    <p className="mt-3 text-[#a1a1aa] text-sm leading-relaxed">
                         Sign in with your Google account to view your activity history.
                     </p>
-                    <div className="mt-5">
+                    <div className="mt-6">
                         <Link
                             to="/booknow"
-                            className="inline-flex rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-500 transition-colors"
+                            className="inline-flex items-center justify-center rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-5 py-3"
                         >
                             Continue to Booking
                         </Link>
@@ -850,23 +850,23 @@ function ActivityTimeline() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
+            <div className="absolute -top-20 right-0 h-80 w-80 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 left-0 h-96 w-96 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
 
             <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14">
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p className="text-[11px] uppercase tracking-wider text-cyan-300">Activity Center</p>
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-100">My Activity</h1>
-                        <p className="mt-2 text-slate-300 text-sm sm:text-base">
+                        <p className="text-xs font-mono uppercase tracking-wider text-[#c5f82a]">Activity Center</p>
+                        <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mt-1">My Activity</h1>
+                        <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed max-w-xl">
                             Payments, blog likes, and sign-in events organized in one clean view.
                         </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                         <Link
                             to="/services"
-                            className="rounded-xl border border-slate-600 px-4 py-2 text-sm font-semibold text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                            className="rounded-md border border-[#1a1a22] px-4 py-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:border-[#c5f82a]/30 hover:text-[#c5f82a] transition-all"
                         >
                             Explore Services
                         </Link>
@@ -875,7 +875,7 @@ function ActivityTimeline() {
                             onClick={() => {
                                 void loadTimeline({ silent: false })
                             }}
-                            className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-500 transition-colors"
+                            className="rounded-md bg-[#ff5d00] text-white border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-2"
                         >
                             Refresh
                         </button>
@@ -883,7 +883,7 @@ function ActivityTimeline() {
                 </div>
 
                 {showPaymentSuccessHint ? (
-                    <div className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    <div className="mb-4 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/5 px-4 py-3 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
                         Payment confirmation completed. Your latest transaction is now available under Payments.
                         {highlightedOrderId ? ` Order ID: ${highlightedOrderId}` : ''}
                         {flowHintLabel}
@@ -891,12 +891,12 @@ function ActivityTimeline() {
                 ) : null}
 
                 {pageError ? (
-                    <div className="mb-4 rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                    <div className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-mono uppercase tracking-wider text-amber-300">
                         {pageError}
                     </div>
                 ) : null}
 
-                <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-2">
+                <div className="mt-6 flex flex-wrap gap-2 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-1.5">
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab.key
 
@@ -905,7 +905,7 @@ function ActivityTimeline() {
                                 key={tab.key}
                                 type="button"
                                 onClick={() => updateActiveTab(tab.key)}
-                                className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${getTabButtonClass(isActive)}`}
+                                className={`rounded-md border px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors ${getTabButtonClass(isActive)}`}
                             >
                                 {tab.label}
                             </button>
@@ -916,7 +916,7 @@ function ActivityTimeline() {
                 {hasCardsForTab ? (
                     <div className="mt-8 grid gap-4">{cardsForTab.map((card) => renderCard(card))}</div>
                 ) : (
-                    <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">
+                    <div className="mt-8 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-8 text-center text-[#a1a1aa] text-sm leading-relaxed">
                         {emptyStateMessage}
                     </div>
                 )}

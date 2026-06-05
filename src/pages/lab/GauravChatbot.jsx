@@ -5,7 +5,6 @@ import ChatMessage from '../../components/chat/ChatMessage'
 import TypingIndicator from '../../components/chat/TypingIndicator'
 
 const SESSION_STORAGE_KEY = 'gaurav-chatbot-session-id'
-const MESSAGES_STORAGE_KEY = 'gaurav-chatbot-messages'
 const FALLBACK_MESSAGE = "I'm having trouble right now, please try again."
 
 const SUGGESTED_QUESTIONS = [
@@ -45,28 +44,7 @@ const createIntroMessage = () =>
         }
     )
 
-const reviveMessages = (raw) => {
-    try {
-        const parsed = JSON.parse(raw)
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-            return [createIntroMessage()]
-        }
-
-        return parsed.map((message) =>
-            createMessage(message.role, message.content, {
-                id: message.id,
-                timestamp: message.timestamp ? new Date(message.timestamp) : new Date(),
-                sources: message.sources,
-                intro: message.intro,
-            })
-        )
-    } catch {
-        return [createIntroMessage()]
-    }
-}
-
 const readInitialMessages = () => {
-    // Always start fresh - no persistent chat history
     return [createIntroMessage()]
 }
 
@@ -114,9 +92,6 @@ function GauravChatbot() {
 
     const userMessageCount = messages.filter((message) => message.role === 'user').length
     const showSuggestions = userMessageCount === 0
-
-    // Chat history persists only in current session; refreshing clears all messages
-    // All messages are stored in database for analytics, but not displayed after page reload
 
     useEffect(() => {
         scrollAnchorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -188,11 +163,9 @@ function GauravChatbot() {
                 const replyText = String(data.reply).trim()
                 const last = previous.at(-1)
 
-                // If an intro already exists in the conversation, avoid re-adding intro-like replies
                 const hasIntro = previous.some((m) => m.intro === true || m.id === 'gaurav-chatbot-intro')
                 const isIntroLike = replyText.toLowerCase().includes("portfolio assistant") || replyText.toLowerCase().includes("ask me about")
                 if (hasIntro && isIntroLike) {
-                    // update existing intro message's timestamp and merge sources/followups instead of adding a new intro
                     const updated = previous.map((m) => {
                         if (m.intro === true || m.id === 'gaurav-chatbot-intro') {
                             return createMessage('ai', m.content, {
@@ -208,7 +181,6 @@ function GauravChatbot() {
                     return updated
                 }
 
-                // Avoid adding duplicate consecutive assistant replies (helps when backend repeats the same text)
                 if (last?.role === 'ai' && String(last.content).trim() === replyText) {
                     const updated = [...previous]
                     updated[updated.length - 1] = createMessage('ai', replyText, {
@@ -265,10 +237,7 @@ function GauravChatbot() {
                 :root { --safe-area-inset-bottom: env(safe-area-inset-bottom); }
 
                 .chat-shell {
-                    background:
-                        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 24%),
-                        radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.14), transparent 28%),
-                        linear-gradient(180deg, #020617 0%, #020817 48%, #020617 100%);
+                    background: #070708;
                 }
 
                 .chat-scroll::-webkit-scrollbar {
@@ -276,15 +245,12 @@ function GauravChatbot() {
                 }
 
                 .chat-scroll::-webkit-scrollbar-thumb {
-                    background: rgba(71, 85, 105, 0.9);
+                    background: #1a1a22;
                     border-radius: 999px;
                 }
 
                 .maintenance-backdrop {
-                    background:
-                        radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.14), transparent 38%),
-                        radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.16), transparent 42%),
-                        rgba(2, 6, 23, 0.82);
+                    background: rgba(7, 7, 8, 0.85);
                 }
 
                 .maintenance-dialog {
@@ -296,7 +262,7 @@ function GauravChatbot() {
                     content: '';
                     position: absolute;
                     inset: -40% 10% 30% -30%;
-                    background: conic-gradient(from 120deg, rgba(34, 211, 238, 0.25), rgba(59, 130, 246, 0.15), rgba(168, 85, 247, 0.25));
+                    background: conic-gradient(from 120deg, rgba(197, 248, 42, 0.2), rgba(255, 93, 0, 0.15), rgba(197, 248, 42, 0.2));
                     opacity: 0.65;
                     filter: blur(40px);
                 }
@@ -305,10 +271,8 @@ function GauravChatbot() {
                     content: '';
                     position: absolute;
                     inset: 1px;
-                    border-radius: 24px;
-                    background:
-                        linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.92)),
-                        linear-gradient(180deg, rgba(15, 23, 42, 0.75), rgba(2, 6, 23, 0.9));
+                    border-radius: 8px;
+                    background: #0e0e11;
                 }
 
                 .maintenance-content {
@@ -316,7 +280,6 @@ function GauravChatbot() {
                     z-index: 1;
                 }
 
-                /* ensure bottom input area respects device safe area (notch) */
                 .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
                 .input-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 8px); }
             `}</style>
@@ -325,27 +288,27 @@ function GauravChatbot() {
                 <div className="maintenance-backdrop fixed inset-0 z-30 flex items-center justify-center px-4 py-6 backdrop-blur-sm">
                     <dialog
                         open
-                        className="maintenance-dialog w-full max-w-3xl rounded-[28px] border border-slate-800/80 p-1 shadow-[0_30px_120px_rgba(2,6,23,0.65)]"
+                        className="maintenance-dialog w-full max-w-3xl rounded-lg border border-[#1a1a22] p-1 shadow-[0_30px_120px_rgba(7,7,8,0.85)]"
                         aria-label="Maintenance notice"
                     >
-                        <div className="maintenance-content max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-[24px] border border-white/5 bg-slate-950/80 p-5 sm:p-6">
+                        <div className="maintenance-content max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-lg bg-[#0e0e11] p-5 sm:p-6">
                             <div className="flex flex-wrap items-start justify-between gap-4">
                                 <div className="flex items-start gap-3">
-                                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-semibold text-white shadow-lg shadow-cyan-900/40">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-cyber/15 border border-cyber/30 text-xs font-bold text-cyber">
                                         UP
                                     </div>
                                     <div>
-                                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+                                        <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-cyber">
                                             Maintenance Notice
                                         </p>
-                                        <h2 className="mt-2 text-lg font-semibold text-slate-100 sm:text-xl">
+                                        <h2 className="mt-2 text-lg font-display font-bold text-slate-100 sm:text-xl">
                                             Upgrading the portfolio assistant
                                         </h2>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setShowMaintenance(false)}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-900/80 text-slate-300 transition hover:border-cyan-500/40 hover:text-cyan-200"
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#1a1a22] bg-[#070708] text-zinc-400 transition hover:border-toxic hover:text-toxic"
                                     aria-label="Close maintenance notice"
                                 >
                                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -354,56 +317,56 @@ function GauravChatbot() {
                                 </button>
                             </div>
 
-                            <div className="mt-5 grid gap-6 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                            <div className="mt-5 grid gap-5 sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
                                 <div className="space-y-4">
-                                    <p className="text-sm leading-6 text-slate-300">
+                                    <p className="text-sm leading-relaxed text-[#a1a1aa] font-sans">
                                         We are improving response quality. For now, answers can be shorter or less detailed.
                                         You can still explore verified portfolio answers safely.
                                     </p>
 
-                                    <div className="rounded-2xl border border-slate-800/70 bg-slate-950/60 p-4">
-                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                    <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-4">
+                                        <p className="text-[10px] font-mono uppercase tracking-widest text-[#52525b]">
                                             What you can do now
                                         </p>
-                                        <div className="mt-3 space-y-2 text-sm text-slate-200">
+                                        <div className="mt-3 space-y-2 text-sm text-[#a1a1aa]">
                                             <div className="flex items-start gap-2">
-                                                <span className="mt-1 h-2 w-2 rounded-full bg-cyan-400" />
+                                                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-toxic shrink-0" />
                                                 <span>Browse top projects and impact highlights.</span>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="mt-1 h-2 w-2 rounded-full bg-blue-400" />
-                                                <span>See services, timelines, and ideal engagement fit.</span>
+                                                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-cyber shrink-0" />
+                                                <span>See services, timelines, and engagement fit.</span>
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                <span className="mt-1 h-2 w-2 rounded-full bg-violet-400" />
+                                                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-toxic shrink-0" />
                                                 <span>Ask about availability or preferred work style.</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                                        <span className="rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-1">
+                                    <div className="flex flex-wrap items-center gap-2 text-[10px] text-[#52525b] font-mono">
+                                        <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-3 py-1.5">
                                             Safe responses only
                                         </span>
-                                        <span className="rounded-full border border-slate-700/80 bg-slate-900/80 px-3 py-1">
+                                        <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-3 py-1.5">
                                             No hallucinated info
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-slate-900/60 via-slate-950/70 to-slate-950/90 p-4">
+                                <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-4">
                                     <div className="flex items-center justify-between">
-                                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+                                        <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyber">
                                             Quick options
                                         </p>
-                                        <span className="text-[11px] text-slate-400">Tap to prefill</span>
+                                        <span className="text-[10px] font-mono text-[#52525b]">Tap to prefill</span>
                                     </div>
                                     <div className="mt-3 grid gap-2">
                                         {MAINTENANCE_OPTIONS.map((option) => (
                                             <button
                                                 key={option}
                                                 onClick={() => handleMaintenanceOption(option)}
-                                                className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-4 py-3 text-left text-sm text-cyan-100 transition hover:-translate-y-0.5 hover:border-cyan-400/50 hover:bg-cyan-500/20"
+                                                className="rounded-lg border border-[#1a1a22] bg-[#070708] px-4 py-3 text-left text-sm text-zinc-300 transition hover:-translate-y-0.5 hover:border-cyber/30 hover:text-cyber hover:bg-cyber/5"
                                             >
                                                 {option}
                                             </button>
@@ -413,12 +376,12 @@ function GauravChatbot() {
                             </div>
 
                             <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                                <div className="text-xs text-slate-500">
+                                <div className="text-xs text-[#52525b] font-mono">
                                     Thanks for your patience. Full-quality mode is returning soon.
                                 </div>
                                 <button
                                     onClick={() => setShowMaintenance(false)}
-                                    className="rounded-full border border-slate-700 px-5 py-2 text-sm text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-100"
+                                    className="rounded-md border border-zinc-700 px-5 py-2.5 text-xs font-mono uppercase font-bold text-slate-200 transition hover:border-toxic hover:text-toxic hover:bg-toxic/5"
                                 >
                                     Continue anyway
                                 </button>
@@ -429,11 +392,11 @@ function GauravChatbot() {
             )}
 
             <div className="chat-shell flex h-[100dvh] min-h-[100dvh] flex-col overflow-hidden">
-                <header className="border-b border-slate-800/80 bg-slate-950/75 backdrop-blur-xl">
+                <header className="border-b border-[#1a1a22] bg-[#0e0e11]/85 backdrop-blur-xl">
                     <div className="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-4 sm:px-6">
                         <Link
                             to="/lab"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/80 text-slate-300 transition-colors hover:border-cyan-500/40 hover:text-cyan-200"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-[#1a1a22] bg-[#070708] text-zinc-400 transition-colors hover:border-toxic/30 hover:text-toxic"
                             aria-label="Back to Lab"
                         >
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor">
@@ -441,17 +404,17 @@ function GauravChatbot() {
                             </svg>
                         </Link>
 
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-bold text-white shadow-lg shadow-cyan-900/30">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-md bg-toxic/15 border border-toxic/30 text-sm font-bold text-toxic shadow-lg">
                             G
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-slate-100 sm:text-base">Gaurav Portfolio AI</p>
-                            <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                                <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-emerald-300">
+                            <p className="truncate text-sm font-display font-bold text-slate-100 sm:text-base">Gaurav Portfolio AI</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-mono text-[#52525b]">
+                                <span className="rounded-md border border-toxic/25 bg-toxic/5 px-2 py-0.5 text-toxic">
                                     RAG + DeepSeek
                                 </span>
-                                <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-cyan-200">
+                                <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2 py-0.5 text-zinc-400">
                                     Portfolio-only answers
                                 </span>
                             </div>
@@ -461,17 +424,17 @@ function GauravChatbot() {
 
                 <div className="chat-scroll flex-1 overflow-y-auto">
                     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6 pb-28 sm:px-6 sm:pb-6">
-                        <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-4 sm:p-5">
-                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                                <span>Production Feature</span>
-                                <span className="rounded-full border border-slate-700 px-2 py-0.5 tracking-normal text-slate-300">
+                        <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-4 sm:p-5">
+                            <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-[#52525b]">
+                                <span className="text-toxic">Production Feature</span>
+                                <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2.5 py-1 tracking-normal text-zinc-300">
                                     Fast retrieval
                                 </span>
-                                <span className="rounded-full border border-slate-700 px-2 py-0.5 tracking-normal text-slate-300">
-                                    Mongo conversation history
+                                <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2.5 py-1 tracking-normal text-zinc-300">
+                                    Mongo history logs
                                 </span>
                             </div>
-                            <p className="mt-3 text-sm leading-7 text-slate-300 sm:text-[15px]">
+                            <p className="mt-3 text-sm leading-relaxed text-[#a1a1aa] font-sans">
                                 This assistant only answers from Gaurav's structured portfolio knowledge base.
                                 Unrelated questions are blocked, and missing details are not invented.
                             </p>
@@ -484,14 +447,14 @@ function GauravChatbot() {
                                 content={message.content}
                                 timestamp={message.timestamp}
                                 sources={message.sources}
-                                                            followUpSuggestions={message.followUpSuggestions}
-                                                            onSuggestionClick={(suggestion) => void sendMessage(suggestion)}
+                                followUpSuggestions={message.followUpSuggestions}
+                                onSuggestionClick={(suggestion) => void sendMessage(suggestion)}
                             />
                         ))}
 
                         {showSuggestions && !isLoading && (
-                            <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-4 sm:p-5">
-                                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                            <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-4 sm:p-5">
+                                <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#52525b]">
                                     Suggested Questions
                                 </p>
                                 <div className="mt-3 flex flex-wrap gap-2">
@@ -499,7 +462,7 @@ function GauravChatbot() {
                                         <button
                                             key={question}
                                             onClick={() => void sendMessage(question)}
-                                            className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-100 transition-all hover:-translate-y-0.5 hover:border-cyan-400/50 hover:bg-cyan-500/15"
+                                            className="rounded-lg border border-[#1a1a22] bg-[#070708] px-3.5 py-2 text-xs font-mono text-[#a1a1aa] transition-all hover:-translate-y-0.5 hover:border-toxic/30 hover:text-toxic hover:bg-toxic/5"
                                         >
                                             {question}
                                         </button>
@@ -514,9 +477,9 @@ function GauravChatbot() {
                     </div>
                 </div>
 
-                <div className="sm:static fixed inset-x-0 bottom-0 z-20 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
+                <div className="sm:static fixed inset-x-0 bottom-0 z-20 border-t border-[#1a1a22] bg-[#0e0e11]/85 backdrop-blur-xl">
                     <div className="mx-auto w-full max-w-4xl px-4 py-4 sm:px-6 sm:py-4 pb-safe-area input-safe">
-                        <div className="rounded-[28px] border border-slate-800 bg-slate-900/75 p-3 shadow-2xl shadow-black/25">
+                        <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-3 shadow-2xl">
                             <div className="flex items-end gap-3">
                                 <textarea
                                     ref={textareaRef}
@@ -525,17 +488,17 @@ function GauravChatbot() {
                                     onKeyDown={handleKeyDown}
                                     rows={1}
                                     disabled={isLoading}
-                                    placeholder="Ask me about my projects, skills, or journey..."
-                                    className="max-h-40 min-h-[52px] flex-1 resize-none bg-transparent px-3 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 sm:text-[15px]"
+                                    placeholder="Ask me about projects, services, or my journey..."
+                                    className="max-h-40 min-h-[52px] flex-1 resize-none bg-transparent px-3 py-3 text-sm leading-relaxed text-slate-100 outline-none placeholder:text-zinc-700 font-sans"
                                 />
 
                                 <button
                                     onClick={() => void sendMessage()}
                                     disabled={isLoading || !input.trim()}
-                                    className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl transition-all ${
+                                    className={`inline-flex h-12 w-12 items-center justify-center rounded-md transition-all duration-200 ${
                                         isLoading || !input.trim()
-                                            ? 'cursor-not-allowed bg-slate-800 text-slate-600'
-                                            : 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-900/30 hover:-translate-y-0.5'
+                                            ? 'cursor-not-allowed bg-zinc-800 text-zinc-600'
+                                            : 'bg-toxic text-obsidian shadow-lg hover:-translate-y-0.5 shadow-toxic/20'
                                     }`}
                                     aria-label="Send message"
                                 >
@@ -553,7 +516,7 @@ function GauravChatbot() {
                             </div>
                         </div>
 
-                        <div className="mt-2 flex items-center justify-between gap-3 px-1 text-[11px] text-slate-500">
+                        <div className="mt-2 flex items-center justify-between gap-3 px-1 text-[10px] font-mono text-[#52525b]">
                             <span>Enter to send. Shift + Enter for a new line.</span>
                             <span>{input.length}/1000</span>
                         </div>

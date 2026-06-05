@@ -662,92 +662,92 @@ function Support() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
+            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
                 {thankYouNote ? (
-                    <div className="mb-4 rounded-xl border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+                    <div className="mb-4 rounded-md border border-[#c5f82a]/35 bg-[#c5f82a]/10 px-4 py-3 text-xs font-mono uppercase text-[#c5f82a]">
                         {thankYouNote}
                     </div>
                 ) : null}
 
                 <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-                    <Link to="/services" className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200 transition-colors">
+                    <Link to="/services" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:text-[#c5f82a] transition-colors">
                         <span>{'<-'}</span>
                         <span>Back to Services</span>
                     </Link>
-                    <span className="inline-flex items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-300">
+                    <span className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
                         Support Jar
                     </span>
                 </div>
 
                 <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
-                    <section className="lg:col-span-3 rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-800/80 via-slate-900/90 to-slate-900 p-6 sm:p-8">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-100">Support My Work</h1>
-                        <p className="text-slate-400 mt-2">
+                    <section className="lg:col-span-3 rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
+                        <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">Support My Work</h1>
+                        <p className="text-[#a1a1aa] mt-2 text-sm leading-relaxed">
                             If my work helped you, you can send any amount directly. Secure checkout is powered by Cashfree.
                         </p>
 
-                        <div className="mt-5 rounded-xl border border-slate-700/80 bg-slate-900/45 px-4 py-3">
-                            <p className="text-xs uppercase tracking-wider text-slate-400">How It Works</p>
-                            <p className="text-sm text-slate-200 mt-1">Choose or type an amount, complete payment, and get instant confirmation.</p>
+                        <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3">
+                            <p className="text-xs uppercase tracking-wider font-mono text-[#a1a1aa]/50">How It Works</p>
+                            <p className="text-sm text-[#a1a1aa] mt-1 leading-relaxed">Choose or type an amount, complete payment, and get instant confirmation.</p>
                         </div>
 
                         {paymentFailure ? (
-                            <div className="mt-4 rounded-xl border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                            <div className="mt-4 rounded-md border border-rose-500/35 bg-rose-500/5 px-4 py-3 text-xs font-mono uppercase text-rose-300">
                                 {paymentFailure}
                             </div>
                         ) : null}
 
                         {requiresSignIn ? (
-                            <div className="mt-4 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
-                                <p>Sign in with Google to continue. Your email is auto-filled and locked for secure support receipts.</p>
+                            <div className="mt-4 rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 px-4 py-3 text-sm text-[#a1a1aa]">
+                                <p className="leading-relaxed">Sign in with Google to continue. Your email is auto-filled and locked for secure support receipts.</p>
                                 <button
                                     type="button"
                                     onClick={() => setShowSignInModal(true)}
-                                    className="mt-2 inline-flex items-center rounded-lg border border-cyan-400/35 bg-cyan-500/15 px-2.5 py-1 text-xs font-semibold text-cyan-100 hover:bg-cyan-500/25 transition-colors"
+                                    className="mt-3 inline-flex items-center rounded-md border border-[#1a1a22] bg-[#0e0e11] text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 font-mono text-xs uppercase py-2 px-4 transition-all"
                                 >
                                     Sign In with Google
                                 </button>
                             </div>
                         ) : null}
 
-                        <div className="mt-4 grid sm:grid-cols-3 gap-3">
-                            <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-cyan-300">100%</p>
-                                <p className="text-sm text-slate-100 mt-1">Secure checkout</p>
+                        <div className="mt-5 grid grid-cols-3 gap-3">
+                            <div className="rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#c5f82a]">100%</p>
+                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Secure checkout</p>
                             </div>
-                            <div className="rounded-xl border border-slate-700 bg-slate-900/45 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-slate-500">Instant</p>
-                                <p className="text-sm text-slate-200 mt-1">Order tracking</p>
+                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a] p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/50">Instant</p>
+                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Order tracking</p>
                             </div>
-                            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-emerald-300">Download</p>
-                                <p className="text-sm text-slate-100 mt-1">Receipt proof</p>
+                            <div className="rounded-md border border-[#ff5d00]/20 bg-[#ff5d00]/5 p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#ff5d00]">Download</p>
+                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Receipt proof</p>
                             </div>
                         </div>
 
-                        <div className="mt-4 grid sm:grid-cols-3 gap-3">
-                            <div className="rounded-xl border border-slate-700 bg-slate-900/45 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-slate-500">Step 1</p>
-                                <p className="text-sm text-slate-200 mt-1">Set amount</p>
+                        <div className="mt-3 grid grid-cols-3 gap-3">
+                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 1</p>
+                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Set amount</p>
                             </div>
-                            <div className="rounded-xl border border-slate-700 bg-slate-900/45 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-slate-500">Step 2</p>
-                                <p className="text-sm text-slate-200 mt-1">Pay securely</p>
+                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 2</p>
+                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Pay securely</p>
                             </div>
-                            <div className="rounded-xl border border-slate-700 bg-slate-900/45 p-3">
-                                <p className="text-[11px] uppercase tracking-wider text-slate-500">Step 3</p>
-                                <p className="text-sm text-slate-200 mt-1">Download receipt</p>
+                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 3</p>
+                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Download receipt</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="name" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Full Name</label>
+                                    <label htmlFor="name" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Full Name</label>
                                     <input
                                         id="name"
                                         name="name"
@@ -757,11 +757,11 @@ function Support() {
                                         disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Your name"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Email</label>
+                                    <label htmlFor="email" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Email</label>
                                     <input
                                         id="email"
                                         name="email"
@@ -772,15 +772,15 @@ function Support() {
                                         maxLength={120}
                                         required
                                         placeholder="Sign in with Google to auto-fill"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-[#1a1a22]/80 bg-[#16161a]/50 px-4 py-3 text-[#a1a1aa]/60 placeholder:text-[#a1a1aa]/20 focus:outline-none focus:border-[#c5f82a] font-mono text-sm cursor-not-allowed"
                                     />
-                                    <p className="mt-1 text-[11px] text-slate-500">Email is locked to your signed-in Google account.</p>
+                                    <p className="mt-1.5 text-[10px] font-mono uppercase text-[#a1a1aa]/40">Email is locked to your signed-in Google account.</p>
                                 </div>
                             </div>
 
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="phone" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Phone</label>
+                                    <label htmlFor="phone" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Phone</label>
                                     <input
                                         id="phone"
                                         name="phone"
@@ -795,11 +795,11 @@ function Support() {
                                         disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="10-digit number"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="amount" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Amount (INR)</label>
+                                    <label htmlFor="amount" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Amount (INR)</label>
                                     <input
                                         id="amount"
                                         name="amount"
@@ -811,13 +811,13 @@ function Support() {
                                         disabled={requiresSignIn || isLoading}
                                         required
                                         placeholder="Enter any amount"
-                                        className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <p className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-2">Quick Amounts</p>
+                                <p className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-2">Quick Amounts</p>
                                 <div className="flex flex-wrap gap-2.5">
                                     {quickAmounts.map((amt) => (
                                         <button
@@ -825,10 +825,10 @@ function Support() {
                                             type="button"
                                             disabled={requiresSignIn || isLoading}
                                             onClick={() => setForm((prev) => ({ ...prev, amount: String(amt) }))}
-                                            className={`rounded-lg px-3 py-2 text-sm font-semibold border transition-colors ${
+                                            className={`rounded-md px-3.5 py-2 text-xs font-mono uppercase tracking-wider border transition-colors ${
                                                 Number.parseInt(form.amount, 10) === amt
-                                                    ? 'border-cyan-400 bg-cyan-500/10 text-cyan-300'
-                                                    : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:border-cyan-500/40'
+                                                    ? 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
+                                                    : 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa] hover:border-[#c5f82a]/30'
                                             }`}
                                         >
                                             INR {amt}
@@ -838,7 +838,7 @@ function Support() {
                             </div>
 
                             <div>
-                                <label htmlFor="message" className="block text-xs font-semibold tracking-wider uppercase text-slate-400 mb-1.5">Message (optional)</label>
+                                <label htmlFor="message" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Message (optional)</label>
                                 <textarea
                                     id="message"
                                     name="message"
@@ -848,40 +848,40 @@ function Support() {
                                     disabled={requiresSignIn || isLoading}
                                     maxLength={300}
                                     placeholder="Write a short note"
-                                    className="w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-cyan-500 resize-none"
+                                    className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm resize-none"
                                 />
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={isSubmitting || requiresSignIn || isLoading}
-                                className="w-full rounded-xl px-5 py-3.5 font-semibold text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 transition-all duration-300"
+                                className="w-full rounded-md px-5 py-3.5 font-mono text-xs uppercase font-bold text-[#070708] bg-[#c5f82a] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
                             >
                                 {checkoutButtonLabel}
                             </button>
                         </form>
                     </section>
 
-                    <aside className="lg:col-span-2 rounded-3xl border border-cyan-500/20 bg-slate-800/65 p-6 sm:p-7 h-fit sticky top-28">
-                        <h2 className="text-xl sm:text-2xl font-bold text-slate-100">Why this Support Jar?</h2>
-                        <p className="text-slate-300 text-sm mt-3 leading-relaxed">
+                    <aside className="lg:col-span-2 rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-7 h-fit sticky top-28">
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-white">Why this Support Jar?</h2>
+                        <p className="text-[#a1a1aa] text-sm mt-3 leading-relaxed">
                             This helps me keep sharing useful projects, guides, and learning content consistently.
                         </p>
 
-                        <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-900/60 p-4">
-                            <p className="text-sm text-slate-200">Trust and Security</p>
-                            <ul className="mt-2 space-y-2 text-xs text-slate-400">
-                                <li>Secure checkout via Cashfree</li>
-                                <li>UPI, cards, netbanking, wallets, pay later</li>
-                                <li>No card number or UPI PIN stored on this site</li>
+                        <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4">
+                            <p className="text-xs font-mono uppercase text-[#c5f82a] font-semibold">Trust and Security</p>
+                            <ul className="mt-2.5 space-y-2 text-xs text-[#a1a1aa] leading-relaxed">
+                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> Secure checkout via Cashfree</li>
+                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> UPI, cards, netbanking, wallets</li>
+                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> No card number or UPI PIN stored</li>
                             </ul>
                         </div>
 
                         <div className="mt-5 grid grid-cols-1 gap-2.5">
-                            <Link to="/projects" className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors text-center">
+                            <Link to="/projects" className="rounded-md border border-[#1a1a22] px-4 py-2.5 text-xs text-[#a1a1aa] hover:border-[#c5f82a] hover:text-[#c5f82a] font-mono uppercase tracking-wider transition-all duration-200 text-center">
                                 Explore Projects
                             </Link>
-                            <Link to="/contact" className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm text-slate-200 hover:border-slate-500 hover:text-white transition-colors text-center">
+                            <Link to="/contact" className="rounded-md border border-[#1a1a22] px-4 py-2.5 text-xs text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono uppercase tracking-wider transition-all duration-200 text-center">
                                 Contact Me
                             </Link>
                         </div>
@@ -893,34 +893,34 @@ function Support() {
                 </section>
 
                 {supportSuccess ? (
-                    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm px-4 py-8 overflow-y-auto">
-                        <div className="relative max-w-xl mx-auto overflow-hidden rounded-3xl border border-emerald-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8">
-                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-emerald-500/20 blur-3xl" />
+                    <div className="fixed inset-0 z-50 bg-[#070708]/80 backdrop-blur-sm px-4 py-8 overflow-y-auto flex items-center justify-center">
+                        <div className="relative max-w-xl w-full overflow-hidden rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
+                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-[#c5f82a]/5 blur-3xl" />
                             <div className="relative">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-semibold tracking-widest uppercase text-emerald-200">
+                                <div className="inline-flex items-center gap-2 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3.5 py-1.5 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
                                     <span>Support Confirmed</span>
                                 </div>
-                                <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100">Thank You for Supporting</h2>
-                                <p className="mt-2 text-slate-300 text-sm sm:text-base">
+                                <h2 className="mt-4 text-2xl sm:text-3xl font-display font-bold text-white">Thank You for Supporting</h2>
+                                <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed">
                                     Your contribution has been received successfully.
                                 </p>
-                                <p className="mt-2 text-xs text-slate-400">
+                                <p className="mt-2 text-xs text-[#a1a1aa]/70 leading-relaxed">
                                     Your PDF receipt download starts automatically. Thank you for supporting, and check your mail for updates.
                                 </p>
 
-                                <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">
-                                    <p><span className="text-slate-400">Name:</span> {supportSuccess.contributorName || supportSuccess.contributor}</p>
-                                    <p><span className="text-slate-400">Amount:</span> INR {supportSuccess.amount}</p>
-                                    <p><span className="text-slate-400">Order ID:</span> {supportSuccess.orderId}</p>
-                                    <p><span className="text-slate-400">Payment ID:</span> {supportSuccess.paymentId}</p>
+                                <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4 text-xs font-mono text-[#a1a1aa] space-y-1.5 leading-relaxed">
+                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Name:</span> {supportSuccess.contributorName || supportSuccess.contributor}</p>
+                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {supportSuccess.amount}</p>
+                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {supportSuccess.orderId}</p>
+                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {supportSuccess.paymentId}</p>
                                 </div>
 
-                                <div className="mt-4">
+                                <div className="mt-5">
                                     <button
                                         type="button"
                                         disabled={isDownloadingReceipt}
                                         onClick={() => downloadSupportReceiptPdf(supportSuccess)}
-                                        className="w-full rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                        className="w-full rounded-md px-4 py-3 text-xs font-mono uppercase font-bold text-[#070708] bg-[#c5f82a] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
                                     >
                                         {isDownloadingReceipt ? 'Downloading PDF Receipt...' : 'Download Support Receipt PDF'}
                                     </button>
@@ -931,19 +931,19 @@ function Support() {
                                         type="button"
                                         disabled={isDownloadingReceipt}
                                         onClick={() => downloadSupportReceipt(supportSuccess)}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                        className="w-full rounded-md px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] border border-[#1a1a22] hover:border-[#c5f82a] hover:text-[#c5f82a] transition-all"
                                     >
                                         {isDownloadingReceipt ? 'Downloading Image Receipt...' : 'Download Image Backup Receipt'}
                                     </button>
                                 </div>
 
                                 {receiptDownloadError ? (
-                                    <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                    <div className="mt-3 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
                                         {receiptDownloadError}
                                     </div>
                                 ) : null}
 
-                                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                                <div className="mt-6 grid gap-3 sm:grid-cols-2">
                                     <button
                                         type="button"
                                         onClick={() => {
@@ -951,13 +951,13 @@ function Support() {
                                             setReceiptDownloadError('')
                                             setForm((prev) => ({ ...prev, message: '' }))
                                         }}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase text-[#a1a1aa] border border-[#1a1a22] hover:border-white transition-colors"
                                     >
                                         Close
                                     </button>
                                     <Link
                                         to="/services"
-                                        className="inline-flex justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                                        className="inline-flex justify-center rounded-md px-4 py-3 text-xs font-mono uppercase font-bold text-white bg-[#ff5d00] border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
                                     >
                                         Explore Services
                                     </Link>

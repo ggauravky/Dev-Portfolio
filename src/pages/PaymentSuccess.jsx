@@ -26,14 +26,14 @@ const getProcessingSteps = (flow) =>
 
 const getProcessingStepClassName = ({ isActive, isCompleted }) => {
     if (isActive) {
-        return 'border-cyan-500/35 bg-cyan-500/10 text-cyan-100'
+        return 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
     }
 
     if (isCompleted) {
-        return 'border-emerald-500/35 bg-emerald-500/10 text-emerald-100'
+        return 'border-[#c5f82a]/30 bg-[#c5f82a]/5 text-[#c5f82a]/80'
     }
 
-    return 'border-slate-700 bg-slate-800/60 text-slate-400'
+    return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa]'
 }
 
 const getProcessingStepBadge = ({ isActive, isCompleted, index }) => {
@@ -87,18 +87,18 @@ function ProcessingBoard({
     const progressWidth = `${((processingStepIndex + 1) / processingSteps.length) * 100}%`
 
     return (
-        <div className="fixed inset-0 z-40 bg-slate-950/75 backdrop-blur-sm px-4 py-6">
+        <div className="fixed inset-0 z-40 bg-[#070708]/80 backdrop-blur-sm px-4 py-6">
             <div className="mx-auto flex min-h-full max-w-xl items-center justify-center">
-                <div className="w-full overflow-hidden rounded-3xl border border-cyan-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8 shadow-[0_30px_120px_rgba(2,132,199,0.2)]">
-                    <div className="inline-flex items-center rounded-full border border-cyan-500/35 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-200">
+                <div className="w-full overflow-hidden rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8 shadow-2xl">
+                    <div className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
                         Processing Payment
                     </div>
-                    <h2 className="mt-4 text-2xl sm:text-3xl font-black text-slate-100">{heading}</h2>
-                    <p className="mt-2 text-sm sm:text-base text-slate-300">{subtitle}</p>
+                    <h2 className="mt-4 text-2xl sm:text-3xl font-display font-bold text-white">{heading}</h2>
+                    <p className="mt-2 text-sm text-[#a1a1aa] leading-relaxed">{subtitle}</p>
 
-                    <div className="mt-5 h-2 w-full rounded-full bg-slate-800/90">
+                    <div className="mt-5 h-2 w-full rounded-full bg-[#16161a]">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-blue-500 to-emerald-500 transition-all duration-700"
+                            className="h-full rounded-full bg-gradient-to-r from-[#ff5d00] to-[#c5f82a] transition-all duration-700"
                             style={{ width: progressWidth }}
                         />
                     </div>
@@ -120,9 +120,9 @@ function ProcessingBoard({
                             return (
                                 <li
                                     key={step}
-                                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition-colors ${stepClassName}`}
+                                    className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-mono uppercase tracking-wider transition-colors ${stepClassName}`}
                                 >
-                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
+                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-current text-[10px] font-bold">
                                         {stepBadge}
                                     </span>
                                     <span>{step}</span>
@@ -131,7 +131,7 @@ function ProcessingBoard({
                         })}
                     </ul>
 
-                    <p className="mt-4 text-xs text-slate-500">
+                    <p className="mt-4.5 text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/50">
                         Please keep this page open while we finish the final confirmation checks.
                     </p>
                 </div>
@@ -652,9 +652,9 @@ function PaymentSuccess() {
     }, [details?.amount, details?.orderId, details?.paymentId, details?.service, effectiveFlow])
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
+            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
 
             {isProcessingBoardVisible ? (
                 <ProcessingBoard
@@ -670,54 +670,54 @@ function PaymentSuccess() {
                     <button
                         type="button"
                         onClick={() => navigate(effectiveFlow === 'support' ? '/support' : '/booknow')}
-                        className="inline-flex items-center gap-2 text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
+                        className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:text-[#c5f82a] transition-colors"
                     >
                         <span>{'<-'}</span>
                         <span>Back</span>
                     </button>
-                    <span className="inline-flex items-center rounded-full border border-emerald-500/35 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-200">
+                    <span className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
                         Payment Successful
                     </span>
                 </div>
 
-                <div className="rounded-3xl border border-emerald-400/25 bg-gradient-to-b from-slate-900 to-slate-950 p-6 sm:p-8">
-                    <h1 className="text-3xl sm:text-4xl font-black text-slate-100">
+                <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
+                    <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">
                         {effectiveFlow === 'support' ? 'Support Payment Confirmed' : 'Booking Payment Confirmed'}
                     </h1>
-                    <p className="mt-2 text-slate-300 text-sm sm:text-base">
+                    <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed">
                         Payment is verified successfully. Thank you, and check your mail for updates.
                     </p>
-                    <p className="mt-2 text-xs text-slate-400">
+                    <p className="mt-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa]/50">
                         This page is your next step: download your receipt files and open My Activity if you need history.
                     </p>
 
                     {isHydratingDetails ? (
-                        <div className="mt-3 rounded-xl border border-cyan-500/35 bg-cyan-500/10 px-3 py-2 text-xs text-cyan-100">
+                        <div className="mt-4 rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 px-3 py-2 text-xs font-mono uppercase text-[#c5f82a]">
                             Loading latest payment details from server...
                         </div>
                     ) : null}
 
                     {detailsLoadError ? (
-                        <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                        <div className="mt-4 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
                             {detailsLoadError}
                         </div>
                     ) : null}
 
                     {details ? (
                         <>
-                            <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/55 p-4 text-sm text-slate-300 space-y-1.5">
-                                <p><span className="text-slate-400">Order ID:</span> {details.orderId}</p>
-                                <p><span className="text-slate-400">Payment ID:</span> {details.paymentId || 'Not available'}</p>
+                            <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4 text-xs font-mono text-[#a1a1aa] space-y-1.5 leading-relaxed">
+                                <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {details.orderId}</p>
+                                <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {details.paymentId || 'Not available'}</p>
                                 {effectiveFlow === 'support' ? (
                                     <>
-                                        <p><span className="text-slate-400">Name:</span> {details.contributorName || details.contributor || 'Supporter'}</p>
-                                        <p><span className="text-slate-400">Amount:</span> INR {details.amount}</p>
+                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Name:</span> {details.contributorName || details.contributor || 'Supporter'}</p>
+                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {details.amount}</p>
                                     </>
                                 ) : (
                                     <>
-                                        <p><span className="text-slate-400">Service:</span> {details.service}</p>
-                                        <p><span className="text-slate-400">Session Date:</span> {formatDateForDisplay(details.preferredDate)}</p>
-                                        <p><span className="text-slate-400">Session Time:</span> {details.preferredTime}</p>
+                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Service:</span> {details.service}</p>
+                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Session Date:</span> {formatDateForDisplay(details.preferredDate)}</p>
+                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Session Time:</span> {details.preferredTime}</p>
                                     </>
                                 )}
                             </div>
@@ -729,7 +729,7 @@ function PaymentSuccess() {
                                     onClick={() => {
                                         void downloadReceiptPdf({ silent: false, auto: false })
                                     }}
-                                    className="rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 transition-all duration-300"
+                                    className="rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-3"
                                 >
                                     {isDownloadingReceipt ? 'Downloading PDF...' : 'Download Receipt PDF'}
                                 </button>
@@ -739,7 +739,7 @@ function PaymentSuccess() {
                                     onClick={() => {
                                         void downloadReceiptImage({ silent: false, auto: false })
                                     }}
-                                    className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-slate-500 transition-colors"
+                                    className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#c5f82a] hover:text-[#c5f82a] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
                                 >
                                     {isDownloadingReceipt ? 'Downloading Image...' : 'Download Image Backup Receipt'}
                                 </button>
@@ -750,14 +750,14 @@ function PaymentSuccess() {
                                     <button
                                         type="button"
                                         onClick={downloadInvitationCard}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                        className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
                                     >
                                         Download Invitation Pass
                                     </button>
                                     <button
                                         type="button"
                                         onClick={downloadCalendarInvite}
-                                        className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-100 border border-slate-600 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                                        className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
                                     >
                                         Download Calendar File
                                     </button>
@@ -765,27 +765,27 @@ function PaymentSuccess() {
                             ) : null}
 
                             {receiptDownloadError ? (
-                                <div className="mt-3 rounded-xl border border-amber-500/35 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                <div className="mt-3 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
                                     {receiptDownloadError}
                                 </div>
                             ) : null}
                         </>
                     ) : (
-                        <div className="mt-6 rounded-2xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                        <div className="mt-6 rounded-md border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-xs font-mono uppercase text-amber-300">
                             Payment details are not available right now. Please open My Activity to view your latest transaction.
                         </div>
                     )}
 
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
                         <Link
                             to={activityUrl}
-                            className="inline-flex justify-center rounded-xl px-4 py-3 text-sm font-semibold text-cyan-200 border border-cyan-500/35 bg-cyan-500/5 hover:bg-cyan-500/10 transition-colors"
+                            className="inline-flex justify-center rounded-md border border-[#1a1a22] bg-transparent text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 transition-all px-4 py-3 text-xs font-mono uppercase"
                         >
                             Open My Activity
                         </Link>
                         <Link
                             to="/services"
-                            className="inline-flex justify-center rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
+                            className="inline-flex justify-center rounded-md bg-[#ff5d00] text-white border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-3"
                         >
                             Explore Services
                         </Link>

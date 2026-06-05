@@ -114,26 +114,26 @@ function NotFound() {
     const rightEye = calculateEyePosition(centerX + 50, centerY - 50)
 
     return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center px-6 relative overflow-hidden">
+        <div className="min-h-screen bg-[#070708] flex items-center justify-center px-6 relative overflow-hidden">
             {/* Animated Background */}
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/20 to-slate-900"></div>
-            <div className="absolute top-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute inset-0 bg-[#070708]"></div>
+            <div className="absolute top-20 left-10 w-96 h-96 bg-[#ff5d00]/5 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#c5f82a]/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
 
             <div className="relative z-10 max-w-4xl w-full text-center">
                 {/* Secret Easter Egg Message */}
                 {showSecret && (
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-20 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-8 py-4 rounded-2xl shadow-2xl animate-bounce z-50 border-4 border-yellow-300">
-                        <p className="text-xl font-bold">🎉 Secret Name Unlocked! ✨</p>
-                        <p className="text-sm mt-1">You found the secret! Welcome to Gaurav's world! 🚀</p>
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-20 bg-[#16161a] text-white px-8 py-4 border border-[#ff5d00] rounded-md shadow-2xl animate-bounce z-50">
+                        <p className="text-lg font-display font-bold">🎉 Secret Name Unlocked! ✨</p>
+                        <p className="text-xs font-mono uppercase text-[#ff5d00] mt-1">You found the secret! Welcome to Gaurav's world! 🚀</p>
                     </div>
                 )}
 
                 {/* Easter Egg Found Message */}
                 {easterEggFound && (
-                    <div className="mb-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border-2 border-green-500 p-6 rounded-2xl animate-pulse">
-                        <p className="text-2xl font-bold text-green-400 mb-2">🎉 Easter Egg Found! 🥚</p>
-                        <p className="text-green-300">You clicked the 404 five times! Auto-redirect paused. You're curious, I like that! 😎</p>
+                    <div className="mb-8 bg-[#c5f82a]/5 backdrop-blur-sm border border-[#c5f82a] p-6 rounded-md animate-pulse">
+                        <p className="text-xl font-display font-bold text-[#c5f82a] mb-2">🎉 Easter Egg Found! 🥚</p>
+                        <p className="text-[#a1a1aa] text-sm leading-relaxed">You clicked the 404 five times! Auto-redirect paused. You're curious, I like that! 😎</p>
                     </div>
                 )}
 
@@ -142,13 +142,13 @@ function NotFound() {
                     <button
                         type="button"
                         onClick={handle404Click}
-                        className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none cursor-pointer hover:scale-105 transition-transform duration-300 bg-transparent border-0 p-0"
+                        className="text-[200px] md:text-[280px] font-black leading-none bg-gradient-to-r from-[#c5f82a] via-[#ff5d00] to-[#c5f82a] bg-clip-text text-transparent select-none cursor-pointer hover:scale-105 transition-transform duration-300 bg-transparent border-0 p-0"
                         title="Click me 5 times 😉"
                         aria-label="Interactive 404 heading"
                     >
                         {'4'}
                         <span className="relative inline-block">
-                            <span className="relative">
+                           <span className="relative">
                                 {'0'}
                                 {/* Eyes */}
                                 <div className="absolute inset-0 flex items-center justify-center">
@@ -156,7 +156,7 @@ function NotFound() {
                                     <div className="absolute" style={{ left: '35%', top: '45%' }}>
                                         <div className="w-8 h-8 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
                                             <div
-                                                className="w-3 h-3 md:w-5 md:h-5 bg-slate-900 rounded-full transition-transform duration-100"
+                                                className="w-3 h-3 md:w-5 md:h-5 bg-[#070708] rounded-full transition-transform duration-100"
                                                 style={{
                                                     transform: `translate(${leftEye.x}px, ${leftEye.y}px)`
                                                 }}
@@ -167,7 +167,7 @@ function NotFound() {
                                     <div className="absolute" style={{ right: '35%', top: '45%' }}>
                                         <div className="w-8 h-8 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center">
                                             <div
-                                                className="w-3 h-3 md:w-5 md:h-5 bg-slate-900 rounded-full transition-transform duration-100"
+                                                className="w-3 h-3 md:w-5 md:h-5 bg-[#070708] rounded-full transition-transform duration-100"
                                                 style={{
                                                     transform: `translate(${rightEye.x}px, ${rightEye.y}px)`
                                                 }}
@@ -182,8 +182,8 @@ function NotFound() {
 
                     {/* Glitch Effect Text */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <p className="text-2xl md:text-4xl font-bold text-red-500 opacity-20 animate-pulse" style={{
-                            textShadow: '2px 2px #00ff00, -2px -2px #ff00ff',
+                        <p className="text-2xl md:text-4xl font-mono font-bold text-[#ff5d00] opacity-20 animate-pulse" style={{
+                            textShadow: '2px 2px #c5f82a, -2px -2px #ff5d00',
                             animation: 'glitch 1s infinite'
                         }}>
                             ERROR
@@ -193,50 +193,50 @@ function NotFound() {
 
                 {/* Message */}
                 <div className="space-y-6 animate-fade-in">
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-4">
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">
                         Oops! Page Not Found
                     </h2>
-                    <p className="text-xl md:text-2xl text-slate-400 mb-6 transition-all duration-500">
+                    <p className="text-xl md:text-2xl font-display text-[#a1a1aa] mb-6 transition-all duration-500">
                         {funMessages[currentMessage]}
                     </p>
-                    <p className="text-lg text-slate-500">
+                    <p className="text-sm text-[#a1a1aa]/80 font-mono uppercase tracking-wider">
                         Don't worry, even the best developers get lost sometimes! 🧭
                     </p>
 
                     {/* Click Counter Hint */}
                     {clickCount > 0 && clickCount < 5 && (
-                        <p className="text-sm text-blue-400 animate-pulse">
+                        <p className="text-xs font-mono uppercase tracking-wider text-[#c5f82a] animate-pulse">
                             🤔 Keep clicking the 404... ({clickCount}/5)
                         </p>
                     )}
 
                     {/* Fun Messages */}
                     <div className="flex flex-wrap justify-center gap-4 mt-8 mb-8">
-                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-red-500 transition-colors duration-300 hover:scale-110 transform">
-                            <span className="text-red-400">❌ Status Code:</span>
-                            <span className="text-white font-bold ml-2">404</span>
+                        <div className="bg-[#0e0e11] backdrop-blur-sm px-6 py-3 rounded-md border border-[#1a1a22] hover:border-[#ff5d00]/50 transition-colors duration-300 transform">
+                            <span className="text-[#ff5d00] font-mono text-xs uppercase tracking-wider">❌ Status:</span>
+                            <span className="text-white font-mono text-xs uppercase font-bold ml-2">404</span>
                         </div>
-                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-purple-500 transition-colors duration-300 hover:scale-110 transform">
-                            <span className="text-purple-400">🤖 AI Analysis:</span>
-                            <span className="text-white font-bold ml-2">Lost in Space</span>
+                        <div className="bg-[#0e0e11] backdrop-blur-sm px-6 py-3 rounded-md border border-[#1a1a22] hover:border-[#c5f82a]/50 transition-colors duration-300 transform">
+                            <span className="text-[#c5f82a] font-mono text-xs uppercase tracking-wider">🤖 AI Status:</span>
+                            <span className="text-white font-mono text-xs uppercase font-bold ml-2">Lost in Space</span>
                         </div>
-                        <div className="bg-slate-800/50 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700/50 hover:border-yellow-500 transition-colors duration-300 hover:scale-110 transform">
-                            <span className="text-yellow-400">⚠️ Error Type:</span>
-                            <span className="text-white font-bold ml-2">Not Found</span>
+                        <div className="bg-[#0e0e11] backdrop-blur-sm px-6 py-3 rounded-md border border-[#1a1a22] hover:border-[#a1a1aa]/50 transition-colors duration-300 transform">
+                            <span className="text-[#a1a1aa] font-mono text-xs uppercase tracking-wider">⚠️ Error:</span>
+                            <span className="text-white font-mono text-xs uppercase font-bold ml-2">Not Found</span>
                         </div>
                     </div>
 
                     {/* Countdown Timer */}
                     {!easterEggFound && (
-                        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/50 inline-block hover:border-blue-500 transition-all duration-300">
-                            <p className="text-slate-300 mb-2">Redirecting to homepage in</p>
-                            <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">
+                        <div className="bg-[#0e0e11] backdrop-blur-sm p-6 rounded-md border border-[#1a1a22] inline-block hover:border-[#c5f82a]/30 transition-all duration-300">
+                            <p className="text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-2">Redirecting to homepage in</p>
+                            <div className="text-5xl font-mono font-bold bg-gradient-to-r from-[#c5f82a] to-[#ff5d00] bg-clip-text text-transparent animate-pulse">
                                 {countdown}
                             </div>
-                            <p className="text-slate-500 text-sm mt-2">seconds</p>
+                            <p className="text-[#a1a1aa]/50 font-mono text-xs uppercase tracking-wider mt-2">seconds</p>
                             <button
                                 onClick={() => setEasterEggFound(true)}
-                                className="mt-3 text-xs text-slate-500 hover:text-blue-400 underline transition-colors"
+                                className="mt-3 text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/50 hover:text-[#c5f82a] underline transition-colors"
                             >
                                 Cancel redirect
                             </button>
@@ -247,83 +247,73 @@ function NotFound() {
                     <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                         <Link
                             to="/"
-                            className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-lg overflow-hidden"
+                            className="inline-flex items-center justify-center rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-8 py-4"
                         >
-                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                🏠 Take Me Home
-                                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                </svg>
-                            </span>
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            🏠 Take Me Home
                         </Link>
 
                         <Link
                             to="/projects"
-                            className="group px-8 py-4 border-2 border-cyan-500 rounded-xl font-semibold hover:bg-cyan-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/50 text-lg backdrop-blur-sm"
+                            className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 font-mono text-xs uppercase px-8 py-4 transition-all duration-200 backdrop-blur-sm"
                         >
-                            <span className="flex items-center justify-center gap-2">
-                                🚀 View Projects
-                            </span>
+                            🚀 View Projects
                         </Link>
 
                         <Link
                             to="/contact"
-                            className="group px-8 py-4 border-2 border-purple-500 rounded-xl font-semibold hover:bg-purple-500 hover:bg-opacity-20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/50 text-lg backdrop-blur-sm"
+                            className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:text-[#ff5d00] hover:border-[#ff5d00]/30 font-mono text-xs uppercase px-8 py-4 transition-all duration-200 backdrop-blur-sm"
                         >
-                            <span className="flex items-center justify-center gap-2">
-                                📧 Contact Me
-                            </span>
+                            📧 Contact Me
                         </Link>
                     </div>
 
                     {/* Helpful Links */}
-                    <div className="mt-12 pt-8 border-t border-slate-800/50">
-                        <p className="text-slate-400 mb-4 flex items-center justify-center gap-2">
-                            <span className="text-2xl">🔗</span>
+                    <div className="mt-12 pt-8 border-t border-[#1a1a22]">
+                        <p className="text-[#a1a1aa] font-mono text-xs uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
+                            <span className="text-xl">🔗</span>
                             {' '}
                             Maybe you were looking for:
                         </p>
                         <div className="flex flex-wrap justify-center gap-3">
-                            <Link to="/about" className="text-blue-400 hover:text-blue-300 underline decoration-blue-400/30 hover:decoration-blue-300 transition-all hover:scale-110 inline-block">
+                            <Link to="/about" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
                                 About Me
                             </Link>
-                            <span className="text-slate-600">•</span>
-                            <Link to="/skills" className="text-purple-400 hover:text-purple-300 underline decoration-purple-400/30 hover:decoration-purple-300 transition-all hover:scale-110 inline-block">
+                            <span className="text-[#242430] font-mono text-xs">/</span>
+                            <Link to="/skills" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
                                 Skills
                             </Link>
-                            <span className="text-slate-600">•</span>
-                            <Link to="/blog" className="text-pink-400 hover:text-pink-300 underline decoration-pink-400/30 hover:decoration-pink-300 transition-all hover:scale-110 inline-block">
+                            <span className="text-[#242430] font-mono text-xs">/</span>
+                            <Link to="/blog" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
                                 Blog
                             </Link>
-                            <span className="text-slate-600">•</span>
-                            <Link to="/projects" className="text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/30 hover:decoration-cyan-300 transition-all hover:scale-110 inline-block">
+                            <span className="text-[#242430] font-mono text-xs">/</span>
+                            <Link to="/projects" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
                                 Projects
                             </Link>
-                            <span className="text-slate-600">•</span>
-                            <Link to="/contact" className="text-green-400 hover:text-green-300 underline decoration-green-400/30 hover:decoration-green-300 transition-all hover:scale-110 inline-block">
+                            <span className="text-[#242430] font-mono text-xs">/</span>
+                            <Link to="/contact" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
                                 Contact & Platforms
                             </Link>
                         </div>
                     </div>
 
                     {/* Fun Error Message */}
-                    <div className="mt-8 text-slate-600 text-sm space-y-2">
+                    <div className="mt-8 text-[#a1a1aa]/60 text-xs font-mono space-y-1.5 leading-relaxed">
                         <p className="flex items-center justify-center gap-2">
                             💡 <span className="font-semibold">Pro Tip:</span> Check the URL or use the navigation menu
                         </p>
-                        <p className="italic text-slate-700">— Debugging life, one 404 at a time ☕</p>
-                        <p className="text-xs text-slate-700 mt-4">
-                            🎮 <span className="text-purple-400">Easter Egg Hint:</span> Try typing the creator's name...
+                        <p className="italic">— Debugging life, one 404 at a time ☕</p>
+                        <p className="text-[10px] text-[#a1a1aa]/40 mt-4">
+                            🎮 <span className="text-[#ff5d00]">Easter Egg Hint:</span> Try typing the creator's name...
                         </p>
                     </div>
                 </div>
 
                 {/* Floating Code Snippets */}
-                <div className="absolute top-20 left-10 opacity-20 text-blue-400 font-mono text-sm animate-float hidden md:block">
+                <div className="absolute top-20 left-10 opacity-20 text-[#c5f82a] font-mono text-sm animate-float hidden md:block">
                     {'{ status: 404 }'}
                 </div>
-                <div className="absolute bottom-20 right-10 opacity-20 text-purple-400 font-mono text-sm animate-float hidden md:block" style={{ animationDelay: '1s' }}>
+                <div className="absolute bottom-20 right-10 opacity-20 text-[#ff5d00] font-mono text-sm animate-float hidden md:block" style={{ animationDelay: '1s' }}>
                     {'throw new Error()'}
                 </div>
             </div>

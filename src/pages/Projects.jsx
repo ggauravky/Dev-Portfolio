@@ -6,8 +6,10 @@
 
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import LazyImage from '../components/LazyImage'
+import TechIcon from '../components/TechIcon'
 import { projectsData, projectCategories } from '../data/projectsData'
 
 function Projects() {
@@ -73,36 +75,39 @@ function Projects() {
     }, [selectedCategory])
 
     return (
-        <div className="min-h-screen bg-slate-900 px-6 py-16 relative overflow-hidden">
+        <main className="projects-page bg-obsidian min-h-screen px-4 py-24 sm:px-6 lg:px-8 relative overflow-hidden w-full">
             {/* Animated Background */}
-            <div className="absolute top-20 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-float"></div>
-            <div className="absolute bottom-20 left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-20 right-10 w-72 h-72 bg-toxic/5 rounded-full blur-3xl animate-float"></div>
+            <div className="absolute bottom-20 left-10 w-96 h-96 bg-cyber/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
 
-            <div className="max-w-7xl mx-auto relative z-10">
+            <div className="max-w-7xl mx-auto relative z-10 space-y-10">
                 {/* Header */}
-                <div className="text-center mb-12 animate-fadeIn">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                        Projects by Gaurav Kumar Yadav
+                <div className="text-center max-w-3xl mx-auto animate-fadeIn">
+                    <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">
+                        My Portfolio
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter text-white mb-6">
+                        Case Studies
                     </h1>
-                    <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-                        AI/ML and web development case studies from a BCA student developer based in Lucknow, Uttar Pradesh, India.
+                    <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">
+                        AI/ML and web development projects built with Python, React, Node.js, and MERN stack workflows.
                     </p>
                 </div>
 
                 {/* Search Bar */}
-                <div className="max-w-2xl mx-auto mb-8 animate-slideUp">
+                <div className="max-w-2xl mx-auto animate-slideUp">
                     <div className="relative">
                         <input
                             type="text"
                             placeholder="Search projects by name, tech stack, or description..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full px-6 py-4 bg-slate-800/80 backdrop-blur-sm border border-slate-700 rounded-2xl text-slate-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all duration-300"
+                            className="w-full px-6 py-4 bg-obsidian-card border border-obsidian-border rounded-lg text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-toxic focus:ring-1 focus:ring-toxic/20 transition-all font-mono text-xs sm:text-sm"
                         />
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-toxic transition-colors font-mono text-sm"
                             >
                                 ✕
                             </button>
@@ -111,14 +116,14 @@ function Projects() {
                 </div>
 
                 {/* Filter Buttons */}
-                <div className="flex flex-wrap justify-center gap-3 mb-12 animate-slideUp" style={{ animationDelay: '0.1s' }}>
+                <div className="flex flex-wrap justify-center gap-3 animate-slideUp" style={{ animationDelay: '0.1s' }}>
                     {projectCategories.map((category) => (
                         <button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${selectedCategory === category
-                                ? 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white shadow-lg shadow-purple-500/50 scale-105'
-                                : 'bg-slate-800/80 backdrop-blur-sm border border-slate-700 text-slate-400 hover:text-slate-300 hover:border-purple-500/50 hover:scale-105'
+                            className={`px-5 py-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-all duration-300 font-mono ${selectedCategory === category
+                                ? 'bg-toxic text-obsidian scale-105'
+                                : 'bg-obsidian-card border border-obsidian-border text-zinc-400 hover:text-white hover:border-toxic hover:scale-105'
                                 }`}
                         >
                             {category}
@@ -126,13 +131,14 @@ function Projects() {
                     ))}
                 </div>
 
-                <div className="max-w-xs mx-auto mb-8 animate-slideUp" style={{ animationDelay: '0.15s' }}>
-                    <label htmlFor="projects-sort" className="block text-xs font-semibold tracking-widest uppercase text-slate-500 mb-2 text-center">Sort Projects</label>
+                {/* Sorting options */}
+                <div className="max-w-xs mx-auto animate-slideUp" style={{ animationDelay: '0.15s' }}>
+                    <label htmlFor="projects-sort" className="block text-[10px] font-mono font-bold tracking-widest uppercase text-zinc-500 mb-2.5 text-center">// Sort Projects</label>
                     <select
                         id="projects-sort"
                         value={sortBy}
                         onChange={(event) => setSortBy(event.target.value)}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-purple-500"
+                        className="w-full bg-obsidian-card border border-obsidian-border text-zinc-300 focus:outline-none focus:border-toxic rounded-lg px-4 py-3 text-xs font-mono uppercase tracking-wider cursor-pointer transition-colors"
                     >
                         <option value="featured">Featured First</option>
                         <option value="newest">Newest First</option>
@@ -142,156 +148,159 @@ function Projects() {
                 </div>
 
                 {/* Results Count */}
-                <div className="text-center mb-8 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-                    <p className="text-slate-400">
+                <div className="text-center animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+                    <p className="text-zinc-500 font-mono text-xs uppercase tracking-wider">
                         {filteredProjects.length === 0 ? (
-                            <span className="text-red-400">No projects found matching your criteria</span>
+                            <span className="text-cyber font-bold">// No projects found matching your criteria</span>
                         ) : (
                             <span>
-                                Showing <span className="text-purple-400 font-semibold">{filteredProjects.length}</span>
+                                // Showing <span className="text-toxic font-bold">{filteredProjects.length}</span>
                                 {filteredProjects.length === 1 ? ' project' : ' projects'}
                             </span>
                         )}
                     </p>
                 </div>
 
-                {/* Projects Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {filteredProjects.length === 0 ? (
-                        <div className="col-span-full text-center py-20">
-                            <div className="flex justify-center mb-6"><svg className="w-24 h-24 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" /></svg></div>
-                            <h3 className="text-2xl font-bold text-slate-400 mb-4">No Projects Found</h3>
-                            <p className="text-slate-500 mb-8">Try adjusting your search or filters</p>
-                            <button
-                                onClick={() => {
-                                    setSearchQuery('')
-                                    setSelectedCategory('All')
-                                }}
-                                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-semibold hover:scale-105 transition-all duration-300"
+                {/* Projects Grid with Framer Motion Layout animations */}
+                <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <AnimatePresence mode="popLayout">
+                        {filteredProjects.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                key="no-results"
+                                className="col-span-full text-center py-20 bg-obsidian-card border border-obsidian-border rounded-lg"
                             >
-                                Clear All Filters
-                            </button>
-                        </div>
-                    ) : (
-                        filteredProjects.map((project, index) => (
-                            <div
-                                key={project.id}
-                                className="group bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm border border-slate-700/50 rounded-2xl overflow-hidden hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] animate-slideUp"
-                                style={{ animationDelay: `${Math.min(0.3 + index * 0.1, 0.8)}s` }}
-                            >
-                                {/* Project Image - Lazy Loaded */}
-                                <div className="card-img-wrap relative h-56 bg-slate-700/50 overflow-hidden">
-                                    <LazyImage
-                                        src={project.image}
-                                        alt={`${project.title} case study by Gaurav Kumar Yadav - AI ML and web developer portfolio`}
-                                        sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
-                                        fetchPriority={index < 2 ? 'high' : 'auto'}
-                                        className="w-full h-full object-cover card-img-zoom"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent opacity-70"></div>
-
-                                    {/* Category Badges — show first 2 to avoid overflow-hidden clipping */}
-                                    <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end">
-                                        {project.categories.slice(0, 2).map((category) => (
-                                            <span key={`${project.id}-cat-${category}`} className="px-3 py-1 bg-purple-600/90 backdrop-blur-sm text-white text-xs font-semibold rounded-full border border-purple-400/50 whitespace-nowrap">
-                                                {category}
-                                            </span>
-                                        ))}
-                                        {project.categories.length > 2 && (
-                                            <span className="px-3 py-1 bg-slate-700/90 backdrop-blur-sm text-slate-300 text-xs font-semibold rounded-full border border-slate-500/50">
-                                                +{project.categories.length - 2}
-                                            </span>
-                                        )}
-                                    </div>
+                                <div className="flex justify-center mb-6">
+                                    <svg className="w-16 h-16 text-zinc-600" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0015.803 15.803z" />
+                                    </svg>
                                 </div>
+                                <h3 className="text-xl font-display font-bold uppercase text-white mb-2">No Projects Found</h3>
+                                <p className="text-zinc-500 text-sm mb-6 font-mono uppercase tracking-wider">// Try adjusting your search or filters</p>
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery('')
+                                        setSelectedCategory('All')
+                                    }}
+                                    className="px-6 py-3 bg-toxic text-obsidian rounded-full font-bold text-xs uppercase tracking-wider hover:bg-white transition-all duration-300"
+                                >
+                                    Clear All Filters
+                                </button>
+                            </motion.div>
+                        ) : (
+                            filteredProjects.map((project, index) => (
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.3 }}
+                                    key={project.id}
+                                    className="group bg-obsidian-card border border-obsidian-border rounded-lg overflow-hidden hover:border-toxic/30 transition-all duration-300 flex flex-col h-full"
+                                >
+                                    {/* Project Image - Lazy Loaded */}
+                                    <div className="card-img-wrap relative h-56 bg-obsidian overflow-hidden">
+                                        <LazyImage
+                                            src={project.image}
+                                            alt={`${project.title} case study by Gaurav Kumar Yadav - AI ML and web developer portfolio`}
+                                            sizes="(min-width: 1280px) 33vw, (min-width: 768px) 50vw, 100vw"
+                                            fetchPriority={index < 2 ? 'high' : 'auto'}
+                                            className="w-full h-full object-cover card-img-zoom"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent opacity-80"></div>
 
-                                {/* Project Content */}
-                                <div className="p-6">
-                                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent group-hover:from-pink-400 group-hover:to-purple-400 transition-all duration-300">
-                                        {project.title}
-                                    </h3>
-                                    <p className="text-slate-400 leading-relaxed mb-5 line-clamp-3">
-                                        {project.description}
-                                    </p>
-
-                                    {/* Tech Stack */}
-                                    <div className="flex flex-wrap gap-2 mb-6">
-                                        {project.techStack.map((tech) => (
-                                            <span
-                                                key={`${project.id}-tech-${tech}`}
-                                                className="bg-slate-800/80 text-slate-300 px-3 py-1.5 rounded-lg text-sm border border-slate-700/50 hover:border-purple-500/50 hover:text-purple-400 transition-all duration-200"
-                                            >
-                                                {tech}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    {/* Links */}
-                                    <div className="flex flex-col gap-3">
-                                        <Link
-                                            to={`/projects/${project.slug}`}
-                                            className="w-full text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/40"
-                                        >
-                                            <span className="flex items-center justify-center gap-2">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                </svg>
-                                                View Case Study
-                                            </span>
-                                        </Link>
-                                        <div className="flex gap-3">
-                                            <a
-                                                href={project.github}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 text-center bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-medium px-4 py-2.5 rounded-xl transition-all duration-300 border border-slate-700 hover:border-purple-500 hover:scale-105 text-sm"
-                                            >
-                                                <span className="flex items-center justify-center gap-1.5">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                                                    </svg>
-                                                    Code
+                                        {/* Category Badges */}
+                                        <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end z-25">
+                                            {project.categories.slice(0, 2).map((category) => (
+                                                <span key={`${project.id}-cat-${category}`} className="px-2.5 py-1 bg-toxic text-obsidian text-[10px] font-mono font-bold rounded uppercase border border-obsidian whitespace-nowrap">
+                                                    {category}
                                                 </span>
-                                            </a>
-                                            {project.demo && project.demo !== "#" && (
-                                                <a
-                                                    href={project.demo}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex-1 text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium px-4 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 text-sm"
-                                                >
-                                                    <span className="flex items-center justify-center gap-1.5">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                                        </svg>
-                                                        Demo
-                                                    </span>
-                                                </a>
+                                            ))}
+                                            {project.categories.length > 2 && (
+                                                <span className="px-2.5 py-1 bg-obsidian text-zinc-400 text-[10px] font-mono font-bold rounded uppercase border border-obsidian-border whitespace-nowrap">
+                                                    +{project.categories.length - 2}
+                                                </span>
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
 
+                                    {/* Project Content */}
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <h3 className="text-xl font-display font-bold uppercase text-white mb-2 group-hover:text-toxic transition-colors">
+                                            {project.title}
+                                        </h3>
+                                        <p className="text-zinc-400 text-sm leading-relaxed mb-5 line-clamp-3 flex-grow">
+                                            {project.description}
+                                        </p>
+
+                                        {/* Tech Stack */}
+                                        <div className="flex flex-wrap gap-1.5 mb-6">
+                                            {project.techStack.map((tech) => (
+                                                <span
+                                                    key={`${project.id}-tech-${tech}`}
+                                                    className="inline-flex items-center gap-1 bg-obsidian text-zinc-400 border border-obsidian-border px-2.5 py-1.5 rounded font-mono text-[10px] hover:border-toxic hover:text-white transition-all"
+                                                >
+                                                    <TechIcon name={tech} className="w-3.5 h-3.5 shrink-0" />
+                                                    {tech}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        {/* Links */}
+                                        <div className="flex flex-col gap-3 mt-auto">
+                                            <Link
+                                                to={`/projects/${project.slug}`}
+                                                className="w-full text-center bg-toxic hover:bg-white text-obsidian font-bold px-4 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
+                                            >
+                                                View Case Study
+                                            </Link>
+                                            <div className="flex gap-2">
+                                                <a
+                                                    href={project.github}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex-1 inline-flex items-center justify-center border border-zinc-800 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-4 py-2.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
+                                                >
+                                                    Code
+                                                </a>
+                                                {project.demo && project.demo !== "#" && (
+                                                    <a
+                                                        href={project.demo}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex-1 inline-flex items-center justify-center bg-cyber hover:bg-white text-obsidian font-bold px-4 py-2.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
+                                                    >
+                                                        Demo
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+
+                {/* Recommendation row */}
                 {recommendedProjects.length > 0 ? (
                     <div className="mt-14 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
-                        <div className="flex items-center justify-between gap-3 mb-5">
-                            <h2 className="text-2xl md:text-3xl font-bold text-slate-100">Recommended to Explore Next</h2>
-                            <span className="text-xs text-slate-500 uppercase tracking-widest">Discovery</span>
+                        <div className="flex items-center justify-between gap-3 mb-6">
+                            <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white">Recommended Projects</h2>
+                            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// Discovery</span>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                             {recommendedProjects.map((project) => (
                                 <Link
                                     key={`recommended-${project.id}`}
                                     to={`/projects/${project.slug}`}
-                                    className="group rounded-2xl border border-slate-700/70 bg-slate-800/60 p-4 hover:border-cyan-500/40 hover:-translate-y-1 transition-all duration-300"
+                                    className="group rounded-lg border border-obsidian-border bg-obsidian-card p-6 hover:border-toxic/30 transition-all duration-300"
                                 >
-                                    <p className="text-xs text-cyan-300 uppercase tracking-wider">{(project.categories || [])[0] || 'Project'}</p>
-                                    <p className="mt-2 text-base font-semibold text-slate-100 group-hover:text-cyan-300 transition-colors">{project.title}</p>
-                                    <p className="mt-2 text-sm text-slate-400 line-clamp-2">{project.description}</p>
+                                    <p className="text-[10px] font-mono font-bold text-toxic uppercase tracking-wider">{(project.categories || [])[0] || 'Project'}</p>
+                                    <p className="mt-2 text-lg font-display font-bold uppercase text-white group-hover:text-toxic transition-colors">{project.title}</p>
+                                    <p className="mt-2 text-xs text-zinc-400 leading-relaxed line-clamp-2">{project.description}</p>
                                 </Link>
                             ))}
                         </div>
@@ -301,32 +310,39 @@ function Projects() {
                 {/* Call to Action */}
                 {filteredProjects.length > 0 && (
                     <div className="mt-16 text-center animate-fadeIn" style={{ animationDelay: '0.8s' }}>
-                        <div className="bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-cyan-600/20 backdrop-blur-sm p-8 md:p-10 rounded-2xl border border-slate-600/50">
-                            <h3 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        <div className="bg-obsidian-card p-8 md:p-12 rounded-lg border border-obsidian-border relative overflow-hidden">
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
+                            <h3 className="text-2xl md:text-3xl font-display font-bold uppercase text-white mb-4">
                                 Want Similar Delivery for Your Project?
                             </h3>
-                            <p className="text-slate-300 text-lg mb-6 max-w-2xl mx-auto">
-                                Move from inspiration to execution with a focused build plan.
+                            <p className="text-zinc-400 text-sm sm:text-base mb-8 max-w-2xl mx-auto leading-relaxed">
+                                Move from inspiration to execution with a focused, premium build plan.
                             </p>
-                            <div className="flex flex-wrap items-center justify-center gap-3">
+                            <div className="flex flex-wrap items-center justify-center gap-4">
                                 <Link
                                     to="/services"
-                                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 rounded-full font-semibold transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-purple-500/50"
+                                    className="group relative px-8 py-4 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 hover:shadow-white/20 text-center overflow-hidden inline-flex items-center justify-center"
                                 >
-                                    Book Service
+                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                        <span>Book Service</span>
+                                        <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                                    </span>
                                 </Link>
                                 <Link
                                     to="/contact"
-                                    className="inline-flex items-center gap-2 px-8 py-4 border border-slate-600 hover:border-cyan-500/50 rounded-full font-semibold text-slate-100 hover:text-cyan-300 transition-all duration-300"
+                                    className="group relative px-8 py-4 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
                                 >
-                                    Start a Conversation
+                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                        <span>Start a Conversation</span>
+                                        <svg className="w-3.5 h-3.5 shrink-0 group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                                    </span>
                                 </Link>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </main>
     )
 }
 

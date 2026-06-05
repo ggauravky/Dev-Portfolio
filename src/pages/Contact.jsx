@@ -159,43 +159,39 @@ function Contact() {
         }
     }
 
-    const ringColor = { name: 'cyan', email: 'cyan', subject: 'purple', message: 'blue' }
+    const ringColor = { name: 'toxic', email: 'toxic', subject: 'cyber', message: 'toxic' }
     const fieldClass = (key) => {
-        const ring = ringColor[key] || 'cyan'
+        const ring = ringColor[key] || 'toxic'
         const ringMap = {
-            cyan:   'border-cyan-500 shadow-[0_0_0_3px_rgba(6,182,212,0.12)]',
-            purple: 'border-purple-500 shadow-[0_0_0_3px_rgba(168,85,247,0.12)]',
-            blue:   'border-blue-500 shadow-[0_0_0_3px_rgba(59,130,246,0.12)]',
+            toxic:  'border-toxic/60 shadow-[0_0_15px_rgba(197,248,42,0.15)]',
+            cyber:  'border-cyber/60 shadow-[0_0_15px_rgba(255,93,0,0.15)]',
         }
-        return `rounded-xl border transition-all duration-200 ${focused === key ? ringMap[ring] : 'border-slate-700/80'}`
+        return `rounded-md border transition-all duration-200 ${focused === key ? ringMap[ring] : 'border-obsidian-border bg-obsidian-light/30'}`
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 relative overflow-hidden">
-
-            {/* Ambient blobs */}
-            <div className="absolute top-[-80px] right-[-80px] w-[480px] h-[480px] bg-cyan-500/6 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-60px] left-[-60px] w-[420px] h-[420px] bg-purple-500/6 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-1/2 left-1/4 w-[300px] h-[300px] bg-blue-500/4 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-obsidian relative overflow-hidden">
+            {/* Ambient gradients */}
+            <div className="absolute top-[-80px] right-[-80px] w-[480px] h-[480px] bg-toxic/4 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-[-60px] left-[-60px] w-[420px] h-[420px] bg-cyber/4 rounded-full blur-3xl pointer-events-none" />
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
-
                 {/* Header */}
                 <div className="text-center mb-12 sm:mb-16">
-                    <span className="inline-flex items-center gap-2 text-emerald-400 text-xs font-bold tracking-widest uppercase mb-5 px-4 py-2 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-2 text-toxic text-xs font-mono tracking-wider uppercase mb-5 px-3 py-1.5 bg-toxic/5 rounded-md border border-toxic/20">
                         <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-toxic opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-toxic" />
                         </span>{' '}
                         Open to new opportunities
                     </span>
 
-                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold mb-5 leading-tight tracking-tight">
-                        <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-display font-black mb-5 leading-tight tracking-tight">
+                        <span className="bg-gradient-to-r from-toxic via-white to-cyber bg-clip-text text-transparent">
                             Let&apos;s Build
                         </span>
                         <br />
-                        <span className="text-white">Something Great</span>
+                        <span className="text-slate-100">Something Great</span>
                     </h1>
 
                     <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -203,14 +199,13 @@ function Contact() {
                         <br className="hidden sm:block" />
                         Drop me a message and let&apos;s make it happen.
                     </p>
-
                 </div>
 
                 {/* Major platforms first */}
                 <section className="mb-10 sm:mb-12">
                     <div className="flex items-center justify-between gap-3 mb-5">
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-100">Major Platforms</h2>
-                        <span className="text-xs text-slate-500 uppercase tracking-widest">Start Here</span>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-100">Major Platforms</h2>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Start Here</span>
                     </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {featuredPlatforms.map((platform) => (
@@ -219,16 +214,16 @@ function Contact() {
                                 href={platform.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group relative overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-800/60 p-4 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1"
+                                className="group relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-5 hover:border-toxic/45 transition-all duration-300 hover:-translate-y-1"
                             >
-                                <div className={`absolute inset-0 opacity-0 group-hover:opacity-20 bg-gradient-to-br ${platform.tone} transition-opacity duration-300`} />
+                                <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-br ${platform.tone} transition-opacity duration-300`} />
                                 <div className="relative z-10">
-                                    <div className="w-11 h-11 rounded-xl border border-slate-600/60 bg-slate-900/70 text-white flex items-center justify-center mb-3">
+                                    <div className="w-11 h-11 rounded-md border border-obsidian-border bg-obsidian text-white flex items-center justify-center mb-3 group-hover:scale-105 transition-all">
                                         {platform.icon}
                                     </div>
                                     <p className="text-white font-semibold text-base">{platform.label}</p>
-                                    <p className="text-cyan-300 text-xs mt-0.5">{platform.username}</p>
-                                    <p className="text-slate-400 text-xs mt-2">{platform.subtitle}</p>
+                                    <p className="text-toxic font-mono text-xs mt-0.5">{platform.username}</p>
+                                    <p className="text-slate-450 text-xs mt-2">{platform.subtitle}</p>
                                 </div>
                             </a>
                         ))}
@@ -236,16 +231,16 @@ function Contact() {
                 </section>
 
                 {/* Resume strip */}
-                <div className="mb-10 sm:mb-12 rounded-2xl border border-slate-700/50 bg-slate-800/40 backdrop-blur-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-slate-600/60 transition-colors duration-300">
+                <div className="mb-10 sm:mb-12 rounded-lg border border-obsidian-border bg-obsidian-card/45 backdrop-blur-sm p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 hover:border-toxic/30 transition-all duration-300">
                     <div className="flex items-center gap-4">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-11 h-11 rounded-md bg-toxic/5 border border-toxic/20 flex items-center justify-center shrink-0">
+                            <svg className="w-5 h-5 text-toxic" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
                         <div className="text-center sm:text-left">
                             <p className="text-white font-semibold text-sm">Want my full resume?</p>
-                            <p className="text-slate-400 text-xs mt-0.5">Experience &middot; Skills &middot; Education&nbsp;— all in one PDF</p>
+                            <p className="text-slate-450 text-xs mt-0.5 font-sans">Experience &middot; Skills &middot; Education&nbsp;— all in one PDF</p>
                         </div>
                     </div>
                     <a
@@ -253,7 +248,7 @@ function Contact() {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label="Open resume PDF in a new tab"
-                        className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-semibold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20"
+                        className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-toxic/15 border border-toxic/40 hover:bg-toxic hover:text-black text-toxic text-xs font-mono uppercase tracking-wider rounded-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(197,248,42,0.2)]"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -264,168 +259,165 @@ function Contact() {
 
                 {/* Proper message form */}
                 <section id="contact-form" className="mb-12 sm:mb-14">
-                        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-9 hover:border-slate-600/60 transition-colors duration-300">
+                    <div className="bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 lg:p-9 hover:border-obsidian-light transition-all duration-300 shadow-xl">
+                        <div className="mb-7">
+                            <h2 className="text-xl sm:text-2xl font-display font-bold text-white mb-1.5">Send a message</h2>
+                            <p className="text-slate-450 text-sm">I read every message and reply personally.</p>
+                        </div>
 
-                            <div className="mb-7">
-                                <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">Send a message</h2>
-                                <p className="text-slate-400 text-sm">I read every message and reply personally.</p>
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {/* Name + Email */}
+                            <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
+                                <div className="space-y-1.5">
+                                    <label htmlFor="name" className="flex items-center gap-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
+                                        Full Name <span className="text-cyber normal-case font-mono tracking-normal text-[13px] leading-none">*</span>
+                                    </label>
+                                    <div className={fieldClass('name')}>
+                                        <input
+                                            type="text" id="name" name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            onFocus={() => setFocused('name')}
+                                            onBlur={() => setFocused('')}
+                                            required
+                                            autoComplete="name"
+                                            placeholder="Gaurav Kumar"
+                                            className="w-full bg-transparent text-slate-200 px-4 py-3 rounded-md focus:outline-none placeholder-zinc-700 text-sm font-sans"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label htmlFor="email" className="flex items-center gap-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
+                                        Email Address <span className="text-cyber normal-case font-mono tracking-normal text-[13px] leading-none">*</span>
+                                    </label>
+                                    <div className={fieldClass('email')}>
+                                        <input
+                                            type="email" id="email" name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            onFocus={() => setFocused('email')}
+                                            onBlur={() => setFocused('')}
+                                            required
+                                            autoComplete="email"
+                                            placeholder="you@example.com"
+                                            className="w-full bg-transparent text-slate-200 px-4 py-3 rounded-md focus:outline-none placeholder-zinc-700 text-sm font-sans"
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-5">
-
-                                {/* Name + Email */}
-                                <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
-                                    <div className="space-y-1.5">
-                                        <label htmlFor="name" className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                            Full Name <span className="text-rose-400 normal-case font-normal tracking-normal text-[13px] leading-none">*</span>
-                                        </label>
-                                        <div className={fieldClass('name')}>
-                                            <input
-                                                type="text" id="name" name="name"
-                                                value={formData.name}
-                                                onChange={handleChange}
-                                                onFocus={() => setFocused('name')}
-                                                onBlur={() => setFocused('')}
-                                                required
-                                                autoComplete="name"
-                                                placeholder="Gaurav Kumar"
-                                                className="w-full bg-slate-900/60 text-slate-200 px-4 py-3 rounded-xl focus:outline-none placeholder-slate-600 text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label htmlFor="email" className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                            Email Address <span className="text-rose-400 normal-case font-normal tracking-normal text-[13px] leading-none">*</span>
-                                        </label>
-                                        <div className={fieldClass('email')}>
-                                            <input
-                                                type="email" id="email" name="email"
-                                                value={formData.email}
-                                                onChange={handleChange}
-                                                onFocus={() => setFocused('email')}
-                                                onBlur={() => setFocused('')}
-                                                required
-                                                autoComplete="email"
-                                                placeholder="you@example.com"
-                                                className="w-full bg-slate-900/60 text-slate-200 px-4 py-3 rounded-xl focus:outline-none placeholder-slate-600 text-sm"
-                                            />
-                                        </div>
-                                    </div>
+                            {/* Subject */}
+                            <div className="space-y-1.5">
+                                <label htmlFor="subject" className="flex items-center gap-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
+                                    Subject <span className="text-cyber normal-case font-mono tracking-normal text-[13px] leading-none">*</span>
+                                </label>
+                                <div className={fieldClass('subject')}>
+                                    <input
+                                        type="text" id="subject" name="subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        onFocus={() => setFocused('subject')}
+                                        onBlur={() => setFocused('')}
+                                        required
+                                        placeholder="Freelance project · Internship · Collaboration · Just saying hi"
+                                        className="w-full bg-transparent text-slate-200 px-4 py-3 rounded-md focus:outline-none placeholder-zinc-700 text-sm font-sans"
+                                    />
                                 </div>
+                            </div>
 
-                                {/* Subject */}
-                                <div className="space-y-1.5">
-                                    <label htmlFor="subject" className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                        Subject <span className="text-rose-400 normal-case font-normal tracking-normal text-[13px] leading-none">*</span>
+                            {/* Message */}
+                            <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="message" className="flex items-center gap-1 text-[10px] font-mono tracking-wider uppercase text-slate-400">
+                                        Message <span className="text-cyber normal-case font-mono tracking-normal text-[13px] leading-none">*</span>
                                     </label>
-                                    <div className={fieldClass('subject')}>
-                                        <input
-                                            type="text" id="subject" name="subject"
-                                            value={formData.subject}
-                                            onChange={handleChange}
-                                            onFocus={() => setFocused('subject')}
-                                            onBlur={() => setFocused('')}
-                                            required
-                                            placeholder="Freelance project · Internship · Collaboration · Just saying hi"
-                                            className="w-full bg-slate-900/60 text-slate-200 px-4 py-3 rounded-xl focus:outline-none placeholder-slate-600 text-sm"
-                                        />
-                                    </div>
+                                    <span className={`text-[11px] font-mono tracking-wider transition-colors ${formData.message.length > 1800 ? 'text-cyber' : 'text-slate-650'}`}>
+                                        {formData.message.length}&thinsp;/&thinsp;{CONTACT_MESSAGE_LIMIT}
+                                    </span>
                                 </div>
-
-                                {/* Message */}
-                                <div className="space-y-1.5">
-                                    <div className="flex items-center justify-between">
-                                        <label htmlFor="message" className="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                            Message <span className="text-rose-400 normal-case font-normal tracking-normal text-[13px] leading-none">*</span>
-                                        </label>
-                                        <span className={`text-xs tabular-nums font-medium transition-colors ${formData.message.length > 1800 ? 'text-rose-400' : 'text-slate-600'}`}>
-                                            {formData.message.length}&thinsp;/&thinsp;{CONTACT_MESSAGE_LIMIT}
-                                        </span>
-                                    </div>
-                                    <div className={fieldClass('message')}>
-                                        <textarea
-                                            id="message" name="message"
-                                            rows="7"
-                                            maxLength={CONTACT_MESSAGE_LIMIT}
-                                            value={formData.message}
-                                            onChange={handleChange}
-                                            onFocus={() => setFocused('message')}
-                                            onBlur={() => setFocused('')}
-                                            required
-                                            placeholder="Tell me about your project, idea, or just say hi. The more detail, the better I can help."
-                                            className="w-full bg-slate-900/60 text-slate-200 px-4 py-3.5 rounded-xl focus:outline-none resize-none placeholder-slate-600 text-sm leading-relaxed"
-                                        />
-                                    </div>
+                                <div className={fieldClass('message')}>
+                                    <textarea
+                                        id="message" name="message"
+                                        rows="7"
+                                        maxLength={CONTACT_MESSAGE_LIMIT}
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        onFocus={() => setFocused('message')}
+                                        onBlur={() => setFocused('')}
+                                        required
+                                        placeholder="Tell me about your project, idea, or just say hi. The more detail, the better I can help."
+                                        className="w-full bg-transparent text-slate-200 px-4 py-3 rounded-md focus:outline-none resize-none placeholder-zinc-700 text-sm leading-relaxed font-sans"
+                                    />
                                 </div>
+                            </div>
 
-                                {/* Submit button */}
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:scale-[1.015] hover:shadow-xl hover:shadow-blue-500/20 flex items-center justify-center gap-3 group disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none text-sm sm:text-base"
-                                >
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            {/* Submit button */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-toxic/15 border border-toxic/40 hover:bg-toxic hover:text-black text-toxic font-mono font-semibold py-4 rounded-md transition-all duration-300 hover:shadow-xl hover:shadow-toxic/20 flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-wider"
+                            >
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Sending&hellip;
+                                    </>
+                                ) : (
+                                    <>
+                                        Send Message
+                                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-350" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                    </>
+                                )}
+                            </button>
+
+                            {/* Footer row */}
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
+                                <p className="text-[11px] font-sans text-slate-500 text-center sm:text-left">
+                                    Your data is never shared with third parties.
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <a
+                                        href={`mailto:${CONTACT_EMAIL}`}
+                                        className="text-xs text-toxic hover:text-toxic/80 transition-colors font-mono tracking-wider underline underline-offset-2 whitespace-nowrap"
+                                    >
+                                        Or email me directly
+                                    </a>
+                                    <button
+                                        type="button"
+                                        onClick={copyEmail}
+                                        className={`w-7 h-7 rounded-md border flex items-center justify-center transition-all duration-200 ${
+                                            copied
+                                                ? 'bg-toxic/15 border-toxic/30 text-toxic'
+                                                : 'bg-obsidian-light border-obsidian-border text-slate-400 hover:text-toxic hover:border-toxic/40 hover:bg-toxic/5'
+                                        }`}
+                                        aria-label="Copy email"
+                                    >
+                                        {copied ? (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                                             </svg>
-                                            Sending&hellip;
-                                        </>
-                                    ) : (
-                                        <>
-                                            Send Message
-                                            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        ) : (
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                             </svg>
-                                        </>
-                                    )}
-                                </button>
-
-                                {/* Footer row */}
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-                                    <p className="text-xs text-slate-600 text-center sm:text-left">
-                                        Your data is never shared with third parties.
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={`mailto:${CONTACT_EMAIL}`}
-                                            className="text-xs text-cyan-500 hover:text-cyan-400 transition-colors underline underline-offset-2 whitespace-nowrap"
-                                        >
-                                            Or email me directly
-                                        </a>
-                                        <button
-                                            type="button"
-                                            onClick={copyEmail}
-                                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all duration-200 ${
-                                                copied
-                                                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
-                                                    : 'bg-slate-700/40 border-slate-600/50 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/40 hover:bg-cyan-500/8'
-                                            }`}
-                                            aria-label="Copy email"
-                                        >
-                                            {copied ? (
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
+                                        )}
+                                    </button>
                                 </div>
-
-                            </form>
-                        </div>
+                            </div>
+                        </form>
+                    </div>
                 </section>
 
                 {/* All Find Me links in stronger UI */}
                 <section>
                     <div className="flex items-center justify-between gap-3 mb-5">
-                        <h2 className="text-2xl sm:text-3xl font-bold text-slate-100">Find Me Everywhere</h2>
-                        <span className="text-xs text-slate-500 uppercase tracking-widest">All Links</span>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-100">Find Me Everywhere</h2>
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">All Links</span>
                     </div>
 
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -435,35 +427,23 @@ function Contact() {
                                 href={platform.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group relative rounded-2xl border border-slate-700/60 bg-slate-800/60 p-5 overflow-hidden isolate hover:border-slate-500/10 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.015] hover:shadow-2xl hover:shadow-cyan-500/20"
+                                className="group relative rounded-lg border border-obsidian-border bg-obsidian-card p-5 overflow-hidden isolate hover:border-toxic/30 transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-2xl hover:shadow-toxic/5"
                             >
-                                <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 blur-xl transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br from-cyan-400/30 via-blue-500/20 to-purple-500/30" />
-                                <div className={`absolute inset-0 bg-gradient-to-br ${platform.tone} opacity-0 group-hover:opacity-95 transition-opacity duration-500`} />
-                                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 [background:radial-gradient(130%_90%_at_20%_15%,rgba(255,255,255,.30),rgba(255,255,255,0))]" />
-
-                                <div
-                                    className="pointer-events-none absolute -top-10 -right-10 w-28 h-28 rounded-full border border-white/0 group-hover:border-white/30 transition-all duration-700"
-                                    style={{ transform: `rotate(${16 + index * 9}deg)` }}
-                                />
-                                <div
-                                    className="pointer-events-none absolute -bottom-12 -left-8 w-28 h-28 rounded-full border border-white/0 group-hover:border-white/20 transition-all duration-700"
-                                    style={{ transform: `rotate(${-14 - index * 6}deg)` }}
-                                />
+                                <div className="pointer-events-none absolute -inset-px rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-10 bg-gradient-to-br from-toxic via-transparent to-cyber" />
 
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between gap-3">
-                                        <div className="w-11 h-11 rounded-xl border border-slate-600/60 bg-slate-900/70 flex items-center justify-center text-white transition-all duration-500 group-hover:border-white/45 group-hover:bg-white/10 group-hover:scale-110 group-hover:rotate-3">
+                                        <div className="w-11 h-11 rounded-lg border border-obsidian-border bg-obsidian flex items-center justify-center text-white transition-all duration-300 group-hover:border-toxic/40 group-hover:scale-105">
                                             {platform.icon}
                                         </div>
-                                        <svg className="w-5 h-5 text-slate-500 group-hover:text-white group-hover:translate-x-1.5 group-hover:-translate-y-1.5 group-hover:scale-110 transition-all duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg className="w-4 h-4 text-slate-500 group-hover:text-toxic group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                         </svg>
                                     </div>
 
-                                    <h3 className="text-white font-bold text-lg mt-4 tracking-tight transition-transform duration-500 group-hover:translate-x-0.5">{platform.label}</h3>
-                                    <p className="text-cyan-300 text-sm mt-0.5 transition-colors duration-500 group-hover:text-white">{platform.username}</p>
-                                    <p className="text-slate-400 group-hover:text-slate-100 text-sm mt-2 transition-colors duration-500">{platform.subtitle}</p>
-                                    <div className="mt-4 h-px w-full bg-gradient-to-r from-transparent via-white/0 to-transparent group-hover:via-white/45 transition-all duration-700" />
+                                    <h3 className="text-white font-display font-bold text-lg mt-4 transition-transform duration-350">{platform.label}</h3>
+                                    <p className="text-toxic font-mono text-xs mt-0.5 transition-colors duration-350 group-hover:text-toxic/85">{platform.username}</p>
+                                    <p className="text-slate-450 group-hover:text-slate-200 text-sm mt-2 transition-colors duration-300">{platform.subtitle}</p>
                                 </div>
                             </a>
                         ))}
@@ -484,3 +464,4 @@ function Contact() {
 }
 
 export default Contact
+

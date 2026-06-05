@@ -7,53 +7,86 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Cursor Spotlight — a soft radial glow that follows the mouse with smooth
- * lerp (linear-interpolation) lag. Uses RAF + CSS custom properties so it
- * never triggers a React re-render and stays at 60fps.
- * Hidden on touch/mobile devices automatically.
+ * Cursor Spotlight — an interactive cursor experience.
+ * Features:
+ * 1. An ambient background glow (zIndex 0) that illuminates cards from behind.
+ * 2. An editorial foreground pointer ring (zIndex 9999, mix-blend-mode difference)
+ *    that inverts text colors on hover.
  */
 export default function CursorSpotlight() {
-    const spotRef = useRef(null)
+    const glowRef = useRef(null)
+    const ringRef = useRef(null)
+    const dotRef = useRef(null)
 
     useEffect(() => {
-        const el = spotRef.current
-        if (!el) return
+        const glow = glowRef.current
+        const ring = ringRef.current
+        const dot = dotRef.current
+        if (!glow || !ring || !dot) return
 
-        // Current rendered position (lerp target)
-        let cx = window.innerWidth / 2
-        let cy = window.innerHeight / 2
-        // Raw mouse destination
-        let tx = cx
-        let ty = cy
+        // Target coordinates
+        let tx = window.innerWidth / 2
+        let ty = window.innerHeight / 2
+
+        // Rendered coordinates (lerped)
+        let gx = tx, gy = ty // Glow
+        let rx = tx, ry = ty // Ring
+        let dx = tx, dy = ty // Dot
+
         let rafId = null
         let hasMoved = false
 
-        const LERP = 0.1  // 0=no movement, 1=instant snap — 0.1 gives nice lag
+        const LERP_GLOW = 0.05
+        const LERP_RING = 0.08
+        const LERP_DOT = 0.25
 
         const onMove = (e) => {
             tx = e.clientX
             ty = e.clientY
+
             if (!hasMoved) {
                 hasMoved = true
-                // Jump to position on first move so it doesn't slide in from centre
-                cx = tx
-                cy = ty
-                el.style.opacity = '1'
+                gx = rx = dx = tx
+                gy = ry = dy = ty
+                glow.style.opacity = '1'
+                ring.style.opacity = '1'
+                dot.style.opacity = '1'
             }
         }
 
         const tick = () => {
-            // Lerp towards target
-            cx += (tx - cx) * LERP
-            cy += (ty - cy) * LERP
+            if (hasMoved) {
+                // Lerp each element at different rates
+                gx += (tx - gx) * LERP_GLOW
+                gy += (ty - gy) * LERP_GLOW
 
-            // translate3d triggers GPU composite layer — no layout thrash
-            el.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`
+                rx += (tx - rx) * LERP_RING
+                ry += (ty - ry) * LERP_RING
+
+                dx += (tx - dx) * LERP_DOT
+                dy += (ty - dy) * LERP_DOT
+
+                glow.style.transform = `translate3d(${gx}px, ${gy}px, 0) translate(-50%, -50%)`
+                ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
+                dot.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`
+            }
+
             rafId = requestAnimationFrame(tick)
         }
 
-        const onLeave = () => { el.style.opacity = '0' }
-        const onEnter = () => { if (hasMoved) el.style.opacity = '1' }
+        const onLeave = () => {
+            glow.style.opacity = '0'
+            ring.style.opacity = '0'
+            dot.style.opacity = '0'
+        }
+
+        const onEnter = () => {
+            if (hasMoved) {
+                glow.style.opacity = '1'
+                ring.style.opacity = '1'
+                dot.style.opacity = '1'
+            }
+        }
 
         window.addEventListener('mousemove', onMove, { passive: true })
         document.documentElement.addEventListener('mouseleave', onLeave)
@@ -69,25 +102,68 @@ export default function CursorSpotlight() {
     }, [])
 
     return (
-        <div
-            ref={spotRef}
-            aria-hidden="true"
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: 900,
-                height: 900,
-                borderRadius: '50%',
-                pointerEvents: 'none',
-                zIndex: 0,
-                opacity: 0,
-                transition: 'opacity 0.6s ease',
-                background: 'radial-gradient(circle at center, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.14) 28%, rgba(6,182,212,0.08) 55%, transparent 72%)',
-                // Only show on non-touch devices
-                // The @media query equivalent — we just hide via JS on touch at mount
-            }}
-            className="hidden-on-touch"
-        />
+        <>
+            {/* Ambient Background Glow (Z-Index 0) */}
+            <div
+                ref={glowRef}
+                aria-hidden="true"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: 700,
+                    height: 700,
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                    opacity: 0,
+                    transition: 'opacity 0.8s ease',
+                    background: 'radial-gradient(circle at center, rgba(197,248,42,0.1) 0%, rgba(255,93,0,0.05) 35%, transparent 70%)',
+                }}
+                className="hidden-on-touch"
+            />
+
+            {/* Foreground Inverse Ring (Z-Index 9999) */}
+            <div
+                ref={ringRef}
+                aria-hidden="true"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    border: '1px solid #c5f82a',
+                    pointerEvents: 'none',
+                    zIndex: 9999,
+                    opacity: 0,
+                    mixBlendMode: 'difference',
+                    transition: 'opacity 0.4s ease',
+                }}
+                className="hidden-on-touch"
+            />
+
+            {/* Foreground Inverse Dot (Z-Index 9999) */}
+            <div
+                ref={dotRef}
+                aria-hidden="true"
+                style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: '#c5f82a',
+                    pointerEvents: 'none',
+                    zIndex: 9999,
+                    opacity: 0,
+                    mixBlendMode: 'difference',
+                    transition: 'opacity 0.2s ease',
+                }}
+                className="hidden-on-touch"
+            />
+        </>
     )
 }

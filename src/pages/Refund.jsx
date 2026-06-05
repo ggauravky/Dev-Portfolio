@@ -16,29 +16,41 @@ function Refund() {
     })
 
     return (
-        <div className="min-h-screen bg-slate-900 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative overflow-hidden">
-            <div className="absolute top-20 right-5 sm:right-10 w-48 h-48 sm:w-72 sm:h-72 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
-            <div className="absolute bottom-20 left-5 sm:left-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="min-h-screen bg-[#070708] px-4 sm:px-6 lg:px-8 py-16 sm:py-20 relative overflow-hidden">
+            {/* Ambient gradients */}
+            <div className="absolute top-[-80px] right-[-80px] w-[480px] h-[480px] bg-toxic/3 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-[-60px] left-[-60px] w-[420px] h-[420px] bg-cyber/3 rounded-full blur-3xl pointer-events-none" />
 
             <div className="max-w-4xl mx-auto relative z-10">
-                <div className="text-center mb-8 sm:mb-12 animate-fadeIn">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent px-2">
-                        Refund Policy
+                {/* Header */}
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-black mb-4 uppercase tracking-tight text-white">
+                        Refund <span className="bg-gradient-to-r from-toxic via-white to-cyber bg-clip-text text-transparent">Policy</span>
                     </h1>
-                    <p className="text-slate-400 text-base sm:text-lg">Last Updated: March 18, 2026</p>
+                    <p className="text-[#a1a1aa] font-mono text-xs uppercase tracking-wider">
+                        Last Updated: March 18, 2026
+                    </p>
                 </div>
 
-                <div className="legal-content bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-4 sm:p-6 md:p-8 lg:p-10 rounded-xl sm:rounded-2xl border border-slate-700/50 space-y-6 sm:space-y-8">
+                {/* Content */}
+                <div className="legal-content bg-[#0e0e11] border border-[#1a1a22] p-6 sm:p-10 rounded-lg space-y-8 relative overflow-hidden">
+
                     <section className="space-y-3 sm:space-y-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-blue-400">Service Delivery</h2>
-                        <p className="text-slate-300">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <svg className="w-6 h-6 text-toxic" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>
+                            <span className="break-words">Service Delivery</span>
+                        </h2>
+                        <p className="text-[#a1a1aa] text-sm sm:text-base leading-relaxed">
                             Most services are delivered digitally via email, call, or direct support sessions. Development work timelines are shared before work starts.
                         </p>
                     </section>
 
                     <section className="space-y-3 sm:space-y-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-purple-400">Refund Eligibility</h2>
-                        <ul>
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <svg className="w-6 h-6 text-cyber" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="break-words">Refund Eligibility</span>
+                        </h2>
+                        <ul className="space-y-2 ml-4">
                             <li>Full refund if cancellation is requested before the session/work starts.</li>
                             <li>Partial refund may be considered for development services based on completed scope.</li>
                             <li>No refund after full service delivery (for example, completed mentoring/review session).</li>
@@ -46,8 +58,11 @@ function Refund() {
                     </section>
 
                     <section className="space-y-3 sm:space-y-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-cyan-400">Non-Refundable Cases</h2>
-                        <ul>
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <svg className="w-6 h-6 text-toxic" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="break-words">Non-Refundable Cases</span>
+                        </h2>
+                        <ul className="space-y-2 ml-4">
                             <li>Missed sessions without prior notice.</li>
                             <li>Change of mind after successful completion.</li>
                             <li>Delays caused by missing information from the client side.</li>
@@ -55,21 +70,27 @@ function Refund() {
                     </section>
 
                     <section className="space-y-3 sm:space-y-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-emerald-400">How to Request a Refund</h2>
-                        <p className="text-slate-300">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <svg className="w-6 h-6 text-cyber" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                            <span className="break-words">How to Request a Refund</span>
+                        </h2>
+                        <p className="text-[#a1a1aa] leading-relaxed">
                             Send a request within 3 days of payment with your payment ID and issue summary.
                         </p>
-                        <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700/50">
-                            <p className="text-slate-300">
-                                Email: <a href="mailto:kumar.gaurav.yadav2007@gmail.com" className="text-blue-400 hover:underline">kumar.gaurav.yadav2007@gmail.com</a><br />
+                        <div className="contact-box">
+                            <p>
+                                Email: <a href="mailto:kumar.gaurav.yadav2007@gmail.com">kumar.gaurav.yadav2007@gmail.com</a><br />
                                 Subject: Refund Request - Payment ID
                             </p>
                         </div>
                     </section>
 
                     <section className="space-y-3 sm:space-y-4">
-                        <h2 className="text-xl sm:text-2xl font-bold text-orange-400">Payment Security Note</h2>
-                        <p className="text-slate-300">
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                            <svg className="w-6 h-6 text-toxic" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                            <span className="break-words">Payment Security Note</span>
+                        </h2>
+                        <p className="text-[#a1a1aa] leading-relaxed">
                             Payments are processed via Cashfree secure checkout. No card number, CVV, or UPI PIN data is stored on this website.
                         </p>
                     </section>

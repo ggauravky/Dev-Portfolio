@@ -30,15 +30,15 @@ const formatDate = (value) => {
 const getStatusBadgeClass = (status) => {
     const normalized = String(status || '').toLowerCase()
     if (normalized === 'paid') {
-        return 'border-emerald-400/35 bg-emerald-500/10 text-emerald-200'
+        return 'border-[#c5f82a]/30 bg-[#c5f82a]/10 text-[#c5f82a]'
     }
     if (normalized === 'pending' || normalized === 'created') {
-        return 'border-amber-400/35 bg-amber-500/10 text-amber-200'
+        return 'border-[#ff5d00]/30 bg-[#ff5d00]/10 text-[#ff5d00]'
     }
     if (normalized === 'failed') {
-        return 'border-rose-400/35 bg-rose-500/10 text-rose-200'
+        return 'border-rose-500/30 bg-rose-500/10 text-rose-300'
     }
-    return 'border-slate-500/35 bg-slate-500/10 text-slate-300'
+    return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa]'
 }
 
 const isPendingPaymentState = (status) => ['created', 'pending'].includes(String(status || '').toLowerCase())
@@ -394,10 +394,10 @@ function MyActivity() {
 
     const getTabButtonClass = (isActive) => {
         if (isActive) {
-            return 'border border-cyan-400/35 bg-cyan-500/10 text-cyan-200'
+            return 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
         }
 
-        return 'border border-transparent bg-slate-800/80 text-slate-300 hover:border-slate-600'
+        return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa] hover:border-[#c5f82a]/30 hover:text-white'
     }
 
     const getReceiptButtonLabel = (isDownloading, canDownload, successLabel) => {
@@ -413,7 +413,7 @@ function MyActivity() {
     }
 
     const renderEmptyState = (message) => (
-        <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-800/60 p-6 text-slate-300">{message}</div>
+        <div className="mt-8 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-8 text-center text-[#a1a1aa] text-sm font-mono uppercase tracking-wider">{message}</div>
     )
 
     const renderSupportsTab = () => {
@@ -427,15 +427,15 @@ function MyActivity() {
                     <Link
                         key={item.id}
                         to={`/blog/${item.blog.slug}`}
-                        className="group rounded-2xl border border-slate-700/70 bg-slate-800/55 p-5 hover:border-cyan-500/40 hover:-translate-y-0.5 transition-all duration-300"
+                        className="group rounded-md border border-[#1a1a22] bg-[#0e0e11] p-6 hover:border-[#c5f82a]/30 transition-all duration-200"
                     >
-                        <p className="text-lg font-semibold text-slate-100 group-hover:text-cyan-200 transition-colors">
+                        <p className="text-lg font-display font-bold text-white group-hover:text-[#c5f82a] transition-colors">
                             {item.blog.title}
                         </p>
-                        <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-400">
+                        <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
                             <span>Supported on {formatDate(item.createdAt)}</span>
                             <span>•</span>
-                            <span className="text-rose-300">❤️ {item.blog.supportCount} supporters</span>
+                            <span className="text-[#ff5d00]">❤️ {item.blog.supportCount} supporters</span>
                         </div>
                     </Link>
                 ))}
@@ -463,31 +463,31 @@ function MyActivity() {
                     return (
                         <div
                             key={item.id}
-                            className={`rounded-2xl border bg-slate-800/55 p-5 ${
+                            className={`rounded-md border bg-[#0e0e11] p-6 transition-all duration-200 ${
                                 isSuccessOrder
-                                    ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
-                                    : 'border-slate-700/70'
+                                    ? 'border-[#c5f82a]/30 shadow-[2px_2px_0px_0px_rgba(197,248,42,0.15)]'
+                                    : 'border-[#1a1a22]'
                             }`}
                         >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                    <p className="text-lg font-semibold text-slate-100">{item.service}</p>
-                                    <p className="mt-1 text-sm text-slate-400">
+                                    <p className="text-lg font-display font-bold text-white">{item.service}</p>
+                                    <p className="mt-1.5 text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
                                         Purchased on {formatDate(item.paidAt || item.createdAt)} | INR {item.amount}
                                     </p>
-                                    <p className="mt-1 text-xs text-slate-500">Order ID: {item.orderId}</p>
+                                    <p className="mt-1 text-[10px] font-mono uppercase text-[#a1a1aa]/50">Order ID: {item.orderId}</p>
                                 </div>
-                                <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${getStatusBadgeClass(item.paymentStatus)}`}>
+                                <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(item.paymentStatus)}`}>
                                     {item.paymentStatus}
                                 </span>
                             </div>
 
-                            <div className="mt-4">
+                            <div className="mt-5">
                                 <button
                                     type="button"
                                     onClick={() => downloadBookingReceipt(item.orderId)}
                                     disabled={!canDownload || downloadingKey === buttonKey}
-                                    className="rounded-xl border border-cyan-400/35 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     {buttonLabel}
                                 </button>
@@ -519,32 +519,32 @@ function MyActivity() {
                     return (
                         <div
                             key={item.id}
-                            className={`rounded-2xl border bg-slate-800/55 p-5 ${
+                            className={`rounded-md border bg-[#0e0e11] p-6 transition-all duration-200 ${
                                 isSuccessOrder
-                                    ? 'border-emerald-400/45 shadow-[0_0_0_1px_rgba(52,211,153,0.25)]'
-                                    : 'border-slate-700/70'
+                                    ? 'border-[#c5f82a]/30 shadow-[2px_2px_0px_0px_rgba(197,248,42,0.15)]'
+                                    : 'border-[#1a1a22]'
                             }`}
                         >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                                 <div>
-                                    <p className="text-lg font-semibold text-slate-100">Support Contribution</p>
-                                    <p className="mt-1 text-sm text-slate-400">
+                                    <p className="text-lg font-display font-bold text-white">Support Contribution</p>
+                                    <p className="mt-1.5 text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
                                         Paid on {formatDate(item.paidAt || item.createdAt)} | INR {item.amount}
                                     </p>
-                                    <p className="mt-1 text-xs text-slate-500">Order ID: {item.orderId}</p>
-                                    {item.message ? <p className="mt-2 text-sm text-slate-300">"{item.message}"</p> : null}
+                                    <p className="mt-1 text-[10px] font-mono uppercase text-[#a1a1aa]/50">Order ID: {item.orderId}</p>
+                                    {item.message ? <p className="mt-3 text-sm text-[#a1a1aa] leading-relaxed p-3 bg-[#16161a] border border-[#1a1a22] rounded-md">"{item.message}"</p> : null}
                                 </div>
-                                <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wider ${getStatusBadgeClass(item.paymentStatus)}`}>
+                                <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(item.paymentStatus)}`}>
                                     {item.paymentStatus}
                                 </span>
                             </div>
 
-                            <div className="mt-4">
+                            <div className="mt-5">
                                 <button
                                     type="button"
                                     onClick={() => downloadSupportReceipt(item.orderId)}
                                     disabled={!canDownload || downloadingKey === buttonKey}
-                                    className="rounded-xl border border-cyan-400/35 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     {buttonLabel}
                                 </button>
@@ -574,10 +574,10 @@ function MyActivity() {
 
     if (loading || isLoading) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+            <div className="min-h-screen bg-[#070708] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyan-500" />
-                    <p className="mt-3 text-slate-300">Loading your activity...</p>
+                    <div className="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#c5f82a]" />
+                    <p className="mt-3 text-[#a1a1aa] font-mono text-xs uppercase tracking-wider">Loading your activity...</p>
                 </div>
             </div>
         )
@@ -585,15 +585,15 @@ function MyActivity() {
 
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-slate-900 px-4 py-20">
-                <div className="mx-auto max-w-xl rounded-3xl border border-slate-700/70 bg-slate-800/60 p-8 text-center">
-                    <h1 className="text-3xl font-bold text-slate-100">My Activity</h1>
-                    <p className="mt-3 text-slate-300">
+            <div className="min-h-screen bg-[#070708] px-4 py-20 flex items-center justify-center">
+                <div className="mx-auto max-w-xl w-full rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-8 text-center">
+                    <h1 className="text-3xl font-display font-bold text-white">My Activity</h1>
+                    <p className="mt-3 text-[#a1a1aa] text-sm leading-relaxed">
                         You are not signed in yet. Sign in with Google from any blog support or checkout page.
                     </p>
                     <Link
                         to="/blog"
-                        className="mt-6 inline-flex items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-500/10 px-5 py-3 text-cyan-200 hover:bg-cyan-500/20 transition-colors"
+                        className="mt-6 inline-flex items-center justify-center rounded-md border border-[#1a1a22] bg-[#0e0e11] px-5 py-3 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 transition-colors"
                     >
                         Go to Blog
                     </Link>
@@ -603,22 +603,22 @@ function MyActivity() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 px-4 py-14 sm:py-20">
+        <div className="min-h-screen bg-[#070708] px-4 py-14 sm:py-20">
             <div className="mx-auto max-w-5xl">
-                <h1 className="text-3xl sm:text-4xl font-bold text-slate-100">My Activity</h1>
-                <p className="mt-2 text-slate-400">
+                <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">My Activity</h1>
+                <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed">
                     Welcome {user?.name || 'User'}. Track your blog supports, service purchases, and support contributions in one place.
                 </p>
 
                 {paymentSuccessState ? (
-                    <div className="mt-6 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-4 sm:p-5">
-                        <p className="text-[11px] uppercase tracking-wider text-emerald-200">Payment Confirmed</p>
-                        <h2 className="mt-1 text-lg sm:text-xl font-semibold text-emerald-100">
+                    <div className="mt-6 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/5 p-4 sm:p-5">
+                        <p className="text-xs font-mono uppercase tracking-wider text-[#c5f82a]">Payment Confirmed</p>
+                        <h2 className="mt-1 text-lg sm:text-xl font-display font-bold text-white">
                             {paymentSuccessState.flow === 'support'
                                 ? 'Thank you for supporting. Your contribution was successful.'
                                 : 'Congratulations. Your service payment was successful.'}
                         </h2>
-                        <p className="mt-2 text-sm text-emerald-50/90">
+                        <p className="mt-2 text-xs font-mono text-[#a1a1aa] leading-relaxed">
                             Order ID: {paymentSuccessState.orderId}
                             {paymentSuccessState.paymentId ? ` | Payment ID: ${paymentSuccessState.paymentId}` : ''}
                         </p>
@@ -628,7 +628,7 @@ function MyActivity() {
                                 type="button"
                                 onClick={downloadExpectedReceipt}
                                 disabled={Boolean(downloadingKey)}
-                                className="rounded-xl border border-emerald-300/50 bg-emerald-600/20 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-2.5"
                             >
                                 {paymentSuccessState.flow === 'support'
                                     ? 'Download Support Receipt PDF'
@@ -637,7 +637,7 @@ function MyActivity() {
                             <button
                                 type="button"
                                 onClick={dismissPaymentSuccessState}
-                                className="rounded-xl border border-emerald-200/30 bg-transparent px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-500/10"
+                                className="rounded-md border border-[#1a1a22] bg-transparent px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-white transition-all"
                             >
                                 Dismiss
                             </button>
@@ -645,7 +645,7 @@ function MyActivity() {
                     </div>
                 ) : null}
 
-                <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-slate-700 bg-slate-800/60 p-2">
+                <div className="mt-6 flex flex-wrap gap-2 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-1.5">
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab.key
                         return (
@@ -653,7 +653,7 @@ function MyActivity() {
                                 key={tab.key}
                                 type="button"
                                 onClick={() => setActiveTab(tab.key)}
-                                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-colors ${getTabButtonClass(isActive)}`}
+                                className={`rounded-md px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors ${getTabButtonClass(isActive)}`}
                             >
                                 {tab.label}
                             </button>

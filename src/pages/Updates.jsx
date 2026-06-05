@@ -124,10 +124,10 @@ const updates = [
         ],
     },
     {
-        version: 'Latest',
+        version: 'v3.0.0',
         date: 'Apr 17, 2026',
         title: 'Major Platform Upgrade',
-        headline: '🚀 Major Platform Upgrade - Payments, Analytics & UX Improvements',
+        headline: '🚀 v3.0.0 - Major Platform Upgrade',
         description: 'This release introduces a complete upgrade to the portfolio platform, including real-time payment handling, analytics tracking, and a refined user experience.',
         sections: [
             {
@@ -234,50 +234,89 @@ const updates = [
             },
         ],
     },
+    {
+        version: 'v4.0.0',
+        date: 'Jun 05, 2026',
+        title: 'System UI/UX Overhaul & Optimization',
+        headline: '🎨 v4.0.0 - Premium Visual System & Page Refinements',
+        description: 'A comprehensive visual upgrade that introduces a premium editorial brutalist theme, optimizes navbar behavior, refines layouts, and styles core subpages and legal documents.',
+        sections: [
+            {
+                title: 'Visual Core Overhaul',
+                icon: '🎨',
+                tone: 'emerald',
+                items: [
+                    'Migrated global layout theme to premium obsidian dark (#070708 & #0e0e11).',
+                    'Redesigned components to use sharp, modular borders (#1a1a22) and rounded-lg geometries.',
+                    'Optimized typography pairings utilizing high-contrast avant-garde Syne headings and Plus Jakarta Sans body structures.',
+                ],
+            },
+            {
+                title: 'Navbar & Layout Mechanics',
+                icon: '⚡',
+                tone: 'blue',
+                items: [
+                    'Removed generic logo icons to align name branding clearly on desktop and mobile views.',
+                    'Shifted top relative offsets to site-header padding, resolving overlap issues and ensuring layout height calculation matches actual viewport render space.',
+                    'Refined desktop floating bar and mobile full-screen slide-down drawer with backdrop-blur effects.',
+                ],
+            },
+            {
+                title: 'Subpages & Legal Pages',
+                icon: '🔧',
+                tone: 'rose',
+                items: [
+                    'Re-themed browser ML demos (Image Analyzer and Prompt Improver) using obsidian inputs and custom status badges.',
+                    'Redesigned Privacy, Terms, and Refund pages to align with dark editorial branding.',
+                    'Overhauled legal list styling using clean Space Mono arrow indicators (→) and styled inline hyperlinks.',
+                ],
+            },
+        ],
+    },
 ]
 
 const sectionToneClasses = {
     emerald: {
-        border: 'border-emerald-500/30',
-        bg: 'bg-emerald-500/10',
-        title: 'text-emerald-300',
-        bullet: 'text-emerald-300',
+        border: 'border-[#c5f82a]/20',
+        bg: 'bg-[#c5f82a]/5',
+        title: 'text-[#c5f82a]',
+        bullet: 'text-[#c5f82a]',
     },
     blue: {
-        border: 'border-blue-500/30',
-        bg: 'bg-blue-500/10',
-        title: 'text-blue-300',
-        bullet: 'text-blue-300',
+        border: 'border-[#1a1a22]',
+        bg: 'bg-[#16161a]',
+        title: 'text-white',
+        bullet: 'text-[#c5f82a]',
     },
     rose: {
-        border: 'border-rose-500/30',
-        bg: 'bg-rose-500/10',
-        title: 'text-rose-300',
-        bullet: 'text-rose-300',
+        border: 'border-[#ff5d00]/20',
+        bg: 'bg-[#ff5d00]/5',
+        title: 'text-[#ff5d00]',
+        bullet: 'text-[#ff5d00]',
     },
     cyan: {
-        border: 'border-cyan-500/30',
-        bg: 'bg-cyan-500/10',
-        title: 'text-cyan-300',
-        bullet: 'text-cyan-300',
+        border: 'border-[#c5f82a]/20',
+        bg: 'bg-[#c5f82a]/5',
+        title: 'text-[#c5f82a]',
+        bullet: 'text-[#c5f82a]',
     },
     amber: {
-        border: 'border-amber-500/30',
-        bg: 'bg-amber-500/10',
-        title: 'text-amber-300',
-        bullet: 'text-amber-300',
+        border: 'border-[#ff5d00]/20',
+        bg: 'bg-[#ff5d00]/5',
+        title: 'text-[#ff5d00]',
+        bullet: 'text-[#ff5d00]',
     },
     violet: {
-        border: 'border-violet-500/30',
-        bg: 'bg-violet-500/10',
-        title: 'text-violet-300',
-        bullet: 'text-violet-300',
+        border: 'border-[#1a1a22]',
+        bg: 'bg-[#16161a]',
+        title: 'text-white',
+        bullet: 'text-[#c5f82a]',
     },
     slate: {
-        border: 'border-slate-500/30',
-        bg: 'bg-slate-500/10',
-        title: 'text-slate-200',
-        bullet: 'text-slate-200',
+        border: 'border-[#1a1a22]',
+        bg: 'bg-[#16161a]',
+        title: 'text-[#a1a1aa]',
+        bullet: 'text-[#a1a1aa]',
     },
 }
 
@@ -290,43 +329,43 @@ function Updates() {
     })
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="pointer-events-none absolute -right-20 top-24 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
-            <div className="pointer-events-none absolute -left-20 bottom-12 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
+        <main className="relative min-h-screen overflow-hidden bg-[#070708] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+            <div className="pointer-events-none absolute -right-20 top-24 h-64 w-64 rounded-full bg-[#ff5d00]/5 blur-3xl" />
+            <div className="pointer-events-none absolute -left-20 bottom-12 h-72 w-72 rounded-full bg-[#c5f82a]/5 blur-3xl" />
 
             <div className="relative z-10 mx-auto max-w-5xl">
                 <ScrollReveal className="text-center mb-12 sm:mb-14">
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-100 mb-4">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold tracking-tight text-white mb-4">
                         🚀 Product Updates
                     </h1>
-                    <p className="mx-auto max-w-3xl text-slate-300 text-base sm:text-lg leading-relaxed">
+                    <p className="mx-auto max-w-3xl text-[#a1a1aa] text-base sm:text-lg leading-relaxed">
                         Follow my journey of building and improving this portfolio platform.
                     </p>
                 </ScrollReveal>
 
                 <section className="relative">
-                    <div className="pointer-events-none absolute left-3 top-0 bottom-0 hidden sm:block w-px bg-gradient-to-b from-cyan-400/40 via-blue-400/35 to-transparent" />
+                    <div className="pointer-events-none absolute left-3 top-0 bottom-0 hidden sm:block w-px bg-gradient-to-b from-[#ff5d00]/30 via-[#c5f82a]/20 to-transparent" />
 
                     <div className="space-y-6 sm:space-y-8">
                         {updates.map((update, index) => (
                             <ScrollReveal key={update.version} delay={index * 90}>
-                                <article className="group relative rounded-3xl border border-slate-700/70 bg-gradient-to-br from-slate-900/90 via-slate-900/80 to-slate-950/90 p-5 sm:p-7 shadow-xl shadow-black/30 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/45 hover:shadow-cyan-500/10">
-                                    <span className="hidden sm:inline-block absolute left-0 top-9 -translate-x-[31px] h-3 w-3 rounded-full border border-cyan-300/50 bg-cyan-400/70 shadow-[0_0_0_4px_rgba(15,23,42,0.9)]" />
+                                <article className="group relative rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#c5f82a]/30 hover:shadow-2xl">
+                                    <span className="hidden sm:inline-block absolute left-0 top-9 -translate-x-[35px] h-2.5 w-2.5 rounded-full border border-[#c5f82a]/50 bg-[#c5f82a] shadow-[0_0_0_4px_rgba(7,7,8,0.9)]" />
 
                                     <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                                        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/35 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-cyan-200">
+                                        <div className="inline-flex items-center gap-2 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
                                             {update.version}
                                         </div>
-                                        <div className="inline-flex items-center rounded-full border border-slate-600/70 bg-slate-800/70 px-3 py-1 text-xs font-medium text-slate-300">
+                                        <div className="inline-flex items-center rounded-md border border-[#1a1a22] bg-[#16161a] px-3 py-1 text-xs font-mono text-[#a1a1aa]">
                                             📅 {update.date}
                                         </div>
                                     </div>
 
-                                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-100 mb-6">
+                                    <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-white mb-6">
                                         {update.headline || `${update.version} - ${update.title}`}
                                     </h2>
 
-                                    <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+                                    <p className="text-[#a1a1aa] text-sm sm:text-base leading-relaxed mb-6">
                                         {update.description}
                                     </p>
 
@@ -335,14 +374,14 @@ function Updates() {
                                             const tone = sectionToneClasses[section.tone] || sectionToneClasses.slate
 
                                             return (
-                                                <section key={`${update.version}-${section.title}`} className={`rounded-2xl border ${tone.border} ${tone.bg} p-4 sm:p-5`}>
-                                                    <h3 className={`text-sm font-bold uppercase tracking-wider ${tone.title} mb-3`}>
+                                                <section key={`${update.version}-${section.title}`} className={`rounded-md border ${tone.border} ${tone.bg} p-4 sm:p-5`}>
+                                                    <h3 className={`text-xs font-mono font-bold uppercase tracking-wider ${tone.title} mb-3`}>
                                                         {section.icon} {section.title}
                                                     </h3>
-                                                    <ul className="space-y-2 text-sm text-slate-200 leading-relaxed">
+                                                    <ul className="space-y-2 text-xs font-mono text-[#a1a1aa] leading-relaxed">
                                                         {section.items.map((item) => (
                                                             <li key={`${section.title}-${item}`} className="flex items-start gap-2">
-                                                                <span className={`mt-[2px] ${tone.bullet}`}>•</span>
+                                                                 <span className={`mt-[2px] ${tone.bullet}`}>→</span>
                                                                 <span>{item}</span>
                                                             </li>
                                                         ))}

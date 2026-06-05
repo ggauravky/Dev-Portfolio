@@ -227,20 +227,20 @@ function PromptImprover() {
     }, [improvedPrompt])
 
     return (
-        <div className="group relative p-6 bg-slate-800/50 border border-slate-700/50 rounded-2xl hover:border-purple-500/40 hover:bg-slate-800/80 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/10 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/5 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+        <div className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg hover:border-toxic/30 transition-all duration-300 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-toxic/5 to-cyber/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
 
             <div className="relative space-y-4">
                 <div>
-                    <svg className="w-8 h-8 text-purple-400 mb-2" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                    <h3 className="text-white font-semibold text-lg">AI Prompt Improver</h3>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <svg className="w-8 h-8 text-toxic mb-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                    <h3 className="text-white font-display font-bold text-lg uppercase tracking-tight">AI Prompt Improver</h3>
+                    <p className="text-[#a1a1aa] text-sm mt-1">
                         Rule-based NLP enhancement using compromise.js and structured prompt logic.
                     </p>
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-slate-300">
+                    <label className="text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
                         Input Prompt
                     </label>
                     <textarea
@@ -252,7 +252,7 @@ function PromptImprover() {
                         placeholder="Example: write about javascript"
                         rows={4}
                         maxLength={1200}
-                        className="w-full rounded-xl border border-slate-700 bg-slate-900/70 text-slate-100 placeholder-slate-500 px-3 py-2 text-sm outline-none focus:border-purple-400/70 focus:ring-2 focus:ring-purple-500/20 transition"
+                        className="w-full rounded-md border border-[#1a1a22] bg-[#070708] text-white placeholder-zinc-600 px-3 py-2 text-sm outline-none focus:border-toxic/50 focus:ring-1 focus:ring-toxic/20 transition"
                     />
                 </div>
 
@@ -261,7 +261,7 @@ function PromptImprover() {
                         type="button"
                         onClick={handleImprove}
                         disabled={!canRun}
-                        className="px-3 py-2 text-sm rounded-lg bg-purple-600/90 hover:bg-purple-500 text-white border border-purple-500/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-toxic text-black font-bold border border-toxic/50 hover:bg-toxic/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isProcessing ? 'Improving...' : 'Improve Prompt'}
                     </button>
@@ -276,7 +276,7 @@ function PromptImprover() {
                             setIsCopied(false)
                         }}
                         disabled={isProcessing}
-                        className="px-3 py-2 text-sm rounded-lg bg-transparent text-slate-300 hover:text-white border border-slate-600/70 hover:border-slate-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-transparent text-[#a1a1aa] hover:text-white border border-[#1a1a22] hover:border-[#2a2a35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Reset
                     </button>
@@ -285,7 +285,7 @@ function PromptImprover() {
                         <button
                             type="button"
                             onClick={handleCopy}
-                            className="px-3 py-2 text-sm rounded-lg bg-slate-700/80 hover:bg-slate-700 text-slate-100 border border-slate-600/70 transition-colors"
+                            className="px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-md bg-[#1a1a22] hover:bg-[#252530] text-white border border-[#2a2a35] transition-colors"
                         >
                             {isCopied ? 'Copied' : 'Copy Output'}
                         </button>
@@ -293,25 +293,25 @@ function PromptImprover() {
                 </div>
 
                 {error && (
-                    <div className="text-sm text-rose-300 bg-rose-500/10 border border-rose-500/30 rounded-lg px-3 py-2">
-                        {error}
+                    <div className="text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-md px-3 py-2 font-mono">
+                        Error: {error}
                     </div>
                 )}
 
                 {intel && (
-                    <div className="rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
-                        <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">NLP Insights</p>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                            <span className="px-2 py-1 rounded-full border border-slate-600/70 text-slate-200">Action: {intel.action}</span>
-                            <span className="px-2 py-1 rounded-full border border-slate-600/70 text-slate-200">Tone: {intel.tone}</span>
-                            <span className="px-2 py-1 rounded-full border border-slate-600/70 text-slate-200">Format: {intel.outputFormat}</span>
-                            <span className="px-2 py-1 rounded-full border border-slate-600/70 text-slate-200">
+                    <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-4 space-y-3">
+                        <p className="text-xs font-mono uppercase tracking-wider text-zinc-500">NLP Insights</p>
+                        <div className="flex flex-wrap gap-2 text-xs font-mono">
+                            <span className="px-2.5 py-1 rounded-md border border-[#1a1a22] text-[#a1a1aa] bg-[#0e0e11] text-[10px] uppercase tracking-wider">Action: {intel.action}</span>
+                            <span className="px-2.5 py-1 rounded-md border border-[#1a1a22] text-[#a1a1aa] bg-[#0e0e11] text-[10px] uppercase tracking-wider">Tone: {intel.tone}</span>
+                            <span className="px-2.5 py-1 rounded-md border border-[#1a1a22] text-[#a1a1aa] bg-[#0e0e11] text-[10px] uppercase tracking-wider">Format: {intel.outputFormat}</span>
+                            <span className="px-2.5 py-1 rounded-md border border-[#1a1a22] text-[#a1a1aa] bg-[#0e0e11] text-[10px] uppercase tracking-wider">
                                 Topics: {intel.topics.length ? intel.topics.join(', ') : 'general'}
                             </span>
                         </div>
                         {intel.missingDetails.length > 0 && (
-                            <p className="text-xs text-amber-300 mt-2">
-                                Missing details detected: {intel.missingDetails.join(', ')}
+                            <p className="text-xs font-mono text-amber-400">
+                                // Missing details: {intel.missingDetails.join(', ')}
                             </p>
                         )}
                     </div>
@@ -319,14 +319,14 @@ function PromptImprover() {
 
                 {improvedPrompt && (
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-300">
+                        <label className="text-xs font-mono uppercase tracking-wider text-[#a1a1aa]">
                             Improved Prompt
                         </label>
                         <textarea
                             value={improvedPrompt}
                             readOnly
                             rows={10}
-                            className="w-full rounded-xl border border-slate-700 bg-slate-900/80 text-slate-100 px-3 py-2 text-sm leading-relaxed"
+                            className="w-full rounded-md border border-[#1a1a22] bg-[#070708] text-[#a1a1aa] px-3 py-2 text-sm font-mono leading-relaxed"
                         />
                     </div>
                 )}

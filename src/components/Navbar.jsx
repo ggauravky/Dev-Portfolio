@@ -23,35 +23,35 @@ const renderDesktopProfileMenu = ({
         <button
             type="button"
             onClick={() => setIsProfileMenuOpen((previous) => !previous)}
-            className="group inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-800/70 px-2.5 py-2 text-slate-200 hover:border-cyan-400/50 hover:text-white transition-colors"
+            className="group inline-flex items-center gap-2 rounded-full border border-obsidian-border bg-obsidian-card px-3 py-2 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors"
             aria-label="Open profile menu"
         >
             {user.picture ? (
                 <img
                     src={user.picture}
                     alt={user.name || 'User'}
-                    className="h-8 w-8 rounded-full border border-slate-600 object-cover"
+                    className="h-7 w-7 rounded-full border border-obsidian-border object-cover"
                     referrerPolicy="no-referrer"
                 />
             ) : (
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-xs font-bold uppercase">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic">
                     {getProfileInitial(user)}
                 </span>
             )}
-            <svg className={`h-4 w-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <svg className={`h-4 w-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
         </button>
 
         {isProfileMenuOpen ? (
-            <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-700/80 bg-slate-900/95 p-2 shadow-xl shadow-black/40">
-                <div className="px-3 pb-2 pt-1 border-b border-slate-700/60 mb-2">
-                    <p className="text-sm font-semibold text-slate-100 truncate">{user.name || 'Google User'}</p>
-                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
+            <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-obsidian-border bg-obsidian-card p-2 shadow-2xl shadow-black/85">
+                <div className="px-3 pb-2 pt-1 border-b border-obsidian-border/60 mb-2">
+                    <p className="text-sm font-semibold text-white truncate">{user.name || 'Google User'}</p>
+                    <p className="text-xs text-zinc-500 truncate">{user.email}</p>
                 </div>
                 <Link
                     to="/my-activity"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-200 hover:bg-slate-800 transition-colors"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-obsidian-light hover:text-toxic transition-colors"
                     onClick={() => setIsProfileMenuOpen(false)}
                 >
                     <span>❤️</span>
@@ -60,7 +60,7 @@ const renderDesktopProfileMenu = ({
                 <button
                     type="button"
                     onClick={handleLogout}
-                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-200 hover:bg-rose-500/10 transition-colors"
+                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
                 >
                     <span>↩</span>
                     <span>Logout</span>
@@ -71,30 +71,30 @@ const renderDesktopProfileMenu = ({
 )
 
 const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
-    <div className="rounded-2xl border border-slate-700/70 bg-slate-800/70 p-3">
+    <div className="rounded-2xl border border-obsidian-border bg-obsidian-card p-3">
         <div className="flex items-center gap-3">
             {user.picture ? (
                 <img
                     src={user.picture}
                     alt={user.name || 'User'}
-                    className="h-10 w-10 rounded-full border border-slate-600 object-cover"
+                    className="h-10 w-10 rounded-full border border-obsidian-border object-cover"
                     referrerPolicy="no-referrer"
                 />
             ) : (
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-600 bg-slate-700 text-sm font-bold uppercase text-slate-200">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-sm font-bold uppercase text-toxic">
                     {getProfileInitial(user)}
                 </span>
             )}
             <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-100 truncate">{user.name || 'Google User'}</p>
-                <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                <p className="text-sm font-semibold text-white truncate">{user.name || 'Google User'}</p>
+                <p className="text-xs text-zinc-500 truncate">{user.email}</p>
             </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2">
             <Link
                 to="/my-activity"
                 onClick={closeMenu}
-                className="inline-flex items-center justify-center rounded-xl border border-cyan-400/35 bg-cyan-500/10 px-3 py-2 text-xs font-semibold text-cyan-200"
+                className="inline-flex items-center justify-center rounded-xl border border-toxic/35 bg-toxic/10 px-3 py-2 text-xs font-semibold text-toxic"
             >
                 My Activity
             </Link>
@@ -104,7 +104,7 @@ const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
                     await handleLogout()
                     closeMenu()
                 }}
-                className="inline-flex items-center justify-center rounded-xl border border-rose-400/35 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-200"
+                className="inline-flex items-center justify-center rounded-xl border border-rose-400/35 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-400"
             >
                 Logout
             </button>
@@ -179,52 +179,49 @@ function Navbar() {
 
     return (
         <>
-            {/* ── Top navbar bar ────────────────────────────────────────── */}
-            <nav className={`border-b backdrop-blur-xl transition-all duration-300 ${
-                scrolled
-                    ? 'bg-slate-900/98 border-slate-700/60 shadow-xl shadow-black/40'
-                    : 'bg-slate-900/90 border-slate-700/40 shadow-lg shadow-slate-900/20'
-            }`}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            <nav className={`w-[94%] max-w-7xl mx-auto z-50 transition-all duration-500`}>
+                <div className={`px-5 py-3 rounded-full border transition-all duration-300 backdrop-blur-md ${
+                    scrolled
+                        ? 'shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95 max-w-5xl mx-auto'
+                        : 'shadow-xl shadow-black/20 bg-obsidian-card/75 border-obsidian-border/50 max-w-7xl'
+                }`}>
                     <div className="flex items-center justify-between">
 
                         {/* Logo */}
                         <Link
                             to="/"
                             onClick={closeMenu}
-                            className="group text-base sm:text-lg md:text-xl font-bold flex items-center gap-1 sm:gap-2 relative"
+                            className="group text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 relative"
                         >
-                            <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 group-hover:scale-125 transition-transform duration-300 text-yellow-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /></svg>
-                            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent group-hover:from-cyan-400 group-hover:via-blue-400 group-hover:to-purple-400 transition-all duration-500">
-                                <span className="hidden sm:inline">Gaurav Kumar Yadav</span>
+                            <span className="text-white group-hover:text-toxic transition-colors duration-300">
+                                <span className="hidden sm:inline">Gaurav</span>
                                 <span className="sm:hidden">Gaurav</span>
                             </span>
-                            <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                            <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                         </Link>
-
                         {/* Desktop links */}
                         <div className="hidden lg:flex items-center gap-1 xl:gap-2">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`relative px-3 xl:px-4 py-2.5 rounded-xl font-medium transition-colors duration-200 text-sm xl:text-base group ${isActive(link.path)
-                                        ? 'text-white'
-                                        : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                                    className={`relative px-4 py-2 rounded-full font-medium transition-colors duration-300 text-[13px] xl:text-[14px] group ${isActive(link.path)
+                                        ? 'text-obsidian font-bold'
+                                        : 'text-zinc-400 hover:text-white'
                                         }`}
                                 >
                                     {isActive(link.path) && (
                                         <motion.span
                                             layoutId="nav-active-pill"
-                                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/50"
+                                            className="absolute inset-0 rounded-full bg-toxic shadow-md shadow-toxic/25"
                                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                                         />
                                     )}
                                     <span className="relative z-10">{link.name}</span>
                                     {!isActive(link.path) && (
                                         <>
-                                            <span className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
-                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+                                            <span className="absolute inset-x-3 -bottom-0.5 h-0.5 bg-toxic transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
+                                            <div className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                                         </>
                                     )}
                                 </Link>
@@ -237,13 +234,12 @@ function Navbar() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Open resume PDF in a new tab"
-                            className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-4 xl:px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-cyan-500/40 hover:shadow-cyan-500/60 hover:scale-105 text-sm xl:text-base cursor-pointer whitespace-nowrap group relative overflow-hidden"
+                            className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-5 py-2.5 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 shadow-md shadow-toxic/5 hover:shadow-toxic/30 hover:scale-105 text-xs xl:text-sm cursor-pointer whitespace-nowrap group relative overflow-hidden"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                            <svg className="w-4 h-4 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            <svg className="w-3.5 h-3.5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                             </svg>
-                            <span className="relative z-10">View Resume</span>
+                            <span className="relative z-10">Resume</span>
                         </a>
 
                         {isAuthenticated && user
@@ -259,13 +255,13 @@ function Navbar() {
                         {/* Hamburger — mobile only */}
                         <button
                             onClick={() => setIsMenuOpen(prev => !prev)}
-                            className="lg:hidden flex flex-col items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-800/70 active:scale-95 transition-all duration-200 shrink-0"
+                            className="lg:hidden flex flex-col items-center justify-center w-10 h-10 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light active:scale-95 transition-all duration-200 shrink-0"
                             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
                             aria-expanded={isMenuOpen}
                         >
-                            <span className={`block h-0.5 w-5 bg-slate-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[6px]' : '-translate-y-[5px]'}`}></span>
-                            <span className={`block h-0.5 w-5 bg-slate-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`}></span>
-                            <span className={`block h-0.5 w-5 bg-slate-300 rounded-full transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[6px]' : 'translate-y-[5px]'}`}></span>
+                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[6px]' : '-translate-y-[5px]'}`}></span>
+                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`}></span>
+                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[6px]' : 'translate-y-[5px]'}`}></span>
                         </button>
                     </div>
                 </div>
@@ -290,22 +286,21 @@ function Navbar() {
                 style={{ height: '100dvh' }}
                 className={`fixed inset-y-0 right-0 z-[200] lg:hidden
                     flex flex-col w-[85vw] max-w-sm
-                    bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950
-                    border-l border-slate-700/50 shadow-2xl shadow-black/70
+                    bg-gradient-to-b from-obsidian via-obsidian-card to-obsidian
+                    border-l border-obsidian-border shadow-2xl shadow-black/90
                     transition-transform duration-300 ease-out
                     ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
                 {/* ── Header ── */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50 shrink-0">
-                    <Link to="/" onClick={closeMenu} className="flex items-center gap-2.5 min-w-0">
-                        <svg className="w-6 h-6 shrink-0 text-yellow-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /></svg>
-                        <span className="font-bold text-base bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent truncate">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-border shrink-0">
+                    <Link to="/" onClick={closeMenu} className="flex items-center gap-2 min-w-0 font-display font-extrabold uppercase tracking-wider">
+                        <span className="text-white truncate">
                             Gaurav
                         </span>
                     </Link>
                     <button
                         onClick={closeMenu}
-                        className="shrink-0 flex items-center justify-center w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700/60 text-slate-400 hover:text-white transition-all duration-200 active:scale-90"
+                        className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-obsidian-light hover:bg-obsidian border border-obsidian-border text-zinc-400 hover:text-white transition-all duration-200 active:scale-90"
                         aria-label="Close menu"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,7 +311,7 @@ function Navbar() {
 
                 {/* ── Nav links (scrollable, fills all available space) ── */}
                 <nav className="flex-1 overflow-y-auto px-3 py-3" style={{ minHeight: 0 }}>
-                    <p className="text-slate-500 text-[11px] font-semibold uppercase tracking-widest px-3 pb-2">
+                    <p className="text-zinc-600 text-[10px] font-display font-bold uppercase tracking-widest px-3.5 pb-2">
                         Navigation
                     </p>
                     {navLinks.map((link) => (
@@ -324,19 +319,19 @@ function Navbar() {
                             key={link.path}
                             to={link.path}
                             onClick={closeMenu}
-                            className={`group flex items-center gap-3.5 px-3.5 py-3.5 rounded-2xl font-semibold transition-all duration-200 mb-1 ${
+                            className={`group flex items-center gap-3.5 px-4 py-3 rounded-full font-semibold transition-all duration-200 mb-1 ${
                                 isActive(link.path)
-                                    ? 'text-white bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/30'
-                                    : 'text-slate-300 hover:text-white hover:bg-slate-800/80 active:scale-[0.98]'
+                                    ? 'text-obsidian bg-toxic shadow-lg shadow-toxic/20'
+                                    : 'text-zinc-300 hover:text-white hover:bg-obsidian-light active:scale-[0.98]'
                             }`}
                         >
-                            <span className="text-xl shrink-0">{link.icon}</span>
-                            <span className="flex-1 text-[15px]">{link.name}</span>
+                            <span className="text-lg shrink-0">{link.icon}</span>
+                            <span className="flex-1 text-[14px]">{link.name}</span>
                             {isActive(link.path) ? (
-                                <span className="w-2 h-2 rounded-full bg-white/70 shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-obsidian shrink-0" />
                             ) : (
-                                <svg className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                <svg className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                                 </svg>
                             )}
                         </Link>
@@ -344,7 +339,7 @@ function Navbar() {
                 </nav>
 
                 {/* ── Resume + footer (pinned to bottom) ── */}
-                <div className="shrink-0 px-4 pt-4 pb-8 border-t border-slate-700/50 space-y-3">
+                <div className="shrink-0 px-4 pt-4 pb-8 border-t border-obsidian-border space-y-3">
                     {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
 
                     <a
@@ -353,15 +348,15 @@ function Navbar() {
                         rel="noopener noreferrer"
                         aria-label="Open resume PDF in a new tab"
                         onClick={closeMenu}
-                        className="flex items-center justify-center gap-2.5 w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-base rounded-2xl transition-all duration-300 shadow-lg shadow-cyan-500/30 active:scale-95"
+                        className="flex items-center justify-center gap-2.5 w-full py-3.5 border border-toxic bg-toxic text-obsidian font-bold text-sm rounded-full transition-all duration-300 shadow-lg shadow-toxic/15 active:scale-95"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         View Resume
                     </a>
-                    <p className="text-slate-600 text-xs text-center flex items-center justify-center gap-1.5">
-                        Made with <svg className="w-4 h-4 text-red-400 animate-pulse inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> by Gaurav
+                    <p className="text-zinc-600 text-xs text-center flex items-center justify-center gap-1.5 font-mono">
+                        Made with <svg className="w-3.5 h-3.5 text-toxic animate-pulse inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> by Gaurav
                     </p>
                 </div>
             </div>

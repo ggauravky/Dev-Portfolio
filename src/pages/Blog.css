@@ -88,23 +88,23 @@
 /* Custom scrollbar for the page */
 .blog-page ::-webkit-scrollbar,
 .blog-post-page ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 
 .blog-page ::-webkit-scrollbar-track,
 .blog-post-page ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #070708;
 }
 
 .blog-page ::-webkit-scrollbar-thumb,
 .blog-post-page ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #9333ea 0%, #06b6d4 100%);
-  border-radius: 5px;
+  background: #1a1a22;
+  border-radius: 4px;
 }
 
 .blog-page ::-webkit-scrollbar-thumb:hover,
 .blog-post-page ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #a855f7 0%, #22d3ee 100%);
+  background: #c5f82a;
 }
 
 /* Responsive adjustments */
@@ -254,7 +254,7 @@
 .blog-page button:focus,
 .blog-post-page input:focus,
 .blog-post-page button:focus {
-  outline: 2px solid #9333ea;
+  outline: 1px solid #c5f82a;
   outline-offset: 2px;
 }
 
@@ -262,7 +262,8 @@
 .blog-content h2 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #a78bfa;
+  font-family: 'Syne', sans-serif;
+  color: #c5f82a;
   margin-top: 2rem;
   margin-bottom: 1rem;
 }
@@ -270,7 +271,8 @@
 .blog-content h3 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #c4b5fd;
+  font-family: 'Syne', sans-serif;
+  color: #ff5d00;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
 }
@@ -296,10 +298,10 @@
 }
 
 .blog-content ul li::before {
-  content: "▸";
+  content: "→";
   position: absolute;
   left: 0;
-  color: #22d3ee;
+  color: #c5f82a;
   font-weight: bold;
 }
 
@@ -323,44 +325,44 @@
   content: counter(item) ".";
   position: absolute;
   left: 0;
-  color: #22d3ee;
+  color: #ff5d00;
   font-weight: bold;
 }
 
 .blog-content strong {
-  color: #e0e7ff;
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 650;
 }
 
 .blog-content em {
-  color: #a5b4fc;
+  color: #e2e8f0;
   font-style: italic;
 }
 
 .blog-content hr {
   border: none;
-  border-top: 2px solid #334155;
+  border-top: 1px solid #1a1a22;
   margin: 2rem 0;
-  opacity: 0.5;
 }
 
 .blog-content code {
-  background-color: #1e293b;
-  color: #22d3ee;
+  background-color: #16161a;
+  color: #c5f82a;
   padding: 0.2rem 0.5rem;
   border-radius: 0.25rem;
-  font-family: "Courier New", monospace;
-  font-size: 0.9em;
+  font-family: "Space Mono", monospace;
+  font-size: 0.85em;
+  border: 1px solid #1a1a22;
 }
 
 .blog-content a {
-  color: #22d3ee;
+  color: #ff5d00;
   text-decoration: underline;
   transition: color 0.3s ease;
 }
 
 .blog-content a:hover {
-  color: #67e8f9;
+  color: #ff7c30;
 }
 
 /* Responsive blog content */

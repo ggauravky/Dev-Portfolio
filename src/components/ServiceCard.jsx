@@ -10,68 +10,67 @@ import { Link } from 'react-router-dom'
 function ServiceCard({ service, featured = false }) {
     return (
         <article
-            className={`group relative overflow-hidden rounded-2xl border backdrop-blur-sm p-5 sm:p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
+            className={`group relative overflow-hidden rounded-lg border backdrop-blur-sm p-6 sm:p-8 transition-all duration-350 hover:-translate-y-1.5 ${
                 featured
-                    ? 'bg-gradient-to-br from-blue-600/12 via-purple-600/12 to-cyan-600/12 border-cyan-500/40 shadow-cyan-500/10'
-                    : 'bg-slate-800/70 border-slate-700/70 hover:border-cyan-500/40 hover:shadow-cyan-500/10'
+                    ? 'bg-obsidian-card border-cyber/30 hover:border-cyber/60 shadow-lg shadow-cyber/5'
+                    : 'bg-obsidian-card border-obsidian-border hover:border-toxic/40'
             }`}
         >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(120%_90%_at_0%_0%,rgba(34,211,238,0.14),transparent)]" />
+            <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none" />
 
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-                <h3 className="text-xl sm:text-2xl font-bold text-slate-100 leading-tight">{service.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-display font-bold uppercase text-white leading-tight">{service.title}</h3>
                 {service.badge ? (
-                    <span className="w-fit shrink-0 text-xs font-semibold text-cyan-300 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30">
+                    <span className="w-fit shrink-0 text-[10px] font-mono font-bold text-toxic px-2.5 py-1 rounded bg-toxic/5 border border-toxic/15 uppercase">
                         {service.badge}
                     </span>
                 ) : null}
             </div>
 
-            <p className="text-cyan-300 font-bold text-2xl sm:text-3xl mb-4">{service.priceLabel}</p>
-            <p className="text-slate-400 text-xs mb-4">Secure checkout via Cashfree (UPI, cards, netbanking, wallets)</p>
+            <p className="text-2xl sm:text-3xl font-display font-black text-toxic mb-1">{service.priceLabel}</p>
+            <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mb-5">// Secure checkout via Cashfree (UPI, cards, netbanking)</p>
 
             {service.outcomePromise ? (
-                <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2">
-                    <p className="text-[11px] uppercase tracking-widest text-emerald-300 mb-1">Expected Outcome</p>
-                    <p className="text-xs sm:text-sm text-emerald-100 leading-relaxed">{service.outcomePromise}</p>
+                <div className="mb-5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3.5">
+                    <p className="text-[9px] font-mono font-bold uppercase tracking-widest text-emerald-400 mb-1">// Expected Outcome</p>
+                    <p className="text-xs sm:text-sm text-emerald-200/90 leading-relaxed font-semibold">{service.outcomePromise}</p>
                 </div>
             ) : null}
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-4">{service.summary}</p>
+            <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-5">{service.summary}</p>
 
-            <ul className="space-y-2.5 mb-6">
+            <ul className="space-y-3 mb-6">
                 {service.features.map((feature) => (
-                    <li key={feature} className="text-slate-300 text-sm sm:text-base flex items-start gap-2">
-                        <span className="mt-1 h-2 w-2 rounded-full bg-blue-400 shrink-0" />
+                    <li key={feature} className="text-zinc-300 text-sm sm:text-base flex items-start gap-2.5">
+                        <span className="text-toxic font-mono shrink-0 select-none">→</span>
                         <span>{feature}</span>
                     </li>
                 ))}
             </ul>
 
-            <div className="mb-5 rounded-xl border border-slate-700/80 bg-slate-900/45 p-3">
-                <p className="text-[11px] uppercase tracking-widest text-slate-500 mb-2">In View Details</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Deliverables</span>
-                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Best For</span>
-                    <span className="rounded-lg border border-slate-700/70 bg-slate-800/70 px-2.5 py-1.5 text-slate-300 text-center">Timeline</span>
+            <div className="mb-6 rounded-lg border border-obsidian-border bg-obsidian/50 p-4">
+                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-2.5">// In View Details</p>
+                <div className="grid grid-cols-3 gap-2 text-[10px] font-mono uppercase tracking-wider">
+                    <span className="rounded border border-obsidian-border bg-obsidian-card px-2 py-1.5 text-zinc-400 text-center">Deliverables</span>
+                    <span className="rounded border border-obsidian-border bg-obsidian-card px-2 py-1.5 text-zinc-400 text-center">Best For</span>
+                    <span className="rounded border border-obsidian-border bg-obsidian-card px-2 py-1.5 text-zinc-400 text-center">Timeline</span>
                 </div>
             </div>
 
-            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Link
                     to={service.path}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-sm sm:text-base text-slate-200 border border-slate-700 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                    className="inline-flex items-center justify-center gap-2 border border-zinc-800 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-4 py-3 rounded-full transition-all duration-300 text-xs uppercase tracking-wider font-mono"
                 >
                     <span>View Details</span>
-                    <span>{'->'}</span>
+                    <span>→</span>
                 </Link>
 
                 <Link
                     to={`/booknow?service=${service.slug}`}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 font-semibold text-sm sm:text-base text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 bg-toxic hover:bg-white text-obsidian font-bold px-4 py-3 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
                 >
                     <span>Book Now</span>
-                    <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
                 </Link>
             </div>
         </article>

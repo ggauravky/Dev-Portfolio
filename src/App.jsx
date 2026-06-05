@@ -145,7 +145,7 @@ function AppLayout({ children }) {
     return (
         <div className="App">
             {!isFullScreen && (
-                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-50 w-full">
+                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-50 w-full pt-3 sm:pt-4 pb-1">
                     <AvailabilityBanner />
                     <Navbar />
                 </div>

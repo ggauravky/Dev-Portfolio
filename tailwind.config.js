@@ -6,7 +6,20 @@ export default {
       colors: {
         primary: "#3b82f6",
         secondary: "#8b5cf6",
-        accent: "#06b6d4",
+        accent: "#c5f82a",
+        obsidian: {
+          DEFAULT: "#070708",
+          card: "#0e0e11",
+          light: "#16161a",
+          border: "#1a1a22",
+        },
+        toxic: "#c5f82a",
+        cyber: "#ff5d00",
+      },
+      fontFamily: {
+        sans: ["'Plus Jakarta Sans'", "sans-serif"],
+        display: ["'Syne'", "sans-serif"],
+        mono: ["'Space Mono'", "monospace"],
       },
     },
   },
