@@ -6,6 +6,22 @@ import TypingIndicator from '../../components/chat/TypingIndicator'
 
 const SESSION_STORAGE_KEY = 'gaurav-chatbot-session-id'
 const FALLBACK_MESSAGE = "I'm having trouble right now, please try again."
+const SESSION_CACHE_KEY = 'gaurav-chatbot-response-cache'
+
+const readCache = () => {
+    try {
+        const cached = sessionStorage.getItem(SESSION_CACHE_KEY)
+        return cached ? JSON.parse(cached) : {}
+    } catch {
+        return {}
+    }
+}
+
+const writeCache = (cache) => {
+    try {
+        sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(cache))
+    } catch {}
+}
 
 const SUGGESTED_QUESTIONS = [
     'What projects have you built?',
@@ -67,19 +83,20 @@ const readSessionId = () => {
 
 function GauravChatbot() {
     useSEO({
-        title: "Gaurav's AI Chatbot - Lab | Portfolio RAG Assistant",
+        title: "Gaurav's AI Chatbot - Lab | Portfolio Gemini Assistant",
         description:
-            'Ask Gaurav Kumar Yadav\'s portfolio chatbot about projects, skills, services, blogs, and journey. Powered by structured RAG and DeepSeek.',
+            "Ask Gaurav Kumar Yadav's portfolio chatbot about projects, skills, services, blogs, and journey. Powered by Gemini AI.",
         keywords:
-            'Gaurav chatbot, portfolio AI assistant, Gaurav Kumar Yadav projects, DeepSeek chatbot, RAG portfolio assistant',
+            "Gaurav chatbot, portfolio AI assistant, Gaurav Kumar Yadav projects, Gemini chatbot, Gemini portfolio assistant",
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
     const [messages, setMessages] = useState(readInitialMessages)
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const [showMaintenance, setShowMaintenance] = useState(true)
+    const [showMaintenance, setShowMaintenance] = useState(false)
     const [sessionId] = useState(readSessionId)
+    const [cooldownSeconds, setCooldownSeconds] = useState(0)
 
     const textareaRef = useRef(null)
     const scrollAnchorRef = useRef(null)
@@ -107,9 +124,17 @@ function GauravChatbot() {
         textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`
     }, [input])
 
+    useEffect(() => {
+        if (cooldownSeconds <= 0) return
+        const timer = setTimeout(() => {
+            setCooldownSeconds((prev) => prev - 1)
+        }, 1000)
+        return () => clearTimeout(timer)
+    }, [cooldownSeconds])
+
     const sendMessage = async (value = input) => {
         const trimmed = value.trim()
-        if (!trimmed || isLoading) {
+        if (!trimmed || isLoading || cooldownSeconds > 0) {
             return
         }
 
@@ -118,6 +143,23 @@ function GauravChatbot() {
 
         setMessages(optimisticMessages)
         setInput('')
+
+        const normalized = trimmed.toLowerCase()
+        const cache = readCache()
+        if (cache[normalized]) {
+            const cachedData = cache[normalized]
+            setMessages((previous) => [
+                ...previous,
+                createMessage('ai', cachedData.reply, {
+                    sources: cachedData.sources || [],
+                    followUpSuggestions: cachedData.followUpSuggestions || [],
+                    userIntent: cachedData.userIntent || null,
+                }),
+            ])
+            setCooldownSeconds(2)
+            return
+        }
+
         setIsLoading(true)
 
         if (textareaRef.current) {
@@ -159,8 +201,19 @@ function GauravChatbot() {
                 throw new Error(data.reply || FALLBACK_MESSAGE)
             }
 
+            const replyText = String(data.reply).trim()
+
+            // Save to cache
+            const cacheToSave = readCache()
+            cacheToSave[normalized] = {
+                reply: replyText,
+                sources: data.sources || [],
+                followUpSuggestions: data.followUpSuggestions || [],
+                userIntent: data.userIntent || null,
+            }
+            writeCache(cacheToSave)
+
             setMessages((previous) => {
-                const replyText = String(data.reply).trim()
                 const last = previous.at(-1)
 
                 const hasIntro = previous.some((m) => m.intro === true || m.id === 'gaurav-chatbot-intro')
@@ -214,6 +267,7 @@ function GauravChatbot() {
             ])
         } finally {
             setIsLoading(false)
+            setCooldownSeconds(2)
             textareaRef.current?.focus()
         }
     }
@@ -221,7 +275,9 @@ function GauravChatbot() {
     const handleKeyDown = (event) => {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault()
-            void sendMessage()
+            if (!isLoading && cooldownSeconds <= 0) {
+                void sendMessage()
+            }
         }
     }
 
@@ -412,7 +468,7 @@ function GauravChatbot() {
                             <p className="truncate text-sm font-display font-bold text-slate-100 sm:text-base">Gaurav Portfolio AI</p>
                             <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-mono text-[#52525b]">
                                 <span className="rounded-md border border-toxic/25 bg-toxic/5 px-2 py-0.5 text-toxic">
-                                    RAG + DeepSeek
+                                    Gemini 2.0 AI
                                 </span>
                                 <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2 py-0.5 text-zinc-400">
                                     Portfolio-only answers
@@ -421,22 +477,22 @@ function GauravChatbot() {
                         </div>
                     </div>
                 </header>
-
+ 
                 <div className="chat-scroll flex-1 overflow-y-auto">
                     <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-4 py-6 pb-28 sm:px-6 sm:pb-6">
                         <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-4 sm:p-5">
                             <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-[#52525b]">
                                 <span className="text-toxic">Production Feature</span>
                                 <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2.5 py-1 tracking-normal text-zinc-300">
-                                    Fast retrieval
+                                    Full-Context Prompt
                                 </span>
                                 <span className="rounded-md border border-[#1a1a22] bg-[#070708] px-2.5 py-1 tracking-normal text-zinc-300">
                                     Mongo history logs
                                 </span>
                             </div>
                             <p className="mt-3 text-sm leading-relaxed text-[#a1a1aa] font-sans">
-                                This assistant only answers from Gaurav's structured portfolio knowledge base.
-                                Unrelated questions are blocked, and missing details are not invented.
+                                This assistant answers questions about Gaurav's projects, skills, and experience.
+                                Unrelated questions are blocked by safety guardrails.
                             </p>
                         </div>
 
@@ -487,16 +543,16 @@ function GauravChatbot() {
                                     onChange={(event) => setInput(event.target.value.slice(0, 1000))}
                                     onKeyDown={handleKeyDown}
                                     rows={1}
-                                    disabled={isLoading}
-                                    placeholder="Ask me about projects, services, or my journey..."
+                                    disabled={isLoading || cooldownSeconds > 0}
+                                    placeholder={cooldownSeconds > 0 ? `Please wait ${cooldownSeconds}s...` : "Ask me about projects, services, or my journey..."}
                                     className="max-h-40 min-h-[52px] flex-1 resize-none bg-transparent px-3 py-3 text-sm leading-relaxed text-slate-100 outline-none placeholder:text-zinc-700 font-sans"
                                 />
 
                                 <button
                                     onClick={() => void sendMessage()}
-                                    disabled={isLoading || !input.trim()}
+                                    disabled={isLoading || cooldownSeconds > 0 || !input.trim()}
                                     className={`inline-flex h-12 w-12 items-center justify-center rounded-md transition-all duration-200 ${
-                                        isLoading || !input.trim()
+                                        isLoading || cooldownSeconds > 0 || !input.trim()
                                             ? 'cursor-not-allowed bg-zinc-800 text-zinc-600'
                                             : 'bg-toxic text-obsidian shadow-lg hover:-translate-y-0.5 shadow-toxic/20'
                                     }`}
@@ -507,6 +563,8 @@ function GauravChatbot() {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                                         </svg>
+                                    ) : cooldownSeconds > 0 ? (
+                                        <span className="text-xs font-mono font-bold text-zinc-400">{cooldownSeconds}s</span>
                                     ) : (
                                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
