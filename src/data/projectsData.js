@@ -495,6 +495,62 @@ export const projectsData = [
             "Audio alert design must balance urgency with usability in repeated test scenarios",
             "Computer-vision prototypes are valuable for learning but should not replace certified fire safety systems"
         ]
+    },
+    {
+        id: 19,
+        slug: "ziplink",
+        featured: true,
+        title: "ZipLink",
+        description: "A full-stack URL shortener project built with Flask, SQLite, Tailwind CSS, and Jinja2. Automatically generates collision-resistant short codes, redirects users to target destinations, and tracks click counts via a unified dashboard.",
+        techStack: ["Python", "Flask", "SQLite", "Tailwind CSS", "Jinja2"],
+        categories: ["Full Stack", "Python"],
+        github: "https://github.com/ggauravky/ZipLink",
+        demo: "#",
+        image: "/images/projects/ziplink.png",
+        screenshots: ["/images/projects/ziplink.png"],
+        problem: "Long URLs are difficult to share, read, and manage in messaging or social channels. Standard public URL shorteners raise privacy concerns, track visitor data externally, and do not offer customized dashboards or self-hosted redirection logic.",
+        solution: "ZipLink provides a self-hosted full-stack URL shortener. Users enter a long URL to generate a custom or random 6-character short code. The application handles routing redirects natively, updates access metrics in a local SQLite database, and lists active links inside a dashboard where users can monitor visitor counts and delete expired redirects.",
+        architecture: "Flask framework handling server-side request routing and redirection. SQLite3 serving as a lightweight database engine for URL mapping and transaction metrics. Jinja2 templates render dynamic HTML views styled natively with Tailwind CSS.",
+        keyDecisions: [
+            "Utilized Python's random and string modules to construct collision-resistant 6-character short codes",
+            "Chose SQLite3 database for serverless persistence, ensuring zero configuration and fast performance for personal use",
+            "Configured server-side HTTP 302 Found redirects to map short codes to original destinations with minimal latency",
+            "Styled templates using utility-first Tailwind CSS classes for a responsive and clean layout structure"
+        ],
+        lessonsLearned: [
+            "Code generation requires preemptive database verification to handle and resolve hash collisions",
+            "Relational data model (original URL, short code, created timestamp, visit count) is highly structured and fits SQLite perfectly",
+            "Server-side redirects outperform client-side script redirects in terms of speed and compatibility"
+        ]
+    },
+    {
+        id: 20,
+        slug: "instax",
+        featured: true,
+        title: "InstaX",
+        description: "High-performance social media platform built using Next.js 16 App Router, React 19, TypeScript, Prisma ORM, Neon PostgreSQL, Clerk OAuth, and UploadThing edge storage. Features optimistic client updates, drag-and-drop media uploads, and real-time-like notifications.",
+        techStack: ["Next.js", "React", "TypeScript", "Tailwind CSS", "Prisma", "PostgreSQL", "Clerk"],
+        categories: ["Full Stack"],
+        github: "https://github.com/ggauravky/InstaX",
+        demo: "https://instax-g.vercel.app/",
+        image: "/images/projects/instax.png",
+        screenshots: ["/images/projects/instax.png"],
+        problem: "Modern social media interfaces suffer from laggy feedback, database bottlenecks, unoptimized assets causing visual layouts shifts, and complex client-server synchronization challenges that degrade user experiences.",
+        solution: "InstaX delivers a production-grade full-stack platform leveraging Next.js 16 Server Actions for type-safe API calls. It combines Clerk authentication, Neon serverless PostgreSQL, UploadThing CDN, and React 19 concurrent features to ensure instant feeds, optimistic likes/comments, and immediate social actions.",
+        architecture: "Next.js 16 App Router with React Server Components (RSC) fetching data directly from Prisma ORM. Neon PostgreSQL stores relational users, posts, comments, likes, notifications, and follower relationships. File uploads are offloaded directly to UploadThing's edge CDN. Clerk auth manages secure session lifecycle.",
+        keyDecisions: [
+            "Employed Next.js Server Actions to execute type-safe remote procedure calls, bypassing intermediate REST API configurations",
+            "Integrated Clerk Core API for secure Google OAuth sync and session management",
+            "Implemented React 19 optimistic states for liking and commenting to yield immediate UI transitions prior to database confirmation",
+            "Configured Prisma ORM connection pooling to operate efficiently with Neon Serverless PostgreSQL",
+            "Offloaded media storage to UploadThing's CDN to bypass Next.js file size upload thresholds and improve content delivery"
+        ],
+        lessonsLearned: [
+            "Optimistic state synchronization requires clean client-side rollback mechanisms on server failure",
+            "Securing session webhooks is critical and must be done by verifying signature headers",
+            "Database indexing on key relational columns is essential for preventing sluggish feed query times",
+            "RSC data fetching simplifies state management, but client components are still needed for interactive micro-animations"
+        ]
     }
 ]
 

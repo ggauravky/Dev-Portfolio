@@ -425,6 +425,45 @@
         "github": "https://github.com/ggauravky/python-grocery-store",
         "demo": "https://gauravky.pythonanywhere.com/static/index.html"
       }
+    },
+    {
+      "slug": "ziplink",
+      "title": "ZipLink",
+      "category": "Full Stack and Python",
+      "featured": true,
+      "summary": "A full-stack URL shortener project built with Flask, SQLite, Tailwind CSS, and Jinja2. Automatically generates collision-resistant short codes, redirects users to target destinations, and tracks click counts via a unified dashboard.",
+      "problem": "Long URLs are difficult to share, read, and manage in messaging or social channels. Standard public URL shorteners raise privacy concerns, track visitor data externally, and do not offer customized dashboards or self-hosted redirection logic.",
+      "highlights": [
+        "Short URL creation with collision-resistant codes",
+        "URL redirection and destination validation",
+        "Visit tracking and click counters in SQLite",
+        "Dashboard for link listing and deletion"
+      ],
+      "techStack": ["Python", "Flask", "SQLite", "Tailwind CSS", "Jinja2"],
+      "links": {
+        "github": "https://github.com/ggauravky/ZipLink",
+        "demo": "#"
+      }
+    },
+    {
+      "slug": "instax",
+      "title": "InstaX",
+      "category": "Full Stack",
+      "featured": true,
+      "summary": "High-performance social media platform built using Next.js 16 App Router, React 19, TypeScript, Prisma ORM, Neon PostgreSQL, Clerk OAuth, and UploadThing edge storage. Features optimistic client updates, drag-and-drop media uploads, and real-time-like notifications.",
+      "problem": "Modern social media interfaces suffer from laggy feedback, database bottlenecks, unoptimized assets causing visual layouts shifts, and complex client-server synchronization challenges that degrade user experiences.",
+      "highlights": [
+        "Advanced authentication via Clerk OAuth",
+        "Media uploads powered by UploadThing edge CDN",
+        "Optimistic UI updates for likes and comments",
+        "Prisma database queries on Neon serverless PostgreSQL",
+        "Real-time-like notification hub and follower counts"
+      ],
+      "techStack": ["Next.js", "React", "TypeScript", "Tailwind CSS", "Prisma", "PostgreSQL", "Clerk", "UploadThing", "Vercel"],
+      "links": {
+        "github": "https://github.com/ggauravky/InstaX",
+        "demo": "https://instax-g.vercel.app/"
+      }
     }
   ],
   "services": [
