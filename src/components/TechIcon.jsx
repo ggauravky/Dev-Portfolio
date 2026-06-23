@@ -39,6 +39,7 @@ const iconMap = {
     'PostgreSQL':               `${D}/postgresql/postgresql-original.svg`,
     'SQLite':                   `${D}/sqlite/sqlite-original.svg`,
     'Redis':                    `${D}/redis/redis-original.svg`,
+    'Prisma':                   `${D}/prisma/prisma-original.svg`,
 
     // ── Dev Tools ───────────────────────────────────────────────────────────
     'Git & GitHub':             `${D}/git/git-original.svg`,
@@ -74,7 +75,7 @@ const iconMap = {
 }
 
 // These icons have dark/black paths and must be inverted to show on dark backgrounds
-const needsInvert = new Set(['Express.js', 'Express', 'Flask', 'GitHub', 'Vercel'])
+const needsInvert = new Set(['Express.js', 'Express', 'Flask', 'GitHub', 'Vercel', 'Prisma'])
 
 /**
  * Renders an official brand logo for a given technology name.

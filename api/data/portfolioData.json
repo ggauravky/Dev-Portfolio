@@ -95,7 +95,7 @@
       "Python, JavaScript, Java, C, SQL",
       "React, Tailwind CSS, HTML5, CSS3, responsive frontend development",
       "Node.js, Express.js, Flask, REST APIs, JWT authentication",
-      "MongoDB, MySQL",
+      "MongoDB, MySQL, Prisma",
       "Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn",
       "Git, GitHub, VS Code, Postman, Jupyter, Google Colab, Kaggle"
     ],
@@ -114,7 +114,7 @@
       },
       {
         "name": "Databases",
-        "items": ["MongoDB", "MySQL"]
+        "items": ["MongoDB", "MySQL", "Prisma"]
       },
       {
         "name": "Data Science and AI",

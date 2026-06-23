@@ -93,7 +93,7 @@ function Skills() {
             },
             {
                 title: "Database & Tools",
-                skills: ["MongoDB", "MySQL", "Git & GitHub", "VS Code", "Postman"]
+                skills: ["MongoDB", "MySQL", "Prisma", "Git & GitHub", "VS Code", "Postman"]
             }
         ],
         dataAI: [
