@@ -54,11 +54,11 @@ function Lab() {
                             </svg>
                             <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-toxic transition-colors">AI Chatbot</h3>
                             <p className="text-[#a1a1aa] text-sm leading-relaxed mb-4">
-                                Ask portfolio-focused questions about projects, skills, services, blogs, and Gaurav's journey with a RAG-powered assistant.
+                                Ask portfolio-focused and general coding questions using an integrated, highly optimized Gemini & Groq assistant.
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">DeepSeek</span>
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Local RAG</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Gemini / Groq</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Full-Context AI</span>
                             </div>
                         </div>
                         <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-toxic/10 text-toxic rounded-md border border-toxic/25 font-bold">
@@ -85,7 +85,7 @@ function Lab() {
                             </div>
                         </div>
                         <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-cyber/10 text-cyber rounded-md border border-cyber/25 font-bold">
-                            Under Construction
+                            Live
                         </span>
                     </Link>
 
