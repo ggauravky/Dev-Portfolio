@@ -6,6 +6,8 @@
 
 import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
+import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
+
 
 function Lab() {
     useSEO({
@@ -20,6 +22,9 @@ function Lab() {
             {/* Ambient gradients */}
             <div className="absolute top-[-80px] right-[-80px] w-[480px] h-[480px] bg-toxic/3 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-[-60px] left-[-60px] w-[420px] h-[420px] bg-cyber/3 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Background Neural Network Canvas in lightweight mode */}
+            <NeuralNetworkCanvas lightweight={true} />
 
             <div className="max-w-6xl mx-auto relative z-10">
                 <div className="text-center mb-12">
@@ -112,21 +117,28 @@ function Lab() {
                         </span>
                     </Link>
 
-                    {/* Card 4 — Next Lab Drop */}
-                    <div className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg overflow-hidden cursor-not-allowed">
-                        <div className="relative opacity-60">
-                            <svg className="w-8 h-8 mb-4 text-zinc-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+                    {/* Card 4 — Developer Terminal */}
+                    <Link
+                        to="/lab/terminal"
+                        className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg hover:border-cyber/30 transition-all duration-300 hover:-translate-y-1 block overflow-hidden"
+                    >
+                        <div className="relative">
+                            <svg className="w-8 h-8 mb-4 text-cyber" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
                             </svg>
-                            <h3 className="text-zinc-300 font-display font-bold text-xl mb-2">Next Lab Drop</h3>
-                            <p className="text-[#52525b] text-sm leading-relaxed mb-4">
-                                More practical machine learning and engineering models are currently in progress for this section.
+                            <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-cyber transition-colors">Dev Terminal</h3>
+                            <p className="text-[#a1a1aa] text-sm leading-relaxed mb-4">
+                                Type Unix-like terminal commands to dynamically query skills, projects, background, and achievements in an interactive shell.
                             </p>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Bash / Shell</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Autocomplete</span>
+                            </div>
                         </div>
-                        <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-obsidian text-zinc-500 rounded-md border border-[#1a1a22]">
-                            Queued
+                        <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-cyber/10 text-cyber rounded-md border border-cyber/25 font-bold">
+                            Live
                         </span>
-                    </div>
+                    </Link>
 
                 </div>
 

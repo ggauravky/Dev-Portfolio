@@ -47,6 +47,7 @@ const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Lab = lazy(() => import('./pages/Lab'))
 const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
 const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
+const TerminalEmulator = lazy(() => import('./pages/lab/TerminalEmulator'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
@@ -124,6 +125,7 @@ const FULL_SCREEN_ROUTES = new Set([
     '/lab/gaurav-chatbot',
     '/lab/ml-demos',
     '/lab/consistency-dashboard',
+    '/lab/terminal',
 ])
 
 function AppLayout({ children }) {
@@ -176,6 +178,7 @@ function AnimatedRoutes() {
                 <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
                 <Route path="/lab/ml-demos"               element={<R><UnderConstruction variant="lab-ml" /></R>} />
                 <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
+                <Route path="/lab/terminal"               element={<R><TerminalEmulator /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />
                 <Route path="/projects"                   element={<R><Projects /></R>} />
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />

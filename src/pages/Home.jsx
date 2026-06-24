@@ -14,8 +14,22 @@ import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
 import ScrollReveal from '../components/ScrollReveal'
 import TechIcon from '../components/TechIcon'
+import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
 
 function Home() {
+    const handleCtaHover = (e, active) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        window.dispatchEvent(
+            new CustomEvent('neural-cta-hover', {
+                detail: {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                    active,
+                },
+            })
+        )
+    }
+
     // Wake up backend server on component mount
     useEffect(() => {
         // Ping backend silently to prevent cold start
@@ -55,6 +69,9 @@ function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-obsidian via-obsidian-card to-obsidian"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-cyber/5 via-transparent to-transparent"></div>
+                
+                {/* Interactive Neural Canvas */}
+                <NeuralNetworkCanvas />
                 
                 {/* Kinetic Marquee Background */}
                 <div className="absolute inset-x-0 top-1/4 sm:top-1/3 pointer-events-none opacity-[0.03] select-none whitespace-nowrap overflow-hidden">
@@ -145,6 +162,8 @@ function Home() {
                             <div className="flex flex-wrap gap-3 pt-4 justify-center lg:justify-start">
                                 <Link 
                                     to="/services" 
+                                    onMouseEnter={(e) => handleCtaHover(e, true)}
+                                    onMouseLeave={(e) => handleCtaHover(e, false)}
                                     className="group relative px-6 py-3.5 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 hover:shadow-white/20 text-center overflow-hidden inline-flex items-center justify-center"
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
@@ -154,6 +173,8 @@ function Home() {
                                 </Link>
                                 <Link 
                                     to="/projects" 
+                                    onMouseEnter={(e) => handleCtaHover(e, true)}
+                                    onMouseLeave={(e) => handleCtaHover(e, false)}
                                     className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
@@ -163,6 +184,8 @@ function Home() {
                                 </Link>
                                 <Link 
                                     to="/contact" 
+                                    onMouseEnter={(e) => handleCtaHover(e, true)}
+                                    onMouseLeave={(e) => handleCtaHover(e, false)}
                                     className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
                                 >
                                     <span className="relative z-10 flex items-center justify-center gap-2 leading-none">

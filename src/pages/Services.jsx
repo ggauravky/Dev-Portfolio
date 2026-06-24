@@ -13,6 +13,7 @@ import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
 import { servicesData } from '../data/servicesData'
 
+
 function Services() {
     useSEO({
         title: 'Services | Gaurav Kumar Yadav | AI/ML and Web Development Support',
@@ -295,6 +296,7 @@ function Services() {
                     </div>
                 </ScrollReveal>
             </section>
+
 
             {/* Payments Panel */}
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
