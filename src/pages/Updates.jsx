@@ -273,6 +273,46 @@ const updates = [
             },
         ],
     },
+    {
+        version: 'v4.1.0',
+        date: 'Jun 26, 2026',
+        title: 'Lab Upgrades & Dev Terminal Release',
+        headline: '🖥️ v4.1.0 - Lab Upgrades: Dev Terminal & Interactive Canvas',
+        description: 'Introduces a fully interactive Unix-like bash terminal emulator inside the developer lab, along with cursor-reactive neural networks and mobile assistive command buttons.',
+        sections: [
+            {
+                title: 'Developer Terminal Emulator',
+                icon: '🖥️',
+                tone: 'emerald',
+                items: [
+                    'Built a terminal emulator accepting system commands (help, about, skills, projects, clear).',
+                    'Implemented tab autocomplete suggestions and keyboard history scrolling (ArrowUp/ArrowDown).',
+                    'Designed a baseline-aligned block cursor with precise character tracking.',
+                    'Added responsive auxiliary virtual touch buttons for mobile-friendly command execution.',
+                ],
+            },
+            {
+                title: 'Interactive Neural Physics',
+                icon: '🧠',
+                tone: 'rose',
+                items: [
+                    'Added HTML5 Canvas node grid to the homepage hero background.',
+                    'Coded cursor anti-gravity repulsion physics pushing node clusters dynamically on hover.',
+                    'Wired hover excitation ripples to main CTA buttons to enhance micro-interactions.',
+                ],
+            },
+            {
+                title: 'Lab Architecture',
+                icon: '⚡',
+                tone: 'blue',
+                items: [
+                    'Consolidated experimental utilities under a unified 2x2 card grid layout.',
+                    'Optimized canvas frame rates with dynamic tab-visibility state checking.',
+                    'Improved performance metrics across responsive viewports.',
+                ],
+            },
+        ],
+    },
 ]
 
 const sectionToneClasses = {
