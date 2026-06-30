@@ -48,6 +48,8 @@ const Lab = lazy(() => import('./pages/Lab'))
 const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
 const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
 const TerminalEmulator = lazy(() => import('./pages/lab/TerminalEmulator'))
+const AlgorithmVisualizer = lazy(() => import('./pages/lab/AlgorithmVisualizer'))
+const Journey = lazy(() => import('./pages/Journey'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
@@ -126,6 +128,7 @@ const FULL_SCREEN_ROUTES = new Set([
     '/lab/ml-demos',
     '/lab/consistency-dashboard',
     '/lab/terminal',
+    '/lab/algorithms',
 ])
 
 function AppLayout({ children }) {
@@ -174,11 +177,13 @@ function AnimatedRoutes() {
             <Routes location={location} key={location.pathname}>
                 <Route path="/"                           element={<R><Home /></R>} />
                 <Route path="/about"                      element={<R><About /></R>} />
+                <Route path="/journey"                    element={<R><Journey /></R>} />
                 <Route path="/lab"                        element={<R><Lab /></R>} />
                 <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
                 <Route path="/lab/ml-demos"               element={<R><UnderConstruction variant="lab-ml" /></R>} />
                 <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
                 <Route path="/lab/terminal"               element={<R><TerminalEmulator /></R>} />
+                <Route path="/lab/algorithms"             element={<R><AlgorithmVisualizer /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />
                 <Route path="/projects"                   element={<R><Projects /></R>} />
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />

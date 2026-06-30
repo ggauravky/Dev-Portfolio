@@ -523,3 +523,59 @@ html {
 .animate-morph {
   animation: morph 8s ease-in-out infinite;
 }
+
+/* === PATHFINDING GRID VISUALIZATION ANIMATIONS === */
+@keyframes visitedAnimation {
+  0% {
+    transform: scale(0.3);
+    background-color: rgba(255, 93, 0, 0.75); /* Cyber orange start */
+    border-radius: 100%;
+  }
+  50% {
+    background-color: rgba(118, 75, 162, 0.65); /* Purple transition */
+  }
+  75% {
+    transform: scale(1.15);
+    background-color: rgba(197, 248, 42, 0.4); /* Toxic lime transition */
+  }
+  100% {
+    transform: scale(1.0);
+    background-color: rgba(197, 248, 42, 0.15);
+    border: 1px solid rgba(197, 248, 42, 0.3);
+  }
+}
+
+.node-visited-anim {
+  animation-name: visitedAnimation;
+  animation-duration: 1.2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes shortestPathAnimation {
+  0% {
+    transform: scale(0.6);
+    background-color: #ff5d00;
+    box-shadow: 0 0 4px #ff5d00;
+    border-radius: 50%;
+  }
+  50% {
+    transform: scale(1.1);
+    background-color: #c5f82a;
+    box-shadow: 0 0 10px #c5f82a;
+    border-radius: 20%;
+  }
+  100% {
+    transform: scale(1.0);
+    background-color: #c5f82a;
+    box-shadow: 0 0 6px #c5f82a;
+  }
+}
+
+.node-shortest-path-anim {
+  animation-name: shortestPathAnimation;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: forwards;
+}
+

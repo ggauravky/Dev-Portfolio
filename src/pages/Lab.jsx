@@ -45,8 +45,8 @@ function Lab() {
                     </p>
                 </div>
 
-                {/* ── 2×2 card grid ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-10">
+                {/* ── Responsive Card Grid ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
 
                     {/* Card 1 — AI Chatbot */}
                     <Link
@@ -136,6 +136,34 @@ function Lab() {
                             </div>
                         </div>
                         <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-cyber/10 text-cyber rounded-md border border-cyber/25 font-bold">
+                            Live
+                        </span>
+                    </Link>
+
+                    {/* Card 5 — Algorithm Intelligence Lab */}
+                    <Link
+                        to="/lab/algorithms"
+                        className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg hover:border-toxic/30 transition-all duration-300 hover:-translate-y-1 block overflow-hidden"
+                    >
+                        <div className="relative">
+                            <svg className="w-8 h-8 mb-4 text-toxic" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
+                                <circle cx="6" cy="18" r="2.5" />
+                                <circle cx="18" cy="6" r="2.5" />
+                                <circle cx="12" cy="12" r="2.5" />
+                                <path d="M7.75 16.25l2.5-2.5m3.5-3.5l2.5-2.5" />
+                                <circle cx="18" cy="18" r="2.5" />
+                                <path d="M12.5 13.5l3.5 3.5" />
+                            </svg>
+                            <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-toxic transition-colors">Algorithm Lab</h3>
+                            <p className="text-[#a1a1aa] text-sm leading-relaxed mb-4">
+                                Visualize pathfinding and sorting algorithms in real time with interactive controls and animations.
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Algorithms</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">DSA Visuals</span>
+                            </div>
+                        </div>
+                        <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-toxic/10 text-toxic rounded-md border border-toxic/25 font-bold">
                             Live
                         </span>
                     </Link>
