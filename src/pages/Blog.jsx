@@ -9,10 +9,8 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData, categories } from '../data/blogsData'
-import { eventsData } from '../data/eventsData'
 import { fetchSupportCounts } from '../services/blogSupport'
 import LazyImage from '../components/LazyImage'
-import EventRecordCard from '../components/EventRecordCard'
 import './Blog.css'
 
 const INITIAL_VISIBLE_BLOGS = 5
@@ -118,18 +116,7 @@ function Blog() {
         [filteredBlogs, visibleBlogsCount]
     )
 
-    const sortedEvents = useMemo(() => {
-        return [...eventsData].sort((a, b) => {
-            const aTime = new Date(a.date || '').getTime()
-            const bTime = new Date(b.date || '').getTime()
 
-            if (Number.isNaN(aTime) || Number.isNaN(bTime)) {
-                return 0
-            }
-
-            return bTime - aTime
-        })
-    }, [])
 
     const remainingBlogsCount = Math.max(filteredBlogs.length - visibleBlogs.length, 0)
     const nextLoadCount = Math.min(BLOGS_LOAD_STEP, remainingBlogsCount)
@@ -423,39 +410,7 @@ function Blog() {
                     </div>
                 ) : null}
 
-                <section className="mt-14 rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-8 animate-fadeIn" style={{ animationDelay: '0.48s' }}>
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                        <div>
-                            <p className="text-[10px] font-mono text-toxic uppercase tracking-wider">Attendance Record</p>
-                            <h2 className="text-2xl md:text-3xl font-display font-bold text-slate-100 mt-1">Hackathons and Events</h2>
-                        </div>
-                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">{sortedEvents.length} Logged</span>
-                    </div>
 
-                    <p className="text-slate-400 text-sm mb-5">
-                        This section tracks hackathons, competitions, and technical events attended over time.
-                    </p>
-
-                    {sortedEvents.length === 0 ? (
-                        <div className="rounded-lg border border-dashed border-obsidian-border bg-obsidian/30 p-6 text-center">
-                            <div className="mx-auto mb-3 w-12 h-12 rounded-md border border-obsidian-border bg-obsidian-light flex items-center justify-center">
-                                <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 6.75h6.75M8.625 12h6.75m-6.75 5.25h6.75M6 3.75h12A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75z" />
-                                </svg>
-                            </div>
-                            <p className="text-slate-200 font-semibold text-sm">No events added yet</p>
-                            <p className="text-xs text-slate-500 mt-1 font-mono">New hackathon and event attendance records will appear here.</p>
-                        </div>
-                    ) : (
-                        <div className={sortedEvents.length === 1 ? 'max-w-5xl mx-auto' : ''}>
-                            <div className={`grid grid-cols-1 gap-5 ${sortedEvents.length > 1 ? 'md:grid-cols-2' : ''}`}>
-                                {sortedEvents.map((event, index) => (
-                                    <EventRecordCard key={event.id} event={event} index={index} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </section>
 
                 <div className="mt-14 rounded-lg border border-obsidian-border bg-obsidian-card p-7 sm:p-8 text-center animate-fadeIn" style={{ animationDelay: '0.5s' }}>
                     <h2 className="text-2xl sm:text-3xl font-display font-bold text-slate-100">Need Help Building Similar Work?</h2>

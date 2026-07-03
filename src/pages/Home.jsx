@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
+import { journeyData } from '../data/journeyData'
 import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
 import ScrollReveal from '../components/ScrollReveal'
@@ -60,6 +61,13 @@ function Home() {
 
     // Dynamically get featured blogs from the shared data
     const featuredBlogs = useMemo(() => blogsData.filter(blog => blog.featured), [])
+
+    // Get latest 3 experiences for Home page section
+    const featuredJourney = useMemo(() => {
+        return [...journeyData]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 3)
+    }, [])
 
     return (
         <main className="home-page bg-obsidian overflow-x-hidden w-full">
@@ -609,6 +617,72 @@ function Home() {
                                 <h3 className="text-xl font-display font-bold uppercase text-white group-hover:text-cyber transition-colors">View All Blogs</h3>
                                 <p className="text-zinc-500 font-mono text-xs uppercase tracking-wider">// Read more articles</p>
                             </div>
+                        </Link>
+                    </div>
+                </ScrollReveal>
+            </section>
+
+            {/* Professional Journey Section */}
+            <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-obsidian border-t border-obsidian-border/50">
+                <div className="absolute inset-0">
+                    <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-toxic/5 rounded-full blur-[120px]"></div>
+                </div>
+
+                <ScrollReveal className="max-w-7xl mx-auto" delay={60}>
+                    <div className="text-center mb-16">
+                        <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Continuous Learning & Growth</span>
+                        <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
+                            <span className="text-white">
+                                Professional Journey
+                            </span>
+                        </h2>
+                        <p className="max-w-2xl mx-auto text-zinc-400 text-sm md:text-base leading-relaxed">
+                            Explore my experiences beyond projects and blogs, including internships, workshops, hackathons, conferences, certifications, industrial visits, and technical events.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-6 mb-12">
+                        {featuredJourney.map((item) => (
+                            <div key={item.id} className="group bg-obsidian-card border border-obsidian-border rounded-lg overflow-hidden hover:border-toxic/30 transition-all duration-300 flex flex-col h-full">
+                                {item.coverImage && (
+                                    <div className="relative h-44 bg-obsidian overflow-hidden">
+                                        <LazyImage
+                                            src={item.coverImage}
+                                            alt={item.title}
+                                            responsive={false}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-obsidian-card via-transparent to-transparent opacity-90"></div>
+                                    </div>
+                                )}
+                                <div className="p-6 flex flex-col flex-grow">
+                                    <div className="flex items-center justify-between gap-2 mb-3 text-xs font-mono text-zinc-500 uppercase">
+                                        <span className="bg-toxic/5 text-toxic border border-toxic/15 px-2 py-0.5 rounded text-[10px] font-bold">{item.category}</span>
+                                        <span>{item.dateLabel}</span>
+                                    </div>
+                                    <h3 className="text-base font-display font-bold uppercase text-white mb-2 group-hover:text-toxic transition-colors line-clamp-2">{item.title}</h3>
+                                    <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mb-3">// {item.organization}</p>
+                                    <p className="text-zinc-400 text-xs mb-4 line-clamp-3 leading-relaxed flex-grow">{item.description}</p>
+                                    
+                                    {/* Skills list */}
+                                    <div className="flex flex-wrap gap-1.5 mt-auto pt-4 border-t border-obsidian-border/50">
+                                        {item.skills.slice(0, 3).map((skill) => (
+                                            <span key={skill} className="bg-[#16161a] border border-[#1a1a22] text-zinc-400 text-[9px] font-mono px-2 py-0.5 rounded">
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center">
+                        <Link
+                            to="/journey"
+                            className="inline-flex items-center justify-center rounded-full bg-toxic text-black hover:bg-white px-8 py-4 font-bold text-xs uppercase tracking-wider font-mono transition-all duration-300 hover:scale-105 shadow-lg shadow-toxic/10 hover:shadow-white/10"
+                        >
+                            Explore Complete Journey →
                         </Link>
                     </div>
                 </ScrollReveal>

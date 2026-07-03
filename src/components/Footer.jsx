@@ -12,6 +12,7 @@ function Footer() {
         quickLinks: [
             { name: 'Home', path: '/' },
             { name: 'About', path: '/about' },
+            { name: 'Journey', path: '/journey' },
             { name: 'Projects', path: '/projects' },
             { name: 'Services', path: '/services' },
             { name: 'Blog', path: '/blog' },
