@@ -313,6 +313,46 @@ const updates = [
             },
         ],
     },
+    {
+        version: 'v5.0.0',
+        date: 'Jul 04, 2026',
+        title: 'Flagship Interactive Journey & Algorithm Lab',
+        headline: '🚀 v5.0.0 - Flagship Interactive Journey & Algorithm Lab',
+        description: 'A major release introducing the flagship professional timeline story, along with a real-time responsive Algorithm Lab for interactive DSA visualizations.',
+        sections: [
+            {
+                title: 'Flagship Interactive Journey',
+                icon: '📈',
+                tone: 'emerald',
+                items: [
+                    'Centralized data-driven model under src/data/journeyData.js for seamless scaling.',
+                    'Premium story cards with high-ratio cover previews, dynamic badges, and responsive image galleries.',
+                    'Contextual study-focus rendering for BCA academic milestones and educational timelines.',
+                    'Smooth scroll-linked glow effects and IntersectionObserver active-year triggers.',
+                ],
+            },
+            {
+                title: 'Interactive Algorithm Lab',
+                icon: '🎛️',
+                tone: 'rose',
+                items: [
+                    'Real-time pathfinding visualization (Dijkstra, A* Search) with custom grid drawing controls.',
+                    'Sorting visualizer (Bubble, Selection, Insertion, Quick, Merge) with adjustable speed slider.',
+                    'Responsive control bars designed to remain fully interactive across mobile and desktop.',
+                ],
+            },
+            {
+                title: 'Core Upgrades',
+                icon: '⚡',
+                tone: 'blue',
+                items: [
+                    'BBD University BCA learning milestone added to timeline.',
+                    'Completely responsive year navigators for desktop and mobile viewports.',
+                    'Optimized rendering for canvas animations and lightweight obfuscated bundles.',
+                ],
+            },
+        ],
+    },
 ]
 
 const sectionToneClasses = {
