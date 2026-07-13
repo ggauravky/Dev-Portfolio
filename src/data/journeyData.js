@@ -489,7 +489,7 @@ export const journeyData = [
   },
   {
     id: 'samarth-internship-2026',
-    title: 'Samarth Internship',
+    title: 'Samarth Internship 2.0',
     organization: 'AKTU Labs & CSIR-CDRI',
     date: '2026-06-01',
     dateLabel: 'June 1, 2026 - July 15, 2026',
@@ -498,7 +498,7 @@ export const journeyData = [
     category: 'Internships',
     mode: 'Offline',
     status: 'Completed',
-    description: 'Completed a comprehensive internship involving industrial visits to premier institutions like CSIR-CDRI, AKTU Labs, and CCS Airport. Explored advanced research infrastructure, logistics control systems, and automated factory production pipelines.',
+    description: 'Successfully completed the Samarth 2.0 Internship, a comprehensive industrial program involving visits and technical evaluations at premier institutions like CSIR-CDRI, AKTU Labs, Organic Textile Factories, and CCS Airport. Explored advanced research infrastructure, logistics control systems, and automated production pipelines, culminating in a Certificate of Completion and Letter of Recommendation (LOR).',
     whatILearned: [
       'CSIR-CDRI: Explored state-of-the-art drug discovery labs, chemical synthesizers, and advanced research equipment.',
       'Lucknow Museum & Book Fair: Studied history, culture, and information management systems.',
@@ -511,13 +511,16 @@ export const journeyData = [
       'System Engineering',
       'Professional Networking'
     ],
-    coverImage: '/images/journey/samarthallmember.jpeg',
+    coverImage: '/images/journey/samathimg1.png',
     images: [
+      '/images/journey/samathimg1.png',
+      '/images/journey/samarthcert.jpeg',
+      '/images/journey/lorsamarth.png',
       '/images/journey/samarthallmember.jpeg',
       '/images/journey/samarthoffer.png'
     ],
     objectives: 'Study diverse industrial sectors, from advanced biological laboratories to automated factory assembly lines.',
-    outcomes: 'Completed site evaluations, analyzed logistics procedures, and expanded knowledge in production systems.',
+    outcomes: 'Earned the official Certificate of Completion and a Letter of Recommendation (LOR) for outstanding performance during industrial evaluations.',
     technologies: ['Automation Control', 'Information Systems'],
     certificateUrl: 'https://drive.google.com/drive/u/6/folders/1p9goopl7e5UtIaG2bZ3yM1mBfcHyTzoQ',
     relatedBlogSlug: ''
