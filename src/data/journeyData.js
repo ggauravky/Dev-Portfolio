@@ -524,5 +524,81 @@ export const journeyData = [
     technologies: ['Automation Control', 'Information Systems'],
     certificateUrl: 'https://drive.google.com/drive/u/6/folders/1p9goopl7e5UtIaG2bZ3yM1mBfcHyTzoQ',
     relatedBlogSlug: ''
+  },
+  {
+    id: 'ecsoc-open-source-2026',
+    title: 'Elite Coders Summer of Code (ECSoC) 2026',
+    organization: 'Elite Coders',
+    date: '2026-07-15',
+    dateLabel: 'July 15, 2026',
+    location: 'Remote Open Source Program',
+    duration: '2 Months',
+    category: 'Open Source',
+    mode: 'Online',
+    status: 'In Progress',
+    description: "Accepted as an Open Source Contributor for the Elite Coders Summer of Code (ECSoC) 2026, contributing to the UI Components track. Collaborating with a global developer community to build, improve, and optimize reusable frontend modules.",
+    whatILearned: [
+      'Contributing to real-world open-source repositories under the UI Components track',
+      'Collaborating with experienced open-source maintainers and developer teams',
+      'Refining modular React component architecture and frontend code conventions'
+    ],
+    skills: [
+      'Open Source',
+      'UI Components',
+      'React',
+      'Git',
+      'GitHub',
+      'Collaboration',
+      'Frontend Development'
+    ],
+    coverImage: '/images/journey/contr1.png',
+    images: [
+      '/images/journey/contr1.png',
+      '/images/journey/contr2.png',
+      '/images/journey/contr3.png'
+    ],
+    objectives: 'Design and contribute reusable UI component packages and enhance modular frontend architecture.',
+    outcomes: 'Accepted into the program, establishing collaboration pipelines with open-source project leads.',
+    technologies: ['React', 'JavaScript', 'Tailwind CSS', 'Git'],
+    certificateUrl: '',
+    relatedBlogSlug: ''
+  },
+  {
+    id: 'android-nova-workshop-2026',
+    title: 'Android Nova 2.0',
+    organization: 'Cyber Intelligence Community Lucknow',
+    date: '2026-07-17',
+    dateLabel: 'July 17, 2026',
+    location: 'Lucknow, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Workshops',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended Android Nova 2.0 today, and it was an amazing experience! Great to learn about Android Development, AI, and future technologies, while connecting with passionate developers and tech enthusiasts.',
+    whatILearned: [
+      'Android Development fundamentals and future platform roadmap',
+      'Integrating AI and modern technologies into mobile app ecosystems',
+      'Networking with local developer networks and tech enthusiasts in Lucknow',
+      'Special insights from organizers: Cyber Intelligence Community Lucknow, Dhaval Vaish, and Raj Kumar'
+    ],
+    skills: [
+      'Android Development',
+      'AI',
+      'Mobile Development',
+      'Networking',
+      'Tech Community'
+    ],
+    coverImage: '/images/journey/andriod3.jpg',
+    images: [
+      '/images/journey/andriod1.jpg',
+      '/images/journey/certand.png',
+      '/images/journey/andriod2.jpg',
+      '/images/journey/andriod3.jpg'
+    ],
+    objectives: 'Learn about the latest trends in Android Development, AI integrations, and mobile engineering.',
+    outcomes: 'Earned attendance recognition certificate, connected with senior tech organizers, and explored future Android platform roadmaps.',
+    technologies: ['Android', 'AI', 'Mobile APIs'],
+    certificateUrl: '',
+    relatedBlogSlug: ''
   }
 ];
