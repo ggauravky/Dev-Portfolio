@@ -54,9 +54,9 @@ export default defineConfig({
     // them wastes build time and can break tree-shaking assumptions).
     viteObfuscateFile({
       compact: true,
-      // Encode string literals into a Base64 lookup table
+      // Encode string literals
       stringArray: true,
-      stringArrayEncoding: ["base64"],
+      stringArrayEncoding: [],
       stringArrayCallsTransform: true,
       stringArrayIndexShift: true,
       stringArrayRotate: true,

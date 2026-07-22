@@ -18,19 +18,12 @@ const clearPaymentFlowSessionState = () => {
     sessionStorage.removeItem('pendingCashfreeOrder')
     sessionStorage.removeItem('pendingSupportOrder')
 
-    const keysToDelete = []
-    for (let index = 0; index < sessionStorage.length; index += 1) {
-        const key = sessionStorage.key(index)
-        if (!key) {
-            continue
-        }
-
+    const keys = Object.keys(sessionStorage)
+    keys.forEach((key) => {
         if (key.startsWith('paymentActivityOpened:')) {
-            keysToDelete.push(key)
+            sessionStorage.removeItem(key)
         }
-    }
-
-    keysToDelete.forEach((key) => sessionStorage.removeItem(key))
+    })
 }
 
 export function AuthProvider({ children }) {

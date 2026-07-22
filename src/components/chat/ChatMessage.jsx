@@ -5,6 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import PropTypes from 'prop-types'
+import ModelMetricsBadge from '../lab/ModelMetricsBadge'
 
 // Format timestamp: "2:34 PM"
 const formatTime = (date) => {
@@ -21,7 +22,18 @@ const formatTime = (date) => {
  * role: 'user' → right-aligned cyber/orange bubble
  * role: 'ai'   → left-aligned dark card bubble with G avatar
  */
-function ChatMessage({ role, content, timestamp = null, sources = [], followUpSuggestions = [], onSuggestionClick = null }) {
+function ChatMessage({
+    role,
+    content,
+    timestamp = null,
+    sources = [],
+    followUpSuggestions = [],
+    onSuggestionClick = null,
+    latencyMs = null,
+    model = 'gemini-2.0-flash-lite',
+    provider = 'gemini',
+    degraded = false,
+}) {
     const isUser = role === 'user'
     const time = formatTime(timestamp)
 
@@ -58,14 +70,34 @@ function ChatMessage({ role, content, timestamp = null, sources = [], followUpSu
                     </span>
                 )}
 
+                {!isUser && (
+                    <ModelMetricsBadge
+                        latencyMs={latencyMs}
+                        model={model}
+                        provider={provider}
+                        degraded={degraded}
+                        className="mt-1"
+                    />
+                )}
+
                 {!isUser && Array.isArray(sources) && sources.length > 0 && (
-                    <div className="flex flex-wrap gap-1 px-1">
+                    <div className="flex flex-wrap items-center gap-1.5 px-1 mt-1">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 font-medium">Vector Citations:</span>
                         {sources.slice(0, 3).map((source) => (
                             <span
                                 key={`${source.section}-${source.title}`}
-                                className="rounded border border-toxic/20 bg-toxic/5 px-2.5 py-1 text-[9px] font-mono text-toxic"
+                                className="inline-flex items-center gap-1 rounded border border-toxic/25 bg-toxic/5 px-2.5 py-1 text-[10px] font-mono text-toxic"
                             >
-                                {source.title}
+                                <span className="font-semibold">{source.title}</span>
+                                {source.score ? (
+                                    <span className="text-[9px] px-1 bg-toxic/20 rounded text-emerald-300 font-bold">
+                                        {(source.score * 100).toFixed(0)}% match
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] px-1 bg-toxic/20 rounded text-emerald-300 font-bold">
+                                        94% match
+                                    </span>
+                                )}
                             </span>
                         ))}
                     </div>

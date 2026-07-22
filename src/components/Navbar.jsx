@@ -23,22 +23,22 @@ const renderDesktopProfileMenu = ({
         <button
             type="button"
             onClick={() => setIsProfileMenuOpen((previous) => !previous)}
-            className="group inline-flex items-center gap-2 rounded-full border border-obsidian-border bg-obsidian-card px-3 py-2 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors"
+            className="group inline-flex items-center justify-center h-9 gap-2 rounded-full border border-obsidian-border bg-obsidian-card px-3 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors leading-none"
             aria-label="Open profile menu"
         >
             {user.picture ? (
                 <img
                     src={user.picture}
                     alt={user.name || 'User'}
-                    className="h-7 w-7 rounded-full border border-obsidian-border object-cover"
+                    className="h-6 w-6 rounded-full border border-obsidian-border object-cover shrink-0"
                     referrerPolicy="no-referrer"
                 />
             ) : (
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic shrink-0">
                     {getProfileInitial(user)}
                 </span>
             )}
-            <svg className={`h-4 w-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+            <svg className={`h-3.5 w-3.5 shrink-0 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
         </button>
@@ -192,21 +192,22 @@ function Navbar() {
                         <Link
                             to="/"
                             onClick={closeMenu}
-                            className="group text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider flex items-center gap-1.5 sm:gap-2 relative"
+                            className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-3 xl:mr-6 leading-none"
                         >
-                            <span className="text-white group-hover:text-toxic transition-colors duration-300">
-                                <span className="hidden sm:inline">Gaurav</span>
-                                <span className="sm:hidden">Gaurav</span>
+                            <span className="text-white group-hover:text-toxic transition-colors duration-300 leading-none flex items-center">
+                                <span className="hidden sm:inline leading-none">Gaurav</span>
+                                <span className="sm:hidden leading-none">Gaurav</span>
                             </span>
                             <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                         </Link>
+
                         {/* Desktop links */}
-                        <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+                        <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 min-w-0">
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`relative px-4 py-2 rounded-full font-medium transition-colors duration-300 text-[13px] xl:text-[14px] group ${isActive(link.path)
+                                    className={`relative inline-flex items-center justify-center h-9 px-3 xl:px-3.5 rounded-full font-medium transition-colors duration-300 text-[13px] xl:text-[13.5px] leading-none whitespace-nowrap group shrink-0 ${isActive(link.path)
                                         ? 'text-obsidian font-bold'
                                         : 'text-zinc-400 hover:text-white'
                                         }`}
@@ -218,10 +219,10 @@ function Navbar() {
                                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                                         />
                                     )}
-                                    <span className="relative z-10">{link.name}</span>
+                                    <span className="relative z-10 leading-none">{link.name}</span>
                                     {!isActive(link.path) && (
                                         <>
-                                            <span className="absolute inset-x-3 -bottom-0.5 h-0.5 bg-toxic transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
+                                            <span className="absolute inset-x-3 bottom-1.5 h-0.5 bg-toxic transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
                                             <div className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                                         </>
                                     )}
@@ -229,41 +230,70 @@ function Navbar() {
                             ))}
                         </div>
 
-                        {/* Desktop Resume button */}
-                        <a
-                            href="/resume.pdf"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Open resume PDF in a new tab"
-                            className="hidden lg:flex items-center gap-2 ml-2 xl:ml-3 px-5 py-2.5 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 shadow-md shadow-toxic/5 hover:shadow-toxic/30 hover:scale-105 text-xs xl:text-sm cursor-pointer whitespace-nowrap group relative overflow-hidden"
-                        >
-                            <svg className="w-3.5 h-3.5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            <span className="relative z-10">Resume</span>
-                        </a>
+                        {/* Right Header Action Group */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {/* Search / Command Palette Trigger Button (Desktop & Tablet) */}
+                            <button
+                                type="button"
+                                onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+                                className="hidden sm:inline-flex items-center justify-center h-9 gap-2 px-3.5 rounded-full border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-white hover:border-toxic/50 transition-all duration-200 text-xs font-mono leading-none"
+                                aria-label="Open Command Search"
+                            >
+                                <svg className="w-3.5 h-3.5 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <span className="font-sans text-xs leading-none">Search</span>
+                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 text-[10px] leading-none bg-obsidian border border-obsidian-border text-zinc-400 font-mono rounded">⌘K</kbd>
+                            </button>
 
-                        {isAuthenticated && user
-                            ? renderDesktopProfileMenu({
-                                user,
-                                isProfileMenuOpen,
-                                profileMenuRef,
-                                setIsProfileMenuOpen,
-                                handleLogout,
-                            })
-                            : null}
+                            {/* Mobile Search Button (Extra Small Viewports) */}
+                            <button
+                                type="button"
+                                onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+                                className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light text-toxic active:scale-95 transition-all duration-200 shrink-0"
+                                aria-label="Open Search Command Palette"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
 
-                        {/* Hamburger — mobile only */}
-                        <button
-                            onClick={() => setIsMenuOpen(prev => !prev)}
-                            className="lg:hidden flex flex-col items-center justify-center w-10 h-10 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light active:scale-95 transition-all duration-200 shrink-0"
-                            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-                            aria-expanded={isMenuOpen}
-                        >
-                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[6px]' : '-translate-y-[5px]'}`}></span>
-                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`}></span>
-                            <span className={`block h-0.5 w-5 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[6px]' : 'translate-y-[5px]'}`}></span>
-                        </button>
+                            {/* Desktop Resume button */}
+                            <a
+                                href="/resume.pdf"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Open resume PDF in a new tab"
+                                className="hidden lg:inline-flex items-center justify-center h-9 min-h-0 gap-2 ml-1 px-4 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 text-xs xl:text-sm cursor-pointer whitespace-nowrap leading-none group relative hover:shadow-lg hover:shadow-toxic/20 hover:scale-105"
+                            >
+                                <svg className="w-3.5 h-3.5 shrink-0 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <span className="relative z-10 leading-none">Resume</span>
+                            </a>
+
+                            {isAuthenticated && user
+                                ? renderDesktopProfileMenu({
+                                    user,
+                                    isProfileMenuOpen,
+                                    profileMenuRef,
+                                    setIsProfileMenuOpen,
+                                    handleLogout,
+                                })
+                                : null}
+
+                            {/* Hamburger — mobile only */}
+                            <button
+                                onClick={() => setIsMenuOpen(prev => !prev)}
+                                className="lg:hidden inline-flex flex-col items-center justify-center w-9 h-9 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light active:scale-95 transition-all duration-200 shrink-0"
+                                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                                aria-expanded={isMenuOpen}
+                            >
+                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[5px]' : '-translate-y-[4px]'}`}></span>
+                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`}></span>
+                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[5px]' : 'translate-y-[4px]'}`}></span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </nav>

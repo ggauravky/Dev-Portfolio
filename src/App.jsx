@@ -20,6 +20,9 @@ import SplashScreen from './components/SplashScreen'
 import CursorSpotlight from './components/CursorSpotlight'
 import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
+import CommandPalette from './components/CommandPalette'
+import WebVitalsBadge from './components/WebVitalsBadge'
+import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
 
@@ -221,24 +224,19 @@ function AnimatedRoutes() {
 function App() {
     // Show splash screen only once per browser session
     const [appReady, setAppReady] = useState(() => !!sessionStorage.getItem('splashShown'))
-
-    // Optional one-time home reload during splash for first-visit visual reset.
-    useEffect(() => {
-        if (appReady) return
-
-        const isHomeRoute = globalThis.location?.pathname === '/'
-        const alreadyReloaded = sessionStorage.getItem('homeSplashReloaded')
-
-        if (isHomeRoute && !alreadyReloaded) {
-            sessionStorage.setItem('homeSplashReloaded', '1')
-            globalThis.location.reload()
-        }
-    }, [appReady])
+    const [isPaletteOpen, setIsPaletteOpen] = useState(false)
 
     const handleSplashDone = () => {
         sessionStorage.setItem('splashShown', '1')
         setAppReady(true)
     }
+
+    // Listen for custom event to trigger command palette from Navbar or other components
+    useEffect(() => {
+        const handleOpenPalette = () => setIsPaletteOpen(true)
+        window.addEventListener('open-command-palette', handleOpenPalette)
+        return () => window.removeEventListener('open-command-palette', handleOpenPalette)
+    }, [])
 
     // Ping backend as soon as JS loads (even during splash)
     useEffect(() => {
@@ -256,6 +254,9 @@ function App() {
             <CursorSpotlight />
             <ScrollToTop />
             <AnalyticsRouteTracker />
+            <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+            <WebVitalsBadge />
+            <NetworkStatusBanner />
             <Toaster
                 position="top-center"
                 reverseOrder={false}

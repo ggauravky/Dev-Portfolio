@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { logMlUsage, uploadAndLogImage } from '../../utils/mlLogger'
+import ModelMetricsBadge from './ModelMetricsBadge'
 
 const MAX_FILE_SIZE_BYTES = 8 * 1024 * 1024 // 8MB
 const INFERENCE_SIZE = 224
@@ -111,6 +112,7 @@ function ImageAnalyzer() {
     const [selectedFile, setSelectedFile] = useState(null)
     const [previewUrl, setPreviewUrl] = useState('')
     const [predictions, setPredictions] = useState([])
+    const [latencyMs, setLatencyMs] = useState(null)
     const [error, setError] = useState('')
     const [statusText, setStatusText] = useState('Upload an image and run real MobileNet inference.')
     const [modelState, setModelState] = useState(cachedModelBundle ? 'ready' : 'idle')
@@ -195,7 +197,10 @@ function ImageAnalyzer() {
             setStatusText('Running inference...')
 
             const canvas = buildInferenceCanvas(imageRef.current)
+            const startTime = performance.now()
             const results = await bundle.model.classify(canvas, 3)
+            const elapsed = Math.round(performance.now() - startTime)
+            setLatencyMs(elapsed)
 
             // Capture the 224×224 canvas as JPEG before zeroing it.
             // This small snapshot (~25–50 KB) is what gets sent to Cloudinary.
@@ -331,7 +336,15 @@ function ImageAnalyzer() {
                 )}
 
                 {predictions.length > 0 && (
-                    <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-3 space-y-2">
+                    <div className="rounded-lg border border-[#1a1a22] bg-[#070708] p-3.5 space-y-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2 pb-1 border-b border-slate-800/60">
+                            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">Inference Telemetry</span>
+                            <ModelMetricsBadge
+                                latencyMs={latencyMs}
+                                model="mobilenet-v2"
+                                provider="tensorflow.js"
+                            />
+                        </div>
                         <p className="text-sm text-cyber font-mono font-medium">
                             Top Prediction: {predictions[0].className}
                             <span className="text-white font-normal"> ({formatConfidence(predictions[0].probability)})</span>

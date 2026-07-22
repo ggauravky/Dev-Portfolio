@@ -23,6 +23,36 @@ export const projectsData = [
         problem: "Hostel mess management was entirely manual and disconnected. Students had no way to check the menu before walking to the mess, feedback disappeared into informal WhatsApp groups, attendance was tracked on paper prone to errors, and management had zero data on food preferences or quality trends — leading to food wastage, long queues, and low student satisfaction.",
         solution: "SmartMess is a full-stack digital platform bridging students and mess administration. Students get real-time menu access for all four meals, a 1–5 star rating system with comments, single-click digital attendance, and a tracked complaint portal. Administrators get a menu management panel, student registration approval, an analytics dashboard for ratings and trends, complaint resolution workflows, and meal-wise attendance reports.",
         architecture: "React SPA (student & admin views) ↔ Express REST API (auth, menus, ratings, attendance, complaints) ↔ MongoDB Atlas. JWT-based role authentication separates student and admin routes. Deployed on Vercel (frontend) with serverless API functions handling backend logic.",
+        diagrams: {
+            system: `graph TD
+    Client[React SPA Client] -->|REST API Requests| API[Express API Gateway]
+    API -->|Auth Verification| JWT[JWT Security Middleware]
+    API -->|ORM Data Sync| DB[(MongoDB Atlas)]
+    API -->|Admin Panel| Admin[Management Analytics Dashboard]`,
+            flow: `sequenceDiagram
+    autonumber
+    Student->>React Client: Select Meal & Attendance
+    React Client->>Express API: POST /api/attendance (Bearer Token)
+    Express API->>JWT Middleware: Validate Session Role
+    JWT Middleware-->>Express API: Authorized (Student Role)
+    Express API->>MongoDB: Insert Attendance Record
+    MongoDB-->>Express API: Success Confirmation
+    Express API-->>React Client: 201 Created Response`,
+            database: `erDiagram
+    USER ||--o{ ATTENDANCE : records
+    USER ||--o{ COMPLAINT : submits
+    MENU ||--o{ RATING : receives
+    USER {
+        ObjectId _id
+        string email
+        string role
+    }
+    MENU {
+        ObjectId _id
+        string mealType
+        array items
+    }`
+        },
         keyDecisions: [
             "Role-based JWT authentication — a single token payload encodes the role (student / admin) to keep route protection simple without a separate permissions service",
             "MongoDB for all entities — flexible schema accommodated menu items, ratings, attendance records, and complaints without rigid relational constraints",
@@ -81,6 +111,34 @@ export const projectsData = [
         problem: "Building a real-time communication platform that handles dozens of concurrent WebSocket connections, secure user sessions, and media uploads — all on a free-tier infrastructure without sacrificing performance or UX.",
         solution: "Used Socket.IO for event-driven bidirectional communication with automatic reconnection. JWT tokens secured in HTTP-only cookies handled auth without exposing credentials to JavaScript. Cloudinary offloaded all media storage, keeping the Node server stateless and horizontally scalable.",
         architecture: "React SPA (Context + hooks) ↔ Express REST API for auth/profiles ↔ Socket.IO namespace for messages. MongoDB Atlas stores users and message history. Cloudinary CDN serves all media assets. Deployed on Render with auto-sleep on inactivity.",
+        diagrams: {
+            system: `graph TD
+    Client[React SPA Client] <-->|Socket.IO Bidirectional WebSockets| WSServer[Socket.IO Server Namespace]
+    Client -->|HTTP REST Requests| REST[Express Auth API]
+    REST -->|User Profile & Sessions| DB[(MongoDB Atlas)]
+    REST -->|Media Asset Delivery| CDN[Cloudinary Media CDN]`,
+            flow: `sequenceDiagram
+    autonumber
+    Sender->>React Client: Type Message & Hit Send
+    React Client->>Socket.IO Server: emit("send_message", payload)
+    Socket.IO Server->>MongoDB: Save Message Schema
+    Socket.IO Server-->>Receiver: io.to(roomId).emit("receive_message")
+    Receiver->>React Client: Render Message Bubble Optimistically`,
+            database: `erDiagram
+    USER ||--o{ MESSAGE : sends
+    ROOM ||--o{ MESSAGE : contains
+    USER {
+        ObjectId _id
+        string username
+        string avatarUrl
+    }
+    MESSAGE {
+        ObjectId _id
+        string senderId
+        string content
+        date createdAt
+    }`
+        },
         keyDecisions: [
             "Socket.IO over raw WebSockets — automatic reconnection and room management out of the box",
             "HTTP-only cookies for JWT instead of localStorage to prevent XSS token theft",

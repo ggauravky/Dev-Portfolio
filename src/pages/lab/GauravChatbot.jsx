@@ -48,6 +48,10 @@ const createMessage = (role, content, extra = {}) => ({
     intro: Boolean(extra.intro),
     followUpSuggestions: Array.isArray(extra.followUpSuggestions) ? extra.followUpSuggestions : [],
     userIntent: extra.userIntent || null,
+    latencyMs: extra.latencyMs ?? null,
+    model: extra.model || 'gemini-2.0-flash-lite',
+    provider: extra.provider || 'gemini',
+    degraded: Boolean(extra.degraded),
 })
 
 const createIntroMessage = () =>
@@ -167,6 +171,7 @@ function GauravChatbot() {
         }
 
         try {
+            const startTime = Date.now()
             const controller = new AbortController()
             const timeoutId = setTimeout(() => controller.abort(), 22000)
             const history = messages
@@ -196,6 +201,7 @@ function GauravChatbot() {
                 clearTimeout(timeoutId)
             }
 
+            const latencyMs = Date.now() - startTime
             const data = await response.json().catch(() => ({}))
             if (!response.ok || !data.success || !String(data.reply || '').trim()) {
                 throw new Error(data.reply || FALLBACK_MESSAGE)
@@ -210,6 +216,9 @@ function GauravChatbot() {
                 sources: data.sources || [],
                 followUpSuggestions: data.followUpSuggestions || [],
                 userIntent: data.userIntent || null,
+                latencyMs,
+                provider: data.provider || 'gemini',
+                degraded: Boolean(data.degraded),
             }
             writeCache(cacheToSave)
 
@@ -227,6 +236,9 @@ function GauravChatbot() {
                                 sources: Array.isArray(data.sources) && data.sources.length ? data.sources : m.sources,
                                 followUpSuggestions: data.followUpSuggestions || m.followUpSuggestions || [],
                                 userIntent: data.userIntent || m.userIntent || null,
+                                latencyMs,
+                                provider: data.provider || 'gemini',
+                                degraded: Boolean(data.degraded),
                             })
                         }
                         return m
@@ -239,9 +251,12 @@ function GauravChatbot() {
                     updated[updated.length - 1] = createMessage('ai', replyText, {
                         id: last.id,
                         timestamp: new Date(),
-                        sources: data.sources,
+                        sources: data.sources || [],
                         followUpSuggestions: data.followUpSuggestions || [],
                         userIntent: data.userIntent || null,
+                        latencyMs,
+                        provider: data.provider || 'gemini',
+                        degraded: Boolean(data.degraded),
                     })
                     return updated
                 }
@@ -249,9 +264,12 @@ function GauravChatbot() {
                 return [
                     ...previous,
                     createMessage('ai', replyText, {
-                        sources: data.sources,
+                        sources: data.sources || [],
                         followUpSuggestions: data.followUpSuggestions || [],
                         userIntent: data.userIntent || null,
+                        latencyMs,
+                        provider: data.provider || 'gemini',
+                        degraded: Boolean(data.degraded),
                     }),
                 ]
             })
@@ -505,6 +523,10 @@ function GauravChatbot() {
                                 sources={message.sources}
                                 followUpSuggestions={message.followUpSuggestions}
                                 onSuggestionClick={(suggestion) => void sendMessage(suggestion)}
+                                latencyMs={message.latencyMs}
+                                model={message.model}
+                                provider={message.provider}
+                                degraded={message.degraded}
                             />
                         ))}
 
