@@ -21,6 +21,7 @@ import CursorSpotlight from './components/CursorSpotlight'
 import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
 import CommandPalette from './components/CommandPalette'
+import RadialMenu from './components/RadialMenu'
 import WebVitalsBadge from './components/WebVitalsBadge'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
@@ -153,7 +154,7 @@ function AppLayout({ children }) {
     return (
         <div className="App">
             {!isFullScreen && (
-                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-50 w-full">
+                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
                     <AvailabilityBanner />
                     <div className="pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
                         <Navbar />
@@ -255,6 +256,7 @@ function App() {
             <ScrollToTop />
             <AnalyticsRouteTracker />
             <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+            <RadialMenu />
             <WebVitalsBadge />
             <NetworkStatusBanner />
             <Toaster

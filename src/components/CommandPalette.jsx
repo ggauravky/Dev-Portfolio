@@ -23,11 +23,13 @@ import {
     Check
 } from 'lucide-react'
 import { getAllCommands } from '../data/commandRegistry'
+import { useHeaderHeight } from '../hooks/useHeaderHeight'
 
 export default function CommandPalette({ isOpen, onClose }) {
     const [search, setSearch] = useState('')
     const [toastMessage, setToastMessage] = useState('')
     const navigate = useNavigate()
+    const headerHeight = useHeaderHeight()
 
     // Fetch full list of commands from registry
     const allCommands = useMemo(() => getAllCommands(), [])
@@ -134,25 +136,30 @@ export default function CommandPalette({ isOpen, onClose }) {
 
     if (!isOpen) return null
 
+    const computedPaddingTop = headerHeight > 0 ? headerHeight + 14 : 24
+    const computedMaxHeight = `calc(100vh - ${headerHeight > 0 ? headerHeight + 28 : 48}px)`
+
     return (
         <div
-            className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4 bg-black/80 backdrop-blur-md transition-all duration-200"
+            className="fixed inset-0 z-50 flex items-start justify-center px-3 sm:px-4 bg-black/80 backdrop-blur-md transition-all duration-200"
+            style={{ paddingTop: `${computedPaddingTop}px` }}
             onClick={onClose}
             role="dialog"
             aria-modal="true"
             aria-label="Universal Portfolio Command Center"
         >
             <div
-                className="w-full max-w-2xl bg-[#0b0c10]/95 border border-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl flex flex-col max-h-[82vh] transition-all animate-in fade-in zoom-in-95 duration-150"
+                className="w-full max-w-2xl bg-[#0b0c10]/95 border border-[#1a1a2e] rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl flex flex-col transition-all animate-in fade-in zoom-in-95 duration-150"
+                style={{ maxHeight: computedMaxHeight }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <Command
                     label="Universal Command Center"
                     shouldFilter={true}
-                    className="w-full flex flex-col overflow-hidden"
+                    className="w-full flex flex-col overflow-hidden h-full max-h-full"
                 >
                     {/* Search Input Header */}
-                    <div className="flex items-center px-4 py-3.5 border-b border-[#1a1a2e] gap-3 bg-[#0e0e14] relative">
+                    <div className="flex items-center px-4 py-3.5 border-b border-[#1a1a2e] gap-3 bg-[#0e0e14] relative shrink-0">
                         <Search className="w-5 h-5 text-toxic shrink-0" />
                         <Command.Input
                             value={search}
@@ -190,7 +197,7 @@ export default function CommandPalette({ isOpen, onClose }) {
                     </div>
 
                     {/* Results List */}
-                    <Command.List className="overflow-y-auto p-2 space-y-3 max-h-[58vh] scrollbar-thin scrollbar-thumb-zinc-800">
+                    <Command.List className="overflow-y-auto p-2 space-y-3 flex-1 min-h-0 scrollbar-thin scrollbar-thumb-zinc-800">
                         <Command.Empty className="py-12 text-center text-zinc-500 space-y-2">
                             <Sparkles className="w-8 h-8 mx-auto text-toxic/60 animate-pulse" />
                             <p className="text-sm font-medium text-zinc-300">No matching command or destination found for &quot;{search}&quot;</p>
