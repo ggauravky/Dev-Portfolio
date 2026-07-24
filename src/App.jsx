@@ -22,7 +22,6 @@ import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
 import CommandPalette from './components/CommandPalette'
 import RadialMenu from './components/RadialMenu'
-import WebVitalsBadge from './components/WebVitalsBadge'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
@@ -131,7 +130,6 @@ const FULL_SCREEN_ROUTES = new Set([
     '/lab/gaurav-chatbot',
     '/lab/ml-demos',
     '/lab/consistency-dashboard',
-    '/lab/terminal',
     '/lab/algorithms',
 ])
 
@@ -257,7 +255,6 @@ function App() {
                 <AnalyticsRouteTracker />
                 <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
                 <RadialMenu />
-                <WebVitalsBadge />
                 <NetworkStatusBanner />
                 <Toaster
                     position="top-center"

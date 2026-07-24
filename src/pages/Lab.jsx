@@ -168,28 +168,6 @@ function Lab() {
                         </span>
                     </Link>
 
-                    {/* Card 6 — System Design & Rate Limiter Simulator */}
-                    <Link
-                        to="/projects/smartmess"
-                        className="group relative p-6 bg-[#0e0e11] border border-[#1a1a22] rounded-lg hover:border-emerald-500/40 transition-all duration-300 hover:-translate-y-1 block overflow-hidden"
-                    >
-                        <div className="relative">
-                            <svg className="w-8 h-8 mb-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3V6.75a3 3 0 013-3h13.5a3 3 0 013 3v4.5a3 3 0 01-3 3m-13.5 0h13.5m-13.5 0a3 3 0 00-3 3v4.5a3 3 0 003 3h13.5a3 3 0 003-3v-4.5a3 3 0 00-3-3m-13.5 0h13.5" />
-                            </svg>
-                            <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-emerald-400 transition-colors">System Simulator</h3>
-                            <p className="text-[#a1a1aa] text-sm leading-relaxed mb-4">
-                                Simulate API traffic bursts, Redis token bucket replenishment rates, and HTTP 429 throttling metrics.
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Token Bucket</span>
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Rate Limiter</span>
-                            </div>
-                        </div>
-                        <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/25 font-bold">
-                            Live
-                        </span>
-                    </Link>
                 </div>
 
                 <p className="text-center text-[#52525b] text-xs font-mono mt-12">

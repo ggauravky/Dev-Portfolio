@@ -15,7 +15,7 @@ export const STATIC_COMMANDS = [
         url: '/',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['home', 'main', 'landing', 'gaurav', 'portfolio', 'overview', 'index', 'start', 'hero']
+        keywords: ['home', 'main', 'landing', 'gaurav', 'portfolio', 'overview', 'index', 'start', 'hero', 'top', 'welcome', 'root']
     },
     {
         id: 'page-about',
@@ -26,7 +26,7 @@ export const STATIC_COMMANDS = [
         url: '/about',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['about', 'about me', 'bio', 'background', 'iit mandi', 'profile', 'education', 'who is gaurav', 'who']
+        keywords: ['about', 'about me', 'bio', 'background', 'iit mandi', 'profile', 'education', 'who is gaurav', 'who', 'me', 'developer', 'person', 'student', 'bbdu']
     },
     {
         id: 'page-journey',
@@ -37,7 +37,7 @@ export const STATIC_COMMANDS = [
         url: '/journey',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['journey', 'timeline', 'career', 'education', 'roadmap', 'experience', 'milestones', 'history', 'growth']
+        keywords: ['journey', 'timeline', 'career', 'education', 'roadmap', 'experience', 'milestones', 'history', 'growth', 'path', 'story', 'background', 'life', 'academic']
     },
     {
         id: 'page-lab',
@@ -48,7 +48,7 @@ export const STATIC_COMMANDS = [
         url: '/lab',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['lab', 'ai lab', 'technical lab', 'developer lab', 'demos', 'tools', 'ai tools', 'interactive lab']
+        keywords: ['lab', 'ai lab', 'technical lab', 'developer lab', 'demos', 'tools', 'ai tools', 'interactive lab', 'ai', 'ml', 'machine learning', 'experiments', 'playground', 'workshop', 'dev tools']
     },
     {
         id: 'page-skills',
@@ -59,7 +59,7 @@ export const STATIC_COMMANDS = [
         url: '/skills',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['skills', 'tech stack', 'technologies', 'programming', 'frameworks', 'languages', 'react', 'node', 'python', 'ai', 'ml', 'database']
+        keywords: ['skills', 'tech stack', 'technologies', 'programming', 'frameworks', 'languages', 'react', 'node', 'python', 'ai', 'ml', 'database', 'tech', 'stack', 'expertise', 'tools', 'devops', 'nextjs', 'typescript', 'javascript', 'html', 'css']
     },
     {
         id: 'page-projects',
@@ -70,7 +70,7 @@ export const STATIC_COMMANDS = [
         url: '/projects',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['projects', 'portfolio', 'case studies', 'work', 'code', 'software', 'apps', 'web apps', 'demos']
+        keywords: ['projects', 'portfolio', 'case studies', 'work', 'code', 'software', 'apps', 'web apps', 'demos', 'builds', 'showcase', 'github', 'open source', 'repos', 'built']
     },
     {
         id: 'page-services',
@@ -81,7 +81,7 @@ export const STATIC_COMMANDS = [
         url: '/services',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['services', 'service', 'hire', 'hire me', 'freelancing', 'consulting', 'pricing', 'packages', 'web development', 'ai project', 'work together']
+        keywords: ['services', 'service', 'hire', 'hire me', 'freelancing', 'consulting', 'pricing', 'packages', 'web development', 'ai project', 'work together', 'collaboration', 'contract', 'work with me', 'cost', 'quote', 'offer']
     },
     {
         id: 'page-blog',
@@ -92,7 +92,7 @@ export const STATIC_COMMANDS = [
         url: '/blog',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['blog', 'articles', 'posts', 'writing', 'engineering blog', 'tech blog', 'guides', 'tutorials', 'insights']
+        keywords: ['blog', 'articles', 'posts', 'writing', 'engineering blog', 'tech blog', 'guides', 'tutorials', 'insights', 'read', 'content', 'notes', 'journal', 'thoughts', 'writeup']
     },
     {
         id: 'page-contact',
@@ -103,7 +103,7 @@ export const STATIC_COMMANDS = [
         url: '/contact',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['contact', 'contacts', 'contact me', 'reach me', 'email', 'mail', 'hire', 'phone', 'location', 'address', 'connect', 'connect with gaurav', 'hire me', 'job', 'internship', 'freelance']
+        keywords: ['contact', 'contacts', 'contact me', 'reach me', 'email', 'mail', 'hire', 'phone', 'location', 'address', 'connect', 'connect with gaurav', 'hire me', 'job', 'internship', 'freelance', 'message', 'talk', 'chat', 'dm', 'write', 'reach out', 'get in touch', 'hello', 'ping', 'say hi']
     },
     {
         id: 'page-book',
@@ -114,7 +114,7 @@ export const STATIC_COMMANDS = [
         url: '/book-now',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['book', 'booking', 'mentor', 'mentorship', 'book session', 'consultation', 'mentor me', 'guidance', 'book mentorship', 'mock interview', 'advice']
+        keywords: ['book', 'booking', 'mentor', 'mentorship', 'book session', 'consultation', 'mentor me', 'guidance', 'book mentorship', 'mock interview', 'advice', 'session', '1on1', 'one on one', 'coach', 'coaching', 'call', 'meeting', 'schedule']
     },
     {
         id: 'page-support',
@@ -125,7 +125,7 @@ export const STATIC_COMMANDS = [
         url: '/support',
         badge: 'Page',
         shortcut: '↵',
-        keywords: ['support', 'donation', 'donate', 'buy coffee', 'help project', 'support developer', 'contribution', 'coffee', 'sponsor']
+        keywords: ['support', 'donation', 'donate', 'buy coffee', 'help project', 'support developer', 'contribution', 'coffee', 'sponsor', 'fund', 'back', 'contribute', 'tip', 'appreciate', 'thank', 'bmc', 'buymeacoffee']
     },
     {
         id: 'page-activity',
@@ -182,7 +182,7 @@ export const STATIC_COMMANDS = [
         url: '/lab/gaurav-chatbot',
         badge: 'Lab Tool',
         shortcut: '↵',
-        keywords: ['chatbot', 'ai chatbot', 'assistant', 'llm', 'gemini', 'groq', 'chat', 'conversational ai', 'qa bot', 'ai assistant']
+        keywords: ['chatbot', 'ai chatbot', 'assistant', 'llm', 'gemini', 'groq', 'chat', 'conversational ai', 'qa bot', 'ai assistant', 'gpt', 'bot', 'talk to ai', 'ai chat', 'portfolio bot']
     },
     {
         id: 'lab-consistency',
@@ -193,7 +193,7 @@ export const STATIC_COMMANDS = [
         url: '/lab/consistency-dashboard',
         badge: 'Lab Tool',
         shortcut: '↵',
-        keywords: ['consistency dashboard', 'github heatmap', 'leetcode activity', 'heatmap', 'streak', 'contributions', 'commits', 'problem solving', 'tracking']
+        keywords: ['consistency dashboard', 'github heatmap', 'leetcode activity', 'heatmap', 'streak', 'contributions', 'commits', 'problem solving', 'tracking', 'activity', 'coding streak', 'progress', 'daily', 'dashboard']
     },
     {
         id: 'lab-terminal',
@@ -204,7 +204,7 @@ export const STATIC_COMMANDS = [
         url: '/lab/terminal',
         badge: 'Lab Tool',
         shortcut: '↵',
-        keywords: ['terminal', 'developer terminal', 'cli', 'bash', 'unix', 'shell', 'command line', 'emulator', 'console']
+        keywords: ['terminal', 'developer terminal', 'cli', 'bash', 'unix', 'shell', 'command line', 'emulator', 'console', 'cmd', 'prompt', 'tty', 'zsh', 'interactive', 'dev terminal']
     },
     {
         id: 'lab-algorithms',
@@ -215,7 +215,7 @@ export const STATIC_COMMANDS = [
         url: '/lab/algorithms',
         badge: 'Lab Tool',
         shortcut: '↵',
-        keywords: ['algorithm visualizer', 'algorithm lab', 'sorting visualizer', 'dsa', 'graphs', 'dijkstra', 'bfs', 'dfs', 'data structures', 'sorting', 'step visualizer']
+        keywords: ['algorithm visualizer', 'algorithm lab', 'sorting visualizer', 'dsa', 'graphs', 'dijkstra', 'bfs', 'dfs', 'data structures', 'sorting', 'step visualizer', 'algo', 'visualization', 'binary search', 'bubble sort', 'merge sort']
     },
     {
         id: 'lab-image-analyzer',
@@ -296,7 +296,7 @@ export const STATIC_COMMANDS = [
         url: 'https://github.com/ggauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['github', 'github profile', 'repo', 'repositories', 'code', 'git', 'open source', 'ggauravky']
+        keywords: ['github', 'github profile', 'repo', 'repositories', 'code', 'git', 'open source', 'ggauravky', 'gh', 'source code', 'commits', 'projects', 'version control', 'fork', 'star']
     },
     {
         id: 'social-linkedin',
@@ -307,7 +307,7 @@ export const STATIC_COMMANDS = [
         url: 'https://linkedin.com/in/ggauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['linkedin', 'linkedin profile', 'professional network', 'connect', 'career', 'jobs', 'network']
+        keywords: ['linkedin', 'linkedin profile', 'professional network', 'connect', 'career', 'jobs', 'network', 'link', 'lnkd', 'in', 'professional', 'social', 'job', 'hire', 'recruiter', 'connection']
     },
     {
         id: 'social-instagram',
@@ -318,7 +318,7 @@ export const STATIC_COMMANDS = [
         url: 'https://instagram.com/ggauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['instagram', 'insta', 'social', 'photos', 'stories', 'media']
+        keywords: ['instagram', 'insta', 'social', 'photos', 'stories', 'media', 'ig', 'follow', 'photo', 'reel']
     },
     {
         id: 'social-x',
@@ -329,7 +329,7 @@ export const STATIC_COMMANDS = [
         url: 'https://x.com/ggauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['x', 'twitter', 'tweets', 'social', 'tech tweets', 'build in public']
+        keywords: ['x', 'twitter', 'tweets', 'social', 'tech tweets', 'build in public', 'tweet', 'follow', 'twitter profile', 'thread']
     },
     {
         id: 'social-leetcode',
@@ -337,10 +337,10 @@ export const STATIC_COMMANDS = [
         category: 'SOCIAL',
         desc: 'Competitive programming solutions & Data Structures achievements',
         type: 'external',
-        url: 'https://leetcode.com/ggauravky',
+        url: 'https://leetcode.com/gauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['leetcode', 'coding profile', 'dsa', 'problem solving', 'algorithms', 'contest', 'solutions']
+        keywords: ['leetcode', 'coding profile', 'dsa', 'problem solving', 'algorithms', 'contest', 'solutions', 'lc', 'competitive', 'coding', 'challenge', 'problems']
     },
     {
         id: 'social-gfg',
@@ -348,69 +348,69 @@ export const STATIC_COMMANDS = [
         category: 'SOCIAL',
         desc: 'CS fundamental articles, problem practice & competitive stats',
         type: 'external',
-        url: 'https://geeksforgeeks.org/user/ggauravky',
+        url: 'https://geeksforgeeks.org/user/gauravky',
         badge: 'External ↗',
         shortcut: '↵',
-        keywords: ['gfg', 'geeksforgeeks', 'articles', 'dsa', 'cs fundamentals', 'practice']
+        keywords: ['gfg', 'geeksforgeeks', 'articles', 'dsa', 'cs fundamentals', 'practice', 'geeks', 'computer science', 'coding articles']
     },
     {
         id: 'contact-email-link',
-        title: 'Send Direct Email (gauravky.dev@gmail.com)',
-        category: 'SOCIAL',
-        desc: 'Launch email client directly to write to Gaurav',
+        title: 'Send Direct Email (kumar.gaurav.yadav2007@gmail.com) ',
+category: 'SOCIAL',
+    desc: 'Launch email client directly to write to Gaurav',
         type: 'external',
-        url: 'mailto:gauravky.dev@gmail.com',
-        badge: 'Mailto ↗',
-        shortcut: '↵',
-        keywords: ['email', 'gmail', 'mail', 'write mail', 'message', 'send email', 'gauravky.dev@gmail.com']
+            url: 'mailto:kumar.gaurav.yadav2007@gmail.com',
+badge: 'Mailto ↗',
+    shortcut: '↵',
+        keywords: ['email', 'gmail', 'mail', 'write mail', 'message', 'send email', 'kumar.gaurav.yadav2007@gmail.com', 'contact email', 'send mail', 'write', 'reach', 'mailto', 'inbox', 'compose']
     },
-    {
-        id: 'contact-phone-link',
-        title: 'Call / WhatsApp (+91 82357 73177)',
-        category: 'SOCIAL',
-        desc: 'Direct phone dial or message channel',
-        type: 'external',
-        url: 'tel:+918235773177',
-        badge: 'Phone ↗',
-        shortcut: '↵',
-        keywords: ['call', 'phone', 'mobile', 'dial', 'whatsapp', 'contact number', '8235773177']
-    },
+            {
+                id: 'contact-phone-link',
+                title: 'Call / WhatsApp (+91 82357 73177)',
+                category: 'SOCIAL',
+                desc: 'Direct phone dial or message channel',
+                type: 'external',
+                url: 'tel:+918235773177',
+                badge: 'Phone ↗',
+                shortcut: '↵',
+                keywords: ['call', 'phone', 'mobile', 'dial', 'whatsapp', 'contact number', '8235773177', 'number', 'wa', 'wp', 'chat', 'ring']
+            },
 
-    // ── ACTIONS ──────────────────────────────────────────────────────
-    {
-        id: 'action-resume',
-        title: 'Download Official Resume PDF',
-        category: 'ACTIONS',
-        desc: 'Open & download official curriculum vitae / engineering resume',
-        type: 'external',
-        url: '/resume.pdf',
-        badge: 'PDF 📄',
-        shortcut: '↵',
-        keywords: ['resume', 'cv', 'download resume', 'pdf', 'curriculum vitae', 'bio pdf', 'experience document']
-    },
-    {
-        id: 'action-copy-email',
-        title: 'Copy Email Address to Clipboard',
-        category: 'ACTIONS',
-        desc: 'Quickly copy gauravky.dev@gmail.com for messaging',
+            // ── ACTIONS ──────────────────────────────────────────────────────
+            {
+                id: 'action-resume',
+                title: 'Download Official Resume PDF',
+                category: 'ACTIONS',
+                desc: 'Open & download official curriculum vitae / engineering resume',
+                type: 'external',
+                url: '/resume.pdf',
+                badge: 'PDF 📄',
+                shortcut: '↵',
+                keywords: ['resume', 'cv', 'download resume', 'pdf', 'curriculum vitae', 'bio pdf', 'experience document', 'download', 'hire', 'qualification', 'document', 'portfolio pdf', 'vita']
+            },
+            {
+                id: 'action-copy-email',
+                title: 'Copy Email Address to Clipboard',
+                category: 'ACTIONS',
+                desc: 'Quickly copy kumar.gaurav.yadav2007@gmail.com for messaging',
         type: 'action',
-        actionId: 'copy-email',
-        badge: 'Action ⚡',
-        shortcut: '↵',
-        keywords: ['copy email', 'email address', 'get email', 'copy mail', 'clipboard email']
-    },
-    {
-        id: 'action-copy-url',
-        title: 'Copy Portfolio Share URL',
-        category: 'ACTIONS',
-        desc: 'Copy current web portfolio link to share with colleagues',
-        type: 'action',
-        actionId: 'copy-url',
-        badge: 'Action ⚡',
-        shortcut: '↵',
-        keywords: ['copy url', 'share portfolio', 'copy link', 'share site', 'portfolio link']
-    }
-]
+                actionId: 'copy-email',
+                badge: 'Action ⚡',
+                shortcut: '↵',
+                keywords: ['copy email', 'email address', 'get email', 'copy mail', 'clipboard email', 'email copy', 'clipboard', 'copy address', 'share email']
+            },
+            {
+                id: 'action-copy-url',
+                title: 'Copy Portfolio Share URL',
+                category: 'ACTIONS',
+                desc: 'Copy current web portfolio link to share with colleagues',
+                type: 'action',
+                actionId: 'copy-url',
+                badge: 'Action ⚡',
+                shortcut: '↵',
+                keywords: ['copy url', 'share portfolio', 'copy link', 'share site', 'portfolio link', 'url', 'link', 'share', 'clipboard url', 'share link']
+            }
+        ]
 
 // Dynamically generate command items for every project in projectsData
 export const getProjectCommands = () => {
