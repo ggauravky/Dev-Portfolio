@@ -4,20 +4,73 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+import {
+    Rocket,
+    Sparkles,
+    Wrench,
+    Pin,
+    LayoutGrid,
+    Search,
+    CreditCard,
+    FileText,
+    Lock,
+    BarChart3,
+    TrendingUp,
+    Target,
+    AlertTriangle,
+    CheckCircle2,
+    Zap,
+    Terminal,
+    Brain,
+    Sliders,
+    Compass,
+    Gauge,
+    Tag,
+    Calendar,
+    ShieldCheck
+} from 'lucide-react'
 import ScrollReveal from '../components/ScrollReveal'
 import useSEO from '../hooks/useSEO'
+
+const iconMap = {
+    sparkles: Sparkles,
+    wrench: Wrench,
+    pin: Pin,
+    grid: LayoutGrid,
+    search: Search,
+    'credit-card': CreditCard,
+    'file-text': FileText,
+    lock: Lock,
+    'bar-chart': BarChart3,
+    'trending-up': TrendingUp,
+    target: Target,
+    alert: AlertTriangle,
+    check: CheckCircle2,
+    zap: Zap,
+    terminal: Terminal,
+    brain: Brain,
+    sliders: Sliders,
+    compass: Compass,
+    gauge: Gauge,
+    rocket: Rocket,
+}
+
+function SectionIcon({ name, className = "w-4 h-4" }) {
+    const IconComponent = iconMap[name] || Sparkles
+    return <IconComponent className={className} />
+}
 
 const updates = [
     {
         version: 'v1.0.0',
         date: 'Jan 10, 2026',
         title: 'Initial Portfolio Release',
-        headline: '🎉 v1.0.0 - First Stable Release of Dev-Portfolio',
+        headline: 'v1.0.0 - First Stable Release of Dev-Portfolio',
         description: 'This marks the first official and stable release of my personal developer portfolio project - Dev-Portfolio - designed to showcase who I am, what I build, and how I think as a BCA student, developer, and tech enthusiast.',
         sections: [
             {
                 title: 'What This Release Includes',
-                icon: '✨',
+                icon: 'sparkles',
                 tone: 'emerald',
                 items: [
                     'A modern and responsive UI built with React + Vite and styled using Tailwind CSS.',
@@ -30,7 +83,7 @@ const updates = [
             },
             {
                 title: 'Tech Stack',
-                icon: '🛠️',
+                icon: 'wrench',
                 tone: 'blue',
                 items: [
                     'Frontend: React, Vite, Tailwind CSS, React Router',
@@ -40,7 +93,7 @@ const updates = [
             },
             {
                 title: 'Notes',
-                icon: '📌',
+                icon: 'pin',
                 tone: 'amber',
                 items: [
                     'This project is developed incrementally with real-world development patterns and will be improved regularly.',
@@ -54,24 +107,24 @@ const updates = [
         version: 'v2.0.0',
         date: 'Jan 26, 2026',
         title: 'Portfolio Website - Major UI & Performance Update',
-        headline: 'Portfolio Website - Major UI & Performance Update',
+        headline: 'v2.0.0 - Major UI & Performance Update',
         description: 'This update focuses on better design, discoverability, and user experience.',
         sections: [
             {
                 title: "What's New in This Release",
-                icon: '✨',
+                icon: 'sparkles',
                 tone: 'cyan',
                 items: [
-                    '🎨 Major UI Improvements: Revamped the user interface across all pages for a cleaner, more modern look.',
-                    '🔍 SEO Enhancements: Improved meta tags, structure, and content optimization to boost search visibility.',
-                    '🧩 New Blogs & Projects Added: Added fresh blog posts and new projects to better showcase work and learning.',
-                    '📱 Improved Responsiveness: Enhanced responsiveness across devices for a smoother experience on mobile, tablet, and desktop.',
-                    '⚙️ Performance & Minor Fixes: General refinements, bug fixes, and small improvements for better usability.',
+                    'Major UI Improvements: Revamped the user interface across all pages for a cleaner, more modern look.',
+                    'SEO Enhancements: Improved meta tags, structure, and content optimization to boost search visibility.',
+                    'New Blogs & Projects Added: Added fresh blog posts and new projects to better showcase work and learning.',
+                    'Improved Responsiveness: Enhanced responsiveness across devices for a smoother experience on mobile, tablet, and desktop.',
+                    'Performance & Minor Fixes: General refinements, bug fixes, and small improvements for better usability.',
                 ],
             },
             {
                 title: 'Release Notes',
-                icon: '🚀',
+                icon: 'rocket',
                 tone: 'blue',
                 items: [
                     'This update focuses on better design, discoverability, and user experience.',
@@ -89,7 +142,7 @@ const updates = [
         sections: [
             {
                 title: 'Added',
-                icon: '✨',
+                icon: 'sparkles',
                 tone: 'emerald',
                 items: [
                     'Centralized projects data structure (src/data/projectsData.js)',
@@ -101,7 +154,7 @@ const updates = [
             },
             {
                 title: 'Improved',
-                icon: '🎨',
+                icon: 'grid',
                 tone: 'blue',
                 items: [
                     'Revamped Navbar (animations, gradients, responsive tweaks)',
@@ -112,7 +165,7 @@ const updates = [
             },
             {
                 title: 'SEO & Metadata',
-                icon: '🔍',
+                icon: 'search',
                 tone: 'rose',
                 items: [
                     'Updated index.html metadata',
@@ -127,12 +180,12 @@ const updates = [
         version: 'v3.0.0',
         date: 'Apr 17, 2026',
         title: 'Major Platform Upgrade',
-        headline: '🚀 v3.0.0 - Major Platform Upgrade',
+        headline: 'v3.0.0 - Major Platform Upgrade',
         description: 'This release introduces a complete upgrade to the portfolio platform, including real-time payment handling, analytics tracking, and a refined user experience.',
         sections: [
             {
                 title: 'Payment System (Cashfree Integration)',
-                icon: '💳',
+                icon: 'credit-card',
                 tone: 'emerald',
                 items: [
                     'Integrated secure payment gateway using Cashfree',
@@ -145,7 +198,7 @@ const updates = [
             },
             {
                 title: 'Receipt & PDF System',
-                icon: '📄',
+                icon: 'file-text',
                 tone: 'blue',
                 items: [
                     'Automatic PDF receipt generation after successful payment',
@@ -156,7 +209,7 @@ const updates = [
             },
             {
                 title: 'Authentication System',
-                icon: '🔐',
+                icon: 'lock',
                 tone: 'violet',
                 items: [
                     'Google Sign-In implemented',
@@ -167,7 +220,7 @@ const updates = [
             },
             {
                 title: 'Umami Analytics Integration',
-                icon: '📊',
+                icon: 'bar-chart',
                 tone: 'cyan',
                 items: [
                     'Added Umami analytics for privacy-friendly tracking',
@@ -178,7 +231,7 @@ const updates = [
             },
             {
                 title: 'Activity System (My Activity Page)',
-                icon: '📈',
+                icon: 'trending-up',
                 tone: 'amber',
                 items: [
                     'Unified timeline for all user actions',
@@ -189,7 +242,7 @@ const updates = [
             },
             {
                 title: 'UX Improvements',
-                icon: '🎯',
+                icon: 'target',
                 tone: 'blue',
                 items: [
                     'Post-payment processing screen (loading / waiting UI)',
@@ -201,7 +254,7 @@ const updates = [
             },
             {
                 title: 'Technical Improvements',
-                icon: '🛠️',
+                icon: 'wrench',
                 tone: 'rose',
                 items: [
                     'Refactored payment controller and lifecycle logic',
@@ -214,7 +267,7 @@ const updates = [
             },
             {
                 title: 'Notes',
-                icon: '⚠️',
+                icon: 'alert',
                 tone: 'amber',
                 items: [
                     'Some analytics scripts may be blocked by browser extensions (expected behavior).',
@@ -223,7 +276,7 @@ const updates = [
             },
             {
                 title: 'Summary',
-                icon: '🎉',
+                icon: 'check',
                 tone: 'cyan',
                 items: [
                     'Secure payments',
@@ -238,12 +291,12 @@ const updates = [
         version: 'v4.0.0',
         date: 'Jun 05, 2026',
         title: 'System UI/UX Overhaul & Optimization',
-        headline: '🎨 v4.0.0 - Premium Visual System & Page Refinements',
+        headline: 'v4.0.0 - Premium Visual System & Page Refinements',
         description: 'A comprehensive visual upgrade that introduces a premium editorial brutalist theme, optimizes navbar behavior, refines layouts, and styles core subpages and legal documents.',
         sections: [
             {
                 title: 'Visual Core Overhaul',
-                icon: '🎨',
+                icon: 'grid',
                 tone: 'emerald',
                 items: [
                     'Migrated global layout theme to premium obsidian dark (#070708 & #0e0e11).',
@@ -253,7 +306,7 @@ const updates = [
             },
             {
                 title: 'Navbar & Layout Mechanics',
-                icon: '⚡',
+                icon: 'zap',
                 tone: 'blue',
                 items: [
                     'Removed generic logo icons to align name branding clearly on desktop and mobile views.',
@@ -263,7 +316,7 @@ const updates = [
             },
             {
                 title: 'Subpages & Legal Pages',
-                icon: '🔧',
+                icon: 'wrench',
                 tone: 'rose',
                 items: [
                     'Re-themed browser ML demos (Image Analyzer and Prompt Improver) using obsidian inputs and custom status badges.',
@@ -277,12 +330,12 @@ const updates = [
         version: 'v4.1.0',
         date: 'Jun 26, 2026',
         title: 'Lab Upgrades & Dev Terminal Release',
-        headline: '🖥️ v4.1.0 - Lab Upgrades: Dev Terminal & Interactive Canvas',
+        headline: 'v4.1.0 - Lab Upgrades: Dev Terminal & Interactive Canvas',
         description: 'Introduces a fully interactive Unix-like bash terminal emulator inside the developer lab, along with cursor-reactive neural networks and mobile assistive command buttons.',
         sections: [
             {
                 title: 'Developer Terminal Emulator',
-                icon: '🖥️',
+                icon: 'terminal',
                 tone: 'emerald',
                 items: [
                     'Built a terminal emulator accepting system commands (help, about, skills, projects, clear).',
@@ -293,7 +346,7 @@ const updates = [
             },
             {
                 title: 'Interactive Neural Physics',
-                icon: '🧠',
+                icon: 'brain',
                 tone: 'rose',
                 items: [
                     'Added HTML5 Canvas node grid to the homepage hero background.',
@@ -303,7 +356,7 @@ const updates = [
             },
             {
                 title: 'Lab Architecture',
-                icon: '⚡',
+                icon: 'zap',
                 tone: 'blue',
                 items: [
                     'Consolidated experimental utilities under a unified 2x2 card grid layout.',
@@ -317,12 +370,12 @@ const updates = [
         version: 'v5.0.0',
         date: 'Jul 04, 2026',
         title: 'Flagship Interactive Journey & Algorithm Lab',
-        headline: '🚀 v5.0.0 - Flagship Interactive Journey & Algorithm Lab',
+        headline: 'v5.0.0 - Flagship Interactive Journey & Algorithm Lab',
         description: 'A major release introducing the flagship professional timeline story, along with a real-time responsive Algorithm Lab for interactive DSA visualizations.',
         sections: [
             {
                 title: 'Flagship Interactive Journey',
-                icon: '📈',
+                icon: 'trending-up',
                 tone: 'emerald',
                 items: [
                     'Centralized data-driven model under src/data/journeyData.js for seamless scaling.',
@@ -333,7 +386,7 @@ const updates = [
             },
             {
                 title: 'Interactive Algorithm Lab',
-                icon: '🎛️',
+                icon: 'sliders',
                 tone: 'rose',
                 items: [
                     'Real-time pathfinding visualization (Dijkstra, A* Search) with custom grid drawing controls.',
@@ -343,12 +396,69 @@ const updates = [
             },
             {
                 title: 'Core Upgrades',
-                icon: '⚡',
+                icon: 'zap',
                 tone: 'blue',
                 items: [
                     'BBD University BCA learning milestone added to timeline.',
                     'Completely responsive year navigators for desktop and mobile viewports.',
                     'Optimized rendering for canvas animations and lightweight obfuscated bundles.',
+                ],
+            },
+        ],
+    },
+    {
+        version: 'v5.1.0',
+        date: 'Jul 24, 2026',
+        title: 'Developer Experience & Navigation Update',
+        headline: 'v5.1.0 - Developer Experience & Navigation Update',
+        type: 'Major Feature Update',
+        status: 'Stable',
+        description: 'A major feature release introducing Developer Terminal 2.0, a brand-new Radial Navigation Menu, a Universal Command Palette, and a redesigned site loading experience.',
+        sections: [
+            {
+                title: 'Developer Terminal 2.0',
+                icon: 'terminal',
+                tone: 'emerald',
+                items: [
+                    'Rebuilt with a premium UI & enhanced terminal experience.',
+                    'Improved responsiveness across desktop, tablet, and mobile.',
+                    'Better command handling and intelligent autocomplete.',
+                    'Enhanced keyboard navigation and command history.',
+                    'Better overall performance and execution speed.',
+                ],
+            },
+            {
+                title: 'Radial Navigation Menu',
+                icon: 'compass',
+                tone: 'violet',
+                items: [
+                    'Opens on right-click (desktop) and long-press (mobile).',
+                    'Quick access to important portfolio sections and lab tools.',
+                    'Smooth animations and responsive positioning.',
+                    'Better accessibility and focus management.',
+                    'Premium interaction design with subtle feedback.',
+                ],
+            },
+            {
+                title: 'Universal Command Palette',
+                icon: 'search',
+                tone: 'cyan',
+                items: [
+                    'Ctrl + K / Cmd + K global shortcut support.',
+                    'Intelligent search with instant result ranking.',
+                    'Faster access to pages, projects, and site actions.',
+                    'Improved keyboard controls and fluid transitions.',
+                ],
+            },
+            {
+                title: 'New Loading Experience',
+                icon: 'gauge',
+                tone: 'blue',
+                items: [
+                    'Cleaner startup animation and brand preloader.',
+                    'Better overall performance and reduced visual layout shift.',
+                    'Smoother page entry transitions for a great first impression.',
+                    'Reduced visual clutter and faster initial load.',
                 ],
             },
         ],
@@ -415,11 +525,15 @@ function Updates() {
 
             <div className="relative z-10 mx-auto max-w-5xl">
                 <ScrollReveal className="text-center mb-12 sm:mb-14">
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold tracking-tight text-white mb-4">
-                        🚀 Product Updates
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#c5f82a]/20 bg-[#c5f82a]/5 font-mono text-xs text-[#c5f82a] uppercase tracking-widest mb-4">
+                        <Rocket className="w-4 h-4 text-[#c5f82a]" />
+                        <span>System Changelog</span>
+                    </div>
+                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-black mb-6 uppercase tracking-tight text-white">
+                        <span className="bg-gradient-to-r from-toxic via-white to-cyber bg-clip-text text-transparent">Updates</span>
                     </h1>
                     <p className="mx-auto max-w-3xl text-[#a1a1aa] text-base sm:text-lg leading-relaxed">
-                        Follow my journey of building and improving this portfolio platform.
+                        Follow my journey of building, refining, and scaling this personal portfolio platform.
                     </p>
                 </ScrollReveal>
 
@@ -433,11 +547,27 @@ function Updates() {
                                     <span className="hidden sm:inline-block absolute left-0 top-9 -translate-x-[35px] h-2.5 w-2.5 rounded-full border border-[#c5f82a]/50 bg-[#c5f82a] shadow-[0_0_0_4px_rgba(7,7,8,0.9)]" />
 
                                     <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                                        <div className="inline-flex items-center gap-2 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
-                                            {update.version}
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="inline-flex items-center gap-1.5 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
+                                                <Tag className="w-3.5 h-3.5 text-[#c5f82a]" />
+                                                <span>{update.version}</span>
+                                            </div>
+                                            {update.type && (
+                                                <div className="inline-flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-cyan-400">
+                                                    <Sparkles className="w-3 h-3 text-cyan-400" />
+                                                    <span>{update.type}</span>
+                                                </div>
+                                            )}
+                                            {update.status && (
+                                                <div className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+                                                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                                                    <span>{update.status}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="inline-flex items-center rounded-md border border-[#1a1a22] bg-[#16161a] px-3 py-1 text-xs font-mono text-[#a1a1aa]">
-                                            📅 {update.date}
+                                        <div className="inline-flex items-center gap-1.5 rounded-md border border-[#1a1a22] bg-[#16161a] px-3 py-1 text-xs font-mono text-[#a1a1aa]">
+                                            <Calendar className="w-3.5 h-3.5 text-[#a1a1aa]" />
+                                            <span>{update.date}</span>
                                         </div>
                                     </div>
 
@@ -454,18 +584,21 @@ function Updates() {
                                             const tone = sectionToneClasses[section.tone] || sectionToneClasses.slate
 
                                             return (
-                                                <section key={`${update.version}-${section.title}`} className={`rounded-md border ${tone.border} ${tone.bg} p-4 sm:p-5`}>
-                                                    <h3 className={`text-xs font-mono font-bold uppercase tracking-wider ${tone.title} mb-3`}>
-                                                        {section.icon} {section.title}
-                                                    </h3>
-                                                    <ul className="space-y-2 text-xs font-mono text-[#a1a1aa] leading-relaxed">
-                                                        {section.items.map((item) => (
-                                                            <li key={`${section.title}-${item}`} className="flex items-start gap-2">
-                                                                 <span className={`mt-[2px] ${tone.bullet}`}>→</span>
-                                                                <span>{item}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                <section key={`${update.version}-${section.title}`} className={`rounded-md border ${tone.border} ${tone.bg} p-4 sm:p-5 flex flex-col justify-between`}>
+                                                    <div>
+                                                        <h3 className={`text-xs font-mono font-bold uppercase tracking-wider ${tone.title} mb-3 flex items-center gap-2`}>
+                                                            <SectionIcon name={section.icon} className="w-4 h-4 shrink-0" />
+                                                            <span>{section.title}</span>
+                                                        </h3>
+                                                        <ul className="space-y-2 text-xs font-mono text-[#a1a1aa] leading-relaxed">
+                                                            {section.items.map((item) => (
+                                                                <li key={`${section.title}-${item}`} className="flex items-start gap-2">
+                                                                    <span className={`mt-[2px] ${tone.bullet} shrink-0`}>→</span>
+                                                                    <span>{item}</span>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
                                                 </section>
                                             )
                                         })}
