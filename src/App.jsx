@@ -245,67 +245,68 @@ function App() {
         initializeAnalytics()
     }, [])
 
-    if (!appReady) {
-        return <SplashScreen onDone={handleSplashDone} />
-    }
-
     return (
-        <Router>
-            <ScrollProgress />
-            <CursorSpotlight />
-            <ScrollToTop />
-            <AnalyticsRouteTracker />
-            <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
-            <RadialMenu />
-            <WebVitalsBadge />
-            <NetworkStatusBanner />
-            <Toaster
-                position="top-center"
-                reverseOrder={false}
-                toastOptions={{
-                    duration: 4000,
-                    style: {
-                        background: '#1e293b',
-                        color: '#e2e8f0',
-                        border: '1px solid #475569',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                    },
-                    success: {
-                        iconTheme: {
-                            primary: '#10b981',
-                            secondary: '#fff',
-                        },
-                        style: {
-                            border: '1px solid #10b981',
-                        },
-                    },
-                    error: {
-                        iconTheme: {
-                            primary: '#ef4444',
-                            secondary: '#fff',
-                        },
-                        style: {
-                            border: '1px solid #ef4444',
-                        },
-                    },
-                    loading: {
-                        iconTheme: {
-                            primary: '#3b82f6',
-                            secondary: '#fff',
-                        },
-                    },
-                }}
-            />
-            <ErrorBoundary>
-                <AppLayout>
-                    <AnimatedRoutes />
-                </AppLayout>
-            </ErrorBoundary>
+        <>
+            {/* Splash overlays the app; app pre-warms in the background */}
+            {!appReady && <SplashScreen onDone={handleSplashDone} />}
 
-        </Router>
+            <Router>
+                <ScrollProgress />
+                <CursorSpotlight />
+                <ScrollToTop />
+                <AnalyticsRouteTracker />
+                <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+                <RadialMenu />
+                <WebVitalsBadge />
+                <NetworkStatusBanner />
+                <Toaster
+                    position="top-center"
+                    reverseOrder={false}
+                    toastOptions={{
+                        duration: 4000,
+                        style: {
+                            background: '#1e293b',
+                            color: '#e2e8f0',
+                            border: '1px solid #475569',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                        },
+                        success: {
+                            iconTheme: {
+                                primary: '#10b981',
+                                secondary: '#fff',
+                            },
+                            style: {
+                                border: '1px solid #10b981',
+                            },
+                        },
+                        error: {
+                            iconTheme: {
+                                primary: '#ef4444',
+                                secondary: '#fff',
+                            },
+                            style: {
+                                border: '1px solid #ef4444',
+                            },
+                        },
+                        loading: {
+                            iconTheme: {
+                                primary: '#3b82f6',
+                                secondary: '#fff',
+                            },
+                        },
+                    }}
+                />
+                <ErrorBoundary>
+                    <AppLayout>
+                        <AnimatedRoutes />
+                    </AppLayout>
+                </ErrorBoundary>
+
+            </Router>
+        </>
     )
 }
 
