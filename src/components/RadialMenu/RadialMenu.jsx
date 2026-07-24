@@ -24,10 +24,10 @@ export default function RadialMenu() {
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
-    const radius = isMobile ? 90 : 115
-    const totalOuterRadius = radius + 35
+    const radius = isMobile ? 95 : 125
+    const totalOuterRadius = radius + 36
 
-    const { clampedX, clampedY } = useViewportBounds(position.x, position.y, totalOuterRadius, 24)
+    const { clampedX, clampedY, startAngle, sweepAngle } = useViewportBounds(position.x, position.y, totalOuterRadius, 20)
 
     const [hoveredItem, setHoveredItem] = useState(null)
     const [focusedIndex, setFocusedIndex] = useState(-1)
@@ -139,40 +139,42 @@ export default function RadialMenu() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
+                        transition={{ duration: 0.18 }}
+                        className="absolute inset-0 bg-slate-950/60 backdrop-blur-md"
                     />
 
                     {/* Subtle Click Ripple */}
                     <motion.div
-                        initial={{ scale: 0, opacity: 0.7 }}
-                        animate={{ scale: 2, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        initial={{ scale: 0, opacity: 0.6 }}
+                        animate={{ scale: 2.2, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: 'easeOut' }}
                         style={{ left: position.x, top: position.y }}
-                        className="pointer-events-none absolute -ml-5 -mt-5 h-10 w-10 rounded-full border border-toxic/60 bg-toxic/15 shadow-[0_0_15px_rgba(197,248,42,0.3)]"
+                        className="pointer-events-none absolute -ml-5 -mt-5 h-10 w-10 rounded-full border border-toxic/50 bg-toxic/10 shadow-[0_0_15px_rgba(197,248,42,0.2)]"
                     />
 
-                    {/* Radial Outer Circle & Center Action Hub */}
+                    {/* Outer Radial Ring Guideline — Subdued positioning guide */}
+                    <motion.div
+                        initial={{ scale: 0.4, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.4, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        style={{
+                            left: clampedX,
+                            top: clampedY,
+                            width: radius * 2,
+                            height: radius * 2,
+                            marginLeft: -radius,
+                            marginTop: -radius
+                        }}
+                        className="pointer-events-none absolute rounded-full border border-zinc-800/35 bg-slate-950/[0.04]"
+                    />
+
+                    {/* Center Action Hub & Outer Items Anchor */}
                     <div
                         style={{ left: clampedX, top: clampedY }}
-                        className="absolute -ml-7 -mt-7 h-14 w-14 pointer-events-auto"
+                        className="absolute pointer-events-auto z-10"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Outer Ring Guideline */}
-                        <motion.div
-                            initial={{ scale: 0.4, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.4, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            style={{
-                                width: radius * 2,
-                                height: radius * 2,
-                                marginLeft: -radius + 28,
-                                marginTop: -radius + 28
-                            }}
-                            className="pointer-events-none absolute rounded-full border border-slate-800/80 bg-slate-900/[0.15]"
-                        />
-
                         {/* Center Action Hub (Command Palette) */}
                         <motion.button
                             type="button"
@@ -185,26 +187,15 @@ export default function RadialMenu() {
                             transition={
                                 reducedMotion
                                     ? { duration: 0.1 }
-                                    : { type: 'spring', stiffness: 450, damping: 25 }
+                                    : { type: 'spring', stiffness: 480, damping: 26, mass: 0.8 }
                             }
-                            className="group relative flex h-14 w-14 items-center justify-center rounded-full border border-toxic/50 bg-slate-900/95 text-toxic shadow-[0_0_20px_rgba(197,248,42,0.2)] hover:border-toxic hover:bg-toxic hover:text-slate-950 hover:scale-105 backdrop-blur-xl transition-all duration-200 focus:outline-none"
+                            className="group absolute -ml-7 -mt-7 flex h-14 w-14 min-h-[56px] min-w-[56px] items-center justify-center rounded-full border border-toxic/60 bg-slate-950/95 text-toxic shadow-[0_0_24px_rgba(197,248,42,0.25)] hover:border-toxic hover:bg-toxic hover:text-slate-950 hover:scale-105 backdrop-blur-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 touch-manipulation select-none"
                         >
                             <div className="flex flex-col items-center justify-center text-center">
                                 <CenterIcon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" strokeWidth={1.8} />
-                                <span className="text-[8px] font-mono font-bold tracking-wider opacity-80 mt-0.5 group-hover:text-slate-950">
+                                <span className="text-[8px] font-mono font-bold tracking-wider opacity-85 mt-0.5 group-hover:text-slate-950">
                                     CMD + K
                                 </span>
-                            </div>
-
-                            {/* Status Tooltip Pill */}
-                            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-800 bg-slate-950/90 px-2.5 py-0.5 text-[10px] font-mono text-zinc-400 shadow-md">
-                                {hoveredItem ? (
-                                    <span className="text-toxic font-semibold">{hoveredItem.title}</span>
-                                ) : (
-                                    <span className="text-zinc-400">
-                                        Click center for <strong className="text-white font-normal">Search</strong>
-                                    </span>
-                                )}
                             </div>
                         </motion.button>
 
@@ -218,9 +209,11 @@ export default function RadialMenu() {
                                     index={idx}
                                     totalInRing={RADIAL_ITEMS.length}
                                     radius={radius}
-                                    angleOffset={-90}
+                                    startAngle={startAngle}
+                                    sweepAngle={sweepAngle}
                                     isActive={isActive}
                                     isFocused={focusedIndex === idx}
+                                    isMobile={isMobile}
                                     onSelect={handleSelectItem}
                                     onHover={setHoveredItem}
                                     reducedMotion={reducedMotion}
