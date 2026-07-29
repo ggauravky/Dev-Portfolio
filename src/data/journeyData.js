@@ -600,5 +600,48 @@ export const journeyData = [
     technologies: ['Android', 'AI', 'Mobile APIs'],
     certificateUrl: '',
     relatedBlogSlug: ''
+  },
+  {
+    id: 'nerds-hack-days-kanoonmate-2026',
+    title: 'Nerds Hack Days: Building Kanoon-Mate',
+    organization: 'Nerds Community Lucknow',
+    date: '2026-07-26',
+    dateLabel: 'July 26, 2026',
+    location: 'Lucknow, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Hackathons',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Participated in the Nerds Hack Days offline hackathon in Lucknow, collaborating with developers, designers, and AI builders to engineer Kanoon-Mate—an intelligent AI legal assistance platform designed to simplify complex legal documents into easy-to-understand Hindi and English.',
+    whatILearned: [
+      'Engineered Kanoon-Mate AI legal help platform with Google Gemini, OCR text extraction, and automated law mapping',
+      'Integrated text-to-speech voice dictation and read-aloud accessibility tools for an inclusive user experience',
+      'Designed deadline tracking algorithms and automated risk alert notifications for legal notices and court documents',
+      'Collaborated with local Lucknow developer and AI builder community under high-tempo hackathon constraints'
+    ],
+    skills: [
+      'Generative AI',
+      'Google Gemini API',
+      'OCR Integration',
+      'Legal Tech Architecture',
+      'Voice Accessibility',
+      'Rapid Prototyping',
+      'Full-Stack Web Development',
+      'Team Collaboration'
+    ],
+    coverImage: '/images/journey/nerdhack4.jpeg',
+    images: [
+      '/images/journey/nerdhack1.png',
+      '/images/journey/nerdhack2.png',
+      '/images/journey/nerdhack3.png',
+      '/images/journey/nerdhack4.jpeg'
+    ],
+    objectives: 'Build an accessible AI legal assistant that simplifies complex legal jargon, extracts document text, and provides automated notice risk tracking.',
+    outcomes: 'Successfully developed and deployed Kanoon-Mate live on Vercel with Google Gemini intelligence and OCR document analysis.',
+    technologies: ['React', 'Vite', 'Tailwind CSS', 'Node.js', 'Express', 'MongoDB', 'Google Gemini API'],
+    projectUrl: 'https://realkanoonmate.vercel.app',
+    githubUrl: 'https://github.com/ggauravky/Kanoon-Mate',
+    certificateUrl: 'https://realkanoonmate.vercel.app',
+    relatedBlogSlug: ''
   }
 ];

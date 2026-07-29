@@ -1275,15 +1275,37 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
                                 </div>
                             )}
 
-                            {/* Certificate download / Blog read links */}
-                            {(item.certificateUrl || item.relatedBlogSlug) && (
-                                <div className="flex gap-2.5 pt-3 border-t border-[#1a1a22]/30">
-                                    {item.certificateUrl && (
+                            {/* Certificate / Live Demo / Repo / Blog links */}
+                            {(item.certificateUrl || item.relatedBlogSlug || item.projectUrl || item.githubUrl) && (
+                                <div className="flex flex-wrap gap-2.5 pt-3 border-t border-[#1a1a22]/30">
+                                    {item.projectUrl && (
+                                        <a
+                                            href={item.projectUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 min-w-[110px] inline-flex items-center justify-center rounded-lg bg-toxic hover:bg-white text-black font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all shadow-md shadow-toxic/5"
+                                        >
+                                            <ExternalLinkIcon />
+                                            Live Demo
+                                        </a>
+                                    )}
+                                    {item.githubUrl && (
+                                        <a
+                                            href={item.githubUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 min-w-[110px] inline-flex items-center justify-center rounded-lg border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-toxic hover:border-toxic/30 font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all"
+                                        >
+                                            <ExternalLinkIcon />
+                                            GitHub Repo
+                                        </a>
+                                    )}
+                                    {item.certificateUrl && !item.projectUrl && (
                                         <a
                                             href={item.certificateUrl}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 inline-flex items-center justify-center rounded-lg bg-toxic hover:bg-white text-black font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all shadow-md shadow-toxic/5"
+                                            className="flex-1 min-w-[110px] inline-flex items-center justify-center rounded-lg bg-toxic hover:bg-white text-black font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all shadow-md shadow-toxic/5"
                                         >
                                             <DownloadIcon />
                                             Certificate
@@ -1292,7 +1314,7 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
                                     {item.relatedBlogSlug && (
                                         <Link
                                             to={`/blog/${item.relatedBlogSlug}`}
-                                            className="flex-1 inline-flex items-center justify-center rounded-lg border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-toxic hover:border-toxic/30 font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all"
+                                            className="flex-1 min-w-[110px] inline-flex items-center justify-center rounded-lg border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-toxic hover:border-toxic/30 font-bold font-mono text-[10px] uppercase tracking-wider py-2.5 transition-all"
                                         >
                                             <ExternalLinkIcon />
                                             Blog
