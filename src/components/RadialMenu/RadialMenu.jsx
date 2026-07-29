@@ -122,7 +122,8 @@ export default function RadialMenu() {
     return (
         <AnimatePresence>
             {isOpen && (
-                <div
+                <motion.div
+                    key="radial-menu-overlay"
                     ref={menuRef}
                     role="menu"
                     aria-label="Contextual Radial Command Menu"
@@ -132,6 +133,10 @@ export default function RadialMenu() {
                         e.preventDefault()
                         handleClose()
                     }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18 }}
                     className="fixed inset-0 z-[100] h-screen w-screen cursor-default overflow-hidden select-none"
                 >
                     {/* Minimal Blur Backdrop */}
@@ -221,7 +226,7 @@ export default function RadialMenu() {
                             )
                         })}
                     </div>
-                </div>
+                </motion.div>
             )}
         </AnimatePresence>
     )

@@ -26,8 +26,9 @@ import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
 
-// Lazy load pages for better performance
-const Home = lazy(() => import('./pages/Home'))
+import Home from './pages/Home'
+
+// Lazy load secondary routes for better performance
 const About = lazy(() => import('./pages/About'))
 const Skills = lazy(() => import('./pages/Skills'))
 
@@ -63,12 +64,10 @@ const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 const MySupports = lazy(() => import('./pages/MySupports'))
 
 // Per-route loading fallback — keeps loading state isolated per route
-// so AnimatePresence exit animations are never interrupted by a Suspense bubble
 const PageLoader = () => (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+    <div className="min-h-screen bg-obsidian flex items-center justify-center">
         <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <p className="mt-4 text-slate-300 font-medium">Loading...</p>
+            <div className="inline-block animate-spin rounded-full h-10 w-10 border-2 border-toxic border-t-transparent"></div>
         </div>
     </div>
 )
@@ -221,14 +220,7 @@ function AnimatedRoutes() {
 }
 
 function App() {
-    // Show splash screen only once per browser session
-    const [appReady, setAppReady] = useState(() => !!sessionStorage.getItem('splashShown'))
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
-
-    const handleSplashDone = () => {
-        sessionStorage.setItem('splashShown', '1')
-        setAppReady(true)
-    }
 
     // Listen for custom event to trigger command palette from Navbar or other components
     useEffect(() => {
@@ -237,7 +229,7 @@ function App() {
         return () => window.removeEventListener('open-command-palette', handleOpenPalette)
     }, [])
 
-    // Ping backend as soon as JS loads (even during splash)
+    // Ping backend & initialize analytics silently in the background
     useEffect(() => {
         pingBackend()
         initializeAnalytics()
@@ -245,9 +237,6 @@ function App() {
 
     return (
         <>
-            {/* Splash overlays the app; app pre-warms in the background */}
-            {!appReady && <SplashScreen onDone={handleSplashDone} />}
-
             <Router>
                 <ScrollProgress />
                 <CursorSpotlight />

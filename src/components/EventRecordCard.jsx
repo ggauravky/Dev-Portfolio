@@ -5,6 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import PropTypes from 'prop-types'
+import LazyImage from './LazyImage'
 
 const formatEventDate = (value) => {
     const parsed = new Date(value)
@@ -31,10 +32,9 @@ const renderEventCover = (event, hasImages, coverImage) => {
                     rel="noopener noreferrer"
                     className="group relative block overflow-hidden rounded-xl border border-slate-700/80"
                 >
-                    <img
+                    <LazyImage
                         src={coverImage}
                         alt={`${event.title} cover`}
-                        loading="lazy"
                         className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
@@ -144,10 +144,9 @@ const renderGallery = (event, galleryImages) => {
                         rel="noopener noreferrer"
                         className="group relative overflow-hidden rounded-lg border border-slate-700/70"
                     >
-                        <img
+                        <LazyImage
                             src={image}
                             alt={`${event.title} ${imageIndex + 2}`}
-                            loading="lazy"
                             className="h-14 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                     </a>

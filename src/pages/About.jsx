@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import ScrollReveal from '../components/ScrollReveal'
+import LazyImage from '../components/LazyImage'
 
 const focusAreas = [
     'Python development and automation',
@@ -120,12 +121,11 @@ function About() {
                                     <span className="text-xs text-zinc-500 group-hover:text-toxic font-mono">Open ↗</span>
                                 </div>
                                 <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
-                                    <img
+                                    <LazyImage
                                         src="https://camo.githubusercontent.com/80d675df3c581caef2a3fc4af3ab8bd8aeeff7037e331312e09e106dea1b3130/68747470733a2f2f73747265616b2d73746174732e64656d6f6c61622e636f6d3f757365723d676761757261766b79267468656d653d64726163756c6126686964655f626f726465723d74727565266261636b67726f756e643d3064306432622672696e673d37633361656426666972653d613738626661266375727253747265616b4c6162656c3d613738626661"
                                         alt="GitHub streak stats for ggauravky"
+                                        responsive={false}
                                         className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             </a>
@@ -142,12 +142,11 @@ function About() {
                                     <span className="text-xs text-zinc-500 group-hover:text-cyber font-mono">Open ↗</span>
                                 </div>
                                 <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
-                                    <img
+                                    <LazyImage
                                         src="https://leetcard.jacoblin.cool/gauravky?theme=dark&ext=heatmap"
                                         alt="LeetCode stats for gauravky"
+                                        responsive={false}
                                         className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             </a>

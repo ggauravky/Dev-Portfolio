@@ -1442,9 +1442,11 @@ function Lightbox({ imageInfo, onClose }) {
                     onTouchEnd={handleTouchEnd}
                     className="relative rounded-xl border border-obsidian-border bg-obsidian-card p-1 shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing select-none"
                 >
-                    <img
+                    <LazyImage
                         src={currentImageSrc}
                         alt="Enlarged gallery view"
+                        priority={true}
+                        responsive={false}
                         className="max-w-full max-h-[75vh] object-contain rounded-lg pointer-events-none"
                     />
 

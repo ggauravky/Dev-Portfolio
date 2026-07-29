@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
 import { blogsData } from '../data/blogsData'
 import SupportButton from '../components/support/SupportButton'
+import LazyImage from '../components/LazyImage'
 import './BlogPost.css'
 
 function BlogPost() {
@@ -213,9 +214,10 @@ function BlogPost() {
 
                     {/* Featured Image */}
                     <div className="w-full h-96 bg-[#0e0e11] border border-[#1a1a22] rounded-lg overflow-hidden mt-8">
-                        <img
+                        <LazyImage
                             src={blog.image}
                             alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer and web developer blog`}
+                            priority={true}
                             className="w-full h-full object-cover"
                         />
                     </div>

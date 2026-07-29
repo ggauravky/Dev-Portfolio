@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
+import { use3DTilt } from '../hooks/use3DTilt'
 import { blogsData } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { journeyData } from '../data/journeyData'
@@ -18,6 +19,8 @@ import TechIcon from '../components/TechIcon'
 import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
 
 function Home() {
+    const profileTilt = use3DTilt({ maxTilt: 10, glint: true })
+
     const handleCtaHover = (e, active) => {
         const rect = e.currentTarget.getBoundingClientRect()
         window.dispatchEvent(
@@ -72,7 +75,7 @@ function Home() {
     return (
         <main className="home-page bg-obsidian overflow-x-hidden w-full">
             {/* Hero Section */}
-            <section className="hero-section relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10 lg:pt-14 lg:pb-0 overflow-hidden w-full">
+            <section className="hero-section relative min-h-[calc(100vh-5rem)] flex items-center justify-center px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 lg:pt-3 pb-12 lg:pb-8 overflow-hidden w-full">
                 {/* Subtle Animated Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-obsidian via-obsidian-card to-obsidian"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent"></div>
@@ -168,39 +171,45 @@ function Home() {
 
                             {/* CTA Buttons */}
                             <div className="flex flex-wrap gap-3 pt-4 justify-center lg:justify-start">
-                                <Link 
-                                    to="/services" 
-                                    onMouseEnter={(e) => handleCtaHover(e, true)}
-                                    onMouseLeave={(e) => handleCtaHover(e, false)}
-                                    className="group relative px-6 py-3.5 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 hover:shadow-white/20 text-center overflow-hidden inline-flex items-center justify-center"
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                        <span>Book Service</span>
-                                        <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
-                                    </span>
-                                </Link>
-                                <Link 
-                                    to="/projects" 
-                                    onMouseEnter={(e) => handleCtaHover(e, true)}
-                                    onMouseLeave={(e) => handleCtaHover(e, false)}
-                                    className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                        <span>View Projects</span>
-                                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
-                                    </span>
-                                </Link>
-                                <Link 
-                                    to="/contact" 
-                                    onMouseEnter={(e) => handleCtaHover(e, true)}
-                                    onMouseLeave={(e) => handleCtaHover(e, false)}
-                                    className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
-                                >
-                                    <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                        <span>Contact Me</span>
-                                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
-                                    </span>
-                                </Link>
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}>
+                                    <Link 
+                                        to="/services" 
+                                        onMouseEnter={(e) => handleCtaHover(e, true)}
+                                        onMouseLeave={(e) => handleCtaHover(e, false)}
+                                        className="group relative px-6 py-3.5 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white transition-all duration-300 shadow-lg shadow-toxic/15 hover:shadow-white/20 text-center overflow-hidden inline-flex items-center justify-center"
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                            <span>Book Service</span>
+                                            <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
+                                        </span>
+                                    </Link>
+                                </motion.div>
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}>
+                                    <Link 
+                                        to="/projects" 
+                                        onMouseEnter={(e) => handleCtaHover(e, true)}
+                                        onMouseLeave={(e) => handleCtaHover(e, false)}
+                                        className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                            <span>View Projects</span>
+                                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244" /></svg>
+                                        </span>
+                                    </Link>
+                                </motion.div>
+                                <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}>
+                                    <Link 
+                                        to="/contact" 
+                                        onMouseEnter={(e) => handleCtaHover(e, true)}
+                                        onMouseLeave={(e) => handleCtaHover(e, false)}
+                                        className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
+                                    >
+                                        <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
+                                            <span>Contact Me</span>
+                                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
+                                        </span>
+                                    </Link>
+                                </motion.div>
                             </div>
 
                             {/* Divider line after buttons */}
@@ -209,21 +218,41 @@ function Home() {
                             </div>
                         </div>
 
-                        {/* Right - Profile Image */}
-                        <div className="flex justify-center items-center order-1 lg:order-2">
-                            <div className="relative group">
+                        {/* Right - Profile Image (Physical 3D Object with Specular Glint) */}
+                        <div className="flex justify-center items-center order-1 lg:order-2 perspective-1000">
+                            <motion.div 
+                                ref={profileTilt.ref}
+                                onMouseMove={profileTilt.handleMouseMove}
+                                onMouseEnter={profileTilt.handleMouseEnter}
+                                onMouseLeave={profileTilt.handleMouseLeave}
+                                style={{
+                                    rotateX: profileTilt.rotateX,
+                                    rotateY: profileTilt.rotateY,
+                                    transformStyle: 'preserve-3d',
+                                }}
+                                className="relative group cursor-pointer"
+                            >
                                 {/* Clean glow behind image */}
                                 <div className="absolute -inset-4 bg-gradient-to-r from-toxic via-cyber to-purple-600 rounded-full blur-2xl opacity-20 group-hover:opacity-45 transition-opacity duration-500"></div>
                                 
                                 {/* Profile Image Container - Explicit square with organic warp */}
                                 <div className="relative">
                                     <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-80 lg:h-80 xl:w-[340px] xl:h-[340px] overflow-hidden border-2 border-toxic bg-obsidian-card shadow-2xl shadow-toxic/10 transition-all duration-700 animate-morph ring-1 ring-toxic/20 ring-offset-4 ring-offset-obsidian">
-                                        <img
+                                        <LazyImage
                                             src="/images/profile.jpg"
                                             alt="Gaurav Kumar Yadav portfolio - AI ML developer and web developer in Lucknow India"
-                                            loading="eager"
-                                            decoding="async"
+                                            priority={true}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                        />
+
+                                        {/* Dynamic Specular Glint Sheen */}
+                                        <motion.div
+                                            className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-40 transition-opacity duration-300"
+                                            style={{
+                                                background: profileTilt.isHovered
+                                                    ? `radial-gradient(circle at ${profileTilt.glintPercentX.get()}% ${profileTilt.glintPercentY.get()}%, rgba(255,255,255,0.4) 0%, rgba(197,248,42,0.15) 35%, transparent 70%)`
+                                                    : 'none',
+                                            }}
                                         />
                                     </div>
                                     
@@ -238,7 +267,7 @@ function Home() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </div>
                     </div>
                 </div>
@@ -334,12 +363,11 @@ function Home() {
                                     <span className="text-xs text-zinc-500 group-hover:text-toxic font-mono">Open ↗</span>
                                 </div>
                                 <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
-                                    <img
+                                    <LazyImage
                                         src="https://camo.githubusercontent.com/80d675df3c581caef2a3fc4af3ab8bd8aeeff7037e331312e09e106dea1b3130/68747470733a2f2f73747265616b2d73746174732e64656d6f6c61622e636f6d3f757365723d676761757261766b79267468656d653d64726163756c6126686964655f626f726465723d74727565266261636b67726f756e643d3064306432622672696e673d37633361656426666972653d613738626661266375727253747265616b4c6162656c3d613738626661"
                                         alt="GitHub streak stats for ggauravky"
+                                        responsive={false}
                                         className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             </a>
@@ -356,12 +384,11 @@ function Home() {
                                     <span className="text-xs text-zinc-500 group-hover:text-cyber font-mono">Open ↗</span>
                                 </div>
                                 <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
-                                    <img
+                                    <LazyImage
                                         src="https://leetcard.jacoblin.cool/gauravky?theme=dark&ext=heatmap"
                                         alt="LeetCode stats for gauravky"
+                                        responsive={false}
                                         className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
                                     />
                                 </div>
                             </a>
@@ -490,7 +517,12 @@ function Home() {
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {featuredProjects.map(project => (
-                            <div key={project.id} className="group bg-obsidian-card border border-obsidian-border rounded-lg overflow-hidden hover:border-toxic/30 transition-all duration-300 flex flex-col h-full">
+                            <motion.div 
+                                key={project.id} 
+                                whileHover={{ y: -4 }}
+                                transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                                className="group bg-obsidian-card border border-obsidian-border rounded-lg overflow-hidden hover:border-toxic/30 transition-colors duration-300 flex flex-col h-full cursor-pointer"
+                            >
                                 {/* Project Image */}
                                 <div className="card-img-wrap relative h-44 bg-obsidian overflow-hidden">
                                     <LazyImage
@@ -520,23 +552,20 @@ function Home() {
                                             href={project.github}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex-1 inline-flex items-center justify-center border border-zinc-800 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-3 py-2.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 border border-zinc-800 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-3 py-2 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
                                         >
+                                            <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
                                             Code
                                         </a>
-                                        {project.demo && project.demo !== "#" && (
-                                            <a
-                                                href={project.demo}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex-1 inline-flex items-center justify-center bg-toxic hover:bg-white text-obsidian font-bold px-3 py-2.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono"
-                                            >
-                                                Demo
-                                            </a>
-                                        )}
+                                        <Link
+                                            to={`/project/${project.slug}`}
+                                            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-toxic text-black font-bold px-3 py-2 rounded-full hover:bg-white transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono text-center"
+                                        >
+                                            Details
+                                        </Link>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
 
                         {/* View More Projects Card */}

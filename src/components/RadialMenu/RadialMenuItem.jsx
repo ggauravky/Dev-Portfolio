@@ -2,11 +2,11 @@
 // Minimal & Premium Radial Menu Item Component
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 import { motion } from 'framer-motion'
 
-export default function RadialMenuItem({
+const RadialMenuItem = forwardRef(function RadialMenuItem({
     item,
     index,
     totalInRing,
@@ -19,7 +19,7 @@ export default function RadialMenuItem({
     onSelect,
     onHover,
     reducedMotion
-}) {
+}, ref) {
     const [isHovered, setIsHovered] = useState(false)
 
     // Calculate item angular coordinates mathematically
@@ -88,6 +88,7 @@ export default function RadialMenuItem({
 
     return (
         <motion.div
+            ref={ref}
             className="absolute top-0 left-0 -ml-6 -mt-6 z-20 pointer-events-auto"
             variants={itemVariants}
             initial="hidden"
@@ -154,7 +155,7 @@ export default function RadialMenuItem({
             </button>
         </motion.div>
     )
-}
+})
 
 RadialMenuItem.propTypes = {
     item: PropTypes.object.isRequired,
@@ -170,3 +171,5 @@ RadialMenuItem.propTypes = {
     onHover: PropTypes.func,
     reducedMotion: PropTypes.bool
 }
+
+export default RadialMenuItem

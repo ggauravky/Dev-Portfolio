@@ -15,15 +15,19 @@ function LazyImage({
     sizes = '100vw',
     responsive = true,
     fetchPriority = 'auto',
-    placeholderSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%231e293b" width="400" height="300"/%3E%3C/svg%3E',
+    priority = false,
+    placeholderSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%230f172a" width="400" height="300"/%3E%3C/svg%3E',
     onLoad,
     onError,
     ...props
 }) {
-    const [imageSrc, setImageSrc] = useState(placeholderSrc)
+    const isEager = priority || fetchPriority === 'high'
+    const [imageSrc, setImageSrc] = useState(isEager ? src : placeholderSrc)
     const [imageRef, setImageRef] = useState()
     const [isLoaded, setIsLoaded] = useState(false)
-    const [isInView, setIsInView] = useState(false)
+    const [isInView, setIsInView] = useState(isEager)
+
+    const effectiveFetchPriority = isEager ? 'high' : fetchPriority
 
     const buildVariantSet = (format) => {
         if (!responsive || !src?.startsWith('/')) return ''
@@ -53,11 +57,17 @@ function LazyImage({
     const originalSrcSet = buildOriginalVariantSet()
 
     useEffect(() => {
+        if (isEager) {
+            setIsInView(true)
+            setImageSrc(src)
+            return
+        }
+
         let observer
         let didCancel = false
 
         if (imageRef && imageSrc === placeholderSrc) {
-            if (IntersectionObserver) {
+            if (typeof IntersectionObserver !== 'undefined') {
                 observer = new IntersectionObserver(
                     entries => {
                         entries.forEach(entry => {
@@ -67,28 +77,30 @@ function LazyImage({
                             ) {
                                 setIsInView(true)
                                 setImageSrc(src)
-                                observer.unobserve(imageRef)
+                                if (imageRef && observer.unobserve) {
+                                    observer.unobserve(imageRef)
+                                }
                             }
                         })
                     },
                     {
                         threshold: 0.01,
-                        rootMargin: '75px',
+                        rootMargin: '100px',
                     }
                 )
                 observer.observe(imageRef)
             } else {
-                // Old browsers fallback - load image immediately
                 setImageSrc(src)
             }
         }
+
         return () => {
             didCancel = true
             if (observer?.unobserve && imageRef) {
                 observer.unobserve(imageRef)
             }
         }
-    }, [src, imageSrc, imageRef, placeholderSrc])
+    }, [src, imageSrc, imageRef, placeholderSrc, isEager])
 
     const handleLoad = (event) => {
         setIsLoaded(true)
@@ -98,9 +110,8 @@ function LazyImage({
     }
 
     const handleError = (event) => {
-        // Set fallback image on error
         setImageSrc(
-            `https://via.placeholder.com/400x300/1e293b/60a5fa?text=${encodeURIComponent(alt || 'Image')}`
+            `https://via.placeholder.com/400x300/0f172a/64748b?text=${encodeURIComponent(alt || 'Media')}`
         )
         if (onError) {
             onError(event)
@@ -108,20 +119,19 @@ function LazyImage({
     }
 
     return (
-        <picture ref={setImageRef}>
+        <picture ref={setImageRef} className="lazy-image-picture-wrapper">
             {isInView && avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />}
             {isInView && webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />}
             <img
                 src={imageSrc}
                 srcSet={isInView && originalSrcSet ? originalSrcSet : undefined}
                 sizes={sizes}
-                alt={alt}
-                className={`${className} ${isLoaded && isInView ? 'lazy-image-loaded' : 'lazy-image-loading'
-                    }`}
+                alt={alt || ''}
+                className={`${className} ${isLoaded && isInView ? 'lazy-image-loaded' : 'lazy-image-loading'}`}
                 onLoad={handleLoad}
                 onError={handleError}
-                loading={fetchPriority === 'high' ? 'eager' : 'lazy'}
-                fetchPriority={fetchPriority}
+                loading={isEager ? 'eager' : 'lazy'}
+                fetchpriority={effectiveFetchPriority}
                 decoding="async"
                 {...props}
             />
@@ -136,6 +146,7 @@ LazyImage.propTypes = {
     sizes: PropTypes.string,
     responsive: PropTypes.bool,
     fetchPriority: PropTypes.oneOf(['auto', 'high', 'low']),
+    priority: PropTypes.bool,
     placeholderSrc: PropTypes.string,
     onLoad: PropTypes.func,
     onError: PropTypes.func,
