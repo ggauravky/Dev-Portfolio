@@ -5,14 +5,11 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useRef, useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 
 /**
- * ScrollReveal — wraps children and plays a fade+slide-up animation
+ * ScrollReveal — wraps children and plays a refined fade+slide-up animation
  * only when the element enters the viewport (IntersectionObserver).
- *
- * Props:
- *  - delay (number, ms) — animation delay after element becomes visible
- *  - className (string) — extra classes applied to the wrapper div
  */
 function ScrollReveal({ children, delay = 0, className = '' }) {
     const ref = useRef(null)
@@ -30,8 +27,8 @@ function ScrollReveal({ children, delay = 0, className = '' }) {
                 }
             },
             {
-                threshold: 0.08,
-                rootMargin: '0px 0px -40px 0px'
+                threshold: 0.05,
+                rootMargin: '0px 0px -20px 0px'
             }
         )
 
@@ -48,6 +45,12 @@ function ScrollReveal({ children, delay = 0, className = '' }) {
             {children}
         </div>
     )
+}
+
+ScrollReveal.propTypes = {
+    children: PropTypes.node.isRequired,
+    delay: PropTypes.number,
+    className: PropTypes.string,
 }
 
 export default ScrollReveal

@@ -488,9 +488,10 @@ html {
 /* ── Scroll-triggered reveal animation ── */
 .scroll-reveal {
   opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(14px);
+  will-change: opacity, transform;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .scroll-visible {
@@ -502,8 +503,9 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .scroll-reveal {
     opacity: 1;
-    transform: none;
-    transition: none;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
   }
 }
 
