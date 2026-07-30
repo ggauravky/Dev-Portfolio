@@ -841,9 +841,27 @@ function BookNow() {
                         <h1 className="text-3xl sm:text-4xl font-display font-bold text-slate-100 tracking-tight">Book a Service</h1>
                         <p className="text-slate-400 mt-2 text-sm">Fill details and continue with secure Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.</p>
 
-                        <div className="mt-4 rounded-md border border-obsidian-border bg-obsidian/30 px-4 py-3 font-sans">
-                            <p className="text-[10px] font-mono text-toxic uppercase tracking-wider">Step 1</p>
-                            <p className="text-sm text-slate-300 mt-1">Share your details and preferred schedule to create a secure payment order.</p>
+                        {/* 4-Step Progressive Journey Header */}
+                        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <div className={`rounded-lg border p-3 transition-all ${requiresSignIn ? 'border-toxic bg-toxic/10 ring-1 ring-toxic/40' : 'border-emerald-500/30 bg-emerald-500/5'}`}>
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-toxic">Step 1</p>
+                                <p className="text-xs font-semibold text-white mt-1 flex items-center justify-between">
+                                    <span>Google Auth</span>
+                                    {!requiresSignIn && <span className="text-emerald-400">✓</span>}
+                                </p>
+                            </div>
+                            <div className={`rounded-lg border p-3 transition-all ${!requiresSignIn ? 'border-toxic/40 bg-toxic/5' : 'border-obsidian-border bg-obsidian/60 opacity-60'}`}>
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 2</p>
+                                <p className="text-xs font-semibold text-white mt-1">Booking Brief</p>
+                            </div>
+                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 3</p>
+                                <p className="text-xs font-semibold text-white mt-1">Cashfree Checkout</p>
+                            </div>
+                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 4</p>
+                                <p className="text-xs font-semibold text-white mt-1">Confirmation</p>
+                            </div>
                         </div>
 
                         {paymentFailure ? (
@@ -852,18 +870,38 @@ function BookNow() {
                             </div>
                         ) : null}
 
+                        {/* Step 1 Prominent Identity Callout Card */}
                         {requiresSignIn ? (
-                            <div className="mt-4 rounded-md border border-toxic/35 bg-toxic/10 px-4 py-3 text-sm text-toxic/90">
-                                <p className="font-sans">Sign in with Google to continue. Your email is auto-filled and locked for secure booking history.</p>
+                            <div className="mt-5 rounded-xl border border-toxic/40 bg-toxic/5 p-5 shadow-lg shadow-toxic/5">
+                                <div className="flex items-center gap-2">
+                                    <span className="flex h-2 w-2 rounded-full bg-toxic animate-pulse" />
+                                    <span className="text-xs font-mono uppercase tracking-wider text-toxic font-bold">Step 1 Required — Google Authentication</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-white mt-2">Sign In with Google to Book Service</h3>
+                                <p className="text-xs text-zinc-300 mt-1.5 leading-relaxed">
+                                    Google authentication is required before booking. Your email is auto-filled and locked to generate verified service receipts, schedule invites, and order tracking in <span className="font-mono text-toxic">My Activity</span>.
+                                </p>
                                 <button
                                     type="button"
                                     onClick={() => setShowSignInModal(true)}
-                                    className="mt-2 inline-flex items-center rounded-md border border-toxic bg-toxic/10 px-3 py-1.5 text-xs font-mono font-bold tracking-wider uppercase text-toxic hover:bg-toxic hover:text-black hover:shadow-[0_0_15px_rgba(197,248,42,0.2)] transition-all"
+                                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-toxic text-obsidian px-5 py-3 text-xs font-mono uppercase font-bold shadow-[0_0_20px_rgba(197,248,42,0.25)] hover:shadow-[0_0_30px_rgba(197,248,42,0.4)] hover:bg-[#b0e620] transition-all duration-200"
                                 >
-                                    Sign In with Google
+                                    <span>Continue with Google</span>
+                                    <span>↗</span>
                                 </button>
                             </div>
-                        ) : null}
+                        ) : (
+                            <div className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold">✓</span>
+                                    <div>
+                                        <p className="text-xs font-semibold text-white">Signed in as {user?.email}</p>
+                                        <p className="text-[10px] font-mono text-zinc-400">Email is locked for booking confirmation & calendar updates.</p>
+                                    </div>
+                                </div>
+                                <span className="text-[10px] font-mono uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded">Verified</span>
+                            </div>
+                        )}
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">
@@ -1168,6 +1206,9 @@ function BookNow() {
             <GoogleSignInModal
                 isOpen={showSignInModal}
                 onClose={() => setShowSignInModal(false)}
+                title="Sign In to Book Service"
+                description="Sign in with Google to enable secure service booking, verified receipts, and calendar schedule updates."
+                badgeText="Step 1: Identity Verification"
                 onAuthenticated={async () => {
                     await refreshSession()
                     setShowSignInModal(false)

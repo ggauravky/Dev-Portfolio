@@ -690,9 +690,27 @@ function Support() {
                             If my work helped you, you can send any amount directly. Secure checkout is powered by Cashfree.
                         </p>
 
-                        <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3">
-                            <p className="text-xs uppercase tracking-wider font-mono text-[#a1a1aa]/50">How It Works</p>
-                            <p className="text-sm text-[#a1a1aa] mt-1 leading-relaxed">Choose or type an amount, complete payment, and get instant confirmation.</p>
+                        {/* 4-Step Progressive Journey Header */}
+                        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <div className={`rounded-lg border p-3 transition-all ${requiresSignIn ? 'border-toxic bg-toxic/10 ring-1 ring-toxic/40' : 'border-emerald-500/30 bg-emerald-500/5'}`}>
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-toxic">Step 1</p>
+                                <p className="text-xs font-semibold text-white mt-1 flex items-center justify-between">
+                                    <span>Google Auth</span>
+                                    {!requiresSignIn && <span className="text-emerald-400">✓</span>}
+                                </p>
+                            </div>
+                            <div className={`rounded-lg border p-3 transition-all ${!requiresSignIn ? 'border-toxic/40 bg-toxic/5' : 'border-obsidian-border bg-obsidian/60 opacity-60'}`}>
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 2</p>
+                                <p className="text-xs font-semibold text-white mt-1">Select Amount</p>
+                            </div>
+                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 3</p>
+                                <p className="text-xs font-semibold text-white mt-1">Cashfree Checkout</p>
+                            </div>
+                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
+                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 4</p>
+                                <p className="text-xs font-semibold text-white mt-1">Instant Receipt</p>
+                            </div>
                         </div>
 
                         {paymentFailure ? (
@@ -701,48 +719,38 @@ function Support() {
                             </div>
                         ) : null}
 
+                        {/* Step 1 Prominent Identity Callout Card */}
                         {requiresSignIn ? (
-                            <div className="mt-4 rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 px-4 py-3 text-sm text-[#a1a1aa]">
-                                <p className="leading-relaxed">Sign in with Google to continue. Your email is auto-filled and locked for secure support receipts.</p>
+                            <div className="mt-5 rounded-xl border border-toxic/40 bg-toxic/5 p-5 shadow-lg shadow-toxic/5">
+                                <div className="flex items-center gap-2">
+                                    <span className="flex h-2 w-2 rounded-full bg-toxic animate-pulse" />
+                                    <span className="text-xs font-mono uppercase tracking-wider text-toxic font-bold">Step 1 Required — Google Authentication</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-white mt-2">Sign In with Google to Unlock Checkout</h3>
+                                <p className="text-xs text-zinc-300 mt-1.5 leading-relaxed">
+                                    Google authentication is required before checkout. Your email is auto-filled and locked to generate verified support receipts and order tracking in <span className="font-mono text-toxic">My Activity</span>.
+                                </p>
                                 <button
                                     type="button"
                                     onClick={() => setShowSignInModal(true)}
-                                    className="mt-3 inline-flex items-center rounded-md border border-[#1a1a22] bg-[#0e0e11] text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 font-mono text-xs uppercase py-2 px-4 transition-all"
+                                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-toxic text-obsidian px-5 py-3 text-xs font-mono uppercase font-bold shadow-[0_0_20px_rgba(197,248,42,0.25)] hover:shadow-[0_0_30px_rgba(197,248,42,0.4)] hover:bg-[#b0e620] transition-all duration-200"
                                 >
-                                    Sign In with Google
+                                    <span>Continue with Google</span>
+                                    <span>↗</span>
                                 </button>
                             </div>
-                        ) : null}
-
-                        <div className="mt-5 grid grid-cols-3 gap-3">
-                            <div className="rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#c5f82a]">100%</p>
-                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Secure checkout</p>
+                        ) : (
+                            <div className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold">✓</span>
+                                    <div>
+                                        <p className="text-xs font-semibold text-white">Signed in as {user?.email}</p>
+                                        <p className="text-[10px] font-mono text-zinc-400">Email is locked for support receipts & order tracking.</p>
+                                    </div>
+                                </div>
+                                <span className="text-[10px] font-mono uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded">Verified</span>
                             </div>
-                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a] p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/50">Instant</p>
-                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Order tracking</p>
-                            </div>
-                            <div className="rounded-md border border-[#ff5d00]/20 bg-[#ff5d00]/5 p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#ff5d00]">Download</p>
-                                <p className="text-xs text-[#a1a1aa] mt-1 font-medium">Receipt proof</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-3 grid grid-cols-3 gap-3">
-                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 1</p>
-                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Set amount</p>
-                            </div>
-                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 2</p>
-                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Pay securely</p>
-                            </div>
-                            <div className="rounded-md border border-[#1a1a22] bg-[#16161a]/60 p-3">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/40">Step 3</p>
-                                <p className="text-xs text-[#a1a1aa]/85 mt-1">Download receipt</p>
-                            </div>
-                        </div>
+                        )}
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
                             <div className="grid sm:grid-cols-2 gap-4">

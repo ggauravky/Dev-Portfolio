@@ -57,7 +57,14 @@ const resolveGoogleClientId = async () => {
     }
 }
 
-function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
+function GoogleSignInModal({
+    isOpen,
+    onClose,
+    onAuthenticated,
+    title = 'Sign In with Google',
+    description = 'Sign in with Google to unlock secure checkout, automated receipts, and order tracking.',
+    badgeText = 'Step 1: Identity Verification',
+}) {
     const buttonContainerRef = useRef(null)
     const isMountedRef = useRef(false)
     const { signIn } = useAuth()
@@ -181,15 +188,15 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
             <button
                 type="button"
                 aria-label="Close sign-in dialog"
-                className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+                className="absolute inset-0 bg-obsidian/80 backdrop-blur-md"
                 onClick={onClose}
             />
 
-            <div className="relative w-full max-w-md rounded-3xl border border-slate-700/70 bg-slate-900/95 p-6 sm:p-8 shadow-[0_30px_120px_rgba(15,23,42,0.8)] animate-[fadeIn_240ms_ease-out]">
+            <div className="relative w-full max-w-md rounded-2xl border border-obsidian-border bg-obsidian-card p-6 sm:p-8 shadow-[0_30px_120px_rgba(0,0,0,0.9)] animate-[fadeIn_240ms_ease-out]">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-700/70 bg-slate-800/80 text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200"
+                    className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-obsidian-border bg-obsidian text-zinc-400 transition-colors hover:border-toxic/40 hover:text-toxic"
                     aria-label="Close"
                 >
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -197,26 +204,48 @@ function GoogleSignInModal({ isOpen, onClose, onAuthenticated }) {
                     </svg>
                 </button>
 
-                <div className="mb-5">
-                    <p className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-200">
-                        Support this blog ❤️
-                    </p>
+                <div className="mb-4">
+                    <span className="inline-flex items-center rounded-md border border-toxic/30 bg-toxic/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-toxic">
+                        {badgeText}
+                    </span>
                 </div>
 
-                <h3 className="text-2xl font-bold text-slate-100">Support this blog ❤️</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                    Sign in with Google to show your support for this article.
+                <h3 className="text-xl sm:text-2xl font-bold font-display text-white">{title}</h3>
+                <p className="mt-2 text-xs sm:text-sm leading-relaxed text-zinc-400">
+                    {description}
                 </p>
 
-                <div className="mt-6 rounded-2xl border border-slate-700/70 bg-slate-800/70 p-4">
+                {/* Explicit Security & User Benefit Cards */}
+                <div className="mt-5 space-y-2 rounded-xl border border-obsidian-border bg-obsidian p-3.5">
+                    <div className="flex items-start gap-2.5">
+                        <span className="text-toxic font-mono text-xs mt-0.5">✓</span>
+                        <div className="text-xs text-zinc-300">
+                            <strong className="text-white">Instant PDF Receipts:</strong> Automatically generated and emailed to your Google address.
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                        <span className="text-toxic font-mono text-xs mt-0.5">✓</span>
+                        <div className="text-xs text-zinc-300">
+                            <strong className="text-white">Order Tracking:</strong> Access all your bookings and contributions anytime in <span className="font-mono text-toxic">My Activity</span>.
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                        <span className="text-toxic font-mono text-xs mt-0.5">✓</span>
+                        <div className="text-xs text-zinc-300">
+                            <strong className="text-white">256-Bit Encryption:</strong> Powered by Cashfree payments with strict spam prevention.
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-obsidian-border bg-obsidian-card p-4">
                     <div ref={buttonContainerRef} className="flex min-h-11 items-center justify-center" />
-                    {isReady ? null : <p className="mt-3 text-center text-xs text-slate-500">Preparing Google Sign-In...</p>}
+                    {isReady ? null : <p className="mt-3 text-center text-xs font-mono text-zinc-500">Preparing Google Sign-In...</p>}
                 </div>
 
                 {isSigningIn ? (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-sm text-cyan-300">
-                        <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-cyan-400 border-t-transparent" />
-                        <span>Signing you in securely...</span>
+                    <div className="mt-4 flex items-center justify-center gap-2 text-xs font-mono text-toxic">
+                        <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-toxic border-t-transparent" />
+                        <span>Signing in securely...</span>
                     </div>
                 ) : null}
             </div>
@@ -228,6 +257,9 @@ GoogleSignInModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     onAuthenticated: PropTypes.func,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    badgeText: PropTypes.string,
 }
 
 export default GoogleSignInModal
