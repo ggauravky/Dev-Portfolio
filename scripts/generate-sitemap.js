@@ -55,6 +55,8 @@ const staticPages = [
   { path: "/privacy", priority: "0.3", changefreq: "yearly" },
   { path: "/terms", priority: "0.3", changefreq: "yearly" },
   { path: "/refund", priority: "0.3", changefreq: "yearly" },
+  { path: "/llms.txt", priority: "0.5", changefreq: "weekly" },
+  { path: "/llms-full.txt", priority: "0.5", changefreq: "weekly" },
 ];
 
 // Generate blog post URLs

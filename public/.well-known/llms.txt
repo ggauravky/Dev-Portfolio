@@ -1,0 +1,35 @@
+# Gaurav Kumar Yadav
+
+> Developer portfolio and technical resume of Gaurav Kumar Yadav, an AI/ML Developer, Web Developer, and Full Stack Engineer based in Lucknow, India.
+
+## Technical Expertise
+
+- Programming Languages: Python, JavaScript (ES6+), C++, HTML5, CSS3, SQL
+- Machine Learning & AI: TensorFlow, PyTorch, Scikit-learn, OpenCV, NLP, Neural Networks, Computer Vision
+- Web Development: React, Node.js, Express.js, MongoDB (MERN Stack), REST APIs, Tailwind CSS, Vite
+- Tools & Platforms: Git, GitHub, Vercel, Docker, Linux, Postman
+
+## Core Sections
+
+- [About Me](https://ggauravky.vercel.app/about): Background, education at BBD University (BBDU), and engineering philosophy.
+- [Projects](https://ggauravky.vercel.app/projects): Full stack web apps, AI/ML models, and open source projects.
+- [Skills](https://ggauravky.vercel.app/skills): Detailed breakdown of technical competencies, tools, and frameworks.
+- [Services](https://ggauravky.vercel.app/services): Professional freelance services including Frontend, Backend, Full-Stack development, and AI/ML guidance.
+- [Blog](https://ggauravky.vercel.app/blog): Technical articles on machine learning, web architecture, and software engineering.
+- [Contact](https://ggauravky.vercel.app/contact): Contact details and inquiry form.
+
+## Key Projects
+
+- [Algorithm Visualizer](https://ggauravky.vercel.app/projects/algorithm-visualizer): Interactive visualizer for sorting and pathfinding algorithms.
+- [Shopease E-Commerce](https://ggauravky.vercel.app/projects/shopease): Full-stack MERN e-commerce application with secure checkout.
+- [PDF Audio Reader](https://ggauravky.vercel.app/projects/pdf-audio): Python application converting PDF text into natural speech audio.
+- [AI Captcha Solver](https://ggauravky.vercel.app/projects/captcha): Computer vision model for automated captcha recognition.
+
+## External Profiles
+
+- [GitHub Profile](https://github.com/ggauravky): Open source code repositories and contributions.
+- [LinkedIn Profile](https://www.linkedin.com/in/gauravky/): Professional network and background.
+
+## Full Documentation
+
+- [Complete LLM Knowledge Base](https://ggauravky.vercel.app/llms-full.txt): Extended documentation including detailed project case studies, complete skill matrix, and service offerings.

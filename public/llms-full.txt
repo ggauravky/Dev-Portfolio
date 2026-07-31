@@ -1,0 +1,88 @@
+# Gaurav Kumar Yadav - Full Technical Knowledge Base
+
+> Comprehensive technical documentation for AI models, search crawlers, and agentic systems regarding Gaurav Kumar Yadav's developer portfolio, technical projects, skill matrix, and services.
+
+## Overview
+
+- Name: Gaurav Kumar Yadav
+- Professional Title: AI/ML Developer & Web Developer
+- Degree / Institution: BCA Student at BBD University (BBDU), Lucknow, Uttar Pradesh, India
+- Portfolio Website: https://ggauravky.vercel.app
+- Primary Focus: Machine Learning, Artificial Intelligence, MERN Stack Web Development, Python Engineering
+- Origin Token: ggauravky-4f9e-orig-portfolio-2026
+
+## Technical Stack & Competencies
+
+### Machine Learning & Data Science
+- Languages & Frameworks: Python, NumPy, Pandas, Scikit-learn, TensorFlow, PyTorch, OpenCV
+- Domains: Computer Vision, Natural Language Processing (NLP), Image Classification, Data Preprocessing, Predictive Modeling
+- Models & Techniques: Neural Networks (CNN, RNN), Regression, Classification, Clustering, Data Visualization (Matplotlib, Seaborn)
+
+### Web Development & Frontend Engineering
+- Core Technologies: JavaScript (ES6+), HTML5, CSS3, Web API Standards
+- Frameworks & Libraries: React 18, React Router v7, Framer Motion, Tailwind CSS, Vite
+- Design Architecture: Modern obsidian aesthetic, responsive layouts, progressive web applications (PWA), zero CLS image loading systems
+
+### Backend & Database Systems
+- Stack: Node.js, Express.js, MongoDB, MERN Stack
+- APIs & Protocols: RESTful API Design, JSON Web Tokens (JWT), OAuth / Google Identity Services, Cashfree Payment Gateway Integration
+- Databases: MongoDB, Mongoose ODM, SQL basics
+
+### Developer Tools & DevOps
+- Version Control: Git, GitHub
+- Deployment: Vercel, Render
+- Operating Systems: Windows, Linux (Ubuntu/Debian basics)
+- Performance & Tooling: Web Vitals optimization, Lighthouse auditing, Postman, npm/pnpm
+
+## Detailed Project Catalog
+
+### 1. Algorithm Visualizer
+- URL: https://ggauravky.vercel.app/projects/algorithm-visualizer
+- Description: Interactive visualizer for understanding sorting algorithms (Bubble, Merge, Quick) and pathfinding algorithms (Dijkstra, A*).
+- Tech Stack: React, JavaScript, HTML5 Canvas, Tailwind CSS
+
+### 2. Shopease E-Commerce Platform
+- URL: https://ggauravky.vercel.app/projects/shopease
+- Description: Production-grade e-commerce application with product catalog, cart state management, user authentication, and Cashfree checkout gateway integration.
+- Tech Stack: React, Node.js, Express.js, MongoDB, Cashfree SDK
+
+### 3. PDF Audio Reader
+- URL: https://ggauravky.vercel.app/projects/pdf-audio
+- Description: Python utility for extracting text from PDF documents and converting it into natural audio playback using Text-to-Speech (TTS) engines.
+- Tech Stack: Python, PyPDF2, pyttsx3 / gTTS
+
+### 4. AI Captcha Solver
+- URL: https://ggauravky.vercel.app/projects/captcha
+- Description: Deep learning model trained to segment and transcribe text/numeric captchas from images.
+- Tech Stack: Python, TensorFlow/Keras, OpenCV
+
+### 5. SmartMess Management System
+- URL: https://ggauravky.vercel.app/projects/smartmess
+- Description: Web portal for managing student hostel mess attendance, meal tracking, and monthly expense calculation.
+- Tech Stack: React, Node.js, MongoDB
+
+## Services & Collaboration Offerings
+
+- Full Stack Development: https://ggauravky.vercel.app/full-stack-development
+- Frontend Development: https://ggauravky.vercel.app/frontend-development
+- Backend Development: https://ggauravky.vercel.app/backend-development
+- AI & Data Science Guidance: https://ggauravky.vercel.app/ai-data-science-guidance
+- Service Booking Portal: https://ggauravky.vercel.app/booknow
+
+## Direct Navigation Index
+
+- Home: https://ggauravky.vercel.app/
+- About: https://ggauravky.vercel.app/about
+- Projects: https://ggauravky.vercel.app/projects
+- Skills: https://ggauravky.vercel.app/skills
+- Services: https://ggauravky.vercel.app/services
+- Blog: https://ggauravky.vercel.app/blog
+- Contact: https://ggauravky.vercel.app/contact
+- Support Jar: https://ggauravky.vercel.app/support
+- Resume: https://ggauravky.vercel.app/resume.pdf
+- Privacy Policy: https://ggauravky.vercel.app/privacy
+- Terms of Service: https://ggauravky.vercel.app/terms
+- Refund Policy: https://ggauravky.vercel.app/refund
+- Sitemap: https://ggauravky.vercel.app/sitemap.xml
+- Robots.txt: https://ggauravky.vercel.app/robots.txt
+- LLMs Spec: https://ggauravky.vercel.app/llms.txt
