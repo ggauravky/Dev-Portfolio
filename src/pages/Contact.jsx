@@ -113,7 +113,45 @@ function Contact() {
         description: 'Contact Gaurav Kumar Yadav. Reach out for internship opportunities, entry-level positions, freelance projects, or collaborations. Python Developer & AI enthusiast from Lucknow, India.',
         keywords: 'Contact Gaurav Portfolio, Contact Gaurav Kumar Yadav, Portfolio Contact, Hire Python Developer, Hire AI Developer, Internship Developer Lucknow, Freelance Developer India',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        additionalJsonLd: {
+            '@type': 'FAQPage',
+            mainEntity: [
+                {
+                    '@type': 'Question',
+                    name: 'How can I contact Gaurav Kumar Yadav?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'You can contact Gaurav Kumar Yadav via email at kumar.gaurav.yadav2007@gmail.com, on WhatsApp at +91 8542036499, through the contact form at https://ggauravky.vercel.app/contact, or on LinkedIn at https://www.linkedin.com/in/gauravky/.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'Is Gaurav Kumar Yadav available for internships?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Yes. Gaurav Kumar Yadav is open to internship opportunities, entry-level developer positions, and freelance projects in AI/ML, web development, and full-stack engineering.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'What is the fastest way to reach Gaurav Kumar Yadav?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'WhatsApp (+91 8542036499) is the fastest channel for a quick response. For professional queries, email at kumar.gaurav.yadav2007@gmail.com or LinkedIn are recommended.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'What is Gaurav Kumar Yadav\'s GitHub profile?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Gaurav Kumar Yadav\'s GitHub profile is at https://github.com/ggauravky. It contains open source projects in React, Node.js, Python, and AI/ML.'
+                    }
+                }
+            ]
+        }
     })
+
 
     const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
         const featuredPlatforms = useMemo(() => majorPlatforms, [])

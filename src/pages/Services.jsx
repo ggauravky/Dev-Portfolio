@@ -20,7 +20,53 @@ function Services() {
         description: 'Work with Gaurav Kumar Yadav for mentorship, debugging, portfolio reviews, and full-stack delivery support. AI/ML and web development guidance from a BCA student developer in Lucknow, India.',
         keywords: 'Gaurav Kumar Yadav services, AI ML developer Lucknow, web developer India, mentorship for developers, MERN stack developer student, portfolio review service, debugging help',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        additionalJsonLd: {
+            '@type': 'FAQPage',
+            mainEntity: [
+                {
+                    '@type': 'Question',
+                    name: 'What services does Gaurav Kumar Yadav offer?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Gaurav Kumar Yadav offers 8 developer services: Mentorship (1:1 career roadmaps), Resume Review (ATS optimisation), Debugging Help (root-cause code fixes), Portfolio Review, Frontend Development, Backend Development, Full Stack Development, and AI & Data Science Guidance. All services are booked securely via Cashfree.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'How can I book a session with Gaurav Kumar Yadav?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Visit https://ggauravky.vercel.app/booknow, select your service, fill in your project brief, and complete payment via Cashfree (UPI, cards, netbanking, wallets). Sessions are confirmed within 24-48 hours.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'What is the price for mentorship with Gaurav Kumar Yadav?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Mentorship and Resume Review sessions are priced at INR 49. Debugging Help and Portfolio Review are INR 99. Build services (Frontend, Backend, Full Stack) are priced based on project scope. All prices are in Indian Rupees (INR).'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'Where is Gaurav Kumar Yadav based?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Gaurav Kumar Yadav is based in Lucknow, Uttar Pradesh, India. He is a BCA student at BBD University (BBDU) and serves clients across India remotely.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    name: 'What technologies does Gaurav Kumar Yadav work with?',
+                    acceptedAnswer: {
+                        '@type': 'Answer',
+                        text: 'Gaurav Kumar Yadav specialises in Python, React, Node.js, Express.js, MongoDB (MERN stack), Machine Learning, and AI/ML projects. He has completed the AI and Machine Learning Program through IIT Mandi x Masai School.'
+                    }
+                }
+            ]
+        }
     })
+
 
     const allServices = useMemo(() => servicesData, [])
     const coreServices = useMemo(() => allServices.filter((service) => service.category === 'Career and Growth' || service.category === 'Code and Engineering'), [allServices])

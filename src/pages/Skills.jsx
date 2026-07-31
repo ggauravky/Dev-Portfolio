@@ -69,9 +69,9 @@ const CategoryIcon = ({ title, className = 'w-5 h-5' }) => {
 
 function Skills() {
     useSEO({
-        title: 'Skills - Gaurav Portfolio | Python, AI/ML, Data Science & Full Stack Technologies',
-        description: 'Explore Gaurav Portfolio Skills! Student Developer proficient in Python, Data Science, Machine Learning, AI/ML, React, Node.js, MongoDB, JavaScript, Pandas, NumPy, and modern web technologies. Portfolio showcasing technical expertise and hands-on project experience. Ready for internships and entry-level positions in AI, Data Science, and Full Stack Development.',
-        keywords: 'Gaurav Portfolio Skills, Portfolio Skills, Python Developer Skills, AI ML Skills, Data Science Skills, Machine Learning, React Developer, Node.js, MongoDB, JavaScript, Pandas NumPy, Web Development, Tailwind CSS, Student Developer, Technical Skills Portfolio, Internship Ready',
+        title: 'Skills | Gaurav Kumar Yadav | Python, AI/ML, React & Full Stack Technologies',
+        description: 'Technical skills of Gaurav Kumar Yadav, a BCA student at BBDU Lucknow — Python, AI/ML, Data Science, React, Node.js, MongoDB, JavaScript, Pandas, NumPy, and modern full stack web technologies. Open to internships and entry-level AI and Full Stack Development positions.',
+        keywords: 'Gaurav Kumar Yadav skills, Gaurav Kumar Yadav BBDU, Python developer Lucknow, AI ML skills student India, React developer skills, Full Stack skills MERN, machine learning developer portfolio, ggauravky technical skills',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
     })
 

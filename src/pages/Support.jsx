@@ -27,9 +27,9 @@ function Support() {
     const { user, isAuthenticated, isLoading, refreshSession, updateProfile } = useAuth()
 
     useSEO({
-        title: 'Support Jar | Gaurav Kumar Yadav',
-        description: 'Support my work directly with any amount through secure Cashfree checkout.',
-        keywords: 'support, tip jar, direct contribution, cashfree payment',
+        title: 'Support Jar | Gaurav Kumar Yadav | Support My Open Source Work',
+        description: 'Support Gaurav Kumar Yadav’s open source projects and developer portfolio. Any contribution helps fund AI/ML research, web development projects, and free educational content. Secure checkout via Cashfree.',
+        keywords: 'support Gaurav Kumar Yadav, tip jar developer, support AI ML developer India, Gaurav Kumar Yadav donation, Cashfree secure payment, support open source Lucknow',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 

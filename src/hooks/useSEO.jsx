@@ -123,11 +123,39 @@ const useSEO = ({
             '@type': 'Person',
             '@id': `${siteUrl}/#person`,
             name: 'Gaurav Kumar Yadav',
+            alternateName: ['Gaurav Kumar', 'ggauravky', 'Gaurav BBDU'],
             url: siteUrl,
-            image: `${siteUrl}/images/profile.jpg`,
+            email: 'kumar.gaurav.yadav2007@gmail.com',
+            image: {
+                '@type': 'ImageObject',
+                url: `${siteUrl}/images/profile.jpg`,
+                width: 512,
+                height: 512,
+                caption: 'Gaurav Kumar Yadav — AI/ML Developer & Web Developer from Lucknow, India'
+            },
             jobTitle: 'AI/ML Developer & Web Developer',
             description: 'Gaurav Kumar Yadav is a BCA student at BBD University (BBDU), Lucknow, India, focused on AI/ML and web development projects.',
-            alumniOf: 'BBD University Lucknow',
+            alumniOf: {
+                '@type': 'EducationalOrganization',
+                name: 'BBD University Lucknow',
+                alternateName: 'BBDU',
+                url: 'https://bbdu.ac.in/'
+            },
+            affiliation: {
+                '@type': 'EducationalOrganization',
+                name: 'BBD University Lucknow',
+                alternateName: 'BBDU',
+                url: 'https://bbdu.ac.in/'
+            },
+            hasCredential: {
+                '@type': 'EducationalOccupationalCredential',
+                name: 'AI and Machine Learning Program',
+                credentialCategory: 'certificate',
+                recognizedBy: {
+                    '@type': 'Organization',
+                    name: 'IIT Mandi x Masai School'
+                }
+            },
             address: {
                 '@type': 'PostalAddress',
                 addressLocality: 'Lucknow',

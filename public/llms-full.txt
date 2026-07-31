@@ -1,32 +1,37 @@
-# Gaurav Kumar Yadav - Full Technical Knowledge Base
+﻿# Gaurav Kumar Yadav - Full Technical Knowledge Base
 
 > Comprehensive technical documentation for AI models, search crawlers, and agentic systems regarding Gaurav Kumar Yadav's developer portfolio, technical projects, skill matrix, and services.
 
-## Overview
+## Identity & Disambiguation
 
-- Name: Gaurav Kumar Yadav
+- Full Name: Gaurav Kumar Yadav
+- Alternate Names: Gaurav Kumar, ggauravky, Gaurav BBDU, Gaurav Kumar Yadav BBDU
 - Professional Title: AI/ML Developer & Web Developer
 - Degree / Institution: BCA Student at BBD University (BBDU), Lucknow, Uttar Pradesh, India
+- Credential: AI and Machine Learning Program Certificate — IIT Mandi x Masai School
 - Portfolio Website: https://ggauravky.vercel.app
+- GitHub: https://github.com/ggauravky
+- LinkedIn: https://www.linkedin.com/in/gauravky/
+- Email: kumar.gaurav.yadav2007@gmail.com
 - Primary Focus: Machine Learning, Artificial Intelligence, MERN Stack Web Development, Python Engineering
 - Origin Token: ggauravky-4f9e-orig-portfolio-2026
 
 ## Technical Stack & Competencies
 
 ### Machine Learning & Data Science
-- Languages & Frameworks: Python, NumPy, Pandas, Scikit-learn, TensorFlow, PyTorch, OpenCV
-- Domains: Computer Vision, Natural Language Processing (NLP), Image Classification, Data Preprocessing, Predictive Modeling
-- Models & Techniques: Neural Networks (CNN, RNN), Regression, Classification, Clustering, Data Visualization (Matplotlib, Seaborn)
+- Languages & Frameworks: Python, NumPy, Pandas, Scikit-learn, Matplotlib, Seaborn, OpenCV basics
+- Domains: Computer Vision basics, Natural Language Processing (NLP) basics, Image Classification, Data Preprocessing, Predictive Modeling, Data Visualization
+- Models & Techniques: Regression, Classification, Clustering, Decision Trees, Random Forest, basic Neural Networks
 
 ### Web Development & Frontend Engineering
 - Core Technologies: JavaScript (ES6+), HTML5, CSS3, Web API Standards
-- Frameworks & Libraries: React 18, React Router v7, Framer Motion, Tailwind CSS, Vite
-- Design Architecture: Modern obsidian aesthetic, responsive layouts, progressive web applications (PWA), zero CLS image loading systems
+- Frameworks & Libraries: React 18, React Router v7, Framer Motion, Tailwind CSS, Bootstrap, Vite
+- Design Architecture: Modern obsidian aesthetic, responsive layouts, progressive web applications (PWA), zero CLS image loading systems, glassmorphism
 
 ### Backend & Database Systems
 - Stack: Node.js, Express.js, MongoDB, MERN Stack
-- APIs & Protocols: RESTful API Design, JSON Web Tokens (JWT), OAuth / Google Identity Services, Cashfree Payment Gateway Integration
-- Databases: MongoDB, Mongoose ODM, SQL basics
+- APIs & Protocols: RESTful API Design, JSON Web Tokens (JWT), OAuth / Google Identity Services, Cashfree Payment Gateway Integration, Socket.io (WebSockets)
+- Databases: MongoDB, Mongoose ODM, MySQL basics, Prisma ORM
 
 ### Developer Tools & DevOps
 - Version Control: Git, GitHub
@@ -34,38 +39,133 @@
 - Operating Systems: Windows, Linux (Ubuntu/Debian basics)
 - Performance & Tooling: Web Vitals optimization, Lighthouse auditing, Postman, npm/pnpm
 
-## Detailed Project Catalog
+## Complete Project Catalog
 
-### 1. Algorithm Visualizer
-- URL: https://ggauravky.vercel.app/projects/algorithm-visualizer
-- Description: Interactive visualizer for understanding sorting algorithms (Bubble, Merge, Quick) and pathfinding algorithms (Dijkstra, A*).
-- Tech Stack: React, JavaScript, HTML5 Canvas, Tailwind CSS
+### 1. SmartMess — Hostel Mess Management System
+- URL: https://ggauravky.vercel.app/projects/smartmess
+- GitHub: https://github.com/ggauravky/SmartMess
+- Demo: https://smartmesslms.vercel.app/
+- Description: Comprehensive hostel mess management platform with real-time menu visibility, digital attendance, student feedback & rating system, complaint portal, and admin analytics dashboard.
+- Tech Stack: React, Node.js, Express, MongoDB, JWT, Vercel
+- Status: Live
 
-### 2. Shopease E-Commerce Platform
+### 2. Dev Portfolio Admin Panel
+- URL: https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel
+- GitHub: https://github.com/ggauravky/Dev-Portfolio-Admin-Panel
+- Demo: https://ggauravkyadmin.vercel.app
+- Description: Blazing-fast admin panel for managing portfolio backend data — contact messages, newsletter subscriptions — with JWT auth, smart filtering, full CRUD operations, and a professional analytics dashboard.
+- Tech Stack: React, Node.js, Express, MongoDB, JWT, Tailwind CSS, Vercel
+- Status: Live
+
+### 3. Real-Time Chat App
+- URL: https://ggauravky.vercel.app/projects/real-time-chat-app
+- Description: Real-time messaging application with WebSocket-powered live chat, user authentication, and room support.
+- Tech Stack: React, Node.js, Express, Socket.io, MongoDB, JWT
+
+### 4. MERN Product Store
+- URL: https://ggauravky.vercel.app/projects/mern-product-store
+- Description: Full-stack product store with product catalog, cart, and checkout. Built with the MERN stack.
+- Tech Stack: React, Node.js, Express, MongoDB
+
+### 5. Notes App
+- URL: https://ggauravky.vercel.app/projects/notes-app
+- Description: Feature-rich note-taking application with create, read, update, delete functionality.
+- Tech Stack: React, Node.js, MongoDB
+
+### 6. AiReel Studio
+- URL: https://ggauravky.vercel.app/projects/aireel-studio
+- Description: AI-powered short reel generation studio for social media creators.
+- Tech Stack: React, Node.js, AI APIs
+
+### 7. Glass Morphism Calculator
+- URL: https://ggauravky.vercel.app/projects/glass-morphism-calculator
+- Description: Modern glassmorphism-styled scientific calculator with smooth animations.
+- Tech Stack: React, CSS3, JavaScript
+
+### 8. Custom Captcha Generator
+- URL: https://ggauravky.vercel.app/projects/custom-captcha-generator
+- Description: Configurable CAPTCHA generation library for web security implementations.
+- Tech Stack: JavaScript, Node.js
+
+### 9. TaskMaster Pro
+- URL: https://ggauravky.vercel.app/projects/taskmaster-pro
+- Description: Advanced task management application with priority tracking, deadlines, and progress analytics.
+- Tech Stack: React, Node.js, MongoDB
+
+### 10. Flappy Bird Game
+- URL: https://ggauravky.vercel.app/projects/flappy-bird-game
+- Description: Browser-based Flappy Bird clone with smooth canvas animations and score tracking.
+- Tech Stack: JavaScript, HTML5 Canvas, CSS3
+
+### 11. PDF to Audio Book
+- URL: https://ggauravky.vercel.app/projects/pdf-to-audio-book
+- Description: Python utility for extracting text from PDF documents and converting it into natural audio playback using Text-to-Speech (TTS) engines.
+- Tech Stack: Python, PyPDF2, pyttsx3 / gTTS
+
+### 12. Shopease — E-Commerce Platform
 - URL: https://ggauravky.vercel.app/projects/shopease
 - Description: Production-grade e-commerce application with product catalog, cart state management, user authentication, and Cashfree checkout gateway integration.
 - Tech Stack: React, Node.js, Express.js, MongoDB, Cashfree SDK
 
-### 3. PDF Audio Reader
-- URL: https://ggauravky.vercel.app/projects/pdf-audio
-- Description: Python utility for extracting text from PDF documents and converting it into natural audio playback using Text-to-Speech (TTS) engines.
-- Tech Stack: Python, PyPDF2, pyttsx3 / gTTS
-
-### 4. AI Captcha Solver
-- URL: https://ggauravky.vercel.app/projects/captcha
-- Description: Deep learning model trained to segment and transcribe text/numeric captchas from images.
-- Tech Stack: Python, TensorFlow/Keras, OpenCV
-
-### 5. SmartMess Management System
-- URL: https://ggauravky.vercel.app/projects/smartmess
-- Description: Web portal for managing student hostel mess attendance, meal tracking, and monthly expense calculation.
+### 13. DishDash
+- URL: https://ggauravky.vercel.app/projects/dishdash
+- Description: Food delivery and restaurant management platform with real-time order tracking.
 - Tech Stack: React, Node.js, MongoDB
+
+### 14. Python Grocery Store
+- URL: https://ggauravky.vercel.app/projects/python-grocery-store
+- Description: Command-line grocery store management system built in Python with inventory and billing.
+- Tech Stack: Python
+
+### 15. BuildMyTeam
+- URL: https://ggauravky.vercel.app/projects/buildmyteam
+- Description: Team-building and collaboration platform to connect developers for project-based work.
+- Tech Stack: React, Node.js, MongoDB
+
+### 16. FocusGuard
+- URL: https://ggauravky.vercel.app/projects/focusguard
+- Description: Productivity and focus management application to block distractions and track deep work sessions.
+- Tech Stack: React, Node.js, Browser Extensions API
+
+### 17. TrueCert
+- URL: https://ggauravky.vercel.app/projects/truecert
+- Description: Blockchain-inspired certificate verification and credential management platform.
+- Tech Stack: React, Node.js, MongoDB
+
+### 18. Fire Detection Alert System
+- URL: https://ggauravky.vercel.app/projects/fire-detection-alert-system
+- Description: Computer vision-based fire and smoke detection system using image classification.
+- Tech Stack: Python, OpenCV, TensorFlow/Keras
+
+### 19. ZipLink
+- URL: https://ggauravky.vercel.app/projects/ziplink
+- Description: URL shortener with analytics, custom aliases, and click tracking.
+- Tech Stack: React, Node.js, MongoDB
+
+### 20. Instax
+- URL: https://ggauravky.vercel.app/projects/instax
+- Description: Instagram-inspired social media platform with photo sharing, likes, and follows.
+- Tech Stack: React, Node.js, MongoDB
+
+## Blog Articles
+
+- [AI Inside Every Tool — The Future](https://ggauravky.vercel.app/blog/ai-inside-every-tool-future)
+- [The Hidden AI War: Cybercriminals in 2025](https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025)
+- [Traditional Cybersecurity Is Dead — The AI Revolution](https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution)
+- [Certificates in Computer Science — 2025 Guide](https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide)
+- [Learning to Code Beyond Syntax](https://ggauravky.vercel.app/blog/learning-to-code-beyond-syntax)
+- [Stop Asking Which Language Is Best](https://ggauravky.vercel.app/blog/stop-asking-which-language-is-best)
+- [India, AI, ChatGPT, DeepSeek and the Future of Talent](https://ggauravky.vercel.app/blog/india-talent-ai-chatgpt-deepseek-future)
 
 ## Services & Collaboration Offerings
 
-- Full Stack Development: https://ggauravky.vercel.app/full-stack-development
+- Mentorship: https://ggauravky.vercel.app/mentorship (INR 49)
+- Resume Review: https://ggauravky.vercel.app/resume-review (INR 49)
+- Debugging Help: https://ggauravky.vercel.app/debugging-help (INR 99)
+- Portfolio Review: https://ggauravky.vercel.app/portfolio-review (INR 99)
 - Frontend Development: https://ggauravky.vercel.app/frontend-development
 - Backend Development: https://ggauravky.vercel.app/backend-development
+- Full Stack Development: https://ggauravky.vercel.app/full-stack-development
 - AI & Data Science Guidance: https://ggauravky.vercel.app/ai-data-science-guidance
 - Service Booking Portal: https://ggauravky.vercel.app/booknow
 
@@ -75,11 +175,11 @@
 - About: https://ggauravky.vercel.app/about
 - Projects: https://ggauravky.vercel.app/projects
 - Skills: https://ggauravky.vercel.app/skills
+- Journey: https://ggauravky.vercel.app/journey
 - Services: https://ggauravky.vercel.app/services
 - Blog: https://ggauravky.vercel.app/blog
 - Contact: https://ggauravky.vercel.app/contact
 - Support Jar: https://ggauravky.vercel.app/support
-- Resume: https://ggauravky.vercel.app/resume.pdf
 - Privacy Policy: https://ggauravky.vercel.app/privacy
 - Terms of Service: https://ggauravky.vercel.app/terms
 - Refund Policy: https://ggauravky.vercel.app/refund

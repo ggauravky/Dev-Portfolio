@@ -70,21 +70,53 @@ function ServiceDetail({ forcedSlug = '' }) {
     const slug = forcedSlug || params.slug || ''
     const service = getServiceBySlug(slug)
 
+    const siteUrl = 'https://ggauravky.vercel.app'
     const seoTitle = service
-        ? `${service.title} - Gaurav Kumar Yadav Services`
-        : 'Services - Gaurav Kumar Yadav'
+        ? `${service.title} | Gaurav Kumar Yadav | AI/ML & Web Developer Lucknow`
+        : 'Services | Gaurav Kumar Yadav | AI/ML & Web Developer'
     const seoDescription = service
-        ? `${service.summary} Pricing: ${service.priceLabel}. Secure checkout via Cashfree with UPI, cards, and netbanking.`
-        : 'Explore development services with secure checkout and fast delivery.'
+        ? `${service.summary} ${service.outcomePromise} Offered by Gaurav Kumar Yadav, BCA student at BBDU Lucknow. Pricing: ${service.priceLabel}. Secure booking via Cashfree.`
+        : 'Work with Gaurav Kumar Yadav — BCA student at BBDU Lucknow — for mentorship, debugging, portfolio reviews, and full-stack delivery. Secure booking via Cashfree.'
     const seoKeywords = service
-        ? `${service.title}, developer service, ${service.category}, secure checkout, cashfree`
-        : 'developer services, secure checkout, cashfree'
+        ? `${service.title} Gaurav Kumar Yadav, ${service.category} developer service Lucknow, Gaurav Kumar Yadav services, AI ML developer services India, web developer booking BBDU`
+        : 'Gaurav Kumar Yadav developer services, AI ML developer Lucknow, web developer booking India, BBDU student developer'
+
+    const serviceJsonLd = service ? {
+        '@type': 'Service',
+        '@id': `${siteUrl}/${service.slug}`,
+        name: service.title,
+        description: service.summary,
+        url: `${siteUrl}/${service.slug}`,
+        provider: {
+            '@type': 'Person',
+            '@id': `${siteUrl}/#person`,
+            name: 'Gaurav Kumar Yadav',
+            url: siteUrl,
+            jobTitle: 'AI/ML Developer & Web Developer',
+            address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Lucknow',
+                addressRegion: 'Uttar Pradesh',
+                addressCountry: 'India'
+            }
+        },
+        areaServed: { '@type': 'Country', name: 'India' },
+        offers: {
+            '@type': 'Offer',
+            price: service.amount,
+            priceCurrency: 'INR',
+            availability: 'https://schema.org/InStock',
+            url: `${siteUrl}/booknow?service=${service.slug}`
+        },
+        category: service.category
+    } : null
 
     useSEO({
         title: seoTitle,
         description: seoDescription,
         keywords: seoKeywords,
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        additionalJsonLd: serviceJsonLd
     })
 
     if (!service) {

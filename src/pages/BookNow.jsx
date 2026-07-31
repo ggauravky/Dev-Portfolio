@@ -40,9 +40,9 @@ function BookNow() {
     const selectedService = getServiceBySlug(requestedService) || servicesData[0]
 
     useSEO({
-        title: `Book Now - ${selectedService.title} | Gaurav Kumar Yadav`,
-        description: 'Secure service booking with Cashfree checkout. Supports UPI, cards, netbanking, wallets, and pay later.',
-        keywords: 'book service, cashfree payment, secure checkout, upi payment',
+        title: `Book ${selectedService.title} | Gaurav Kumar Yadav | Secure Service Booking`,
+        description: `Book a ${selectedService.title} session with Gaurav Kumar Yadav — AI/ML developer and web developer from BBDU Lucknow. ${selectedService.outcomePromise || ''} Secure checkout via Cashfree: UPI, cards, netbanking, and wallets accepted.`,
+        keywords: `book ${selectedService.title} Gaurav Kumar Yadav, developer service booking India, Gaurav Kumar Yadav services, AI ML developer booking Lucknow, web developer session booking, Cashfree payment UPI`,
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 

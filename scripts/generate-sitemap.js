@@ -37,11 +37,10 @@ const SITE_URL = "https://ggauravky.vercel.app";
 const staticPages = [
   { path: "", priority: "1.0", changefreq: "weekly" },
   { path: "/about", priority: "0.8", changefreq: "monthly" },
+  { path: "/journey", priority: "0.8", changefreq: "monthly" },
   { path: "/skills", priority: "0.8", changefreq: "monthly" },
   { path: "/projects", priority: "0.9", changefreq: "weekly" },
   { path: "/services", priority: "0.9", changefreq: "weekly" },
-  { path: "/booknow", priority: "0.8", changefreq: "weekly" },
-  { path: "/payment-under-construction", priority: "0.7", changefreq: "weekly" },
   { path: "/mentorship", priority: "0.8", changefreq: "weekly" },
   { path: "/resume-review", priority: "0.8", changefreq: "weekly" },
   { path: "/debugging-help", priority: "0.8", changefreq: "weekly" },
@@ -50,13 +49,14 @@ const staticPages = [
   { path: "/backend-development", priority: "0.8", changefreq: "weekly" },
   { path: "/full-stack-development", priority: "0.8", changefreq: "weekly" },
   { path: "/ai-data-science-guidance", priority: "0.8", changefreq: "weekly" },
+  { path: "/booknow", priority: "0.8", changefreq: "weekly" },
   { path: "/blog", priority: "0.9", changefreq: "daily" },
   { path: "/contact", priority: "0.8", changefreq: "monthly" },
+  { path: "/updates", priority: "0.6", changefreq: "weekly" },
+  { path: "/support", priority: "0.6", changefreq: "monthly" },
   { path: "/privacy", priority: "0.3", changefreq: "yearly" },
   { path: "/terms", priority: "0.3", changefreq: "yearly" },
   { path: "/refund", priority: "0.3", changefreq: "yearly" },
-  { path: "/llms.txt", priority: "0.5", changefreq: "weekly" },
-  { path: "/llms-full.txt", priority: "0.5", changefreq: "weekly" },
 ];
 
 // Generate blog post URLs

@@ -1,29 +1,65 @@
-# Gaurav Kumar Yadav
+﻿# Gaurav Kumar Yadav
 
-> Developer portfolio and technical resume of Gaurav Kumar Yadav, an AI/ML Developer, Web Developer, and Full Stack Engineer based in Lucknow, India.
+> Developer portfolio and technical resume of Gaurav Kumar Yadav, an AI/ML Developer, Web Developer, and Full Stack Engineer based in Lucknow, Uttar Pradesh, India. BCA student at BBD University (BBDU). GitHub handle: ggauravky.
+
+## Identity & Contact
+
+- Full Name: Gaurav Kumar Yadav
+- Alternate Names: Gaurav Kumar, ggauravky, Gaurav BBDU
+- Location: Lucknow, Uttar Pradesh, India
+- University: BBD University (BBDU), BCA Program
+- Email: kumar.gaurav.yadav2007@gmail.com
+- Portfolio: https://ggauravky.vercel.app
+- GitHub: https://github.com/ggauravky
+- LinkedIn: https://www.linkedin.com/in/gauravky/
 
 ## Technical Expertise
 
-- Programming Languages: Python, JavaScript (ES6+), C++, HTML5, CSS3, SQL
-- Machine Learning & AI: TensorFlow, PyTorch, Scikit-learn, OpenCV, NLP, Neural Networks, Computer Vision
-- Web Development: React, Node.js, Express.js, MongoDB (MERN Stack), REST APIs, Tailwind CSS, Vite
-- Tools & Platforms: Git, GitHub, Vercel, Docker, Linux, Postman
+- Programming Languages: Python, JavaScript (ES6+), C, Java, SQL, HTML5, CSS3
+- Machine Learning & AI: Scikit-learn, Pandas, NumPy, Matplotlib, Seaborn, Computer Vision basics, NLP basics
+- Web Development: React 18, Node.js, Express.js, MongoDB (MERN Stack), REST APIs, Tailwind CSS, Vite, Bootstrap
+- Tools & Platforms: Git, GitHub, Vercel, Render, Postman, VS Code, Cashfree SDK
 
 ## Core Sections
 
 - [About Me](https://ggauravky.vercel.app/about): Background, education at BBD University (BBDU), and engineering philosophy.
 - [Projects](https://ggauravky.vercel.app/projects): Full stack web apps, AI/ML models, and open source projects.
 - [Skills](https://ggauravky.vercel.app/skills): Detailed breakdown of technical competencies, tools, and frameworks.
+- [Journey](https://ggauravky.vercel.app/journey): Internships, workshops, hackathons, certifications, and professional milestones.
 - [Services](https://ggauravky.vercel.app/services): Professional freelance services including Frontend, Backend, Full-Stack development, and AI/ML guidance.
 - [Blog](https://ggauravky.vercel.app/blog): Technical articles on machine learning, web architecture, and software engineering.
 - [Contact](https://ggauravky.vercel.app/contact): Contact details and inquiry form.
 
-## Key Projects
+## Featured Projects
 
-- [Algorithm Visualizer](https://ggauravky.vercel.app/projects/algorithm-visualizer): Interactive visualizer for sorting and pathfinding algorithms.
-- [Shopease E-Commerce](https://ggauravky.vercel.app/projects/shopease): Full-stack MERN e-commerce application with secure checkout.
-- [PDF Audio Reader](https://ggauravky.vercel.app/projects/pdf-audio): Python application converting PDF text into natural speech audio.
-- [AI Captcha Solver](https://ggauravky.vercel.app/projects/captcha): Computer vision model for automated captcha recognition.
+- [SmartMess](https://ggauravky.vercel.app/projects/smartmess): Full-stack hostel mess management platform with real-time menus, digital attendance, and admin analytics. Built with React, Node.js, Express, MongoDB.
+- [Real-Time Chat App](https://ggauravky.vercel.app/projects/real-time-chat-app): Live messaging application with WebSocket support. Built with React, Node.js, Socket.io.
+- [BuildMyTeam](https://ggauravky.vercel.app/projects/buildmyteam): Team-building and collaboration platform. Built with React, Node.js, MongoDB.
+- [Dev Portfolio Admin Panel](https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel): Blazing-fast admin panel for portfolio backend management with JWT auth and analytics. Built with React, Node.js, Express, MongoDB.
+- [AiReel Studio](https://ggauravky.vercel.app/projects/aireel-studio): AI-powered short reel generation studio.
+- [FocusGuard](https://ggauravky.vercel.app/projects/focusguard): Productivity and focus management application.
+- [TrueCert](https://ggauravky.vercel.app/projects/truecert): Certificate verification and credential management platform.
+
+## Services Offered
+
+- [Mentorship](https://ggauravky.vercel.app/mentorship): 1:1 mentorship sessions — INR 49
+- [Resume Review](https://ggauravky.vercel.app/resume-review): ATS-optimised resume review — INR 49
+- [Debugging Help](https://ggauravky.vercel.app/debugging-help): Code debugging and root-cause analysis — INR 99
+- [Portfolio Review](https://ggauravky.vercel.app/portfolio-review): Developer portfolio review — INR 99
+- [Frontend Development](https://ggauravky.vercel.app/frontend-development): Frontend project delivery
+- [Backend Development](https://ggauravky.vercel.app/backend-development): Backend and API development
+- [Full Stack Development](https://ggauravky.vercel.app/full-stack-development): End-to-end product delivery
+- [AI & Data Science Guidance](https://ggauravky.vercel.app/ai-data-science-guidance): AI/ML project guidance and review
+
+## Blog Articles
+
+- [AI Inside Every Tool](https://ggauravky.vercel.app/blog/ai-inside-every-tool-future): The future of AI-embedded software tools.
+- [Hidden AI War: Cybercriminals 2025](https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025): How AI is reshaping cybersecurity threats.
+- [Traditional Cybersecurity Is Dead](https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution): Why AI is making legacy security obsolete.
+- [Certificates in CS 2025](https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide): A practical guide to CS certifications worth pursuing.
+- [Learning to Code Beyond Syntax](https://ggauravky.vercel.app/blog/learning-to-code-beyond-syntax): What nobody tells you about becoming a developer.
+- [Stop Asking Which Language Is Best](https://ggauravky.vercel.app/blog/stop-asking-which-language-is-best): Why the language debate misses the point.
+- [India, AI, ChatGPT and the Future](https://ggauravky.vercel.app/blog/india-talent-ai-chatgpt-deepseek-future): India's AI talent edge and what comes next.
 
 ## External Profiles
 
