@@ -5,7 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import PropTypes from 'prop-types'
 
@@ -17,6 +17,7 @@ import BackToTop from './components/BackToTop'
 import ErrorBoundary from './components/ErrorBoundary'
 import PageTransition from './components/PageTransition'
 import SplashScreen from './components/SplashScreen'
+import { OpeningContext } from './context/OpeningContext'
 import CursorSpotlight from './components/CursorSpotlight'
 import ScrollProgress from './components/ScrollProgress'
 import AvailabilityBanner from './components/AvailabilityBanner'
@@ -132,7 +133,7 @@ const FULL_SCREEN_ROUTES = new Set([
     '/lab/algorithms',
 ])
 
-function AppLayout({ children }) {
+function AppLayout({ children, navReady, logoRef }) {
     const { pathname } = useLocation()
     const isFullScreen = FULL_SCREEN_ROUTES.has(pathname)
     const headerRef = useRef(null)
@@ -154,7 +155,7 @@ function AppLayout({ children }) {
                 <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
                     <AvailabilityBanner />
                     <div className="pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
-                        <Navbar />
+                        <Navbar navReady={navReady} logoRef={logoRef} />
                     </div>
                 </div>
             )}
@@ -168,7 +169,9 @@ function AppLayout({ children }) {
 }
 
 AppLayout.propTypes = {
-    children: PropTypes.node.isRequired,
+    children:  PropTypes.node.isRequired,
+    navReady:  PropTypes.bool,
+    logoRef:   PropTypes.shape({ current: PropTypes.object }),
 }
 
 function AnimatedRoutes() {
@@ -222,6 +225,18 @@ function AnimatedRoutes() {
 function App() {
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
 
+    // ─── Opening sequence state machine ───────────────────────────────────────
+    const alreadySeen = typeof sessionStorage !== 'undefined'
+        ? !!sessionStorage.getItem('gky-splash-shown')
+        : true
+
+    const [openingState, setOpeningState] = useState(alreadySeen ? 'ready' : 'splash')
+    const [navReady, setNavReady]         = useState(alreadySeen)
+
+    // Ref forwarded through AppLayout → Navbar → logo <span>
+    // SplashScreen reads this to calculate travel target
+    const navLogoRef = useRef(null)
+
     // Listen for custom event to trigger command palette from Navbar or other components
     useEffect(() => {
         const handleOpenPalette = () => setIsPaletteOpen(true)
@@ -235,16 +250,36 @@ function App() {
         initializeAnalytics()
     }, [])
 
+    // ─── Splash done handler ───────────────────────────────────────────────────
+    // Called by SplashScreen when the portal logo begins fading out (at handoff).
+    // At this moment: portal logo is at the navbar logo position, opacity → 0.
+    // We show the navbar (navReady=true) and reveal the hero 300ms later.
+    // 300ms > SplashScreen's FADE_MS (220ms) so setMounted(false) fires before
+    // this component unmounts, preventing setState-on-unmounted warning.
+    const handleSplashDone = useCallback(() => {
+        setNavReady(true)
+        setTimeout(() => setOpeningState('ready'), 300)
+    }, [])
+
     return (
         <>
             <Router>
                 <ScrollProgress />
-                <CursorSpotlight />
+                {/* Cursor spotlight suppressed until interface is fully ready */}
+                {openingState === 'ready' && <CursorSpotlight />}
                 <ScrollToTop />
                 <AnalyticsRouteTracker />
                 <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
                 <RadialMenu />
                 <NetworkStatusBanner />
+
+                {/* Opening sequence — only on first visit */}
+                {openingState === 'splash' && (
+                    <SplashScreen
+                        onDone={handleSplashDone}
+                        navLogoRef={navLogoRef}
+                    />
+                )}
                 <Toaster
                     position="top-center"
                     reverseOrder={false}
@@ -286,9 +321,14 @@ function App() {
                     }}
                 />
                 <ErrorBoundary>
-                    <AppLayout>
-                        <AnimatedRoutes />
-                    </AppLayout>
+                    <OpeningContext.Provider value={openingState}>
+                        {/* inert during splash: prevents tab/focus into hidden content */}
+                        <div {...(openingState === 'splash' ? { inert: '' } : {})}>
+                            <AppLayout navReady={navReady} logoRef={navLogoRef}>
+                                <AnimatedRoutes />
+                            </AppLayout>
+                        </div>
+                    </OpeningContext.Provider>
                 </ErrorBoundary>
 
             </Router>

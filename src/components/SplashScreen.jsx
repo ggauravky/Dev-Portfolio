@@ -1,386 +1,190 @@
 // Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Premium Workspace Initialization Loading Experience
-// Source: https://github.com/ggauravky/Dev-Portfolio
+// Premium Opening Sequence — Single-logo portal animation
+//
+// Architecture:
+//   One motion.span lives in a position:fixed portal.
+//   Phase 1 — Fade in at screen center (large).
+//   Phase 2 — Measure navLogoRef position, animate x/y/scale to it.
+//   Phase 3 — Fade portal logo out; navbar logo (same position) becomes visible.
+//
+//   There is never more than ONE visible logo node.
+//   No layoutId. No crossfade. No swap.
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 
-// ─── Workspace initialization sequence ────────────────────────────────────────
-const INIT_STEPS = [
-    { id: 0, label: 'Initializing workspace',    duration: 520 },
-    { id: 1, label: 'Loading UI components',     duration: 480 },
-    { id: 2, label: 'Preparing projects',        duration: 440 },
-    { id: 3, label: 'Connecting GitHub',         duration: 400 },
-    { id: 4, label: 'Loading AI lab modules',    duration: 380 },
-    { id: 5, label: 'Optimizing interface',      duration: 360 },
-    { id: 6, label: 'Finalizing environment',    duration: 320 },
-    { id: 7, label: 'Ready',                     duration: 0   },
-]
+// ── Timing ──────────────────────────────────────────────────────────────────
+const PRESENT_MS  = 400   // hold at center (incl. 250ms fade-in + ~150ms still)
+const TRAVEL_MS   = 480   // logo travels from center to navbar
+const HANDOFF_MS  = 60    // pause after arrival before fading out
+const FADE_MS     = 220   // portal logo fade-out (must be < App.jsx onDone delay)
+const FALLBACK_MS = 3500  // hard safety timeout
 
-// ─── Ambient dot grid — static, zero repaints ─────────────────────────────────
-function AmbientGrid() {
-    return (
-        <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 overflow-hidden"
-            style={{
-                backgroundImage:
-                    'radial-gradient(circle, rgba(255,255,255,0.045) 1px, transparent 1px)',
-                backgroundSize: '36px 36px',
-            }}
-        />
-    )
+// Precision deceleration — no bounce, no overshoot
+const TRAVEL_EASE = [0.76, 0, 0.24, 1]
+
+// ── Session guard ────────────────────────────────────────────────────────────
+const KEY = 'gky-splash-shown'
+const hasSeenSplash = () => { try { return !!sessionStorage.getItem(KEY) } catch { return false } }
+const markSeenSplash = () => { try { sessionStorage.setItem(KEY, '1') } catch {} }
+
+// ── Wordmark style ───────────────────────────────────────────────────────────
+// Must produce identical typography rendering to the Navbar logo span:
+//   font-display (Plus Jakarta Sans), font-extrabold (800), uppercase, tracking-wider (0.05em)
+// Sizing: fluid clamp(42px, 10vw, 220px) occupying ~42-50% viewport width across screen sizes
+const WORDMARK_STYLE = {
+    fontFamily: 'var(--font-display, "Plus Jakarta Sans", "Inter", system-ui, sans-serif)',
+    fontWeight: 800,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    paddingLeft: '0.05em', // Optical compensation for trailing letter-spacing
+    color: '#ffffff',
+    lineHeight: 1,
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
+    fontSize: 'clamp(42px, 10vw, 220px)',
+    display: 'block',
 }
 
-// ─── Soft ambient glow blobs — GPU-composited, no repaints ────────────────────
-function AmbientBlobs() {
-    return (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div
-                className="absolute rounded-full"
-                style={{
-                    width: 480,
-                    height: 480,
-                    top: '15%',
-                    left: '5%',
-                    background: 'radial-gradient(circle, rgba(197,248,42,0.07) 0%, transparent 70%)',
-                    filter: 'blur(60px)',
-                }}
-            />
-            <div
-                className="absolute rounded-full"
-                style={{
-                    width: 360,
-                    height: 360,
-                    bottom: '10%',
-                    right: '5%',
-                    background: 'radial-gradient(circle, rgba(99,102,241,0.07) 0%, transparent 70%)',
-                    filter: 'blur(70px)',
-                }}
-            />
-        </div>
-    )
-}
+// ── Component ────────────────────────────────────────────────────────────────
+export default function SplashScreen({ onDone, navLogoRef }) {
+    const reducedMotion = useRef(
+        typeof window !== 'undefined'
+            ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            : false
+    ).current
 
-// ─── Animated GKY monogram ─────────────────────────────────────────────────────
-function Monogram() {
-    const prefersReducedMotion =
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    // Skip on reduced-motion or if already seen this session
+    const skip = reducedMotion || hasSeenSplash()
 
-    return (
-        <motion.div
-            className="relative mb-10 select-none"
-            initial={{ opacity: 0, scale: 0.8, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={
-                prefersReducedMotion
-                    ? { duration: 0.2 }
-                    : { type: 'spring', stiffness: 340, damping: 26 }
-            }
-        >
-            {/* Outer ring */}
-            <motion.div
-                className="absolute -inset-3 rounded-full"
-                style={{
-                    border: '1px solid rgba(197,248,42,0.18)',
-                    boxShadow: '0 0 32px rgba(197,248,42,0.06)',
-                }}
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
-            />
+    const logoRef  = useRef(null)
+    const doneRef  = useRef(false)
 
-            {/* Rotating conic sweep */}
-            {!prefersReducedMotion && (
-                <motion.div
-                    className="absolute -inset-1.5 rounded-full"
-                    style={{
-                        background:
-                            'conic-gradient(from 0deg, rgba(197,248,42,0.0) 0%, rgba(197,248,42,0.3) 30%, rgba(197,248,42,0.0) 60%)',
-                        willChange: 'transform',
-                    }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                />
-            )}
+    const [mounted, setMounted] = useState(!skip)
 
-            {/* Core monogram plate */}
-            <div
-                className="relative z-10 flex items-center justify-center rounded-full"
-                style={{
-                    width: 88,
-                    height: 88,
-                    background: 'linear-gradient(135deg, #0f1115 0%, #13161c 100%)',
-                    border: '1px solid rgba(197,248,42,0.22)',
-                    boxShadow: '0 0 0 1px rgba(255,255,255,0.04) inset',
-                }}
-            >
-                <span
-                    className="font-black"
-                    style={{
-                        fontSize: 24,
-                        color: '#c5f82a',
-                        textShadow: '0 0 20px rgba(197,248,42,0.45)',
-                        fontFamily: "'Inter', 'SF Pro Display', system-ui, sans-serif",
-                        letterSpacing: '0.02em',
-                    }}
-                >
-                    GKY
-                </span>
-            </div>
-        </motion.div>
-    )
-}
+    // Overlay opacity — 1 = solid obsidian, 0 = transparent
+    const [overlayOpacity, setOverlayOpacity] = useState(1)
 
-// ─── Name + role strip ────────────────────────────────────────────────────────
-function Identity() {
-    return (
-        <motion.div
-            className="text-center mb-8 select-none"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.28, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        >
-            <h1
-                className="text-white font-bold tracking-tight mb-1.5"
-                style={{
-                    fontSize: 'clamp(20px, 4vw, 30px)',
-                    fontFamily: "'Inter', system-ui, sans-serif",
-                    letterSpacing: '-0.02em',
-                }}
-            >
-                Gaurav Kumar Yadav
-            </h1>
-            <p
-                style={{
-                    fontSize: 11,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    color: 'rgba(255,255,255,0.25)',
-                    fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
-                }}
-            >
-                AI/ML · Full Stack · Developer
-            </p>
-        </motion.div>
-    )
-}
+    // All logo animation values driven by state → Framer Motion animate prop
+    const [logoAnimate, setLogoAnimate] = useState({
+        opacity: 0,
+        filter: 'blur(10px)',
+        x: 0,
+        y: 0,
+        scale: 1,
+    })
 
-// ─── Status bar + segmented dots + thin progress trace ────────────────────────
-function StatusBar({ stepIndex, totalSteps, label }) {
-    return (
-        <motion.div
-            className="w-full flex flex-col items-center gap-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.42, duration: 0.4 }}
-        >
-            {/* Segmented dots */}
-            <div className="flex items-center gap-1.5" aria-hidden="true">
-                {Array.from({ length: totalSteps - 1 }).map((_, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            width: i === stepIndex ? 20 : 5,
-                            height: 5,
-                            borderRadius: 99,
-                            background:
-                                i < stepIndex
-                                    ? '#c5f82a'
-                                    : i === stepIndex
-                                    ? 'rgba(197,248,42,0.65)'
-                                    : 'rgba(255,255,255,0.07)',
-                            transition: 'all 0.35s cubic-bezier(0.4,0,0.2,1)',
-                        }}
-                    />
-                ))}
-            </div>
-
-            {/* Thin progress trace */}
-            <div
-                className="relative overflow-hidden rounded-full"
-                style={{ width: 'min(220px, 58vw)', height: 1, background: 'rgba(255,255,255,0.06)' }}
-                aria-hidden="true"
-            >
-                <motion.div
-                    className="absolute left-0 top-0 h-full rounded-full"
-                    style={{
-                        background: 'linear-gradient(90deg, rgba(197,248,42,0.5) 0%, #c5f82a 100%)',
-                    }}
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${Math.round(((stepIndex + 1) / (totalSteps - 1)) * 100)}%` }}
-                    transition={{ duration: 0.38, ease: 'easeInOut' }}
-                />
-                {/* Sweep gleam */}
-                <motion.div
-                    className="absolute top-0 h-full"
-                    style={{
-                        width: 40,
-                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
-                    }}
-                    animate={{ left: ['-10%', '110%'] }}
-                    transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.4 }}
-                />
-            </div>
-
-            {/* Rotating status label */}
-            <AnimatePresence mode="wait">
-                <motion.p
-                    key={label}
-                    className="font-mono text-center"
-                    style={{
-                        fontSize: 11,
-                        color: 'rgba(197,248,42,0.65)',
-                        letterSpacing: '0.06em',
-                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                        minHeight: 18,
-                    }}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.2 }}
-                    aria-live="polite"
-                    aria-label={`Loading: ${label}`}
-                >
-                    <span style={{ color: 'rgba(255,255,255,0.15)', marginRight: 6 }}>›</span>
-                    {label}
-                    {label !== 'Ready' && (
-                        <motion.span
-                            aria-hidden="true"
-                            animate={{ opacity: [1, 0] }}
-                            transition={{ duration: 0.55, repeat: Infinity, repeatType: 'reverse' }}
-                        >
-                            _
-                        </motion.span>
-                    )}
-                </motion.p>
-            </AnimatePresence>
-        </motion.div>
-    )
-}
-
-StatusBar.propTypes = {
-    stepIndex: PropTypes.number.isRequired,
-    totalSteps: PropTypes.number.isRequired,
-    label: PropTypes.string.isRequired,
-}
-
-// ─── Main SplashScreen ────────────────────────────────────────────────────────
-export default function SplashScreen({ onDone }) {
-    const [stepIndex, setStepIndex] = useState(0)
-    const [visible, setVisible] = useState(true)
-    const doneCalledRef = useRef(false)
-
-    useEffect(() => {
-        let idx = 0
-        let t
-
-        const advance = () => {
-            if (idx < INIT_STEPS.length - 1) {
-                idx++
-                setStepIndex(idx)
-                const next = INIT_STEPS[idx]
-                if (next.duration > 0) {
-                    t = setTimeout(advance, next.duration)
-                } else {
-                    // "Ready" — brief hold then begin exit
-                    t = setTimeout(() => setVisible(false), 500)
-                }
-            }
-        }
-
-        t = setTimeout(advance, INIT_STEPS[0].duration)
-
-        // Hard safety fallback — always exit after 4s no matter what
-        const fallback = setTimeout(() => setVisible(false), 4000)
-
-        return () => {
-            clearTimeout(t)
-            clearTimeout(fallback)
-        }
-    }, [])
-
-    // Safety net: if AnimatePresence exit never fires, call onDone after exit starts
-    useEffect(() => {
-        if (!visible) {
-            const timer = setTimeout(() => {
-                if (!doneCalledRef.current) {
-                    doneCalledRef.current = true
-                    onDone()
-                }
-            }, 850)
-            return () => clearTimeout(timer)
-        }
-    }, [visible, onDone])
-
-    const handleExitComplete = () => {
-        if (!doneCalledRef.current) {
-            doneCalledRef.current = true
+    const callDone = useCallback(() => {
+        if (!doneRef.current) {
+            doneRef.current = true
+            markSeenSplash()
             onDone()
         }
-    }
+    }, [onDone])
 
-    const currentStep = INIT_STEPS[stepIndex]
+    useEffect(() => {
+        if (skip) { callDone(); return }
+
+        const ids = []
+        const schedule = (fn, ms) => { const id = setTimeout(fn, ms); ids.push(id) }
+
+        // Hard fallback — guarantees site is usable no matter what
+        schedule(callDone, FALLBACK_MS)
+
+        // ── Phase 1: Fade logo in at screen center ──
+        schedule(() => {
+            setLogoAnimate(p => ({ ...p, opacity: 1, filter: 'blur(0px)' }))
+        }, 16)
+
+        // ── Phase 2: Measure navbar logo position, begin travel ──
+        schedule(() => {
+            const el  = logoRef.current
+            const nav = navLogoRef?.current
+
+            if (!el || !nav) { callDone(); return }
+
+            const sr = el.getBoundingClientRect()
+            const nr = nav.getBoundingClientRect()
+
+            // Bail if elements have no dimensions (display:none, not mounted, etc.)
+            if (!sr.width || !nr.width) { callDone(); return }
+
+            // Transform: move splash logo center to navbar logo center, scale to match
+            const tx    = (nr.left + nr.width  / 2) - (sr.left + sr.width  / 2)
+            const ty    = (nr.top  + nr.height / 2) - (sr.top  + sr.height / 2)
+            const scale = nr.width / sr.width
+
+            setOverlayOpacity(0)                              // Start revealing the page
+            setLogoAnimate(p => ({ ...p, x: tx, y: ty, scale }))  // Logo starts traveling
+        }, PRESENT_MS)
+
+        // ── Phase 3: Handoff — fade portal logo, signal App to show navbar ──
+        schedule(() => {
+            setLogoAnimate(p => ({ ...p, opacity: 0 }))
+            callDone()  // App.jsx: navReady=true, then openingState='ready' after 300ms
+
+            // Unmount portal after fade completes (FADE_MS covers opacity animation)
+            schedule(() => setMounted(false), FADE_MS + 16)
+        }, PRESENT_MS + TRAVEL_MS + HANDOFF_MS)
+
+        return () => ids.forEach(clearTimeout)
+    }, [skip, navLogoRef, callDone])
+
+    if (!mounted) return null
 
     return (
-        <AnimatePresence onExitComplete={handleExitComplete}>
-            {visible && (
-                <motion.div
-                    key="splash"
-                    className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden select-none"
-                    style={{
-                        zIndex: 9999,
-                        background: 'linear-gradient(160deg, #080a0e 0%, #0b0d12 50%, #090c10 100%)',
+        <>
+            {/* ── Dark overlay — fades out while logo travels ── */}
+            <motion.div
+                aria-hidden="true"
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9999,
+                    background: '#080a0e',
+                    pointerEvents: 'none',
+                }}
+                animate={{ opacity: overlayOpacity }}
+                transition={{ duration: 0.38, ease: 'easeInOut' }}
+            />
+
+            {/* ── Single portal logo — the only visible identity element ── */}
+            <div
+                aria-hidden="true"
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 10000,
+                    pointerEvents: 'none',
+                }}
+            >
+                <motion.span
+                    ref={logoRef}
+                    style={WORDMARK_STYLE}
+                    animate={logoAnimate}
+                    transition={{
+                        // Fade in / fade out
+                        opacity: { duration: 0.2, ease: 'easeOut' },
+                        // Blur removal on entry
+                        filter:  { duration: 0.3, ease: 'easeOut' },
+                        // Precision travel to navbar
+                        x:     { duration: TRAVEL_MS / 1000, ease: TRAVEL_EASE },
+                        y:     { duration: TRAVEL_MS / 1000, ease: TRAVEL_EASE },
+                        scale: { duration: TRAVEL_MS / 1000, ease: TRAVEL_EASE },
                     }}
-                    initial={{ opacity: 1 }}
-                    exit={{ opacity: 0, scale: 1.025, filter: 'blur(5px)' }}
-                    transition={{ duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
-                    role="progressbar"
-                    aria-label="Loading portfolio workspace"
-                    aria-valuemin={0}
-                    aria-valuemax={INIT_STEPS.length - 1}
-                    aria-valuenow={stepIndex}
                 >
-                    <AmbientGrid />
-                    <AmbientBlobs />
-
-                    {/* Central content block */}
-                    <div
-                        className="relative z-10 flex flex-col items-center"
-                        style={{ width: 'min(320px, 90vw)' }}
-                    >
-                        <Monogram />
-                        <Identity />
-                        <StatusBar
-                            stepIndex={stepIndex}
-                            totalSteps={INIT_STEPS.length}
-                            label={currentStep.label}
-                        />
-                    </div>
-
-                    {/* Bottom-right version badge */}
-                    <motion.div
-                        className="absolute bottom-5 right-5 font-mono"
-                        style={{
-                            fontSize: 10,
-                            color: 'rgba(255,255,255,0.1)',
-                            letterSpacing: '0.1em',
-                        }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.65, duration: 0.5 }}
-                        aria-hidden="true"
-                    >
-                        Portfolio v2026
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                    Gaurav
+                </motion.span>
+            </div>
+        </>
     )
 }
 
 SplashScreen.propTypes = {
-    onDone: PropTypes.func.isRequired,
+    onDone:     PropTypes.func.isRequired,
+    navLogoRef: PropTypes.shape({ current: PropTypes.object }),
 }

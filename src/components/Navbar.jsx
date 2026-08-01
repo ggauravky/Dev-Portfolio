@@ -6,7 +6,7 @@
 
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 
@@ -112,7 +112,7 @@ const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
     </div>
 )
 
-function Navbar() {
+function Navbar({ navReady = true, logoRef }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
@@ -180,7 +180,14 @@ function Navbar() {
 
     return (
         <>
-            <nav className={`w-[94%] max-w-7xl mx-auto z-50 transition-all duration-500`}>
+            <nav
+                className={`w-[94%] max-w-7xl mx-auto z-50 transition-all duration-500`}
+                style={{
+                    opacity: navReady ? 1 : 0,
+                    pointerEvents: navReady ? undefined : 'none',
+                    transition: navReady ? 'opacity 0.35s cubic-bezier(0.22,1,0.36,1)' : 'none',
+                }}
+            >
                 <div className={`px-5 py-3 rounded-full border transition-all duration-300 backdrop-blur-md ${
                     scrolled
                         ? 'shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95 max-w-6xl mx-auto'
@@ -188,16 +195,38 @@ function Navbar() {
                 }`}>
                     <div className="flex items-center justify-between">
 
-                        {/* Logo */}
+                        {/* Logo — ref used by SplashScreen to measure final position */}
                         <Link
                             to="/"
                             onClick={closeMenu}
                             className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-3 xl:mr-6 leading-none"
                         >
-                            <span className="text-white group-hover:text-toxic transition-colors duration-300 leading-none flex items-center">
-                                <span className="hidden sm:inline leading-none">Gaurav</span>
-                                <span className="sm:hidden leading-none">Gaurav</span>
+                            {/* Plain span — SplashScreen measures this to know where to travel */}
+                            <span
+                                ref={logoRef}
+                                className="text-white group-hover:text-toxic transition-colors duration-300 leading-none"
+                            >
+                                Gaurav
                             </span>
+
+                            {/* Phosphor pulse — fires once when wordmark arrives from splash */}
+                            <AnimatePresence>
+                                {navReady && (
+                                    <motion.div
+                                        key="phosphor-glow"
+                                        className="absolute pointer-events-none"
+                                        style={{
+                                            inset: -40,
+                                            borderRadius: '50%',
+                                            background: 'radial-gradient(circle, rgba(197,248,42,0.11) 0%, transparent 70%)',
+                                        }}
+                                        initial={{ opacity: 0, scale: 0.6 }}
+                                        animate={{ opacity: [0, 0.7, 0], scale: [0.6, 1.1, 1.4] }}
+                                        transition={{ duration: 0.45, ease: 'easeOut' }}
+                                    />
+                                )}
+                            </AnimatePresence>
+
                             <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                         </Link>
 

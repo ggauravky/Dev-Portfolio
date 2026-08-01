@@ -17,9 +17,23 @@ import LazyImage from '../components/LazyImage'
 import ScrollReveal from '../components/ScrollReveal'
 import TechIcon from '../components/TechIcon'
 import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
+import { useOpeningState } from '../context/OpeningContext'
 
 function Home() {
     const profileTilt = use3DTilt({ maxTilt: 10, glint: true })
+    const openingState = useOpeningState()
+    // Hero reveals once the interface is fully ready
+    const heroReady = openingState === 'ready'
+
+    // Shared hero group animation — subtle 8px rise, no blur, no scale
+    const heroGroupVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: (delay) => ({
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.52, ease: [0.22, 1, 0.36, 1], delay }
+        }),
+    }
 
     const handleCtaHover = (e, active) => {
         const rect = e.currentTarget.getBoundingClientRect()
@@ -105,30 +119,47 @@ function Home() {
                     <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
                         {/* Left Content */}
                         <div className="text-center lg:text-left space-y-6 order-2 lg:order-1">
-                            {/* Welcome Badge */}
-                            <span className="inline-flex items-center gap-2 text-toxic text-xs sm:text-sm font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15 backdrop-blur-sm">
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-toxic opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-toxic"></span>
-                                </span>{' '}
-                                Welcome to my portfolio
-                            </span>
-                            
-                            {/* Name */}
-                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter">
-                                <span className="block text-white">
-                                    Gaurav Kumar
-                                </span>
-                                <span className="block text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">
-                                    Yadav
-                                </span>
-                                <span className="block mt-4 text-xs sm:text-sm font-mono font-bold tracking-widest uppercase text-toxic">
-                                    // AI/ML & Web Developer
-                                </span>
-                            </h1>
 
-                            {/* Role Tags - Compact inline pills */}
-                            <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
+                            {/* ─── Hero Group A: Badge + Name ─────────────────── */}
+                            <motion.div
+                                variants={heroGroupVariants}
+                                initial="hidden"
+                                animate={heroReady ? 'visible' : 'hidden'}
+                                custom={0}
+                            >
+                                {/* Welcome Badge */}
+                                <span className="inline-flex items-center gap-2 text-toxic text-xs sm:text-sm font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15 backdrop-blur-sm mb-6 block w-fit mx-auto lg:mx-0">
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-toxic opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-toxic"></span>
+                                    </span>{' '}
+                                    Welcome to my portfolio
+                                </span>
+                                
+                                {/* Name */}
+                                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter">
+                                    <span className="block text-white">
+                                        Gaurav Kumar
+                                    </span>
+                                    <span className="block text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">
+                                        Yadav
+                                    </span>
+                                    <span className="block mt-4 text-xs sm:text-sm font-mono font-bold tracking-widest uppercase text-toxic">
+                                        // AI/ML & Web Developer
+                                    </span>
+                                </h1>
+                            </motion.div>
+
+                            {/* ─── Hero Group B: Role tags + Status ──────────── */}
+                            <motion.div
+                                variants={heroGroupVariants}
+                                initial="hidden"
+                                animate={heroReady ? 'visible' : 'hidden'}
+                                custom={0.08}
+                                className="space-y-4"
+                            >
+                                {/* Role Tags - Compact inline pills */}
+                                <div className="flex flex-wrap gap-2.5 justify-center lg:justify-start">
                                 {/* Python Developer */}
                                 <div className="group flex items-center gap-2 px-3 py-2 bg-obsidian-card border border-obsidian-border rounded-md text-zinc-300 font-mono text-xs hover:border-toxic hover:text-white transition-all duration-300 cursor-default">
                                     <svg className="w-4 h-4 shrink-0 group-hover:scale-110 transition-transform duration-300" viewBox="0 0 24 24" aria-hidden="true">
@@ -154,10 +185,10 @@ function Home() {
                                     </svg>
                                     <span className="font-semibold">Full Stack</span>
                                 </div>
-                            </div>
+                                </div>
 
-                            {/* Status Info - Compact */}
-                            <div className="flex flex-col gap-2 pt-2">
+                                {/* Status Info - Compact */}
+                                <div className="flex flex-col gap-2 pt-2">
                                 <div className="inline-flex items-center justify-center lg:justify-start gap-2 text-zinc-400 font-mono text-xs">
                                     <svg className="w-3.5 h-3.5 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>
                                     <span>BCA at <span className="text-white font-semibold">BBDU Lucknow, India</span></span>
@@ -167,10 +198,18 @@ function Home() {
                                     <svg className="w-3.5 h-3.5 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.82m5.84-2.56a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.82m2.56 5.84a14.98 14.98 0 00-2.58-5.96m0 0a14.98 14.98 0 00-5.96-2.58" /></svg>
                                     <span className="text-toxic font-bold">Open for Internships & Freelance</span>
                                 </div>
-                            </div>
+                                </div>
+                            </motion.div>
 
-                            {/* CTA Buttons */}
-                            <div className="flex flex-wrap gap-3 pt-4 justify-center lg:justify-start">
+                            {/* ─── Hero Group C: CTAs + Divider ───────────────── */}
+                            <motion.div
+                                variants={heroGroupVariants}
+                                initial="hidden"
+                                animate={heroReady ? 'visible' : 'hidden'}
+                                custom={0.16}
+                            >
+                                {/* CTA Buttons */}
+                                <div className="flex flex-wrap gap-3 pt-4 justify-center lg:justify-start">
                                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}>
                                     <Link 
                                         to="/services" 
@@ -210,17 +249,25 @@ function Home() {
                                         </span>
                                     </Link>
                                 </motion.div>
-                            </div>
+                                </div>
 
-                            {/* Divider line after buttons */}
-                            <div className="pt-4 flex justify-center lg:justify-start">
-                                <div className="w-full max-w-xl h-px bg-gradient-to-r from-toxic/30 via-zinc-800 to-transparent"></div>
-                            </div>
+                                {/* Divider line after buttons */}
+                                <div className="pt-4 flex justify-center lg:justify-start">
+                                    <div className="w-full max-w-xl h-px bg-gradient-to-r from-toxic/30 via-zinc-800 to-transparent"></div>
+                                </div>
+                            </motion.div>
                         </div>
 
                         {/* Right - Profile Image (Physical 3D Object with Specular Glint) */}
-                        <div className="flex justify-center items-center order-1 lg:order-2 perspective-1000">
+                        <motion.div
+                            className="flex justify-center items-center order-1 lg:order-2 perspective-1000"
+                            variants={heroGroupVariants}
+                            initial="hidden"
+                            animate={heroReady ? 'visible' : 'hidden'}
+                            custom={0.22}
+                        >
                             <motion.div 
+
                                 ref={profileTilt.ref}
                                 onMouseMove={profileTilt.handleMouseMove}
                                 onMouseEnter={profileTilt.handleMouseEnter}
@@ -268,7 +315,7 @@ function Home() {
                                     </div>
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
