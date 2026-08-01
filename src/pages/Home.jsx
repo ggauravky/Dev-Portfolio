@@ -558,7 +558,7 @@ function Home() {
                                             Code
                                         </a>
                                         <Link
-                                            to={`/project/${project.slug}`}
+                                            to={`/projects/${project.slug}`}
                                             className="flex-1 inline-flex items-center justify-center gap-1.5 bg-toxic text-black font-bold px-3 py-2 rounded-full hover:bg-white transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono text-center"
                                         >
                                             Details
