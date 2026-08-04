@@ -609,7 +609,257 @@ export const projectsData = [
             "Database indexing on key relational columns is essential for preventing sluggish feed query times",
             "RSC data fetching simplifies state management, but client components are still needed for interactive micro-animations"
         ]
+    },
+    {
+        id: 21,
+        slug: "rag-ai-teaching-assistant",
+        featured: true,
+        title: "RAG-Based AI Teaching Assistant",
+        description: "A high-performance Retrieval-Augmented Generation (RAG) system built specifically for video course lecture processing. Turns long video lectures into an intelligent, queryable AI knowledge base delivering grounded explanations with exact video numbers, titles, and precise timestamps (MM:SS).",
+        techStack: ["Python", "OpenAI Whisper", "Google Gemini API", "Ollama", "Scikit-Learn", "Pandas", "Joblib", "FFmpeg"],
+        categories: ["AI/ML", "Python"],
+        github: "https://github.com/ggauravky/RAG-based-Al-Teaching",
+        demo: "#",
+        image: "/images/projects/rag2.png",
+        screenshots: [
+            "/images/projects/rag1.png",
+            "/images/projects/rag2.png"
+        ],
+        problem: "Students watching long video lecture courses spend hours searching through dozens of video files to find specific concepts, formulas, or explanations. Traditional video search lacks semantic understanding, keyword search fails on speech variations, and standard LLMs hallucinate inaccurate details without exact timestamp references to course material.",
+        solution: "Engineered RAG-Based AI Teaching Assistant, a high-performance Retrieval-Augmented Generation (RAG) system built specifically for video course lecture processing. It turns long video lectures into an intelligent, queryable AI knowledge base. Students can ask natural language questions about any course topic and instantly receive grounded explanations complete with exact video numbers, titles, and precise timestamps (MM:SS).",
+        architecture: "Automated Audio Pipeline (FFmpeg) ➔ Speech-to-Text Transcription & Timestamping (OpenAI Whisper Large-v2) ➔ Custom 5-Chunk Context Merging (merge_chunks.py) ➔ Multilingual Embeddings (BGE-M3 via Ollama API) ➔ Vector Storage (embeddings.joblib via Pandas) ➔ High-speed Similarity Retrieval (Scikit-Learn Cosine Similarity) ➔ Context-Grounded Reasoning & Timestamped Response (Google Gemini 2.5 Flash API).",
+        diagrams: {
+            system: `graph TD
+    Videos[Course Videos .mp4 / .webm] -->|FFmpeg Pipeline| Audio[MP3 Audio Files]
+    Audio -->|Whisper Large-v2| Subtitles[Timestamped Subtitle Chunks]
+    Subtitles -->|5-Chunk Merger| Context[Rich Context Chunks ~50 words]
+    Context -->|BGE-M3 via Ollama| Embeddings[(Vector Storage embeddings.joblib)]
+    User[Student Query] -->|BGE-M3 Vectorizer| QueryVec[Query Vector]
+    QueryVec -->|Cosine Similarity| TopK[Top-K Candidate Lecture Chunks]
+    TopK -->|Context + Prompt| Gemini[Google Gemini 2.5 Flash API]
+    Gemini -->|Timestamped Answer| Student[Grounded Answer with MM:SS Timestamps]`,
+            flow: `sequenceDiagram
+    autonumber
+    Student->>RAG System: Ask Question ("Explain Backpropagation step-by-step")
+    RAG System->>BGE-M3 (Ollama): Generate 1024-dim Vector Embedding for Query
+    BGE-M3 (Ollama)-->>RAG System: Return Query Vector
+    RAG System->>Scikit-Learn: Compute Cosine Similarity against embeddings.joblib
+    Scikit-Learn-->>RAG System: Return Top Matching Video Lecture Chunks with Timestamps
+    RAG System->>Google Gemini 2.5 Flash: Send Context + Video Timestamps + Student Query
+    Google Gemini 2.5 Flash-->>Student: Return Grounded Explanation with Video #, Title & Timestamp (MM:SS)`
+        },
+        keyDecisions: [
+            "Automated Audio Pipeline: Extracts MP3 audio from .webm/.mp4 course videos using FFmpeg for lightweight processing",
+            "Speech-to-Text Transcription: Uses OpenAI Whisper (Large-v2) to translate & transcribe course audio into timestamped subtitle chunks",
+            "Smart 5-Chunk Merging: Merges 5 small ~10-word transcript segments into 1 rich context chunk (~50 words), dramatically boosting vector retrieval accuracy",
+            "Dense Multilingual Vector Embeddings: Uses Ollama's bge-m3 model to generate 1024-dim dense vector embeddings stored in embeddings.joblib",
+            "Lightning-Fast Similarity Search: Employs scikit-learn Cosine Similarity to find top matching lecture chunks in milliseconds",
+            "Context-Grounded LLM Answers: Integrates Google Gemini 2.5 Flash API to deliver polite, structured, timestamped answers directly to the student"
+        ],
+        lessonsLearned: [
+            "Single-sentence transcript chunks (~10 words) lack sufficient context for vector search; merging 5 adjacent chunks creates optimal context windows (~50 words) for semantic RAG",
+            "Local vector serialization with Joblib and Pandas DataFrames offers sub-millisecond retrieval speeds for course-level lecture datasets",
+            "Prompt engineering requiring explicit timestamp grounding in Gemini prevents model hallucination and forces strict adherence to video course timestamps"
+        ]
+    },
+    {
+        id: 22,
+        slug: "mern-linkedin-clone",
+        featured: true,
+        title: "LinkedIn Clone (MERN Stack)",
+        description: "Comprehensive professional networking platform built with the MERN stack. Features secure JWT authentication, user profile setup, connection requests, rich feed posts with image attachments, real-time Socket.io notifications, Mailtrap email delivery, Zod schema validation, AWS S3 image storage, and analytics tracking.",
+        techStack: ["React", "Node.js", "Express", "MongoDB", "Mongoose", "JWT", "Socket.io", "Redux", "Mailtrap", "AWS S3", "Zod", "Tailwind CSS"],
+        categories: ["Full Stack"],
+        github: "https://github.com/ggauravky/MERN-LinkedIn-Clone",
+        demo: "#",
+        image: "/images/projects/linkedin-clone.png",
+        screenshots: [
+            "/images/projects/linkedin-clone.png"
+        ],
+        problem: "Building a professional networking platform requires handling complex multi-user interactions—ranging from asynchronous connection management to real-time notification streams, secure media uploads, schema validation across form inputs, and transactional email notifications—without compromising speed or UI responsiveness.",
+        solution: "Engineered a production-ready MERN LinkedIn Clone. Users can build rich profiles (banner, avatar, work history, skills), connect with professionals via connection request pipelines, publish image-rich feed posts, interact through likes & comments, receive instant Socket.io and Mailtrap email alerts, and track engagement metrics on a unified dashboard.",
+        architecture: "React SPA with Redux State Management ↔ Express REST API with JWT Auth & Socket.io WebSockets ↔ MongoDB Atlas via Mongoose ORM. Media assets stored on AWS S3, form validation handled via Zod, and transactional email alerts delivered via Mailtrap.",
+        diagrams: {
+            system: `graph TD
+    Client[React + Redux Client] -->|REST API & JWT| Gateway[Express API Gateway]
+    Client -->|WebSockets| Socket[Socket.io Real-Time Engine]
+    Gateway -->|ORM Pipeline| DB[(MongoDB Atlas)]
+    Gateway -->|Media Storage| S3[AWS S3 Cloud Bucket]
+    Gateway -->|Email Pipeline| Mail[Mailtrap Email Platform]
+    Gateway -->|Schema Guard| Zod[Zod Input Validation]`,
+            flow: `sequenceDiagram
+    autonumber
+    UserA->>React Client: Send Connection Request to UserB
+    React Client->>Express API: POST /api/connections/request (JWT Token)
+    Express API->>Zod: Validate Request Payload
+    Express API->>MongoDB: Create Connection Record (Status: Pending)
+    Express API->>Socket.io: Dispatch Real-Time Notification to UserB
+    Express API->>Mailtrap: Queue & Send Connection Alert Email
+    Socket.io-->>UserB: Show Live Notification Badge
+    Mailtrap-->>UserB: Send Email Notification`
+        },
+        keyDecisions: [
+            "JWT Session Authentication: Multi-tier token validation securing user routes and session state",
+            "Dynamic Profile Builder: Custom profile editing supporting banner uploads, avatar cropping, work experience, education, and skills tags",
+            "Connection Request Lifecycle: Complete workflow for sending, accepting, rejecting, and managing professional connections",
+            "Rich Feed & Media Posts: Create and interact with text and image posts, powered by likes, comments, and engagement tracking",
+            "Real-Time & Email Notifications: Instant in-app alerts via Socket.io combined with transactional email delivery via Mailtrap",
+            "Zod Validation & Global Error Handling: Strict schema validation across form inputs preventing malformed requests",
+            "AWS S3 Storage Integration: Secure cloud storage for high-resolution profile avatars and post attachments"
+        ],
+        lessonsLearned: [
+            "WebSocket connections need heartbeat mechanisms and fallback polling to gracefully handle mobile network reconnects",
+            "Zod validation on both frontend forms and backend controllers prevents silent data corruption across complex relational schemas",
+            "AWS S3 presigned URLs simplify direct client-to-cloud uploads while keeping storage keys secure"
+        ]
+    },
+    {
+        id: 23,
+        slug: "spotify-clone",
+        featured: true,
+        title: "Spotify Clone",
+        description: "Full-featured audio streaming and social music platform built with React, Node.js, Express, MongoDB, Socket.io, Cloudinary CDN, and Redux. Includes custom audio playback controls, queue management, live multi-user listening activity tracking, built-in real-time chat, and an admin analytics dashboard.",
+        techStack: ["React", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "Cloudinary", "Redux", "JWT", "Tailwind CSS"],
+        categories: ["Full Stack"],
+        github: "https://github.com/ggauravky/Spotify-clone",
+        demo: "#",
+        image: "/images/projects/spotify-clone.png",
+        screenshots: [
+            "/images/projects/spotify-clone.png"
+        ],
+        problem: "Standard web audio players lack synchronization between multi-user social features and low-latency playback controls. Building a music streaming service requires smooth track transitions, custom audio buffering, real-time friend activity feeds ('listening now'), and high-speed audio delivery without UI lag.",
+        solution: "Architected a full-stack Spotify Clone with custom-built HTML5 audio playback engines. Users can play, pause, seek, loop, adjust volume, and auto-play queued tracks. Features real-time multi-user chat, live friend listening activity streams via WebSockets, Cloudinary audio/image CDN delivery, and an admin dashboard tracking total songs and user interactions.",
+        architecture: "React Client with Redux Audio State ↔ Express API with JWT Auth & Socket.io ↔ MongoDB Atlas. High-bitrate audio tracks and cover art hosted on Cloudinary CDN for instant streaming.",
+        diagrams: {
+            system: `graph TD
+    Client[React SPA + Redux Audio Engine] -->|Stream Requests| CDN[Cloudinary Audio & Image CDN]
+    Client -->|REST API| API[Express API Gateway]
+    Client -->|Live Activity & Chat| Socket[Socket.io WebSocket Server]
+    API -->|Data Modeling| DB[(MongoDB Atlas)]
+    Socket -->|Broadcast Stream| Friends[Connected Friends Activity Feed]`,
+            flow: `sequenceDiagram
+    autonumber
+    User->>React Audio Engine: Select Song & Play
+    React Audio Engine->>Cloudinary CDN: Stream Audio Track & Album Art
+    React Audio Engine->>Socket.io: Broadcast "User is listening to [Track Name]"
+    Socket.io-->>Connected Friends: Update Real-time Friend Activity Bar
+    React Audio Engine->>MongoDB: Log Track Play Interaction Count`
+        },
+        keyDecisions: [
+            "Custom Audio Playback Engine: Handcrafted playback controls (play/pause, seek slider, volume control, track skip, shuffle, loop) without external player libraries",
+            "Smart Track Queue System: Sequential queue execution that automatically advances tracks until queue depletion",
+            "Real-Time Friend Activity & Chat: Live WebSockets broadcasting current playing tracks and enabling instant messaging between listeners",
+            "Admin Analytics Dashboard: Metrics monitoring total songs, play counts, active users, and system interaction data",
+            "Cloudinary Media CDN: Distributed audio and image hosting ensuring fast buffer-free playback across devices"
+        ],
+        lessonsLearned: [
+            "Custom HTML5 Audio API state management requires strict sync between DOM audio elements and Redux store playback time",
+            "Cloudinary audio streaming requires proper MIME header configuration to allow fast byte-range seeking",
+            "WebSocket payload optimization is critical when broadcasting real-time playback timestamps across active connections"
+        ]
+    },
+    {
+        id: 24,
+        slug: "kanoon-mate",
+        featured: true,
+        title: "Kanoon-Mate AI Legal Assistance Platform",
+        description: "An end-to-end, production-ready legal AI platform designed to break down legal barriers for Indian citizens. Features Multi-Format OCR, Google Gemini 2.5 Flash AI, Bharatiya Nyaya Sanhita (BNS) law mapping, Voice Dictation/Read-Aloud, Automated Deadline Tracking, and Emergency Legal Helpline Hub.",
+        techStack: ["React", "Vite", "Tailwind CSS", "Framer Motion", "Google Gemini API", "Express.js", "Node.js", "MongoDB", "Tesseract.js", "PDF-Parse", "Web Speech API"],
+        categories: ["AI/ML", "Full Stack"],
+        github: "https://github.com/ggauravky/Kanoon-Mate-HackethonProject",
+        demo: "https://realkanoonmate.vercel.app/",
+        image: "/images/projects/kanoon1.png",
+        screenshots: [
+            "/images/projects/kanoon1.png",
+            "/images/projects/kanoon2.png",
+            "/images/projects/kanoon3.png"
+        ],
+        problem: "Over 85% of Indian citizens struggle to read legal notices, court summons, rent agreements, or FIR copies due to archaic legal terminology, language barriers, and dense formatting—leading to missed response deadlines, fear, and lack of legal awareness.",
+        solution: "Engineered Kanoon-Mate, an intelligent legal AI platform that ingests digital PDFs or scanned document images via Multi-Format OCR, uses Google Gemini 2.5 Flash with strict JSON Schema output to generate plain-language summaries in Hindi & English, maps statutory Indian laws (BNS, BNSS, BSA, Sec 138 NI Act, Model Tenancy Act), provides color-coded risk assessment (Low, Medium, High), tracks court response deadlines automatically, and offers natural voice dictation and text-to-speech audio controls.",
+        architecture: "React SPA with Framer Motion & Tailwind CSS ↔ Express REST API Gateway ↔ Google Gemini 2.5 Flash AI & Tesseract.js / PDF-Parse OCR Pipeline ↔ MongoDB Atlas (Users, Documents & Cached AI Analysis). Web Speech API handles browser-native voice dictation and audio synthesis.",
+        diagrams: {
+            system: `graph TD
+    Client[React + Tailwind SPA] -->|PDF / Image Upload| Gateway[Express REST API Gateway]
+    Gateway -->|Digital PDF Text| PDF[PDF-Parse Extractor]
+    Gateway -->|Image OCR| Tess[Tesseract.js Engine]
+    PDF & Tess -->|Sanitized Document Text| Gemini[Google Gemini 2.5 Flash Mode]
+    Gemini -->|Structured JSON Analysis| DB[(MongoDB Atlas Caching)]
+    Client -->|Voice Dictation / TTS| Speech[Web Speech API Native Browser]
+    Gateway -->|Emergency Helplines| Directory[Legal Aid & Helpline Hub]`,
+            flow: `sequenceDiagram
+    autonumber
+    User->>React App: Upload Notice / Summons Document (PDF or Image)
+    React App->>Express API: POST /api/documents/analyze (Multipart Form)
+    Express API->>PDF-Parse / Tesseract: Extract & Normalization Pipeline
+    Express API->>Google Gemini 2.5 Flash: Request Structured JSON (Summary, BNS Laws, Risk Level, Dates)
+    Google Gemini 2.5 Flash-->>Express API: Return Grounded Analysis JSON Schema
+    Express API->>MongoDB: Cache Analysis Payload
+    Express API-->>React App: Render Plain Summary, BNS Law Cards, Deadline Timeline & TTS Audio Bar`
+        },
+        keyDecisions: [
+            "Multi-Format OCR Engine: Dual-pipeline supporting PDF-Parse for digital PDFs and Tesseract.js for scanned document images (up to 20MB)",
+            "Gemini 2.5 Flash JSON Schema Output: Enforces strict structured output modes for plain-language summaries, statutory law mapping, and risk ratings",
+            "Statutory Indian Law Mapping: Automated section citation across Bharatiya Nyaya Sanhita (BNS), BNSS, BSA, Sec 138 NI Act, and Model Tenancy Act",
+            "Risk & Urgency Assessment: Color-coded risk badges (Low, Medium, High) paired with deadline timeline alerts (Red alert when <=5 days remaining)",
+            "Voice Accessibility: Browser-native Speech-to-Text dictation in English (en-IN) & Hindi (hi-IN) plus natural Text-to-Speech audio controls (Play, Pause, Stop, Speed 0.75x-1.5x)",
+            "Emergency Legal Help Hub: Quick-dial helpline integration for NALSA (15100), Cyber Crime (1930), Women Helpline (1091), and Consumer Forum (1915)"
+        ],
+        lessonsLearned: [
+            "MongoDB Atlas response caching for identical document hashes reduced LLM inference costs by over 70% during high-traffic hackathon testing",
+            "Combining client-side PDF parsing with server-side fallback OCR ensures high accuracy across degraded scanned documents",
+            "Multilingual Web Speech API integration significantly improves accessibility for low-literacy users reading legal documents"
+        ]
+    },
+    {
+        id: 25,
+        slug: "smart-lms",
+        featured: true,
+        title: "Smart LMS (SaaS Platform)",
+        description: "Full-stack SaaS Learning Management System built with React, Redux Toolkit, Tailwind CSS, Node.js, Express, MongoDB, Google OAuth 2.0, Razorpay payment gateway, and Gemini AI-powered smart search.",
+        techStack: ["React", "Tailwind CSS", "Redux Toolkit", "Node.js", "Express", "MongoDB", "Mongoose", "Google OAuth 2.0", "Razorpay", "Google Gemini API"],
+        categories: ["Full Stack", "AI/ML"],
+        github: "https://github.com/ggauravky/smart-lms-mern",
+        demo: "#",
+        image: "/images/projects/smart-lms.png",
+        screenshots: [
+            "/images/projects/smart-lms.png"
+        ],
+        problem: "Traditional online course management systems suffer from rigid search, complex checkout flows, fragmented student/instructor management, and lack of AI-assisted course exploration.",
+        solution: "Engineered Smart LMS, a production-level SaaS e-learning platform. Instructors can publish and manage courses while students browse with Gemini AI-powered smart search, authenticate securely via Google OAuth 2.0, purchase enrollments through Razorpay payment gateway, and manage learning progress on personalized dashboards.",
+        architecture: "React Client with Redux Toolkit ↔ Express REST API Gateway ↔ MongoDB Atlas via Mongoose ORM. Integrated Razorpay Webhooks for secure payment processing, Google OAuth 2.0 for single sign-on, and Gemini AI for intelligent course semantic search.",
+        diagrams: {
+            system: `graph TD
+    Client[React + Redux Toolkit SPA] -->|Auth & Routing| OAuth[Google OAuth 2.0]
+    Client -->|Course Search| Gemini[Gemini AI Smart Search]
+    Client -->|Checkout Flow| Razorpay[Razorpay Payment Gateway]
+    Client -->|REST API Requests| Gateway[Express API Gateway]
+    Gateway -->|ORM Data Sync| DB[(MongoDB Atlas)]
+    Razorpay -->|Payment Webhooks| Gateway`,
+            flow: `sequenceDiagram
+    autonumber
+    Student->>React Client: Select Course & Click Enroll
+    React Client->>Razorpay: Initialize Checkout Session
+    Razorpay-->>Student: Present Secure Payment Modal
+    Student->>Razorpay: Complete Payment
+    Razorpay->>Express API: Dispatch Payment Webhook Signature
+    Express API->>MongoDB: Grant Student Course Access & Update Instructor Revenue
+    Express API-->>React Client: Redirect to Student Learning Dashboard`
+        },
+        keyDecisions: [
+            "Gemini AI Smart Search: Semantic course search allowing students to find courses based on concept descriptions rather than exact titles",
+            "Google OAuth 2.0 Authentication: Seamless single sign-on onboarding for students and instructors",
+            "Razorpay Payment Gateway: Secure checkout workflow with webhook verification for automated course enrollment",
+            "Redux Toolkit State Management: Centralized store managing course catalog, cart, user session, and dashboard metrics",
+            "Dual Student & Instructor Dashboards: Dedicated analytics, course authoring tools, and enrollment tracking panels"
+        ],
+        lessonsLearned: [
+            "Razorpay webhook signature verification is mandatory to prevent unauthorized course access via spoofed client calls",
+            "Redux Toolkit query caching prevents duplicate REST API requests when switching between instructor and student views",
+            "AI-assisted search indexing drastically improves course discoverability compared to standard SQL/MongoDB regex search"
+        ]
     }
 ]
 
 export const projectCategories = ['All', 'Full Stack', 'AI/ML', 'Frontend', 'Python']
+
+
