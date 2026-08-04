@@ -11,6 +11,68 @@ import { projectsData } from '../data/projectsData'
 import LazyImage from '../components/LazyImage'
 import ScrollReveal from '../components/ScrollReveal'
 
+function ProjectTeam({ team, isCollaborative }) {
+    if (!isCollaborative || !Array.isArray(team) || team.length === 0) {
+        return null
+    }
+
+    return (
+        <ScrollReveal>
+            <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
+                <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-6">
+                        <svg className="w-7 h-7 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                        <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white">Project Team</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {team.map((member, index) => (
+                            <div
+                                key={index}
+                                className="flex items-center justify-between gap-4 p-4 bg-obsidian/60 border border-obsidian-border/80 rounded-lg hover:border-toxic/30 transition-all duration-300 group"
+                            >
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                    <div className="w-9 h-9 rounded-full bg-obsidian-card border border-obsidian-border flex items-center justify-center text-zinc-400 group-hover:text-toxic group-hover:border-toxic/30 transition-colors shrink-0">
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                        </svg>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="text-sm font-bold text-white group-hover:text-toxic transition-colors truncate">
+                                            {member.name}
+                                        </h3>
+                                        <p className="text-xs text-zinc-400 font-mono truncate">
+                                            {member.role}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {member.portfolio && (
+                                    <a
+                                        href={member.portfolio}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={`View ${member.name}'s Portfolio`}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-obsidian-card border border-obsidian-border hover:border-toxic text-zinc-300 hover:text-white rounded-md text-xs font-mono transition-all shrink-0 focus:outline-none focus:ring-2 focus:ring-toxic/40"
+                                    >
+                                        <span>Portfolio</span>
+                                        <svg className="w-3 h-3 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                        </svg>
+                                    </a>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </ScrollReveal>
+    )
+}
+
 function ProjectDetail() {
     const { slug } = useParams()
     const navigate = useNavigate()
@@ -168,6 +230,9 @@ function ProjectDetail() {
 
                 {/* ── Case Study Sections ── */}
                 <div className="space-y-8">
+                    {/* Project Team (Collaborative Projects) */}
+                    <ProjectTeam team={project.team} isCollaborative={project.isCollaborative} />
+
                     {/* Problem Statement */}
                     <ScrollReveal>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">

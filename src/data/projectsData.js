@@ -11,6 +11,24 @@ export const projectsData = [
     {
         id: 1,
         slug: "smartmess",
+        isCollaborative: true,
+        team: [
+            {
+                name: "Gaurav Kumar Yadav",
+                role: "Full Stack Developer",
+                portfolio: "https://ggauravky.vercel.app/"
+            },
+            {
+                name: "Nikhil Aggrahari",
+                role: "Backend Developer",
+                portfolio: "https://nikhilxagr.vercel.app/"
+            },
+            {
+                name: "Devansh Yadav",
+                role: "Frontend Developer",
+                portfolio: "https://ydevansh.vercel.app/"
+            }
+        ],
         featured: true,
         title: "SmartMess",
         description: "Comprehensive hostel mess management platform with real-time menu visibility, digital attendance, a student feedback & rating system, complaint portal, and an admin analytics dashboard.",
@@ -665,6 +683,19 @@ export const projectsData = [
     {
         id: 22,
         slug: "mern-linkedin-clone",
+        isCollaborative: true,
+        team: [
+            {
+                name: "Gaurav Kumar Yadav",
+                role: "Full Stack Developer",
+                portfolio: "https://ggauravky.vercel.app/"
+            },
+            {
+                name: "Khushi Sharma",
+                role: "Backend Developer & UI/UX",
+                portfolio: "https://devkhushii.netlify.app/"
+            }
+        ],
         featured: true,
         title: "LinkedIn Clone (MERN Stack)",
         description: "Comprehensive professional networking platform built with the MERN stack. Features secure JWT authentication, user profile setup, connection requests, rich feed posts with image attachments, real-time Socket.io notifications, Mailtrap email delivery, Zod schema validation, AWS S3 image storage, and analytics tracking.",
@@ -761,6 +792,24 @@ export const projectsData = [
     {
         id: 24,
         slug: "kanoon-mate",
+        isCollaborative: true,
+        team: [
+            {
+                name: "Gaurav Kumar Yadav",
+                role: "Full Stack Developer",
+                portfolio: "https://ggauravky.vercel.app/"
+            },
+            {
+                name: "Nikhil Aggrahari",
+                role: "Backend Developer",
+                portfolio: "https://nikhilxagr.vercel.app/"
+            },
+            {
+                name: "Devansh Yadav",
+                role: "Frontend Developer",
+                portfolio: "https://ydevansh.vercel.app/"
+            }
+        ],
         featured: true,
         title: "Kanoon-Mate AI Legal Assistance Platform",
         description: "An end-to-end, production-ready legal AI platform designed to break down legal barriers for Indian citizens. Features Multi-Format OCR, Google Gemini 2.5 Flash AI, Bharatiya Nyaya Sanhita (BNS) law mapping, Voice Dictation/Read-Aloud, Automated Deadline Tracking, and Emergency Legal Helpline Hub.",
@@ -813,6 +862,29 @@ export const projectsData = [
     {
         id: 25,
         slug: "smart-lms",
+        isCollaborative: true,
+        team: [
+            {
+                name: "Gaurav Kumar Yadav",
+                role: "Full Stack Developer",
+                portfolio: "https://ggauravky.vercel.app/"
+            },
+            {
+                name: "Khushi Sharma",
+                role: "Backend Developer & UI/UX",
+                portfolio: "https://devkhushii.netlify.app/"
+            },
+            {
+                name: "Nikhil Aggrahari",
+                role: "Backend Developer",
+                portfolio: "https://nikhilxagr.vercel.app/"
+            },
+            {
+                name: "Devansh Yadav",
+                role: "Frontend Developer",
+                portfolio: "https://ydevansh.vercel.app/"
+            }
+        ],
         featured: true,
         title: "Smart LMS (SaaS Platform)",
         description: "Full-stack SaaS Learning Management System built with React, Redux Toolkit, Tailwind CSS, Node.js, Express, MongoDB, Google OAuth 2.0, Razorpay payment gateway, and Gemini AI-powered smart search.",
