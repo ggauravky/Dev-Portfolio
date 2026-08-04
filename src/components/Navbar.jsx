@@ -19,11 +19,11 @@ const renderDesktopProfileMenu = ({
     setIsProfileMenuOpen,
     handleLogout,
 }) => (
-    <div ref={profileMenuRef} className="relative hidden lg:block ml-2">
+    <div ref={profileMenuRef} className="relative hidden lg:block shrink-0 ml-1">
         <button
             type="button"
             onClick={() => setIsProfileMenuOpen((previous) => !previous)}
-            className="group inline-flex items-center justify-center h-9 gap-2 rounded-full border border-obsidian-border bg-obsidian-card px-3 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors leading-none"
+            className="group inline-flex items-center justify-center h-9 gap-1.5 rounded-full border border-obsidian-border bg-obsidian-card px-2.5 sm:px-3 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors leading-none shrink-0"
             aria-label="Open profile menu"
         >
             {user.picture ? (
@@ -188,18 +188,18 @@ function Navbar({ navReady = true, logoRef }) {
                     transition: navReady ? 'opacity 0.35s cubic-bezier(0.22,1,0.36,1)' : 'none',
                 }}
             >
-                <div className={`px-5 py-3 rounded-full border transition-all duration-300 backdrop-blur-md ${
+                <div className={`px-3.5 sm:px-5 transition-all duration-300 rounded-full border backdrop-blur-md max-w-7xl mx-auto ${
                     scrolled
-                        ? 'shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95 max-w-6xl mx-auto'
-                        : 'shadow-xl shadow-black/20 bg-obsidian-card/75 border-obsidian-border/50 max-w-7xl'
+                        ? 'py-2 shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95'
+                        : 'py-3 shadow-xl shadow-black/20 bg-obsidian-card/75 border-obsidian-border/50'
                 }`}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between min-w-0">
 
-                        {/* Logo — ref used by SplashScreen to measure final position */}
+                        {/* Priority 1: Logo — Never compress, never shrink */}
                         <Link
                             to="/"
                             onClick={closeMenu}
-                            className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-3 xl:mr-6 leading-none"
+                            className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-2 lg:mr-3 xl:mr-6 leading-none"
                         >
                             {/* Plain span — SplashScreen measures this to know where to travel */}
                             <span
@@ -230,16 +230,22 @@ function Navbar({ navReady = true, logoRef }) {
                             <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                         </Link>
 
-                        {/* Desktop links */}
-                        <div className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 min-w-0">
+                        {/* Priority 2: Desktop Navigation Links — Adaptively scales gap and padding on scroll or tight screens */}
+                        <div className={`hidden lg:flex items-center transition-all duration-300 min-w-0 ${
+                            scrolled ? 'gap-0.5 xl:gap-1' : 'gap-0.5 xl:gap-1.5'
+                        }`}>
                             {navLinks.map((link) => (
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`relative inline-flex items-center justify-center h-9 px-3 xl:px-3.5 rounded-full font-medium transition-colors duration-300 text-[13px] xl:text-[13.5px] leading-none whitespace-nowrap group shrink-0 ${isActive(link.path)
+                                    className={`relative inline-flex items-center justify-center h-9 rounded-full font-medium transition-all duration-300 leading-none whitespace-nowrap group shrink-0 ${
+                                        scrolled
+                                            ? 'px-2 xl:px-3 text-[12.5px] xl:text-[13px]'
+                                            : 'px-2.5 xl:px-3.5 text-[13px] xl:text-[13.5px]'
+                                    } ${isActive(link.path)
                                         ? 'text-obsidian font-bold'
                                         : 'text-zinc-400 hover:text-white'
-                                        }`}
+                                    }`}
                                 >
                                     {isActive(link.path) && (
                                         <motion.span
@@ -260,19 +266,31 @@ function Navbar({ navReady = true, logoRef }) {
                         </div>
 
                         {/* Right Header Action Group */}
-                        <div className="flex items-center gap-2 shrink-0">
-                            {/* Search / Command Palette Trigger Button (Desktop & Tablet) */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                            {/* Priority 3: Search / Command Palette Trigger — First to adaptively contract without shifting layout */}
                             <button
                                 type="button"
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-                                className="hidden sm:inline-flex items-center justify-center h-9 gap-2 px-3.5 rounded-full border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-white hover:border-toxic/50 transition-all duration-200 text-xs font-mono leading-none"
+                                className={`hidden sm:inline-flex items-center justify-center h-9 rounded-full border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-white hover:border-toxic/50 transition-all duration-200 text-xs font-mono leading-none ${
+                                    scrolled || isAuthenticated
+                                        ? 'px-2.5 gap-1.5'
+                                        : 'px-3.5 gap-2'
+                                }`}
                                 aria-label="Open Command Search"
                             >
                                 <svg className="w-3.5 h-3.5 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                <span className="font-sans text-xs leading-none">Search</span>
-                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 text-[10px] leading-none bg-obsidian border border-obsidian-border text-zinc-400 font-mono rounded">⌘K</kbd>
+                                <span className={`font-sans text-xs leading-none ${
+                                    scrolled || (isAuthenticated && 'lg:hidden xl:inline')
+                                        ? 'hidden 2xl:inline'
+                                        : 'inline'
+                                }`}>
+                                    Search
+                                </span>
+                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 text-[10px] leading-none bg-obsidian border border-obsidian-border text-zinc-400 font-mono rounded">
+                                    ⌘K
+                                </kbd>
                             </button>
 
                             {/* Mobile Search Button (Extra Small Viewports) */}
@@ -287,13 +305,15 @@ function Navbar({ navReady = true, logoRef }) {
                                 </svg>
                             </button>
 
-                            {/* Desktop Resume button */}
+                            {/* Priority 4: Desktop Resume button */}
                             <a
                                 href="/resume.pdf"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 aria-label="Open resume PDF in a new tab"
-                                className="hidden lg:inline-flex items-center justify-center h-9 min-h-0 gap-2 ml-1 px-4 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 text-xs xl:text-sm cursor-pointer whitespace-nowrap leading-none group relative hover:shadow-lg hover:shadow-toxic/20 hover:scale-105"
+                                className={`hidden lg:inline-flex items-center justify-center h-9 min-h-0 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 text-xs xl:text-sm cursor-pointer whitespace-nowrap leading-none group relative hover:shadow-lg hover:shadow-toxic/20 hover:scale-105 ${
+                                    scrolled ? 'px-3 xl:px-4 gap-1.5' : 'px-3.5 xl:px-4 gap-2'
+                                }`}
                             >
                                 <svg className="w-3.5 h-3.5 shrink-0 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -301,6 +321,7 @@ function Navbar({ navReady = true, logoRef }) {
                                 <span className="relative z-10 leading-none">Resume</span>
                             </a>
 
+                            {/* Priority 5: User Profile Menu (Authenticated Users) */}
                             {isAuthenticated && user
                                 ? renderDesktopProfileMenu({
                                     user,
