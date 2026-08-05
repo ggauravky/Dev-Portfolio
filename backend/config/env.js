@@ -62,21 +62,6 @@ const validateEnvironment = ({ strict = true } = {}) => {
     );
   }
 
-  const chatbotProvider = normalizeEnv(process.env.CHATBOT_PROVIDER || "gemini").toLowerCase();
-  if (chatbotProvider === "groq") {
-    if (!hasValue(process.env.GROQ_API_KEY)) {
-      warnings.push(
-        "GROQ_API_KEY is missing but CHATBOT_PROVIDER is set to groq. " +
-          "The portfolio chatbot endpoint will return a temporary failure message."
-      );
-    }
-  } else {
-    if (!hasValue(process.env.GEMINI_API_KEY)) {
-      warnings.push(
-        "GEMINI_API_KEY is missing. The portfolio chatbot endpoint will return a temporary failure message."
-      );
-    }
-  }
 
   const cashfreeEnv = normalizeEnv(process.env.CASHFREE_ENV).toUpperCase();
   if (paymentGatewayEnabled && !["SANDBOX", "PRODUCTION"].includes(cashfreeEnv)) {

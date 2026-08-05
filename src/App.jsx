@@ -24,6 +24,7 @@ import AvailabilityBanner from './components/AvailabilityBanner'
 import CommandPalette from './components/CommandPalette'
 import RadialMenu from './components/RadialMenu'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
+import { ChatWidget } from './components/chat/ChatWidget'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
 
@@ -62,6 +63,7 @@ const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+const GauravAICaseStudy = lazy(() => import('./pages/projects/GauravAICaseStudy'))
 const MySupports = lazy(() => import('./pages/MySupports'))
 
 // Per-route loading fallback — keeps loading state isolated per route
@@ -163,6 +165,7 @@ function AppLayout({ children, navReady, logoRef }) {
                 {children}
                 {!isFullScreen && <Footer />}
                 {!isFullScreen && <BackToTop />}
+                {!isFullScreen && <ChatWidget />}
             </div>
         </div>
     )
@@ -190,6 +193,7 @@ function AnimatedRoutes() {
                 <Route path="/lab/algorithms"             element={<R><AlgorithmVisualizer /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />
                 <Route path="/projects"                   element={<R><Projects /></R>} />
+                <Route path="/projects/gaurav-ai"         element={<R><GauravAICaseStudy /></R>} />
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
                 <Route path="/blog"                       element={<R><Blog /></R>} />
                 <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />

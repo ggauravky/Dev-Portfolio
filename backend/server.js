@@ -24,7 +24,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
-const chatRoutes = require("./routes/chatRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 const mlLogRoutes = require("./routes/mlLogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -35,7 +35,7 @@ const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
 const { validateEnvironment } = require("./config/env");
-const { getRetentionPolicy } = require("../shared/chatPrivacy.cjs");
+
 
 const envValidation = validateEnvironment({ strict: true });
 for (const warning of envValidation.warnings) {
@@ -126,15 +126,10 @@ app.use(generalRateLimiter);
 
 // Health check route
 app.get("/health", (req, res) => {
-  const retentionPolicy = getRetentionPolicy();
   res.status(200).json({
     success: true,
     message: "Server is running",
     timestamp: new Date().toISOString(),
-    chatAnalytics: {
-      retentionDays: retentionPolicy.retentionDays,
-      policyEndpoint: "/api/chatbot/privacy-policy",
-    },
     paymentQueue: getPaymentQueueStatus(),
   });
 });
@@ -142,8 +137,8 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
-app.use("/api/chat", chatRoutes);
-app.use("/api/chatbot", chatRoutes);
+
+app.use("/api/ai", aiRoutes);
 app.use("/api/ml-log", mlLogRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", authRoutes);

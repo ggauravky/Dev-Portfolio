@@ -177,12 +177,34 @@ export const STATIC_COMMANDS = [
         id: 'lab-chatbot',
         title: 'Gaurav AI Portfolio Assistant',
         category: 'LAB TOOLS',
-        desc: 'Conversational LLM chatbot powered by Gemini 2.0 & Groq models',
+        desc: 'Interactive RAG portfolio AI assistant powered by Gemini 2.0',
         type: 'internal',
         url: '/lab/gaurav-chatbot',
-        badge: 'Lab Tool',
+        badge: 'AI Tool',
         shortcut: '↵',
-        keywords: ['chatbot', 'ai chatbot', 'assistant', 'llm', 'gemini', 'groq', 'chat', 'conversational ai', 'qa bot', 'ai assistant', 'gpt', 'bot', 'talk to ai', 'ai chat', 'portfolio bot']
+        keywords: ['chatbot', 'ai chatbot', 'assistant', 'llm', 'chat', 'ai assistant', 'bot', 'talk to ai', 'ai chat', 'portfolio bot', 'gemini', 'ask ai', 'ai agent', 'agent']
+    },
+    {
+        id: 'action-recruiter-tour',
+        title: 'Start 2-Min Recruiter Portfolio Tour',
+        category: 'ACTIONS',
+        desc: 'AI guided step-by-step tour tailored for recruiters and hiring managers',
+        type: 'internal',
+        url: '/lab/gaurav-chatbot?tour=tour_recruiter',
+        badge: 'AI Tour 🚀',
+        shortcut: '↵',
+        keywords: ['recruiter tour', 'guided tour', 'tour', 'hiring manager', 'recruiter', 'overview', 'fast tour', '2 min tour', 'walkthrough']
+    },
+    {
+        id: 'action-ai-minor-tour',
+        title: 'Start AI & Machine Learning Tour',
+        category: 'ACTIONS',
+        desc: 'AI guided walkthrough of IIT Mandi Minor coursework and ML systems',
+        type: 'internal',
+        url: '/lab/gaurav-chatbot?tour=tour_ai',
+        badge: 'AI Tour 🚀',
+        shortcut: '↵',
+        keywords: ['ai tour', 'machine learning tour', 'iit mandi tour', 'ml tour', 'ai engineering tour']
     },
     {
         id: 'lab-consistency',

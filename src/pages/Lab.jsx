@@ -57,13 +57,13 @@ function Lab() {
                             <svg className="w-8 h-8 mb-4 text-toxic" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />
                             </svg>
-                            <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-toxic transition-colors">AI Chatbot</h3>
+                            <h3 className="text-white font-display font-bold text-xl mb-2 group-hover:text-toxic transition-colors">AI Assistant</h3>
                             <p className="text-[#a1a1aa] text-sm leading-relaxed mb-4">
-                                Ask portfolio-focused and general coding questions using an integrated, highly optimized Gemini & Groq assistant.
+                                Interactive portfolio assistant powered by RAG knowledge retrieval and Gemini 2.0 AI model.
                             </p>
                             <div className="flex flex-wrap gap-2">
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Gemini / Groq</span>
-                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Full-Context AI</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">Gemini AI</span>
+                                <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 bg-obsidian border border-[#1a1a22] text-[#a1a1aa] rounded-md">RAG Pipeline</span>
                             </div>
                         </div>
                         <span className="absolute top-4 right-4 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 bg-toxic/10 text-toxic rounded-md border border-toxic/25 font-bold">

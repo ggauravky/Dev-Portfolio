@@ -5,9 +5,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "sync-chat-data": "node scripts/sync-chat-data.js",
         "generate:image-variants": "node scripts/generate-image-variants.js",
-        "build": "node scripts/sync-chat-data.js && node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && vite build",
+        "build": "node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && vite build",
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js"
     },
@@ -23,7 +22,7 @@
         "framer-motion": "^12.34.3",
         "lucide-react": "^1.25.0",
         "mermaid": "^11.16.0",
-        "mongoose": "^8.9.5",
+
         "pino": "^9.4.0",
         "pino-http": "^10.2.0",
         "pino-pretty": "^13.1.1",

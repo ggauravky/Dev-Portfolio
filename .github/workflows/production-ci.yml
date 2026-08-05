@@ -1,0 +1,31 @@
+name: Gaurav AI Production CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  production-verify:
+    name: Production Verification & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Project Dependencies
+        run: npm ci
+
+      - name: Execute Automated Backend Test Suites
+        run: node --test backend/tests/ragPipeline.test.js backend/tests/telemetry.test.js backend/tests/knowledgeEngine.test.js backend/tests/e2ePipeline.test.js backend/tests/hotfixResilience.test.js backend/tests/ragQuality.test.js backend/tests/conversationRouter.test.js
+
+      - name: Run Vite Production Build Verification
+        run: npm run build
