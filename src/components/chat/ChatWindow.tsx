@@ -3,22 +3,26 @@ import { useChat } from '../../hooks/useChat';
 import { ChatHeader } from './ChatHeader';
 import { ChatMessages } from './ChatMessages';
 import { ChatInput } from './ChatInput';
+import { ChatUnderConstructionModal } from './ChatUnderConstructionModal';
 
 interface ChatWindowProps {
   onClose?: () => void;
   onMinimize?: () => void;
   className?: string;
   isFullScreen?: boolean;
+  isUnderConstruction?: boolean;
 }
 
 /**
  * Full Chat Window container managing state, messaging, and responsive layout.
+ * Includes Under Construction overlay preventing interactions during system updates.
  */
 export const ChatWindow: React.FC<ChatWindowProps> = ({
   onClose,
   onMinimize,
   className = '',
   isFullScreen = false,
+  isUnderConstruction = true,
 }) => {
   const {
     messages,
@@ -35,12 +39,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div
-      className={`flex flex-col bg-[#070708]/95 text-slate-100 overflow-hidden border border-neutral-800/80 shadow-2xl backdrop-blur-xl ${
+      className={`relative flex flex-col bg-[#070708]/95 text-slate-100 overflow-hidden border border-neutral-800/80 shadow-2xl backdrop-blur-xl ${
         isFullScreen
           ? 'h-[100dvh] w-full rounded-none'
           : 'h-[85vh] sm:h-[580px] max-h-[calc(100vh-100px)] w-full rounded-t-2xl sm:rounded-2xl'
       } ${className}`}
     >
+      {/* Under Construction System Maintenance Overlay */}
+      {isUnderConstruction && (
+        <ChatUnderConstructionModal onClose={onClose} />
+      )}
+
       {/* Header */}
       <ChatHeader
         provider={activeProvider}
@@ -63,7 +72,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       <div className="p-3 border-t border-neutral-800/80 bg-[#0e0e11]/95 backdrop-blur-xl shrink-0">
         <ChatInput
           onSend={sendMessage}
-          isLoading={isLoading}
+          isLoading={isLoading || isUnderConstruction}
           cooldownSeconds={cooldownSeconds}
         />
       </div>
