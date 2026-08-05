@@ -11,13 +11,13 @@ interface ChatInputProps {
 }
 
 /**
- * Premium Textarea input component with Linear-style keyboard shortcut badges and character gauges.
+ * Premium Notion/Linear-style ChatInput component with clean spacing and shortcut badges.
  */
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
   isLoading,
   cooldownSeconds = 0,
-  placeholder = 'Ask about Gaurav\'s projects, tech stack, or experience...',
+  placeholder = 'Ask about projects, skills, experience...',
   maxChars = 1000,
 }) => {
   const [input, setInput] = useState<string>('');
@@ -53,8 +53,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="w-full">
-      <div className="rounded-xl border border-[#1a1a22] bg-[#070708] p-2.5 shadow-2xl transition-all duration-200 focus-within:border-toxic/40 focus-within:ring-1 focus-within:ring-toxic/20">
-        <div className="flex items-end gap-2.5">
+      <div className="rounded-xl border border-neutral-800 bg-[#070708] p-2 shadow-inner transition-all duration-200 focus-within:border-emerald-500/40 focus-within:ring-1 focus-within:ring-emerald-500/20">
+        <div className="flex items-end gap-2">
           <textarea
             ref={textareaRef}
             value={input}
@@ -67,7 +67,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 ? `Please wait ${cooldownSeconds}s...`
                 : placeholder
             }
-            className="max-h-40 min-h-[44px] flex-1 resize-none bg-transparent px-3 py-2 text-sm leading-relaxed text-slate-100 outline-none placeholder:text-zinc-500 font-sans"
+            className="max-h-36 min-h-[44px] flex-1 resize-none bg-transparent px-3 py-2.5 text-sm leading-relaxed text-slate-100 outline-none placeholder:text-neutral-500 font-sans"
             aria-label="Chat query input"
           />
 
@@ -75,17 +75,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             type="button"
             onClick={handleSend}
             disabled={isDisabled}
-            className={`inline-flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200 shrink-0 ${
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-200 shrink-0 ${
               isDisabled
-                ? 'cursor-not-allowed bg-zinc-800/80 text-zinc-600'
-                : 'bg-toxic text-obsidian shadow-lg hover:scale-105 active:scale-95 font-bold hover:shadow-toxic/20'
+                ? 'cursor-not-allowed bg-neutral-800/80 text-neutral-600'
+                : 'bg-emerald-400 text-obsidian shadow-md hover:scale-105 active:scale-95 font-bold hover:bg-emerald-300'
             }`}
             aria-label="Send message"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : cooldownSeconds > 0 ? (
-              <span className="text-xs font-mono font-bold text-zinc-400">
+              <span className="text-xs font-mono font-bold text-neutral-400">
                 {cooldownSeconds}s
               </span>
             ) : (
@@ -96,7 +96,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Linear Style Footer Info & Shortcuts */}
-      <div className="mt-2 flex items-center justify-between px-1 text-[10px] font-mono text-zinc-500 select-none">
+      <div className="mt-2 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500 select-none">
         <div className="flex items-center gap-1.5">
           <span className={CHAT_TOKENS.kbd}>↵ Send</span>
           <span className={CHAT_TOKENS.kbd}>Shift + ↵ Newline</span>

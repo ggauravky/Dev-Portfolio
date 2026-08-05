@@ -1,4 +1,4 @@
-const { test, describe, before } = require("node:test");
+const { test, describe, before, after } = require("node:test");
 const assert = require("node:assert");
 const path = require("node:path");
 const dns = require("node:dns");
@@ -20,6 +20,16 @@ describe("Phase 14 — Conversation Persistence & Lifecycle Test Suite", () => {
       }
     } catch {
       // Allow test fallback
+    }
+  });
+
+  after(async () => {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+    } catch {
+      // Ignore cleanup error
     }
   });
 

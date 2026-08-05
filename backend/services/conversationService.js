@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Conversation = require("../models/Conversation");
 const ChatMessage = require("../models/ChatMessage");
 
@@ -6,11 +7,15 @@ const ChatMessage = require("../models/ChatMessage");
  * Provides async non-blocking MongoDB persistence for conversations and messages.
  */
 class ConversationService {
+  isDbConnected() {
+    return mongoose.connection && mongoose.connection.readyState === 1;
+  }
+
   /**
    * Get existing active conversation or create new conversation document.
    */
   async getOrCreateConversation(conversationId, metadata = {}) {
-    if (!conversationId) return null;
+    if (!conversationId || !this.isDbConnected()) return null;
 
     try {
       let conv = await Conversation.findOne({ conversationId });
@@ -37,7 +42,7 @@ class ConversationService {
    * Async Non-Blocking Save User Message.
    */
   async saveUserMessage(conversationId, text, intent = "general", metadata = {}) {
-    if (!conversationId || !text) return null;
+    if (!conversationId || !text || !this.isDbConnected()) return null;
 
     try {
       const conv = await this.getOrCreateConversation(conversationId, metadata);
@@ -68,7 +73,7 @@ class ConversationService {
    * Async Non-Blocking Save Assistant Response.
    */
   async saveAssistantMessage(conversationId, reply, sources = [], confidenceScore = 1.0, intent = "general", latencyMs = 0, usage = {}, provider = "gemini", model = "gemini-2.0-flash-lite") {
-    if (!conversationId || !reply) return null;
+    if (!conversationId || !reply || !this.isDbConnected()) return null;
 
     try {
       const conv = await Conversation.findOne({ conversationId });
@@ -114,7 +119,7 @@ class ConversationService {
    * Retrieve full conversation message history for replay.
    */
   async getConversationHistory(conversationId) {
-    if (!conversationId) return [];
+    if (!conversationId || !this.isDbConnected()) return [];
 
     try {
       const messages = await ChatMessage.find({ conversationId }).sort({ createdAt: 1 }).lean();
@@ -129,7 +134,7 @@ class ConversationService {
    * Mark conversation status as ended.
    */
   async endConversation(conversationId) {
-    if (!conversationId) return null;
+    if (!conversationId || !this.isDbConnected()) return null;
 
     try {
       const conv = await Conversation.findOneAndUpdate(

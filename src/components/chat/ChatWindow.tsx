@@ -35,10 +35,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div
-      className={`flex flex-col bg-[#070708] text-slate-100 overflow-hidden border border-[#1a1a22] shadow-2xl ${
+      className={`flex flex-col bg-[#070708]/95 text-slate-100 overflow-hidden border border-neutral-800/80 shadow-2xl backdrop-blur-xl ${
         isFullScreen
           ? 'h-[100dvh] w-full rounded-none'
-          : 'h-[600px] max-h-[85vh] w-full max-w-lg rounded-xl'
+          : 'h-[85vh] sm:h-[580px] max-h-[calc(100vh-100px)] w-full rounded-t-2xl sm:rounded-2xl'
       } ${className}`}
     >
       {/* Header */}
@@ -60,7 +60,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       />
 
       {/* Footer Input Area */}
-      <div className="p-3 border-t border-[#1a1a22] bg-[#0e0e11]/90 backdrop-blur-xl shrink-0">
+      <div className="p-3 border-t border-neutral-800/80 bg-[#0e0e11]/95 backdrop-blur-xl shrink-0">
         <ChatInput
           onSend={sendMessage}
           isLoading={isLoading}

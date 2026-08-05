@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Code2, Briefcase, Cpu, FolderGit2 } from 'lucide-react';
+import { Sparkles, Code2, FolderGit2, Briefcase } from 'lucide-react';
 
 interface ChatEmptyStateProps {
   onSelectPrompt: (prompt: string) => void;
@@ -8,57 +8,44 @@ interface ChatEmptyStateProps {
 const STARTER_CARDS = [
   {
     icon: FolderGit2,
-    title: 'Top Projects',
-    subtitle: 'TaskNexus, SmartMess, BuildMyTeam',
-    prompt: 'What are Gaurav\'s top technical projects and builds?',
+    title: 'Projects',
+    prompt: 'What projects has Gaurav built?',
   },
   {
     icon: Code2,
-    title: 'Tech Stack & Skills',
-    subtitle: 'Python, React, Node, MongoDB, AI/ML',
-    prompt: 'What technologies, frameworks, and programming languages does Gaurav use?',
+    title: 'Skills & Tech Stack',
+    prompt: 'What technologies does Gaurav use?',
   },
   {
     icon: Briefcase,
-    title: 'Services & Offerings',
-    subtitle: 'Full-Stack, AI Integration, Mentorship',
-    prompt: 'What services does Gaurav offer and what is his availability?',
-  },
-  {
-    icon: Cpu,
-    title: 'AI & Academic Minor',
-    subtitle: 'BCA @ BBDU & AI/ML Minor @ IIT Mandi',
-    prompt: 'Tell me about Gaurav\'s AI/ML experience and academic background.',
+    title: 'Experience & Education',
+    prompt: 'Tell me about Gaurav\'s experience and education.',
   },
 ];
 
 /**
- * Apple × Notion × Linear minimalist empty state screen.
+ * Clean, minimalist Apple × Notion empty state screen.
  */
 export const ChatEmptyState: React.FC<ChatEmptyStateProps> = ({ onSelectPrompt }) => {
   return (
-    <div className="flex flex-col items-center justify-center py-10 px-4 text-center my-auto">
+    <div className="flex flex-col items-center justify-center py-8 px-4 text-center my-auto">
       {/* Avatar Badge */}
-      <div className="relative group mb-5">
-        <div className="absolute -inset-1 rounded-2xl bg-toxic/20 blur-md group-hover:bg-toxic/30 transition-all" />
-        <div className="relative w-16 h-16 rounded-2xl bg-[#0e0e11] border border-toxic/40 flex items-center justify-center text-toxic text-2xl font-display font-bold shadow-2xl">
+      <div className="relative group mb-4">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl font-display font-bold shadow-lg">
           G
         </div>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-display font-bold text-slate-100 tracking-tight flex items-center gap-2">
-        <span>Gaurav AI</span>
-        <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-toxic/15 text-toxic border border-toxic/30 font-semibold">
-          v2.0 RAG
-        </span>
+      <h2 className="text-xl font-display font-semibold text-slate-100 tracking-tight">
+        Hello 👋 I'm Gaurav AI.
       </h2>
 
-      <p className="mt-2 text-xs sm:text-sm text-zinc-400 max-w-md leading-relaxed font-sans">
-        Digital twin answering questions about projects, technical skills, services, and career journey with grounded knowledge retrieval.
+      <p className="mt-2 text-xs text-neutral-400 max-w-sm leading-relaxed font-sans">
+        I can help you explore Gaurav's <strong className="text-neutral-200">projects</strong>, <strong className="text-neutral-200">skills</strong>, <strong className="text-neutral-200">experience</strong>, <strong className="text-neutral-200">journey</strong>, <strong className="text-neutral-200">AI work</strong>, and <strong className="text-neutral-200">resume</strong>.
       </p>
 
-      {/* Starter Cards Grid */}
-      <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl text-left">
+      {/* 3 Prompts Grid */}
+      <div className="mt-6 flex flex-col gap-2.5 w-full max-w-md">
         {STARTER_CARDS.map((card, idx) => {
           const Icon = card.icon;
           return (
@@ -66,20 +53,15 @@ export const ChatEmptyState: React.FC<ChatEmptyStateProps> = ({ onSelectPrompt }
               key={idx}
               type="button"
               onClick={() => onSelectPrompt(card.prompt)}
-              className="p-4 rounded-xl bg-[#0e0e11] border border-[#1a1a22] hover:border-toxic/35 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 group text-left flex items-start gap-3.5 shadow-sm"
+              className="px-3.5 py-2.5 rounded-xl bg-neutral-900/80 border border-neutral-800 hover:border-emerald-500/30 transition-all duration-200 group text-left flex items-center justify-between shadow-sm"
             >
-              <div className="p-2.5 rounded-lg bg-[#070708] border border-[#1a1a22] text-zinc-400 group-hover:text-toxic group-hover:border-toxic/30 transition-colors shrink-0">
-                <Icon className="w-4 h-4" />
+              <div className="flex items-center gap-3 min-w-0">
+                <Icon className="w-4 h-4 text-neutral-400 group-hover:text-emerald-400 transition-colors shrink-0" />
+                <span className="text-xs font-sans font-medium text-neutral-200 group-hover:text-emerald-400 transition-colors truncate">
+                  {card.prompt}
+                </span>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-display font-bold text-slate-200 group-hover:text-toxic transition-colors flex items-center justify-between">
-                  <span>{card.title}</span>
-                  <Sparkles className="w-3.5 h-3.5 text-toxic opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                </p>
-                <p className="text-[11px] text-zinc-500 truncate mt-0.5 font-mono">
-                  {card.subtitle}
-                </p>
-              </div>
+              <Sparkles className="w-3.5 h-3.5 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
             </button>
           );
         })}
