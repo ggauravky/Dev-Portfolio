@@ -4,6 +4,7 @@ require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { ingestionService, tokenize } = require("./ingestionService");
 const { conversationRouter } = require("./conversationRouter");
+const { conversationService } = require("./conversationService");
 
 // Configuration from Environment Variables
 const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
@@ -349,9 +350,17 @@ async function processAIChat({ message, sessionId, history = [] }) {
   // Pre-Retrieval Conversation Router Interception
   const convRoute = conversationRouter.route(trimmedMessage);
   if (!convRoute.isRAGRequired) {
+    const replyText = convRoute.reply;
+    const cid = sessionId || `conv_${Date.now()}`;
+    const usage = { promptTokens: 0, completionTokens: Math.ceil(replyText.length / 4), totalTokens: Math.ceil(replyText.length / 4) };
+
+    // Async Non-Blocking Persistence to MongoDB
+    conversationService.saveUserMessage(cid, trimmedMessage, convRoute.intent).catch(() => {});
+    conversationService.saveAssistantMessage(cid, replyText, [], 1.0, convRoute.intent, Date.now() - startTime, usage, "conversation-router", "conversation-router").catch(() => {});
+
     return {
       success: true,
-      reply: convRoute.reply,
+      reply: replyText,
       sources: [],
       confidenceScore: 1.0,
       intent: convRoute.intent || "casual_conversation",
@@ -360,7 +369,7 @@ async function processAIChat({ message, sessionId, history = [] }) {
       model: "conversation-router",
       degraded: false,
       latencyMs: Date.now() - startTime,
-      usage: { promptTokens: 0, completionTokens: Math.ceil(convRoute.reply.length / 4), totalTokens: Math.ceil(convRoute.reply.length / 4) },
+      usage,
     };
   }
 
@@ -436,6 +445,16 @@ async function processAIChat({ message, sessionId, history = [] }) {
   sessionMem.addTurn("assistant", replyText);
 
   const latencyMs = Date.now() - startTime;
+  const usage = {
+    promptTokens: Math.ceil(fullPrompt.length / 4),
+    completionTokens: Math.ceil(replyText.length / 4),
+    totalTokens: Math.ceil((fullPrompt.length + replyText.length) / 4),
+  };
+
+  // Async Non-Blocking MongoDB Persistence
+  const cid = sessionId || `conv_${Date.now()}`;
+  conversationService.saveUserMessage(cid, trimmedMessage, intentInfo.intent).catch(() => {});
+  conversationService.saveAssistantMessage(cid, replyText, sources, confidenceScore, intentInfo.intent, latencyMs, usage, providerName, GEMINI_MODEL).catch(() => {});
 
   const resultPayload = {
     success: true,
@@ -448,11 +467,7 @@ async function processAIChat({ message, sessionId, history = [] }) {
     model: GEMINI_MODEL,
     degraded,
     latencyMs,
-    usage: {
-      promptTokens: Math.ceil(fullPrompt.length / 4),
-      completionTokens: Math.ceil(replyText.length / 4),
-      totalTokens: Math.ceil((fullPrompt.length + replyText.length) / 4),
-    },
+    usage,
   };
 
   // Cache response
@@ -539,6 +554,11 @@ async function processAIChatStream(res, { message, sessionId, history = [] }) {
 
     sessionMem.addTurn("user", trimmedMessage);
     sessionMem.addTurn("assistant", fullReply);
+
+    // Async Non-Blocking MongoDB Persistence
+    const cid = sessionId || `conv_${Date.now()}`;
+    conversationService.saveUserMessage(cid, trimmedMessage, intentInfo.intent).catch(() => {});
+    conversationService.saveAssistantMessage(cid, fullReply, sources, confidenceScore, intentInfo.intent, 0, {}, "gemini", GEMINI_MODEL).catch(() => {});
 
     res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
   } catch (err) {

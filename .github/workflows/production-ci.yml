@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Execute Automated Backend Test Suites
-        run: node --test backend/tests/ragPipeline.test.js backend/tests/telemetry.test.js backend/tests/knowledgeEngine.test.js backend/tests/e2ePipeline.test.js backend/tests/hotfixResilience.test.js backend/tests/ragQuality.test.js backend/tests/conversationRouter.test.js
+        run: node --test backend/tests/ragPipeline.test.js backend/tests/telemetry.test.js backend/tests/knowledgeEngine.test.js backend/tests/e2ePipeline.test.js backend/tests/hotfixResilience.test.js backend/tests/ragQuality.test.js backend/tests/conversationRouter.test.js backend/tests/conversationPersistence.test.js
 
       - name: Run Vite Production Build Verification
         run: npm run build
