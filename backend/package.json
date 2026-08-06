@@ -19,7 +19,7 @@
     "license": "MIT",
     "dependencies": {
         "@getbrevo/brevo": "^5.0.4",
-        "@sentry/node": "^9.13.0",
+        "@sentry/node": "^10.69.0",
         "bullmq": "^5.73.5",
         "cloudinary": "^2.9.0",
         "cookie-parser": "^1.4.7",
