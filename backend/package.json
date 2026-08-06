@@ -18,7 +18,7 @@
     "author": "Gaurav Kumar Yadav",
     "license": "MIT",
     "dependencies": {
-        "@getbrevo/brevo": "^5.0.4",
+        "@getbrevo/brevo": "^6.0.2",
         "@sentry/node": "^9.13.0",
         "bullmq": "^5.73.5",
         "cloudinary": "^2.9.0",
