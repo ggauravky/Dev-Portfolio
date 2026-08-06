@@ -1,32 +1,21 @@
-Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+MIT License
 
-PROPRIETARY SOFTWARE LICENSE
+Copyright (c) 2026 Gaurav Kumar Yadav
 
-This source code and all associated files (the "Software") are the exclusive
-intellectual property of Gaurav Kumar Yadav ("Author").
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-RESTRICTIONS — You MAY NOT:
-  1. Copy, reproduce, or duplicate any part of this Software.
-  2. Modify, adapt, translate, or create derivative works based on this Software.
-  3. Distribute, publish, sublicense, sell, or transfer the Software or any
-     portion of it to any third party.
-  4. Use the Software or any portion of it in your own personal, commercial,
-     or open-source projects.
-  5. Reverse-engineer or attempt to extract source code from a compiled/minified
-     version of this Software.
-  6. Remove or alter any copyright, trademark, or proprietary notices embedded
-     in the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-PERMITTED:
-  - You MAY view this code for personal educational reference only.
-  - You MAY fork this repository on GitHub solely to report issues or propose
-    contributions back to the original repository via pull request.
-
-DISCLAIMER:
-  THE SOFTWARE IS PROVIDED "AS IS." THE AUTHOR EXPRESSLY DISCLAIMS ALL
-  WARRANTIES OF ANY KIND. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM,
-  DAMAGES, OR OTHER LIABILITY ARISING FROM UNAUTHORIZED USE OF THIS SOFTWARE.
-
-Portfolio : https://ggauravky.vercel.app
-GitHub    : https://github.com/ggauravky
-Contact   : kumar.gaurav.yadav2007@gmail.com
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

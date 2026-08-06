@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="100%" height="100%">
+  <rect width="800" height="240" rx="32" fill="#09090b" stroke="#27272a" stroke-width="2"/>
+  
+  <g transform="translate(60, 60)">
+    <polygon points="60,10 110,38 110,92 60,120 10,92 10,38" fill="none" stroke="#ffffff" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M 60 30 L 90 47 L 90 83 L 60 100 L 30 83 L 30 65 L 60 80 L 75 72 L 75 60 L 60 50 Z" fill="#ffffff"/>
+    <circle cx="60" cy="65" r="5" fill="#09090b"/>
+  </g>
+
+  <text x="210" y="115" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="900" letter-spacing="2" fill="#ffffff">
+    GAURAV.DEV
+  </text>
+  <text x="212" y="152" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="600" letter-spacing="4" fill="#71717a">
+    FULL-STACK SOFTWARE ENGINEERING
+  </text>
+</svg>

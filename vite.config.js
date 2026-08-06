@@ -85,11 +85,6 @@ export default defineConfig({
   ],
   base: "/", // Ensure base path is set for production
 
-  // TF.js and MobileNet are loaded from CDN (window.tf / window.mobilenet) at
-  // runtime — no Vite bundling needed, no CJS→ESM conversion issues.
-  // compromise is loaded the same way (window.nlp).
-  // Nothing to pre-bundle or chunk for these libraries.
-
   build: {
     outDir: "dist",
     assetsDir: "assets",

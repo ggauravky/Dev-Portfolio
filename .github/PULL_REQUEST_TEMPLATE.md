@@ -1,13 +1,17 @@
-## Description
-Provide a concise description of the proposed changes.
+## Pull Request Overview
 
-## Type of Change
-- [ ] Bug fix (non-breaking change fixing an issue)
-- [ ] New feature (non-breaking change adding functionality)
-- [ ] Documentation update
-- [ ] Performance / Security improvement
+### Description
+Please include a concise summary of the changes made, problem solved, or feature added.
 
-## Verification Checklist
-- [ ] All 20+ automated backend test suites pass (`node --test backend/tests/*.test.js`)
-- [ ] Production build succeeds (`npm run build`)
-- [ ] No console errors or TypeScript violations
+### Type of Change
+- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
+- [ ] 🚀 New feature (non-breaking change which adds functionality)
+- [ ] 🎨 UI / UX refinement (styling, responsiveness, accessibility)
+- [ ] ⚡ Performance optimization
+- [ ] 📝 Documentation update
+
+### Checklist
+- [ ] My code follows the project's code style and formatting guidelines.
+- [ ] I have verified the local production build using `npm run build`.
+- [ ] I have tested changes across desktop, tablet, and mobile viewports.
+- [ ] All interactive elements have accessible labels (`aria-label`).
