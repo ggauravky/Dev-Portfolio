@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
 // Universal Command Center (Cmd + K) — Raycast-grade search experience
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
@@ -40,7 +40,6 @@ function CategoryIcon({ category }) {
     switch (category) {
         case "PAGES": return <Globe className="w-4 h-4 text-emerald-400" />
         case "PROJECTS": return <Folder className="w-4 h-4 text-toxic" />
-        case "LAB TOOLS": return <Terminal className="w-4 h-4 text-purple-400" />
         case "SERVICES": return <Briefcase className="w-4 h-4 text-cyan-400" />
         case "SOCIAL": return <Share2 className="w-4 h-4 text-sky-400" />
         case "ACTIONS": return <Zap className="w-4 h-4 text-amber-400" />
