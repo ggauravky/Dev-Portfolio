@@ -24,7 +24,6 @@ import AvailabilityBanner from './components/AvailabilityBanner'
 import CommandPalette from './components/CommandPalette'
 import RadialMenu from './components/RadialMenu'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
-import { ChatWidget } from './components/chat/ChatWidget'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
 
@@ -50,11 +49,6 @@ const Support = lazy(() => import('./pages/Support'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
 const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
-const Lab = lazy(() => import('./pages/Lab'))
-const GauravChatbot = lazy(() => import('./pages/lab/GauravChatbot'))
-const ConsistencyDashboard = lazy(() => import('./pages/lab/ConsistencyDashboard'))
-const TerminalEmulator = lazy(() => import('./pages/lab/TerminalEmulator'))
-const AlgorithmVisualizer = lazy(() => import('./pages/lab/AlgorithmVisualizer'))
 const Journey = lazy(() => import('./pages/Journey'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -63,7 +57,6 @@ const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
-const GauravAICaseStudy = lazy(() => import('./pages/projects/GauravAICaseStudy'))
 const MySupports = lazy(() => import('./pages/MySupports'))
 
 // Per-route loading fallback — keeps loading state isolated per route
@@ -128,12 +121,7 @@ function AnalyticsRouteTracker() {
 }
 
 // Routes that should render without Navbar / Footer (full-screen layouts)
-const FULL_SCREEN_ROUTES = new Set([
-    '/lab/gaurav-chatbot',
-    '/lab/ml-demos',
-    '/lab/consistency-dashboard',
-    '/lab/algorithms',
-])
+const FULL_SCREEN_ROUTES = new Set([])
 
 function AppLayout({ children, navReady, logoRef }) {
     const { pathname } = useLocation()
@@ -165,7 +153,6 @@ function AppLayout({ children, navReady, logoRef }) {
                 {children}
                 {!isFullScreen && <Footer />}
                 {!isFullScreen && <BackToTop />}
-                {!isFullScreen && <ChatWidget />}
             </div>
         </div>
     )
@@ -185,15 +172,8 @@ function AnimatedRoutes() {
                 <Route path="/"                           element={<R><Home /></R>} />
                 <Route path="/about"                      element={<R><About /></R>} />
                 <Route path="/journey"                    element={<R><Journey /></R>} />
-                <Route path="/lab"                        element={<R><Lab /></R>} />
-                <Route path="/lab/gaurav-chatbot"         element={<R><GauravChatbot /></R>} />
-                <Route path="/lab/ml-demos"               element={<R><UnderConstruction variant="lab-ml" /></R>} />
-                <Route path="/lab/consistency-dashboard"  element={<R><ConsistencyDashboard /></R>} />
-                <Route path="/lab/terminal"               element={<R><TerminalEmulator /></R>} />
-                <Route path="/lab/algorithms"             element={<R><AlgorithmVisualizer /></R>} />
                 <Route path="/skills"                     element={<R><Skills /></R>} />
                 <Route path="/projects"                   element={<R><Projects /></R>} />
-                <Route path="/projects/gaurav-ai"         element={<R><GauravAICaseStudy /></R>} />
                 <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
                 <Route path="/blog"                       element={<R><Blog /></R>} />
                 <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
@@ -255,11 +235,6 @@ function App() {
     }, [])
 
     // ─── Splash done handler ───────────────────────────────────────────────────
-    // Called by SplashScreen when the portal logo begins fading out (at handoff).
-    // At this moment: portal logo is at the navbar logo position, opacity → 0.
-    // We show the navbar (navReady=true) and reveal the hero 300ms later.
-    // 300ms > SplashScreen's FADE_MS (220ms) so setMounted(false) fires before
-    // this component unmounts, preventing setState-on-unmounted warning.
     const handleSplashDone = useCallback(() => {
         setNavReady(true)
         setTimeout(() => setOpeningState('ready'), 300)
@@ -269,7 +244,6 @@ function App() {
         <>
             <Router>
                 <ScrollProgress />
-                {/* Cursor spotlight suppressed until interface is fully ready */}
                 {openingState === 'ready' && <CursorSpotlight />}
                 <ScrollToTop />
                 <AnalyticsRouteTracker />
@@ -277,7 +251,6 @@ function App() {
                 <RadialMenu />
                 <NetworkStatusBanner />
 
-                {/* Opening sequence — only on first visit */}
                 {openingState === 'splash' && (
                     <SplashScreen
                         onDone={handleSplashDone}
@@ -326,7 +299,6 @@ function App() {
                 />
                 <ErrorBoundary>
                     <OpeningContext.Provider value={openingState}>
-                        {/* inert during splash: prevents tab/focus into hidden content */}
                         <div {...(openingState === 'splash' ? { inert: '' } : {})}>
                             <AppLayout navReady={navReady} logoRef={navLogoRef}>
                                 <AnimatedRoutes />

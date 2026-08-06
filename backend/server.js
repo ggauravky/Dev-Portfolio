@@ -24,8 +24,6 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
-const aiRoutes = require("./routes/aiRoutes");
-const mlLogRoutes = require("./routes/mlLogRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const blogSupportRoutes = require("./routes/blogSupportRoutes");
@@ -137,9 +135,6 @@ app.get("/health", (req, res) => {
 // API routes
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
-
-app.use("/api/ai", aiRoutes);
-app.use("/api/ml-log", mlLogRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", blogSupportRoutes);

@@ -40,17 +40,6 @@ export const STATIC_COMMANDS = [
         keywords: ['journey', 'timeline', 'career', 'education', 'roadmap', 'experience', 'milestones', 'history', 'growth', 'path', 'story', 'background', 'life', 'academic']
     },
     {
-        id: 'page-lab',
-        title: 'Technical AI & Developer Lab',
-        category: 'PAGES',
-        desc: 'Interactive AI/ML tools, developer suite, algorithms & simulators',
-        type: 'internal',
-        url: '/lab',
-        badge: 'Page',
-        shortcut: '↵',
-        keywords: ['lab', 'ai lab', 'technical lab', 'developer lab', 'demos', 'tools', 'ai tools', 'interactive lab', 'ai', 'ml', 'machine learning', 'experiments', 'playground', 'workshop', 'dev tools']
-    },
-    {
         id: 'page-skills',
         title: 'Skills & Tech Stack Matrix',
         category: 'PAGES',
@@ -170,96 +159,6 @@ export const STATIC_COMMANDS = [
         badge: 'Legal',
         shortcut: '↵',
         keywords: ['refund', 'refund policy', 'cancellation', 'money back', 'guarantee']
-    },
-
-    // ── LAB TOOLS ────────────────────────────────────────────────────
-    {
-        id: 'lab-chatbot',
-        title: 'Gaurav AI Portfolio Assistant',
-        category: 'LAB TOOLS',
-        desc: 'Interactive RAG portfolio AI assistant powered by Gemini 2.0',
-        type: 'internal',
-        url: '/lab/gaurav-chatbot',
-        badge: 'AI Tool',
-        shortcut: '↵',
-        keywords: ['chatbot', 'ai chatbot', 'assistant', 'llm', 'chat', 'ai assistant', 'bot', 'talk to ai', 'ai chat', 'portfolio bot', 'gemini', 'ask ai', 'ai agent', 'agent']
-    },
-    {
-        id: 'action-recruiter-tour',
-        title: 'Start 2-Min Recruiter Portfolio Tour',
-        category: 'ACTIONS',
-        desc: 'AI guided step-by-step tour tailored for recruiters and hiring managers',
-        type: 'internal',
-        url: '/lab/gaurav-chatbot?tour=tour_recruiter',
-        badge: 'AI Tour 🚀',
-        shortcut: '↵',
-        keywords: ['recruiter tour', 'guided tour', 'tour', 'hiring manager', 'recruiter', 'overview', 'fast tour', '2 min tour', 'walkthrough']
-    },
-    {
-        id: 'action-ai-minor-tour',
-        title: 'Start AI & Machine Learning Tour',
-        category: 'ACTIONS',
-        desc: 'AI guided walkthrough of IIT Mandi Minor coursework and ML systems',
-        type: 'internal',
-        url: '/lab/gaurav-chatbot?tour=tour_ai',
-        badge: 'AI Tour 🚀',
-        shortcut: '↵',
-        keywords: ['ai tour', 'machine learning tour', 'iit mandi tour', 'ml tour', 'ai engineering tour']
-    },
-    {
-        id: 'lab-consistency',
-        title: 'Consistency & Activity Dashboard',
-        category: 'LAB TOOLS',
-        desc: 'GitHub commit heatmaps & LeetCode problem solving streak metrics',
-        type: 'internal',
-        url: '/lab/consistency-dashboard',
-        badge: 'Lab Tool',
-        shortcut: '↵',
-        keywords: ['consistency dashboard', 'github heatmap', 'leetcode activity', 'heatmap', 'streak', 'contributions', 'commits', 'problem solving', 'tracking', 'activity', 'coding streak', 'progress', 'daily', 'dashboard']
-    },
-    {
-        id: 'lab-terminal',
-        title: 'Developer UNIX Terminal Emulator',
-        category: 'LAB TOOLS',
-        desc: 'Interactive UNIX command line emulator with custom commands',
-        type: 'internal',
-        url: '/lab/terminal',
-        badge: 'Lab Tool',
-        shortcut: '↵',
-        keywords: ['terminal', 'developer terminal', 'cli', 'bash', 'unix', 'shell', 'command line', 'emulator', 'console', 'cmd', 'prompt', 'tty', 'zsh', 'interactive', 'dev terminal']
-    },
-    {
-        id: 'lab-algorithms',
-        title: 'Algorithm & DSA Visualizer',
-        category: 'LAB TOOLS',
-        desc: 'Interactive step-by-step sorting & graph algorithm visualizer',
-        type: 'internal',
-        url: '/lab/algorithms',
-        badge: 'Lab Tool',
-        shortcut: '↵',
-        keywords: ['algorithm visualizer', 'algorithm lab', 'sorting visualizer', 'dsa', 'graphs', 'dijkstra', 'bfs', 'dfs', 'data structures', 'sorting', 'step visualizer', 'algo', 'visualization', 'binary search', 'bubble sort', 'merge sort']
-    },
-    {
-        id: 'lab-image-analyzer',
-        title: 'TensorFlow MobileNet Image Analyzer',
-        category: 'LAB TOOLS',
-        desc: 'Client-side MobileNet computer vision image classifier demo',
-        type: 'internal',
-        url: '/lab',
-        badge: 'Lab Tool',
-        shortcut: '↵',
-        keywords: ['image analyzer', 'image classifier', 'computer vision', 'mobilenet', 'tensorflow', 'ai tools', 'ml demo', 'vision', 'object detection', 'prompt improver']
-    },
-    {
-        id: 'lab-neural-network',
-        title: 'Neural Network Canvas & Weights',
-        category: 'LAB TOOLS',
-        desc: 'Interactive neural network layer visualization & activation canvas',
-        type: 'internal',
-        url: '/lab',
-        badge: 'Lab Tool',
-        shortcut: '↵',
-        keywords: ['neural network', 'deep learning', 'canvas', 'weights', 'perceptron', 'activations', 'machine learning', 'ai visualizer']
     },
 
     // ── SERVICES ─────────────────────────────────────────────────────

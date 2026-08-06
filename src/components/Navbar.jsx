@@ -124,7 +124,6 @@ function Navbar({ navReady = true, logoRef }) {
         { path: '/', name: 'Home', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg> },
         { path: '/about', name: 'About', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg> },
         { path: '/journey', name: 'Journey', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75h12m-12 5.25h12m-12 5.25h12M3 6.75h.008v.008H3V6.75zm0 5.25h.008v.008H3V12zm0 5.25h.008v.008H3v-.008z" /></svg> },
-        { path: '/lab', name: 'Lab', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1 1 .03 2.798-1.414 2.798H4.213c-1.444 0-2.414-1.798-1.414-2.798L5 14.5" /></svg> },
         { path: '/skills', name: 'Skills', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg> },
         { path: '/projects', name: 'Projects', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 14.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" /></svg> },
         { path: '/services', name: 'Services', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75h19.5M2.25 12h19.5m-19.5 5.25h19.5" /></svg> },
@@ -195,13 +194,12 @@ function Navbar({ navReady = true, logoRef }) {
                 }`}>
                     <div className="flex items-center justify-between min-w-0">
 
-                        {/* Priority 1: Logo — Never compress, never shrink */}
+                        {/* Priority 1: Logo */}
                         <Link
                             to="/"
                             onClick={closeMenu}
                             className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-2 lg:mr-3 xl:mr-6 leading-none"
                         >
-                            {/* Plain span — SplashScreen measures this to know where to travel */}
                             <span
                                 ref={logoRef}
                                 className="text-white group-hover:text-toxic transition-colors duration-300 leading-none"
@@ -209,7 +207,6 @@ function Navbar({ navReady = true, logoRef }) {
                                 Gaurav
                             </span>
 
-                            {/* Phosphor pulse — fires once when wordmark arrives from splash */}
                             <AnimatePresence>
                                 {navReady && (
                                     <motion.div
@@ -230,7 +227,7 @@ function Navbar({ navReady = true, logoRef }) {
                             <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                         </Link>
 
-                        {/* Priority 2: Desktop Navigation Links — Adaptively scales gap and padding on scroll or tight screens */}
+                        {/* Priority 2: Desktop Navigation Links */}
                         <div className={`hidden lg:flex items-center transition-all duration-300 min-w-0 ${
                             scrolled ? 'gap-0.5 xl:gap-1' : 'gap-0.5 xl:gap-1.5'
                         }`}>
@@ -267,7 +264,7 @@ function Navbar({ navReady = true, logoRef }) {
 
                         {/* Right Header Action Group */}
                         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                            {/* Priority 3: Search / Command Palette Trigger — First to adaptively contract without shifting layout */}
+                            {/* Search / Command Palette Trigger */}
                             <button
                                 type="button"
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
@@ -293,7 +290,7 @@ function Navbar({ navReady = true, logoRef }) {
                                 </kbd>
                             </button>
 
-                            {/* Mobile Search Button (Extra Small Viewports) */}
+                            {/* Mobile Search Button */}
                             <button
                                 type="button"
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
@@ -305,7 +302,7 @@ function Navbar({ navReady = true, logoRef }) {
                                 </svg>
                             </button>
 
-                            {/* Priority 4: Desktop Resume button */}
+                            {/* Desktop Resume button */}
                             <a
                                 href="/resume.pdf"
                                 target="_blank"
@@ -321,7 +318,7 @@ function Navbar({ navReady = true, logoRef }) {
                                 <span className="relative z-10 leading-none">Resume</span>
                             </a>
 
-                            {/* Priority 5: User Profile Menu (Authenticated Users) */}
+                            {/* User Profile Menu */}
                             {isAuthenticated && user
                                 ? renderDesktopProfileMenu({
                                     user,
@@ -348,9 +345,7 @@ function Navbar({ navReady = true, logoRef }) {
                 </div>
             </nav>
 
-            {/* ── Mobile drawer — slides in from RIGHT ────────────────── */}
-
-            {/* Backdrop */}
+            {/* Mobile drawer */}
             <button
                 type="button"
                 aria-label="Close menu"
@@ -362,7 +357,6 @@ function Navbar({ navReady = true, logoRef }) {
                 onKeyDown={(e) => e.key === 'Escape' && closeMenu()}
             />
 
-            {/* Drawer panel — full viewport height, slides from right */}
             <div
                 style={{ height: '100dvh' }}
                 className={`fixed inset-y-0 right-0 z-[200] lg:hidden
@@ -372,7 +366,6 @@ function Navbar({ navReady = true, logoRef }) {
                     transition-transform duration-300 ease-out
                     ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
             >
-                {/* ── Header ── */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-border shrink-0">
                     <Link to="/" onClick={closeMenu} className="flex items-center gap-2 min-w-0 font-display font-extrabold uppercase tracking-wider">
                         <span className="text-white truncate">
@@ -390,7 +383,6 @@ function Navbar({ navReady = true, logoRef }) {
                     </button>
                 </div>
 
-                {/* ── Nav links (scrollable, fills all available space) ── */}
                 <nav className="flex-1 overflow-y-auto px-3 py-3" style={{ minHeight: 0 }}>
                     <p className="text-zinc-600 text-[10px] font-display font-bold uppercase tracking-widest px-3.5 pb-2">
                         Navigation
@@ -419,7 +411,6 @@ function Navbar({ navReady = true, logoRef }) {
                     ))}
                 </nav>
 
-                {/* ── Resume + footer (pinned to bottom) ── */}
                 <div className="shrink-0 px-4 pt-4 pb-8 border-t border-obsidian-border space-y-3">
                     {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
 
