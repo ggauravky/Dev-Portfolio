@@ -726,6 +726,52 @@ export const journeyData = [
       'Status': 'Completed',
       'Certificate': 'Verified Certificate of Completion'
     }
+  },
+  {
+    id: 'build-with-swytchcode-paytm-2026',
+    title: 'Build With Swytchcode: SupportPilot AI',
+    organization: 'Swytchcode × Paytm Office',
+    date: '2026-08-09',
+    dateLabel: 'August 9, 2026',
+    location: 'Paytm Office, Noida, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Hackathons',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended the Build With Swytchcode buildathon at the Paytm Office, Noida, where I built and shipped SupportPilot AI—an autonomous AI-powered customer support agent capable of taking real-world technical and administrative actions under a tight deadline.',
+    whatILearned: [
+      'Built SupportPilot AI: An autonomous customer support agent leveraging Google Gemini for email intent & context analysis',
+      'Connected company knowledge retrieval from Notion and technical codebase investigation via GitHub API integration',
+      'Automated email updates to customers via Resend while maintaining ticket history and activity logs in MongoDB',
+      'Engineered automated engineering escalation workflows by creating Jira tickets for complex technical support',
+      'Orchestrated multi-tool API workflows using Swytchcode to connect the AI agent with core developer utilities',
+      'Pitched and live-demoed the product to mentors and industry professionals at Paytm Office, Noida'
+    ],
+    skills: [
+      'Generative AI',
+      'Google Gemini API',
+      'AI Agent Architecture',
+      'Notion API',
+      'GitHub API Integration',
+      'Jira API Escalation',
+      'Resend Email API',
+      'MongoDB',
+      'Swytchcode Integration',
+      'Rapid Prototyping',
+      'Product Pitching'
+    ],
+    coverImage: '/images/journey/love.png',
+    images: [
+      '/images/journey/paytmhack1.png',
+      '/images/journey/paytmhack2.png',
+      '/images/journey/paytmhack3.png',
+      '/images/journey/love.png'
+    ],
+    objectives: 'Architect and ship a functional autonomous AI support agent that executes multi-platform workflows across Notion, GitHub, Resend, MongoDB, and Jira during a high-speed buildathon at Paytm Office.',
+    outcomes: 'Built and pitched SupportPilot AI live at the Paytm Office in Noida, demonstrating automated customer support resolution and developer escalation.',
+    technologies: ['Google Gemini API', 'Swytchcode', 'React', 'Node.js', 'Express', 'MongoDB', 'Notion API', 'GitHub API', 'Jira API', 'Resend API'],
+    certificateUrl: '',
+    relatedBlogSlug: ''
   }
 ];
 
