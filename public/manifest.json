@@ -9,10 +9,11 @@
   "name": "Gaurav Portfolio - Gaurav Kumar Yadav",
   "short_name": "Gaurav Portfolio",
   "description": "Professional developer portfolio showcasing Python, AI/ML, Data Science, and Full Stack Development projects by Gaurav Kumar Yadav from Lucknow, India",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#070708",
+  "theme_color": "#070708",
   "orientation": "portrait-primary",
   "icons": [
     {

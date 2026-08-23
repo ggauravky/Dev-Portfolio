@@ -17,3 +17,25 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </AuthProvider>
     </React.StrictMode>,
 )
+
+// ── Service Worker registration ─────────────────────────────────────────────
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+            .register('/sw.js', { scope: '/' })
+            .then((registration) => {
+                console.info('[PWA] Service worker registered with scope:', registration.scope)
+            })
+            .catch((error) => {
+                console.error('[PWA] Service worker registration failed:', error)
+            })
+    }
+}
+
+if (typeof document !== 'undefined') {
+    if (document.readyState === 'complete') {
+        registerServiceWorker()
+    } else {
+        window.addEventListener('load', registerServiceWorker)
+    }
+}

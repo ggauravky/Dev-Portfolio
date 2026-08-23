@@ -1,0 +1,513 @@
+<!doctype html>
+<!--
+  Offline fallback page — Gaurav Kumar Yadav Portfolio
+  Served by the service worker ONLY on genuine network failures (TypeError).
+  Never served for HTTP 4xx/5xx responses (those pass through unchanged).
+  No external network dependencies — renders completely without internet.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#070708" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>You're Offline — Gaurav Kumar Yadav</title>
+    <style>
+      /* ── Design tokens matching the portfolio ───────────────────────── */
+      :root {
+        --bg:          #070708;
+        --bg-card:     #0e0e11;
+        --bg-light:    #16161a;
+        --border:      #1a1a22;
+        --border-soft: #242430;
+        --text:        #ffffff;
+        --muted:       #a1a1aa;
+        --muted-dim:   rgba(161,161,170,.6);
+        --toxic:       #c5f82a;
+        --cyber:       #ff5d00;
+        --font-sans:   -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        --font-mono:   'Courier New', 'Lucida Console', monospace;
+      }
+
+      /* ── Reset ──────────────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html, body {
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ── Layout ─────────────────────────────────────────────────────── */
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Ambient glow blobs */
+      body::before, body::after {
+        content: '';
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(80px);
+        pointer-events: none;
+        opacity: .07;
+      }
+      body::before {
+        width: 500px; height: 500px;
+        background: var(--cyber);
+        top: -120px; left: -120px;
+        animation: pulse 4s ease-in-out infinite;
+      }
+      body::after {
+        width: 500px; height: 500px;
+        background: var(--toxic);
+        bottom: -120px; right: -120px;
+        animation: pulse 4s ease-in-out infinite 2s;
+      }
+
+      /* ── Card ───────────────────────────────────────────────────────── */
+      .card {
+        position: relative;
+        z-index: 1;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 24px 64px rgba(0,0,0,.6);
+      }
+
+      /* ── Icon ───────────────────────────────────────────────────────── */
+      .icon-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(197,248,42,.07);
+        border: 1px solid rgba(197,248,42,.15);
+        margin-bottom: 1.5rem;
+        animation: icon-float 3s ease-in-out infinite;
+      }
+
+      .icon-wrap svg {
+        width: 36px;
+        height: 36px;
+        color: var(--toxic);
+      }
+
+      /* ── Status badge ───────────────────────────────────────────────── */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: rgba(255,93,0,.08);
+        border: 1px solid rgba(255,93,0,.25);
+        color: var(--cyber);
+        font-family: var(--font-mono);
+        font-size: .65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        padding: .3rem .75rem;
+        border-radius: 999px;
+        margin-bottom: 1.25rem;
+      }
+
+      .badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cyber);
+        animation: blink 1.5s step-end infinite;
+      }
+
+      /* ── Headings ───────────────────────────────────────────────────── */
+      h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -.02em;
+        margin-bottom: .75rem;
+        background: linear-gradient(135deg, #fff 40%, var(--muted));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        font-size: .9rem;
+        color: var(--muted);
+        line-height: 1.65;
+        max-width: 360px;
+        margin: 0 auto 2rem;
+      }
+
+      /* ── Divider ────────────────────────────────────────────────────── */
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 1.5rem 0;
+      }
+
+      /* ── Buttons ────────────────────────────────────────────────────── */
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        background: var(--toxic);
+        color: var(--bg);
+        font-family: var(--font-mono);
+        font-size: .75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        padding: .85rem 2rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: transform .15s, box-shadow .15s, opacity .15s;
+        box-shadow: 0 4px 20px rgba(197,248,42,.2);
+        width: 100%;
+        max-width: 260px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 28px rgba(197,248,42,.3);
+      }
+
+      .btn-primary:active { transform: translateY(0); }
+
+      .btn-primary:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: .7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        padding: .75rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: border-color .15s, color .15s;
+        text-decoration: none;
+      }
+
+      .btn-secondary:hover { border-color: rgba(197,248,42,.3); color: var(--toxic); }
+
+      .actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      /* ── Status message ─────────────────────────────────────────────── */
+      #status-msg {
+        font-family: var(--font-mono);
+        font-size: .7rem;
+        color: var(--toxic);
+        min-height: 1.2em;
+        transition: opacity .3s;
+        margin-top: -.25rem;
+      }
+
+      /* ── Cached note ────────────────────────────────────────────────── */
+      .cached-note {
+        background: rgba(197,248,42,.04);
+        border: 1px solid rgba(197,248,42,.1);
+        border-radius: 8px;
+        padding: .75rem 1rem;
+        font-size: .72rem;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+        text-align: left;
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+      }
+
+      .cached-note .icon { font-size: .9rem; flex-shrink: 0; margin-top: .05rem; }
+
+      /* ── Discovery links ────────────────────────────────────────────── */
+      .discovery {
+        border-top: 1px solid var(--border);
+        padding-top: 1.25rem;
+      }
+
+      .discovery p {
+        font-family: var(--font-mono);
+        font-size: .62rem;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        color: var(--muted-dim);
+        margin-bottom: .75rem;
+      }
+
+      .discovery-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        justify-content: center;
+      }
+
+      .discovery-links a {
+        font-family: var(--font-mono);
+        font-size: .65rem;
+        color: var(--muted-dim);
+        text-decoration: none;
+        padding: .25rem .6rem;
+        border: 1px solid var(--border-soft);
+        border-radius: 4px;
+        transition: border-color .15s, color .15s;
+      }
+
+      .discovery-links a:hover { border-color: rgba(197,248,42,.3); color: var(--toxic); }
+
+      /* ── Branding ───────────────────────────────────────────────────── */
+      .brand {
+        margin-top: 1.25rem;
+        font-size: .65rem;
+        color: var(--muted-dim);
+        font-family: var(--font-mono);
+      }
+
+      .brand span { color: var(--toxic); }
+
+      /* ── Keyframes ──────────────────────────────────────────────────── */
+      @keyframes pulse {
+        0%, 100% { opacity: .07; }
+        50%       { opacity: .12; }
+      }
+
+      @keyframes icon-float {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(-6px); }
+      }
+
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: .2; }
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* ── Reduced motion ─────────────────────────────────────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          transition-duration: .01ms !important;
+        }
+      }
+
+      /* ── Spinner (used in button while checking) ─────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(7,7,8,.3);
+        border-top-color: var(--bg);
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="card" role="main">
+
+      <!-- Icon -->
+      <div class="icon-wrap" aria-hidden="true">
+        <!-- Wifi-off SVG — no external fetch, fully inline -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="1" y1="1" x2="23" y2="23"/>
+          <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+          <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+          <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+          <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+          <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+          <circle cx="12" cy="20" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <!-- Status badge -->
+      <div class="badge" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        No connection
+      </div>
+
+      <!-- Heading -->
+      <h1>You're Offline</h1>
+      <p class="subtitle">
+        Looks like your internet connection disappeared.<br>
+        Check your connection and try again.
+      </p>
+
+      <!-- Cached content note -->
+      <div class="cached-note" role="note">
+        <span class="icon" aria-hidden="true">💡</span>
+        <span>
+          Pages you've visited recently may still be available
+          from cache — try navigating back to them while offline.
+        </span>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button
+          class="btn-primary"
+          id="retry-btn"
+          type="button"
+          onclick="handleRetry()"
+          aria-label="Try again — check connection and reload"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="23 4 23 10 17 10"/>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Try Again
+        </button>
+
+        <p id="status-msg" role="status" aria-live="polite" aria-atomic="true"></p>
+
+        <a class="btn-secondary" href="/">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Go Home
+        </a>
+      </div>
+
+      <div class="divider" aria-hidden="true"></div>
+
+      <!-- Agent / crawler discovery links -->
+      <div class="discovery">
+        <p>Machine-readable resources</p>
+        <div class="discovery-links">
+          <a href="/">Homepage</a>
+          <a href="/sitemap.xml">/sitemap.xml</a>
+          <a href="/llms.txt">/llms.txt</a>
+          <a href="/openapi.json">/openapi.json</a>
+        </div>
+      </div>
+
+      <!-- Branding -->
+      <p class="brand">
+        <span>Gaurav Kumar Yadav</span> — AI/ML Developer &amp; Web Developer
+      </p>
+
+    </main>
+
+    <script>
+      // ── Try Again logic ────────────────────────────────────────────────────
+      let retrying = false;
+
+      function setStatus(msg, color) {
+        const el = document.getElementById('status-msg');
+        el.textContent = msg;
+        el.style.color = color || 'var(--toxic)';
+      }
+
+      async function handleRetry() {
+        if (retrying) return;
+        retrying = true;
+
+        const btn = document.getElementById('retry-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Checking…';
+        setStatus('');
+
+        try {
+          // Ping a known-fast, cacheable static asset to verify real connectivity.
+          // Using /favicon.svg — small, cached, definitely exists.
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000);
+
+          const response = await fetch('/favicon.svg', {
+            method: 'HEAD',
+            cache: 'no-store',
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+
+          if (response.ok) {
+            // Connectivity restored — reload the originally-requested page
+            setStatus('✓ Back online! Reloading…');
+            setTimeout(() => {
+              // Reload to the page the user was trying to visit
+              // (or fall back to homepage if we can't determine it)
+              const target = (typeof _offlinePage !== 'undefined' && _offlinePage) || '/';
+              window.location.href = target;
+            }, 600);
+          } else {
+            throw new Error('Not OK');
+          }
+        } catch {
+          // Still offline or server error
+          setStatus('Still no connection. Try again in a moment.', 'var(--cyber)');
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Try Again`;
+          retrying = false;
+        }
+      }
+
+      // ── Auto-detect when browser regains connectivity ───────────────────────
+      window.addEventListener('online', () => {
+        setStatus('Connection detected — click Try Again to reload.');
+        document.getElementById('retry-btn').disabled = false;
+      });
+
+      window.addEventListener('offline', () => {
+        setStatus('Still offline.', 'var(--cyber)');
+      });
+
+      // ── Keyboard: Enter on body triggers retry ──────────────────────────────
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && document.activeElement === document.body) {
+          handleRetry();
+        }
+      });
+    </script>
+  </body>
+</html>
