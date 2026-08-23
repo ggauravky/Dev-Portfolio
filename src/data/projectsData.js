@@ -929,6 +929,84 @@ export const projectsData = [
             "Redux Toolkit query caching prevents duplicate REST API requests when switching between instructor and student views",
             "AI-assisted search indexing drastically improves course discoverability compared to standard SQL/MongoDB regex search"
         ]
+    },
+    {
+        id: 26,
+        slug: "insightaudio",
+        featured: true,
+        title: "InsightAudio",
+        description: "Autonomous AI Meeting Assistant & Video Intelligence Platform. Converts YouTube links and local media recordings into structured executive summaries, actionable task trackers, and conversational RAG memory — 100% self-hosted, private, and cost-free.",
+        techStack: ["Python", "Streamlit", "OpenAI Whisper", "Sarvam AI API", "LangChain", "Mistral AI", "ChromaDB", "Sentence-Transformers", "yt-dlp", "FFmpeg", "PyTorch", "ReportLab"],
+        categories: ["AI/ML", "Python"],
+        github: "https://github.com/ggauravky/InsightAudio",
+        demo: "https://insightaudio.streamlit.app/",
+        image: "/images/projects/insight1.png",
+        screenshots: [
+            "/images/projects/insight1.png",
+            "/images/projects/insight2.png",
+            "/images/projects/insight3.png",
+            "/images/projects/insight4.png"
+        ],
+        problem: "Modern knowledge workers and engineering teams spend hundreds of hours in virtual meetings, lectures, and video presentations. Existing commercial transcription tools charge steep monthly subscriptions ($20–$50/seat/month), enforce strict recording caps, compromise data privacy by sending proprietary meetings to third-party clouds, and struggle heavily with regional dialects such as Hindi and Hinglish.",
+        solution: "InsightAudio is a free, open-source, production-ready AI Meeting Assistant engineered entirely in Python. It provides an end-to-end pipeline that ingests any YouTube video or local media file (audio/video), performs high-fidelity speech-to-text with bilingual routing (Whisper for English & Sarvam AI for Hindi/Hinglish), synthesizes comprehensive structured intelligence using LangChain & Mistral/Gemini, indexes embeddings in ChromaDB, and delivers an interactive Streamlit dashboard with a citation-backed conversational RAG chat engine and one-click executive PDF export.",
+        architecture: "Streamlit UI ↔ Media Ingestion & Chunking Engine (yt-dlp / FFmpeg / pydub) ↔ Dual STT Router (OpenAI Whisper on GPU/CPU & Sarvam AI API) ↔ LangChain LCEL LLM Orchestrator (Mistral AI & Google Gemini) ↔ ChromaDB Local Vector Store (all-MiniLM-L6-v2 Embeddings) ↔ ReportLab PDF & Markdown Exporter.",
+        diagrams: {
+            system: `graph TD
+    User[User / Engineering Team] -->|YouTube URL or Local Media| UI[Streamlit Interactive Dashboard]
+    UI -->|Media Download & Extraction| Ingest[yt-dlp & FFmpeg Audio Processor]
+    Ingest -->|16kHz Mono Normalization & Chunking| Audio[pydub Audio Chunker]
+    Audio -->|English / Global Speech| Whisper[Local OpenAI Whisper Engine]
+    Audio -->|Hindi / Indic / Hinglish Speech| Sarvam[Sarvam AI Indic STT API]
+    Whisper -->|Combined Transcript| LCEL[LangChain LCEL Orchestration]
+    Sarvam -->|Combined Transcript| LCEL
+    LCEL -->|Structured Extraction| LLM[Mistral AI & Gemini Intelligence]
+    LLM -->|Executive Summaries, Actions & Decisions| UI
+    LCEL -->|Transcript Chunk Embeddings| Embed[Sentence-Transformers all-MiniLM-L6-v2]
+    Embed -->|Vector Embeddings| VDB[(ChromaDB Vector Store)]
+    UI -->|Conversational RAG Queries| RAG[RAG Retrieval Engine]
+    VDB -->|Context Citations & Evidence| RAG
+    RAG -->|Grounded Answers| UI
+    LLM -->|Formatted Executive Reports| PDF[ReportLab PDF & Markdown Exporter]
+    PDF -->|Downloadable Summaries| User`,
+            flow: `sequenceDiagram
+    autonumber
+    actor User as User
+    participant Streamlit as Streamlit Dashboard
+    participant Processor as Audio Processor (yt-dlp/FFmpeg)
+    participant STT as Dual STT Engine (Whisper/Sarvam)
+    participant LLM as LangChain & Mistral/Gemini
+    participant Chroma as ChromaDB Vector Store
+    participant Export as ReportLab Exporter
+
+    User->>Streamlit: Submit YouTube URL or Upload Local Media
+    Streamlit->>Processor: Normalize Audio to 16kHz Mono & Chunk
+    Processor->>STT: Dispatch Chunks (Whisper Local / Sarvam Indic)
+    STT-->>Streamlit: Unified Accurate Transcript
+    Streamlit->>LLM: Run LCEL Summary & Action Extraction Chains
+    LLM-->>Streamlit: Executive Summary, Decisions & Action Trackers
+    Streamlit->>Chroma: Generate Embeddings & Index Vectors (all-MiniLM-L6-v2)
+    User->>Streamlit: Ask Contextual Meeting Question (RAG)
+    Streamlit->>Chroma: Perform Similarity Search for Top-K Chunks
+    Chroma-->>Streamlit: Citation-Backed Context Evidence
+    Streamlit->>LLM: Generate Evidence-Grounded Answer
+    LLM-->>User: Display Hallucination-Free Response
+    User->>Streamlit: Click Export PDF Summary
+    Streamlit->>Export: Compile Styled Executive Report
+    Export-->>User: Deliver Formatted PDF & Markdown File`
+        },
+        keyDecisions: [
+            "Dual-Engine Speech Routing: Uses local OpenAI Whisper for zero-cost, private English/global transcription, combined with Sarvam AI API for accurate Hindi and code-mixed Hinglish dialect transcription",
+            "16kHz Mono Preprocessing: Automatically downmixes multi-channel media and chunks audio into 10-minute blocks via FFmpeg and pydub to prevent GPU/RAM memory overflows",
+            "Local Vector Store with ChromaDB: Embedded ChromaDB paired with HuggingFace all-MiniLM-L6-v2 embeddings keeps the entire RAG pipeline local, low-latency, and zero-egress",
+            "LangChain Expression Language (LCEL) Chains: Modular, production-ready prompt templates enforcing structured JSON outputs for action items, deadlines, and decision logs",
+            "Executive PDF Generation: Formatted multi-page PDF reporting with ReportLab, including priority badges, assignee checklists, and timestamped transcripts for leadership distribution"
+        ],
+        lessonsLearned: [
+            "Audio chunking at natural silence boundaries significantly reduces transcription word-boundary clipping compared to rigid fixed-interval slicing",
+            "Dual STT routing solves regional accent and Hinglish code-switching inaccuracies that standalone global models frequently misinterpret",
+            "Strict transcript context windowing and citation grounding in RAG queries completely eliminates LLM hallucinations during executive Q&A",
+            "Streaming audio extraction directly with yt-dlp cuts bandwidth usage by over 80% compared to downloading full high-definition video files"
+        ]
     }
 ]
 

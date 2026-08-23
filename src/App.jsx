@@ -20,7 +20,6 @@ import SplashScreen from './components/SplashScreen'
 import { OpeningContext } from './context/OpeningContext'
 import CursorSpotlight from './components/CursorSpotlight'
 import ScrollProgress from './components/ScrollProgress'
-import AvailabilityBanner from './components/AvailabilityBanner'
 import CommandPalette from './components/CommandPalette'
 import RadialMenu from './components/RadialMenu'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
@@ -143,7 +142,6 @@ function AppLayout({ children, navReady, logoRef }) {
         <div className="App">
             {!isFullScreen && (
                 <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
-                    <AvailabilityBanner />
                     <div className="pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
                         <Navbar navReady={navReady} logoRef={logoRef} />
                     </div>

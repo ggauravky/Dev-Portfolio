@@ -464,6 +464,26 @@
         "github": "https://github.com/ggauravky/InstaX",
         "demo": "https://instax-g.vercel.app/"
       }
+    },
+    {
+      "slug": "insightaudio",
+      "title": "InsightAudio",
+      "category": "AI/ML and Python",
+      "featured": true,
+      "summary": "Autonomous AI Meeting Assistant & Video Intelligence Platform. Ingests YouTube URLs and local media recordings, performs bilingual transcription (Whisper + Sarvam AI), extracts structured executive intelligence via Gemini & Mistral LLMs, and powers conversational RAG memory with ChromaDB.",
+      "problem": "Knowledge workers and engineering teams spend hundreds of hours in virtual meetings, lectures, and video presentations. Existing commercial transcription tools charge steep monthly subscriptions ($20–$50/seat/month), enforce strict recording caps, compromise data privacy by sending proprietary meetings to third-party clouds, and struggle heavily with regional dialects such as Hindi and Hinglish.",
+      "highlights": [
+        "Universal YouTube & Local Media Ingestion with 16kHz mono normalization",
+        "Dual-Engine STT: Local OpenAI Whisper (offline/free) + Sarvam AI (Indic/Hinglish)",
+        "Deep Meeting Intelligence: Executive summary, action items tracker, decisions log, risks & timestamps",
+        "Conversational RAG: Local ChromaDB vector store + all-MiniLM-L6-v2 embeddings for citation-backed Q&A",
+        "Executive Export: One-click styled PDF generation with ReportLab and markdown downloads"
+      ],
+      "techStack": ["Python", "Streamlit", "OpenAI Whisper", "Sarvam AI API", "LangChain", "Mistral AI", "ChromaDB", "Sentence-Transformers", "yt-dlp", "FFmpeg", "PyTorch", "ReportLab"],
+      "links": {
+        "github": "https://github.com/ggauravky/InsightAudio",
+        "demo": "https://insightaudio.streamlit.app/"
+      }
     }
   ],
   "services": [
