@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+  Custom 404 page — served by Vercel with HTTP 404 status for unmatched routes.
+  Bootstraps the full React SPA so the interactive NotFound component renders.
+  Portfolio: https://ggauravky.vercel.app
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>404 — Page Not Found | Gaurav Kumar Yadav</title>
+    <meta name="title" content="404 — Page Not Found | Gaurav Kumar Yadav" />
+    <meta
+      name="description"
+      content="Oops! The page you're looking for doesn't exist. Navigate back to Gaurav Kumar Yadav's developer portfolio — AI/ML Developer & Web Developer from Lucknow, India."
+    />
+    <meta name="robots" content="noindex, follow" />
+
+    <link rel="canonical" href="https://ggauravky.vercel.app/" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Same fonts as the main app -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Agent-friendly discovery links -->
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+    <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLMs Text Specification" />
+
+    <!-- Minimal inline styles: dark background shown instantly before React hydrates -->
+    <style>
+      html, body { margin: 0; padding: 0; background-color: #070708; color: #fff; }
+      #root { min-height: 100vh; }
+      /* Static 404 layout shown only when JS is disabled */
+      .static-404 {
+        display: none;
+        font-family: 'Space Mono', 'Courier New', monospace;
+        min-height: 100vh;
+        background: #070708;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body style="background-color: #070708; color: #ffffff;">
+
+    <!--
+      Agent / No-JS fallback — visible to crawlers that don't run JavaScript.
+      Provides HTTP-404-status content with navigation links for agents.
+    -->
+    <noscript>
+      <div class="static-404">
+        <p style="font-size:5rem;font-weight:900;background:linear-gradient(90deg,#c5f82a,#ff5d00,#c5f82a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0">404</p>
+        <h1 style="font-family:'Syne',sans-serif;font-size:2rem;margin:1rem 0">Page Not Found</h1>
+        <p style="color:#a1a1aa;max-width:520px;line-height:1.6;margin-bottom:2rem">
+          The URL you requested does not exist on this server. This is a real HTTP 404 — not a soft redirect.
+          Gaurav Kumar Yadav's portfolio is at <a href="https://ggauravky.vercel.app/" style="color:#c5f82a">ggauravky.vercel.app</a>.
+        </p>
+
+        <!-- Navigation for humans -->
+        <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-bottom:2.5rem">
+          <a href="/" style="background:#c5f82a;color:#070708;padding:.75rem 1.5rem;border-radius:6px;font-weight:700;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Home</a>
+          <a href="/projects" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Projects</a>
+          <a href="/about" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">About</a>
+          <a href="/contact" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Contact</a>
+        </div>
+
+        <!-- Agent-friendly discovery section -->
+        <div style="border-top:1px solid #1a1a22;padding-top:1.5rem;max-width:520px;width:100%">
+          <p style="color:#a1a1aa;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem">
+            🤖 Machine-Readable Resources
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center">
+            <a href="/sitemap.xml" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/sitemap.xml</a>
+            <a href="/llms.txt" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/llms.txt</a>
+            <a href="/llms-full.txt" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/llms-full.txt</a>
+            <a href="/openapi.json" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/openapi.json</a>
+            <a href="/.well-known/mcp.json" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/.well-known/mcp.json</a>
+          </div>
+          <p style="color:#a1a1aa;font-size:.65rem;margin-top:1rem;opacity:.6">
+            Portfolio owner: Gaurav Kumar Yadav (ggauravky) · AI/ML Developer &amp; Web Developer · Lucknow, India
+          </p>
+        </div>
+      </div>
+    </noscript>
+
+    <!-- React SPA root — when JS runs, the full interactive NotFound component mounts here -->
+    <div id="root"></div>
+
+    <!--
+      Load the same Vite entry point as index.html.
+      React Router's wildcard route (*) matches and renders <NotFound /> with
+      the full interactive experience: animated 404, countdown, easter eggs, etc.
+    -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

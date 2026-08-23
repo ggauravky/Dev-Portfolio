@@ -292,7 +292,28 @@ function NotFound() {
                             </Link>
                             <span className="text-[#242430] font-mono text-xs">/</span>
                             <Link to="/contact" className="text-[#a1a1aa] hover:text-[#c5f82a] font-mono text-xs uppercase tracking-wider underline transition-all">
-                                Contact & Platforms
+                                Contact &amp; Platforms
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Agent / Crawler Discovery Links */}
+                    <div className="mt-6 pt-5 border-t border-[#1a1a22]/50">
+                        <p className="text-[#a1a1aa]/50 font-mono text-[10px] uppercase tracking-wider mb-3">
+                            🤖 Machine-readable resources
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-4">
+                            <a href="/sitemap.xml" className="text-[#a1a1aa]/50 hover:text-[#c5f82a] font-mono text-[10px] uppercase tracking-wider transition-colors">
+                                /sitemap.xml
+                            </a>
+                            <a href="/llms.txt" className="text-[#a1a1aa]/50 hover:text-[#c5f82a] font-mono text-[10px] uppercase tracking-wider transition-colors">
+                                /llms.txt
+                            </a>
+                            <a href="/openapi.json" className="text-[#a1a1aa]/50 hover:text-[#c5f82a] font-mono text-[10px] uppercase tracking-wider transition-colors">
+                                /openapi.json
+                            </a>
+                            <Link to="/" className="text-[#a1a1aa]/50 hover:text-[#c5f82a] font-mono text-[10px] uppercase tracking-wider transition-colors">
+                                / home
                             </Link>
                         </div>
                     </div>
