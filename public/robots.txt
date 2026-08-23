@@ -36,3 +36,9 @@ Allow: /
 
 # Sitemap location
 Sitemap: https://ggauravky.vercel.app/sitemap.xml
+
+# Machine-readable resources for agents
+# API spec: https://ggauravky.vercel.app/openapi.json
+# MCP manifest: https://ggauravky.vercel.app/.well-known/mcp.json
+# LLM knowledge base: https://ggauravky.vercel.app/llms.txt
+# Full LLM knowledge base: https://ggauravky.vercel.app/llms-full.txt

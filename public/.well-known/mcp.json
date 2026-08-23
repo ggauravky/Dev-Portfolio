@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "name": "Gaurav Kumar Yadav — Portfolio AI Assistant",
+  "description": "An AI-powered chat assistant for the developer portfolio of Gaurav Kumar Yadav (ggauravky). The assistant answers questions about Gaurav's projects, skills, journey, services, and background. It is grounded in a curated knowledge base and does not hallucinate project details.",
+  "url": "https://ggauravky.vercel.app",
+  "contact": "kumar.gaurav.yadav2007@gmail.com",
+  "capabilities": ["chat", "question-answering", "portfolio-lookup"],
+  "endpoints": [
+    {
+      "name": "AI Chat",
+      "description": "Ask a natural-language question about Gaurav Kumar Yadav's portfolio, projects, skills, services, or journey. Returns a structured JSON response.",
+      "url": "https://ggauravky.vercel.app/api/ai/chat",
+      "method": "POST",
+      "content_type": "application/json",
+      "request_schema": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Natural-language question for the portfolio AI assistant",
+            "maxLength": 2000
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Optional session ID for multi-turn conversation context"
+          }
+        }
+      },
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "reply": { "type": "string" },
+          "suggestions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "example_request": {
+        "message": "What projects has Gaurav built with React and Node.js?"
+      }
+    },
+    {
+      "name": "Health Check",
+      "description": "Verify the AI chat endpoint is active before sending POST requests.",
+      "url": "https://ggauravky.vercel.app/api/ai/chat",
+      "method": "GET",
+      "response_schema": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "discovery": {
+    "openapi": "https://ggauravky.vercel.app/openapi.json",
+    "llms_txt": "https://ggauravky.vercel.app/llms.txt",
+    "llms_full_txt": "https://ggauravky.vercel.app/llms-full.txt",
+    "sitemap": "https://ggauravky.vercel.app/sitemap.xml"
+  },
+  "authentication": {
+    "required": false,
+    "note": "The AI chat endpoint is publicly accessible with no authentication required."
+  },
+  "rate_limits": {
+    "note": "No hard rate limits are currently enforced, but please be respectful of usage."
+  }
+}

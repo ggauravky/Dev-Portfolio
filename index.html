@@ -134,17 +134,111 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
     <link rel="dns-prefetch" href="https://dev-portfolio-ojfs.onrender.com" />
 
+    <!-- JSON-LD Structured Data — Person + WebSite schema for agents and search engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://ggauravky.vercel.app/#person",
+          "name": "Gaurav Kumar Yadav",
+          "alternateName": ["ggauravky", "Gaurav Kumar", "Gaurav BBDU"],
+          "url": "https://ggauravky.vercel.app",
+          "image": "https://ggauravky.vercel.app/images/profile.jpg",
+          "jobTitle": "AI/ML Developer & Web Developer",
+          "description": "BCA student at BBD University (BBDU), Lucknow, India. Builds AI/ML projects, full-stack web applications, and open source tools. Specialises in Python, React, Node.js, and MERN stack development.",
+          "email": "kumar.gaurav.yadav2007@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Lucknow",
+            "addressRegion": "Uttar Pradesh",
+            "addressCountry": "IN"
+          },
+          "alumniOf": {
+            "@type": "CollegeOrUniversity",
+            "name": "BBD University",
+            "alternateName": "BBDU",
+            "url": "https://www.bbdniit.ac.in/"
+          },
+          "knowsAbout": [
+            "Machine Learning",
+            "Artificial Intelligence",
+            "React",
+            "Node.js",
+            "Python",
+            "MERN Stack",
+            "Full Stack Web Development",
+            "Data Science"
+          ],
+          "sameAs": [
+            "https://github.com/ggauravky",
+            "https://www.linkedin.com/in/gauravky/"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "kumar.gaurav.yadav2007@gmail.com",
+            "contactType": "developer",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://ggauravky.vercel.app/#website",
+          "name": "Gaurav Kumar Yadav — Developer Portfolio",
+          "url": "https://ggauravky.vercel.app",
+          "description": "Developer portfolio of Gaurav Kumar Yadav — AI/ML and full-stack web developer from Lucknow, India.",
+          "author": { "@id": "https://ggauravky.vercel.app/#person" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://ggauravky.vercel.app/projects?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
 
   </head>
   <body style="background-color: #080a0e; color: #ffffff;">
     <!-- Fallback for crawlers/bots that don't execute JavaScript -->
     <noscript>
-      <p>Gaurav Kumar Yadav — AI/ML Developer and Web Developer, BCA student at
-      BBD University (BBDU), Lucknow, India. This portfolio showcases projects in
-      Machine Learning, Data Science basics, React, MERN stack, and Python.
-      Please enable JavaScript for the full interactive experience, or visit
-      <a href="https://github.com/ggauravky">github.com/ggauravky</a> to
-      explore the source code directly.</p>
+      <h1>Gaurav Kumar Yadav — AI/ML Developer &amp; Web Developer</h1>
+      <p>
+        Gaurav Kumar Yadav (ggauravky) is a BCA student at BBD University (BBDU), Lucknow,
+        Uttar Pradesh, India. He works as an AI/ML developer and full-stack web developer,
+        specialising in Python, React, Node.js, and MERN stack development.
+      </p>
+      <p>
+        Gaurav has built 26+ projects including SmartMess (a hostel mess management system),
+        InsightAudio (an autonomous AI meeting assistant), Kanoon-Mate (an AI legal help platform),
+        SupportPilot AI (an AI customer support agent), AiReel Studio, FocusGuard, TrueCert, and
+        ShopEase (an e-commerce platform with Cashfree integration).
+      </p>
+      <p>
+        He has completed hackathons at Build With Swytchcode (Paytm Office, Noida), Nerds Hack Days
+        (Lucknow), and is an accepted contributor in ECSoC 2026. He interned at Samarth 2.0 and
+        attended Android Nova 2.0 (Cyber Intelligence Community Lucknow).
+      </p>
+      <p>
+        Services offered: Frontend Development, Backend Development, Full Stack Development,
+        AI &amp; Data Science Guidance, Mentorship (INR 49), Resume Review (INR 49),
+        Debugging Help (INR 99), Portfolio Review (INR 99).
+      </p>
+      <ul>
+        <li><a href="https://ggauravky.vercel.app/projects">Projects</a></li>
+        <li><a href="https://ggauravky.vercel.app/about">About</a></li>
+        <li><a href="https://ggauravky.vercel.app/skills">Skills</a></li>
+        <li><a href="https://ggauravky.vercel.app/journey">Journey</a></li>
+        <li><a href="https://ggauravky.vercel.app/services">Services</a></li>
+        <li><a href="https://ggauravky.vercel.app/blog">Blog</a></li>
+        <li><a href="https://ggauravky.vercel.app/contact">Contact</a></li>
+        <li><a href="https://github.com/ggauravky">GitHub: github.com/ggauravky</a></li>
+        <li><a href="https://www.linkedin.com/in/gauravky/">LinkedIn</a></li>
+        <li><a href="https://ggauravky.vercel.app/llms.txt">LLM Knowledge Base</a></li>
+        <li><a href="https://ggauravky.vercel.app/openapi.json">API Specification (OpenAPI)</a></li>
+      </ul>
+      <p>Please enable JavaScript for the full interactive portfolio experience.</p>
     </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

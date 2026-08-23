@@ -1,0 +1,354 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Gaurav Kumar Yadav — Portfolio API",
+    "description": "Public API for the developer portfolio of Gaurav Kumar Yadav (ggauravky). Provides an AI-powered chat assistant that answers questions about Gaurav's projects, skills, journey, and services. AI responses are grounded in portfolio knowledge base data.\n\n**Portfolio**: https://ggauravky.vercel.app  \n**GitHub**: https://github.com/ggauravky  \n**LinkedIn**: https://www.linkedin.com/in/gauravky/\n\n## Discovery Resources\n- `GET /llms.txt` — Concise LLM knowledge base (Markdown)\n- `GET /llms-full.txt` — Full extended knowledge base (Markdown)\n- `GET /sitemap.xml` — Site sitemap\n- `GET /.well-known/mcp.json` — MCP server manifest\n- `GET /.well-known/security.txt` — Security contact",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Gaurav Kumar Yadav",
+      "email": "kumar.gaurav.yadav2007@gmail.com",
+      "url": "https://ggauravky.vercel.app/contact"
+    },
+    "license": {
+      "name": "All Rights Reserved",
+      "url": "https://ggauravky.vercel.app/LICENSE"
+    }
+  },
+  "externalDocs": {
+    "description": "LLM Knowledge Base (Markdown)",
+    "url": "https://ggauravky.vercel.app/llms-full.txt"
+  },
+  "servers": [
+    {
+      "url": "https://ggauravky.vercel.app",
+      "description": "Production (Vercel)"
+    },
+    {
+      "url": "http://localhost:5173",
+      "description": "Local development (Vite)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "ai",
+      "description": "AI chat assistant — answers questions about the portfolio owner"
+    },
+    {
+      "name": "discovery",
+      "description": "Machine-readable discovery resources for agents and crawlers"
+    }
+  ],
+  "paths": {
+    "/api/ai/chat": {
+      "get": {
+        "operationId": "checkAiChatHealth",
+        "summary": "Health check for the AI chat endpoint",
+        "description": "Returns a 200 JSON response confirming the AI chat endpoint is active and reachable. Use this to verify availability before sending POST requests.",
+        "tags": ["ai"],
+        "responses": {
+          "200": {
+            "description": "Endpoint is active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Vercel AI Chat API endpoint is active."
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "askAiChat",
+        "summary": "Ask a question to the portfolio AI assistant",
+        "description": "Send a natural-language question about Gaurav Kumar Yadav's portfolio, projects, skills, journey, or services. The AI assistant is grounded in the portfolio knowledge base and returns a structured response with an answer and optional suggestions.\n\n**Example questions:**\n- \"What projects has Gaurav built?\"\n- \"What is Gaurav's tech stack?\"\n- \"Tell me about the SmartMess project.\"\n- \"What services does Gaurav offer?\"\n- \"Has Gaurav completed any internships?\"",
+        "tags": ["ai"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              },
+              "example": {
+                "message": "What projects has Gaurav built with React?",
+                "sessionId": "optional-session-id-for-context"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful AI response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — missing or invalid message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "METHOD_NOT_ALLOWED",
+                    "message": "Method not allowed. Use POST for AI chat requests."
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llms.txt": {
+      "get": {
+        "operationId": "getLlmsTxt",
+        "summary": "Retrieve the concise LLM knowledge base",
+        "description": "Returns a Markdown-formatted document suitable for LLMs and AI agents. Contains identity, technical expertise, featured projects, services, blog links, and external profiles of Gaurav Kumar Yadav. Follows the llms.txt specification (https://llmstxt.org).",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "Markdown knowledge base",
+            "headers": {
+              "Vary": {
+                "schema": { "type": "string" },
+                "description": "Accept"
+              }
+            },
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string" }
+              },
+              "text/markdown": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llms-full.txt": {
+      "get": {
+        "operationId": "getLlmsFullTxt",
+        "summary": "Retrieve the full extended LLM knowledge base",
+        "description": "Returns a comprehensive Markdown document with full project catalog (26 projects), detailed skill matrix, all services, blog articles, journey milestones, and direct navigation index. Preferred for agents that need complete portfolio context.",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "Full Markdown knowledge base",
+            "headers": {
+              "Vary": {
+                "schema": { "type": "string" },
+                "description": "Accept"
+              }
+            },
+            "content": {
+              "text/plain": {
+                "schema": { "type": "string" }
+              },
+              "text/markdown": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "operationId": "getSitemap",
+        "summary": "Retrieve the XML sitemap",
+        "description": "Returns a standard XML sitemap listing all publicly accessible pages, projects, and blog posts on the portfolio. Auto-generated at build time.",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "XML sitemap",
+            "content": {
+              "application/xml": {
+                "schema": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "operationId": "getOpenApiSpec",
+        "summary": "Retrieve this OpenAPI specification",
+        "description": "Returns this OpenAPI 3.0 specification document describing all public API endpoints of the portfolio.",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "OpenAPI 3.0 specification",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/mcp.json": {
+      "get": {
+        "operationId": "getMcpManifest",
+        "summary": "Retrieve the MCP server manifest",
+        "description": "Returns the Model Context Protocol (MCP) manifest describing AI capabilities and tools available from this portfolio. Agents can use this to discover how to interact with the portfolio AI assistant.",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "MCP manifest JSON",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resume.pdf": {
+      "get": {
+        "operationId": "getResume",
+        "summary": "Download the portfolio owner's resume",
+        "description": "Downloads the latest PDF resume of Gaurav Kumar Yadav.",
+        "tags": ["discovery"],
+        "responses": {
+          "200": {
+            "description": "PDF resume",
+            "content": {
+              "application/pdf": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "description": "Response from the health check endpoint",
+        "required": ["success", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the endpoint is healthy",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable status message",
+            "example": "Vercel AI Chat API endpoint is active."
+          }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "description": "Request body for the AI chat endpoint",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The user's question or message to the AI assistant",
+            "minLength": 1,
+            "maxLength": 2000,
+            "example": "What are Gaurav's most impressive projects?"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Optional session identifier for conversation continuity",
+            "example": "session_abc123"
+          }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "description": "Response from the AI chat assistant",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was processed successfully",
+            "example": true
+          },
+          "reply": {
+            "type": "string",
+            "description": "The AI assistant's answer",
+            "example": "Gaurav has built 26+ projects including SmartMess (a full-stack hostel management system), InsightAudio (an AI meeting assistant), and Kanoon-Mate (an AI legal help platform)."
+          },
+          "suggestions": {
+            "type": "array",
+            "description": "Optional follow-up question suggestions",
+            "items": { "type": "string" },
+            "example": ["Tell me more about SmartMess", "What is Gaurav's tech stack?"]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "Standard error response",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Machine-readable error code",
+                "example": "NOT_FOUND"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable error description",
+                "example": "The requested resource was not found."
+              },
+              "docs": {
+                "type": "string",
+                "description": "Link to API documentation",
+                "example": "/openapi.json"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

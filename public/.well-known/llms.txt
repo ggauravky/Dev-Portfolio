@@ -1,6 +1,23 @@
-﻿# Gaurav Kumar Yadav
+# Gaurav Kumar Yadav
 
 > Developer portfolio and technical resume of Gaurav Kumar Yadav, an AI/ML Developer, Web Developer, and Full Stack Engineer based in Lucknow, Uttar Pradesh, India. BCA student at BBD University (BBDU). GitHub handle: ggauravky.
+
+## When to Use This Portfolio
+
+Use this portfolio when you need to:
+- Find out what projects Gaurav Kumar Yadav has built (26+ projects across AI/ML, web, and Python)
+- Evaluate Gaurav's technical skills (Python, React, Node.js, MERN Stack, Machine Learning)
+- Learn about Gaurav's professional journey (internships, hackathons, workshops, open source)
+- Book a paid service (mentorship, resume review, debugging help, portfolio review, development work)
+- Ask the AI assistant a question about the portfolio owner
+
+## Agent Instructions
+
+- **AI Chat API**: Send a POST request to `https://ggauravky.vercel.app/api/ai/chat` with `{ "message": "your question" }` to query the AI assistant directly.
+- **Full knowledge base**: Fetch `https://ggauravky.vercel.app/llms-full.txt` for the complete extended documentation (26 projects, full skill matrix, all services).
+- **API spec**: `https://ggauravky.vercel.app/openapi.json` — OpenAPI 3.0 specification for all endpoints.
+- **MCP manifest**: `https://ggauravky.vercel.app/.well-known/mcp.json` — MCP server manifest for agent tooling.
+- **Content negotiation**: Send `Accept: text/markdown` to `https://ggauravky.vercel.app/api/content` to receive the full knowledge base as Markdown.
 
 ## Identity & Contact
 
@@ -16,26 +33,30 @@
 ## Technical Expertise
 
 - Programming Languages: Python, JavaScript (ES6+), C, Java, SQL, HTML5, CSS3
-- Machine Learning & AI: Scikit-learn, Pandas, NumPy, Matplotlib, Seaborn, Computer Vision basics, NLP basics
+- Machine Learning & AI: Scikit-learn, Pandas, NumPy, Matplotlib, Seaborn, Computer Vision basics, NLP basics, Gemini AI API
 - Web Development: React 18, Node.js, Express.js, MongoDB (MERN Stack), REST APIs, Tailwind CSS, Vite, Bootstrap
 - Tools & Platforms: Git, GitHub, Vercel, Render, Postman, VS Code, Cashfree SDK
 
 ## Core Sections
 
 - [About Me](https://ggauravky.vercel.app/about): Background, education at BBD University (BBDU), and engineering philosophy.
-- [Projects](https://ggauravky.vercel.app/projects): Full stack web apps, AI/ML models, and open source projects.
+- [Projects](https://ggauravky.vercel.app/projects): Full stack web apps, AI/ML models, and open source projects (26+ total).
 - [Skills](https://ggauravky.vercel.app/skills): Detailed breakdown of technical competencies, tools, and frameworks.
 - [Journey](https://ggauravky.vercel.app/journey): Internships, workshops, hackathons, certifications, and professional milestones.
 - [Services](https://ggauravky.vercel.app/services): Professional freelance services including Frontend, Backend, Full-Stack development, and AI/ML guidance.
 - [Blog](https://ggauravky.vercel.app/blog): Technical articles on machine learning, web architecture, and software engineering.
 - [Contact](https://ggauravky.vercel.app/contact): Contact details and inquiry form.
+- [Updates](https://ggauravky.vercel.app/updates): Changelog and release notes.
 
 ## Featured Projects
 
 - [SmartMess](https://ggauravky.vercel.app/projects/smartmess): Full-stack hostel mess management platform with real-time menus, digital attendance, and admin analytics. Built with React, Node.js, Express, MongoDB.
+- [InsightAudio](https://ggauravky.vercel.app/projects/insightaudio): Autonomous AI meeting assistant — transforms recordings and YouTube videos into executive summaries, task trackers, and RAG memory. 100% self-hosted.
+- [Kanoon-Mate](https://ggauravky.vercel.app/projects/kanoon-mate): AI legal help platform that simplifies legal documents in English and Hindi with OCR, Gemini AI, and law mapping.
+- [SupportPilot AI](https://ggauravky.vercel.app/projects/supportpilot-ai): AI-powered customer support agent built at the Build With Swytchcode buildathon (Paytm Office, Noida).
 - [Real-Time Chat App](https://ggauravky.vercel.app/projects/real-time-chat-app): Live messaging application with WebSocket support. Built with React, Node.js, Socket.io.
 - [BuildMyTeam](https://ggauravky.vercel.app/projects/buildmyteam): Team-building and collaboration platform. Built with React, Node.js, MongoDB.
-- [Dev Portfolio Admin Panel](https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel): Blazing-fast admin panel for portfolio backend management with JWT auth and analytics. Built with React, Node.js, Express, MongoDB.
+- [Dev Portfolio Admin Panel](https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel): Admin panel for portfolio backend management with JWT auth and analytics.
 - [AiReel Studio](https://ggauravky.vercel.app/projects/aireel-studio): AI-powered short reel generation studio.
 - [FocusGuard](https://ggauravky.vercel.app/projects/focusguard): Productivity and focus management application.
 - [TrueCert](https://ggauravky.vercel.app/projects/truecert): Certificate verification and credential management platform.
@@ -66,6 +87,10 @@
 - [GitHub Profile](https://github.com/ggauravky): Open source code repositories and contributions.
 - [LinkedIn Profile](https://www.linkedin.com/in/gauravky/): Professional network and background.
 
-## Full Documentation
+## Machine-Readable Resources
 
-- [Complete LLM Knowledge Base](https://ggauravky.vercel.app/llms-full.txt): Extended documentation including detailed project case studies, complete skill matrix, and service offerings.
+- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 spec for the portfolio AI chat API.
+- [MCP Manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Model Context Protocol manifest for agent tooling.
+- [Full LLM Knowledge Base](https://ggauravky.vercel.app/llms-full.txt): Extended documentation with full project catalog, skill matrix, and all services.
+- [Sitemap](https://ggauravky.vercel.app/sitemap.xml): XML sitemap of all pages.
+- [Content API](https://ggauravky.vercel.app/api/content): Send `Accept: text/markdown` to get the knowledge base as Markdown.

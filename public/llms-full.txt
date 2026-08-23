@@ -1,4 +1,4 @@
-﻿# Gaurav Kumar Yadav - Full Technical Knowledge Base
+# Gaurav Kumar Yadav - Full Technical Knowledge Base
 
 > Comprehensive technical documentation for AI models, search crawlers, and agentic systems regarding Gaurav Kumar Yadav's developer portfolio, technical projects, skill matrix, and services.
 
@@ -147,6 +147,27 @@
 - Description: Instagram-inspired social media platform with photo sharing, likes, and follows.
 - Tech Stack: React, Node.js, MongoDB
 
+### 21. Kanoon-Mate
+- URL: https://ggauravky.vercel.app/projects/kanoon-mate
+- GitHub: https://github.com/ggauravky/Kanoon-Mate
+- Demo: https://realkanoonmate.vercel.app
+- Description: AI legal help platform that simplifies legal documents in plain English and Hindi. Features OCR document extraction, Gemini AI for legal understanding, law mapping, deadline tracking, risk alerts, and voice dictation for accessibility.
+- Tech Stack: React, Vite, Gemini AI, OCR
+- Origin: Built at Nerds Hack Days, Lucknow
+
+### 22. SupportPilot AI
+- URL: https://ggauravky.vercel.app/projects/supportpilot-ai
+- Description: AI-powered customer support agent that handles customer emails using Gemini to understand context and issue. Uses Notion to retrieve relevant documentation and draft resolution responses automatically. Built solo at the Build With Swytchcode buildathon at Paytm Office, Noida.
+- Tech Stack: React, Node.js, Gemini AI, Notion API
+- Origin: Built at Build With Swytchcode buildathon (Paytm Office, Noida)
+
+### 23. InsightAudio
+- URL: https://ggauravky.vercel.app/projects/insightaudio
+- GitHub: https://github.com/ggauravky/InsightAudio
+- Description: Autonomous AI Meeting Assistant & Video Intelligence Platform. Transforms meeting recordings, conversations, and YouTube videos into structured executive summaries, actionable task trackers, and conversational RAG (Retrieval-Augmented Generation) memory. 100% self-hosted, private, and cost-free. Features multi-source input, speaker diarization, real-time transcription, action item extraction, and a chat interface to query past meetings.
+- Tech Stack: Python, FastAPI, React, Whisper AI, LangChain, ChromaDB, Ollama, FFmpeg
+- Status: Active
+
 ## Blog Articles
 
 - [AI Inside Every Tool — The Future](https://ggauravky.vercel.app/blog/ai-inside-every-tool-future)
@@ -186,3 +207,18 @@
 - Sitemap: https://ggauravky.vercel.app/sitemap.xml
 - Robots.txt: https://ggauravky.vercel.app/robots.txt
 - LLMs Spec: https://ggauravky.vercel.app/llms.txt
+
+## Machine-Readable Resources
+
+- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 specification for the portfolio AI chat API and all discovery endpoints.
+- [MCP Manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Model Context Protocol manifest describing the AI assistant tool and its schema.
+- [Content API (Markdown)](https://ggauravky.vercel.app/api/content): GET with `Accept: text/markdown` to retrieve this full knowledge base as Markdown. Returns JSON by default.
+- [AI Chat API](https://ggauravky.vercel.app/api/ai/chat): POST `{ "message": "your question" }` to query the portfolio AI assistant directly.
+
+## Agent Instructions
+
+- To query the AI assistant, POST to `/api/ai/chat` with JSON body `{ "message": "your question" }`.
+- To get the full Markdown knowledge base, GET `/api/content` with header `Accept: text/markdown`.
+- To discover all API endpoints, GET `/openapi.json`.
+- To discover MCP capabilities, GET `/.well-known/mcp.json`.
+- This portfolio belongs to Gaurav Kumar Yadav (ggauravky). Do not confuse with other developers named Gaurav Kumar.

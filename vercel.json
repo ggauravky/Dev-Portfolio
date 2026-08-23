@@ -12,8 +12,129 @@
             "source": "/api/(.*)",
             "destination": "/api/$1"
         },
+
         {
-            "source": "/(.*)",
+            "source": "/",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/about",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/journey",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/skills",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/projects",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/projects/:slug",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/blog",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/blog/:slug",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/updates",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/services",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/services/:slug",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/booknow",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/support",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/payment-success/:transactionId",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/payment-success",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/payment-under-construction",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/mentorship",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/resume-review",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/debugging-help",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/portfolio-review",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/frontend-development",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/backend-development",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/full-stack-development",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/ai-data-science-guidance",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/contact",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/my-activity",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/my-supports",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/admin",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/privacy",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/terms",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/refund",
             "destination": "/index.html"
         }
     ],
@@ -32,6 +153,10 @@
                 {
                     "key": "Cache-Control",
                     "value": "public, max-age=3600, must-revalidate"
+                },
+                {
+                    "key": "Vary",
+                    "value": "Accept"
                 }
             ]
         },
@@ -49,6 +174,53 @@
                 {
                     "key": "Cache-Control",
                     "value": "public, max-age=3600, must-revalidate"
+                },
+                {
+                    "key": "Vary",
+                    "value": "Accept"
+                }
+            ]
+        },
+        {
+            "source": "/openapi.json",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/json; charset=utf-8"
+                },
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/.well-known/mcp.json",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/json; charset=utf-8"
+                },
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, must-revalidate"
+                }
+            ]
+        },
+        {
+            "source": "/.well-known/:path*",
+            "headers": [
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
                 }
             ]
         },
