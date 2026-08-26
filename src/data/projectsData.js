@@ -753,10 +753,12 @@ export const projectsData = [
         techStack: ["React", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "Cloudinary", "Redux", "JWT", "Tailwind CSS"],
         categories: ["Full Stack"],
         github: "https://github.com/ggauravky/Spotify-clone",
-        demo: "#",
-        image: "/images/projects/spotify-clone.png",
+        demo: "https://spotify-clone-2wyv.onrender.com/",
+        image: "/images/projects/spotify3.png",
         screenshots: [
-            "/images/projects/spotify-clone.png"
+            "/images/projects/spotify1.png",
+            "/images/projects/spotify2.png",
+            "/images/projects/spotify3.png"
         ],
         problem: "Standard web audio players lack synchronization between multi-user social features and low-latency playback controls. Building a music streaming service requires smooth track transitions, custom audio buffering, real-time friend activity feeds ('listening now'), and high-speed audio delivery without UI lag.",
         solution: "Architected a full-stack Spotify Clone with custom-built HTML5 audio playback engines. Users can play, pause, seek, loop, adjust volume, and auto-play queued tracks. Features real-time multi-user chat, live friend listening activity streams via WebSockets, Cloudinary audio/image CDN delivery, and an admin dashboard tracking total songs and user interactions.",
