@@ -20,7 +20,7 @@
     "dependencies": {
         "@getbrevo/brevo": "^5.0.4",
         "@sentry/node": "^9.13.0",
-        "bullmq": "^5.73.5",
+        "bullmq": "^6.0.9",
         "cloudinary": "^2.9.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
