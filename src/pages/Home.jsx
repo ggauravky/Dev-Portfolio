@@ -282,14 +282,15 @@ function Home() {
                                 {/* Clean glow behind image */}
                                 <div className="absolute -inset-4 bg-gradient-to-r from-toxic via-cyber to-purple-600 rounded-full blur-2xl opacity-20 group-hover:opacity-45 transition-opacity duration-500"></div>
                                 
-                                {/* Profile Image Container - Explicit square with organic warp */}
+                                {/* Profile Image Container - Stable circular portrait */}
                                 <div className="relative">
-                                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-80 lg:h-80 xl:w-[340px] xl:h-[340px] overflow-hidden border-2 border-toxic bg-obsidian-card shadow-2xl shadow-toxic/10 transition-all duration-700 animate-morph ring-1 ring-toxic/20 ring-offset-4 ring-offset-obsidian">
+                                    <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-[380px] lg:h-[380px] xl:w-[400px] xl:h-[400px] overflow-hidden rounded-full border-2 border-toxic bg-obsidian-card p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-[18px] shadow-2xl shadow-toxic/10 transition-all duration-700 ring-1 ring-toxic/20 ring-offset-4 ring-offset-obsidian">
                                         <LazyImage
-                                            src="/images/profile.jpg"
+                                            src="/images/profile-768.webp"
                                             alt="Gaurav Kumar Yadav portfolio - AI ML developer and web developer in Lucknow India"
                                             priority={true}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                            responsive={false}
+                                            className="w-full h-full rounded-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
                                         />
 
                                         {/* Dynamic Specular Glint Sheen */}
