@@ -34,6 +34,7 @@ const currentChapter = [
         meta: 'Machine Learning · Deep Learning · Data Science',
         status: 'In Progress',
         accent: 'cyber',
+        certificate: '/images/about/mandi_cert.png',
     },
     {
         type: 'Experience',
@@ -44,6 +45,7 @@ const currentChapter = [
         meta: 'Aug 2026 to Present · Remote',
         status: 'Current',
         accent: 'toxic',
+        certificate: '/images/about/ashok_cert.png',
     },
 ]
 
@@ -102,17 +104,34 @@ SectionHeading.propTypes = {
 
 function ChapterCard({ item, index }) {
     const isCyber = item.accent === 'cyber'
+    const CardElement = item.certificate ? 'a' : 'article'
+    const certificateProps = item.certificate
+        ? {
+            href: item.certificate,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            'aria-label': `View certificate for ${item.title} at ${item.organization}`,
+        }
+        : {}
 
     return (
-        <article className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-lg border bg-obsidian-card p-5 transition-[transform,border-color] duration-300 hover:-translate-y-1 sm:p-6 ${isCyber ? 'border-obsidian-border hover:border-cyber/35' : 'border-obsidian-border hover:border-toxic/35'} ${index === 2 ? 'md:col-span-2 lg:col-span-1' : ''}`}>
+        <CardElement
+            {...certificateProps}
+            className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-lg border bg-obsidian-card p-5 transition-[transform,border-color] duration-300 hover:-translate-y-1 sm:p-6 ${isCyber ? 'border-obsidian-border hover:border-cyber/35' : 'border-obsidian-border hover:border-toxic/35'} ${index === 2 ? 'md:col-span-2 lg:col-span-1' : ''} ${item.certificate ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian' : ''}`}
+        >
             <div className={`absolute inset-x-0 top-0 h-px ${isCyber ? 'bg-gradient-to-r from-transparent via-cyber/55 to-transparent' : 'bg-gradient-to-r from-transparent via-toxic/55 to-transparent'}`} />
 
             <div className="flex items-center justify-between gap-4">
                 <span className={`font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${isCyber ? 'text-cyber' : 'text-toxic'}`}>
                     {item.type}
                 </span>
-                <span className="font-mono text-[10px] text-zinc-700" aria-hidden="true">
-                    {String(index + 1).padStart(2, '0')}
+                <span className="flex items-center gap-2 text-zinc-700" aria-hidden="true">
+                    <span className="font-mono text-[10px]">
+                        {String(index + 1).padStart(2, '0')}
+                    </span>
+                    {item.certificate ? (
+                        <ArrowUpRight className="h-3.5 w-3.5 transition-colors duration-300 group-hover:text-zinc-300" />
+                    ) : null}
                 </span>
             </div>
 
@@ -148,7 +167,7 @@ function ChapterCard({ item, index }) {
                     {item.status}
                 </p>
             </div>
-        </article>
+        </CardElement>
     )
 }
 
@@ -163,6 +182,7 @@ ChapterCard.propTypes = {
         meta: PropTypes.string.isRequired,
         status: PropTypes.string.isRequired,
         accent: PropTypes.oneOf(['toxic', 'cyber']).isRequired,
+        certificate: PropTypes.string,
     }).isRequired,
     index: PropTypes.number.isRequired,
 }
