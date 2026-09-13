@@ -4,128 +4,332 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+import { ArrowRight, ArrowUpRight, Download } from 'lucide-react'
+import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import ScrollReveal from '../components/ScrollReveal'
 import LazyImage from '../components/LazyImage'
 
+const githubStreakUrl = 'https://camo.githubusercontent.com/80d675df3c581caef2a3fc4af3ab8bd8aeeff7037e331312e09e106dea1b3130/68747470733a2f2f73747265616b2d73746174732e64656d6f6c61622e636f6d3f757365723d676761757261766b79267468656d653d64726163756c6126686964655f626f726465723d74727565266261636b67726f756e643d3064306432622672696e673d37633361656426666972653d613738626661266375727253747265616b4c6162656c3d613738626661'
+
+const currentChapter = [
+    {
+        type: 'Education',
+        logo: '/images/about/bbdu.png',
+        logoAlt: 'Babu Banarasi Das University logo',
+        shortTitle: 'BCA',
+        title: 'Bachelor of Computer Applications',
+        organization: 'Babu Banarasi Das University',
+        meta: '2024 to Present · Lucknow',
+        status: 'In Progress',
+        accent: 'toxic',
+    },
+    {
+        type: 'Specialization',
+        logo: '/images/about/mandi.png',
+        logoAlt: 'IIT Mandi logo',
+        title: 'Minor in AI & Data Science',
+        organization: 'IIT Mandi × Masai',
+        meta: 'Machine Learning · Deep Learning · Data Science',
+        status: 'In Progress',
+        accent: 'cyber',
+    },
+    {
+        type: 'Experience',
+        logo: '/images/about/ashok.png',
+        logoAlt: 'Ashoksoft Technologies logo',
+        title: 'FullStack Intern',
+        organization: 'Ashoksoft Technologies',
+        meta: 'Aug 2026 to Present · Remote',
+        status: 'Current',
+        accent: 'toxic',
+    },
+]
+
 const focusAreas = [
-    'Python development and automation',
-    'AI and ML fundamentals with real projects',
-    'Secure and responsive full-stack apps',
-    'Data-driven problem solving'
-]
-
-const currentWork = [
     {
-        label: 'BCA student at BBD University, Lucknow',
-        href: 'https://bbdu.ac.in/',
-        tag: 'University'
+        label: 'AI / ML Engineering',
+        accent: 'toxic',
+        items: [
+            'RAG & retrieval systems',
+            'LLM-powered applications',
+            'Machine-learning workflows',
+            'Data & automation',
+        ],
     },
     {
-        label: 'AI and ML program through IIT Mandi x Masai School',
-        href: 'https://drive.google.com/file/d/1tcL8JGUsq_TorfE5mQ-I8LNPNA3u4_yY/view?usp=drive_link',
-        tag: 'Credential'
+        label: 'Full-Stack Engineering',
+        accent: 'cyber',
+        items: [
+            'React / Next.js interfaces',
+            'Node.js / Express APIs',
+            'SQL & NoSQL systems',
+            'Real-time & production apps',
+        ],
     },
-    {
-        label: 'Open to internships, freelance projects, and entry-level roles',
-        tag: 'Availability'
-    }
 ]
 
-const workflow = [
-    'Break the problem into smaller tasks',
-    'Build a working version quickly',
-    'Measure and improve quality step by step',
-    'Ship clean, practical solutions'
+const workflowSteps = [
+    { title: 'Understand', detail: 'Problem & constraints' },
+    { title: 'Build', detail: 'Working solution' },
+    { title: 'Measure', detail: 'Test & evaluate' },
+    { title: 'Improve', detail: 'Iterate' },
+    { title: 'Ship', detail: 'Practical result' },
 ]
+
+const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-toxic px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-wider text-obsidian transition-colors duration-300 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian'
+const secondaryButtonClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-obsidian-border bg-obsidian/60 px-5 py-3 font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-300 transition-colors duration-300 hover:border-toxic/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian'
+
+function SectionHeading({ id, title, subtitle }) {
+    return (
+        <header className="mb-8 sm:mb-10">
+            <h2 id={id} className="font-display text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl lg:text-4xl">
+                {title}
+            </h2>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 sm:text-xs">
+                {subtitle}
+            </p>
+        </header>
+    )
+}
+
+SectionHeading.propTypes = {
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    subtitle: PropTypes.string.isRequired,
+}
+
+function ChapterCard({ item, index }) {
+    const isCyber = item.accent === 'cyber'
+
+    return (
+        <article className={`group relative flex min-h-[320px] flex-col overflow-hidden rounded-lg border bg-obsidian-card p-5 transition-[transform,border-color] duration-300 hover:-translate-y-1 sm:p-6 ${isCyber ? 'border-obsidian-border hover:border-cyber/35' : 'border-obsidian-border hover:border-toxic/35'} ${index === 2 ? 'md:col-span-2 lg:col-span-1' : ''}`}>
+            <div className={`absolute inset-x-0 top-0 h-px ${isCyber ? 'bg-gradient-to-r from-transparent via-cyber/55 to-transparent' : 'bg-gradient-to-r from-transparent via-toxic/55 to-transparent'}`} />
+
+            <div className="flex items-center justify-between gap-4">
+                <span className={`font-mono text-[10px] font-bold uppercase tracking-[0.18em] ${isCyber ? 'text-cyber' : 'text-toxic'}`}>
+                    {item.type}
+                </span>
+                <span className="font-mono text-[10px] text-zinc-700" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                </span>
+            </div>
+
+            <div className="mt-7 flex h-16 w-20 items-center justify-center rounded-md border border-white/10 bg-zinc-100 p-2.5">
+                <img
+                    src={item.logo}
+                    alt={item.logoAlt}
+                    width="64"
+                    height="48"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-contain"
+                />
+            </div>
+
+            <div className="mt-7 flex flex-1 flex-col">
+                {item.shortTitle ? (
+                    <span className="mb-2 font-mono text-xs font-bold uppercase tracking-wider text-zinc-500">
+                        {item.shortTitle}
+                    </span>
+                ) : null}
+                <h3 className="font-display text-xl font-bold leading-tight text-white sm:text-2xl">
+                    {item.title}
+                </h3>
+                <p className="mt-2 text-sm font-semibold text-zinc-300">
+                    {item.organization}
+                </p>
+                <p className="mt-4 font-mono text-[11px] leading-relaxed text-zinc-500">
+                    {item.meta}
+                </p>
+                <p className={`mt-auto flex items-center gap-2 pt-6 font-mono text-[10px] font-bold uppercase tracking-[0.16em] ${isCyber ? 'text-cyber' : 'text-toxic'}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${isCyber ? 'bg-cyber' : 'bg-toxic'}`} aria-hidden="true" />
+                    {item.status}
+                </p>
+            </div>
+        </article>
+    )
+}
+
+ChapterCard.propTypes = {
+    item: PropTypes.shape({
+        type: PropTypes.string.isRequired,
+        logo: PropTypes.string.isRequired,
+        logoAlt: PropTypes.string.isRequired,
+        shortTitle: PropTypes.string,
+        title: PropTypes.string.isRequired,
+        organization: PropTypes.string.isRequired,
+        meta: PropTypes.string.isRequired,
+        status: PropTypes.string.isRequired,
+        accent: PropTypes.oneOf(['toxic', 'cyber']).isRequired,
+    }).isRequired,
+    index: PropTypes.number.isRequired,
+}
 
 function About() {
     useSEO({
-        title: 'About Gaurav Kumar Yadav | BBDU Lucknow | AI/ML and Web Developer',
-        description: 'Learn about Gaurav Kumar Yadav, a BCA student at BBDU Lucknow, India, focused on AI/ML and web development. Explore his background, project mindset, and growth journey.',
-        keywords: 'Gaurav Kumar Yadav BBDU, Gaurav Lucknow developer, Gaurav AI ML developer, Gaurav web developer India, BCA AI ML student India',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg'
+        title: 'About Gaurav Kumar Yadav | Full-Stack & AI/ML Developer',
+        description: 'Meet Gaurav Kumar Yadav, a BCA student at BBD University specializing in AI and Data Science and working as a FullStack Intern at Ashoksoft Technologies.',
+        keywords: 'Gaurav Kumar Yadav, full-stack developer, AI ML developer, BBD University, IIT Mandi Masai, Ashoksoft Technologies',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
     return (
-        <main className="about-page bg-obsidian min-h-screen overflow-hidden px-4 py-24 sm:px-6 lg:px-8 relative w-full">
-            {/* Ambient Background Elements */}
-            <div className="absolute inset-0 bg-gradient-to-br from-obsidian via-obsidian-card to-obsidian"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-cyber/5 via-transparent to-transparent"></div>
+        <main className="about-page relative min-h-screen w-full overflow-hidden bg-obsidian px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-obsidian-card/70 via-obsidian to-obsidian" />
+            <div className="pointer-events-none absolute -right-40 top-0 h-[30rem] w-[30rem] rounded-full bg-toxic/[0.035] blur-[120px]" />
+            <div className="pointer-events-none absolute -left-40 top-[46rem] h-[28rem] w-[28rem] rounded-full bg-cyber/[0.025] blur-[120px]" />
 
-            <div className="relative z-10 mx-auto max-w-6xl space-y-12">
+            <div className="relative z-10 mx-auto max-w-6xl space-y-20 sm:space-y-24 lg:space-y-28">
                 <ScrollReveal>
-                    <section className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-8 sm:p-10 lg:p-12">
-                        <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.02] to-transparent pointer-events-none"></div>
-                        
-                        <span className="inline-flex items-center gap-2 text-toxic text-xs font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15 backdrop-blur-sm mb-6">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-toxic opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-toxic"></span>
-                            </span>
-                            About Me
-                        </span>
+                    <section aria-labelledby="about-title" className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-5 sm:p-8 lg:p-10">
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-toxic/[0.035] via-transparent to-cyber/[0.025]" />
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-toxic/60 to-transparent" />
 
-                        <h1 className="text-3xl sm:text-4xl lg:text-6xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter text-white mb-6">
-                            Gaurav Kumar <span className="text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">Yadav</span>
-                        </h1>
+                        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end lg:gap-12">
+                            <div className="min-w-0">
+                                <p className="font-mono text-[10px] font-bold uppercase tracking-[0.22em] text-toxic sm:text-xs">
+                                    About me
+                                </p>
+                                <h1 id="about-title" className="mt-5 max-w-4xl font-display text-[clamp(2.8rem,8vw,5.75rem)] font-extrabold uppercase leading-[0.82] tracking-[-0.065em] text-white">
+                                    <span className="block">Gaurav Kumar</span>
+                                    <span className="block text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">Yadav</span>
+                                </h1>
 
-                        <p className="max-w-3xl text-base sm:text-lg text-zinc-300 leading-relaxed mb-6">
-                            I am Gaurav Kumar Yadav from Lucknow, focused on Python, AI/ML, and full-stack development.
-                            My goal is to build useful products, learn fast from real-world problems, and grow into a high-impact engineering role.
-                        </p>
+                                <p className="mt-7 font-mono text-xs font-bold uppercase tracking-[0.14em] text-cyber sm:text-sm">
+                                    Full-Stack Developer · AI/ML
+                                </p>
+                                <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
+                                    I&apos;m Gaurav Kumar Yadav, a full-stack developer and AI/ML learner pursuing BCA at BBD University alongside a Minor in AI & Data Science, while gaining hands-on industry experience as a FullStack Intern at Ashoksoft Technologies.
+                                </p>
+                                <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-500 sm:text-base">
+                                    I build practical web and AI products, from full-stack applications and APIs to RAG systems, automation, and machine-learning projects.
+                                </p>
 
-                        <p className="max-w-3xl text-xs sm:text-sm font-mono text-zinc-500 uppercase tracking-wider mb-8">
-                            // BCA student at BBD University (BBDU), Lucknow, Uttar Pradesh, India.
-                        </p>
+                                <div className="mt-7 flex flex-wrap gap-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 sm:text-[11px]">
+                                    {['Full Stack', 'Python', 'AI/ML', 'LLM / RAG', 'Open Source'].map((skill) => (
+                                        <span key={skill} className="rounded-md border border-obsidian-border bg-obsidian/70 px-3 py-1.5">
+                                            {skill}
+                                        </span>
+                                    ))}
+                                </div>
 
-                        <div className="flex flex-wrap gap-2.5 font-mono text-xs">
-                            <span className="px-3 py-1.5 bg-obsidian border border-obsidian-border text-zinc-300 rounded-md hover:border-toxic hover:text-white transition-all cursor-default font-semibold">
-                                Python
-                            </span>
-                            <span className="px-3 py-1.5 bg-obsidian border border-obsidian-border text-zinc-300 rounded-md hover:border-cyber hover:text-white transition-all cursor-default font-semibold">
-                                AI/ML
-                            </span>
-                            <span className="px-3 py-1.5 bg-obsidian border border-obsidian-border text-zinc-300 rounded-md hover:border-toxic hover:text-white transition-all cursor-default font-semibold">
-                                Full Stack
-                            </span>
-                            <span className="px-3 py-1.5 bg-toxic/5 border border-toxic/20 text-toxic rounded-md cursor-default font-semibold">
-                                Open for Work
-                            </span>
+                                <div className="mt-8 flex flex-col gap-3 min-[390px]:flex-row min-[390px]:flex-wrap">
+                                    <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className={primaryButtonClass}>
+                                        View Resume
+                                        <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </a>
+                                    <Link to="/journey" className={secondaryButtonClass}>
+                                        My Journey
+                                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <aside aria-label="Current role" className="relative border-l border-obsidian-border pl-5 sm:pl-6 lg:mb-1 lg:pl-7">
+                                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Currently</p>
+                                <p className="mt-4 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-toxic">
+                                    <span className="h-2 w-2 rounded-full bg-toxic shadow-[0_0_10px_rgba(197,248,42,0.45)]" aria-hidden="true" />
+                                    FullStack Intern
+                                </p>
+                                <p className="mt-3 font-display text-xl font-bold leading-tight text-white">
+                                    Ashoksoft Technologies
+                                </p>
+                                <p className="mt-3 font-mono text-[11px] leading-relaxed text-zinc-500">
+                                    Remote · Aug 2026 to Present
+                                </p>
+                            </aside>
                         </div>
                     </section>
                 </ScrollReveal>
 
                 <ScrollReveal delay={40}>
-                    <section className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-8 sm:p-10">
-                        <div className="mb-8 text-center">
-                            <h2 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white">Coding Consistency Showcase</h2>
-                            <p className="mt-2 text-xs sm:text-sm font-mono text-zinc-500 uppercase tracking-widest">
-                                // Live cards from your public profiles
-                            </p>
+                    <section aria-labelledby="current-chapter-title">
+                        <SectionHeading id="current-chapter-title" title="Current Chapter" subtitle="Education · Specialization · Experience" />
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+                            {currentChapter.map((item, index) => (
+                                <ChapterCard key={item.type} item={item} index={index} />
+                            ))}
                         </div>
+                    </section>
+                </ScrollReveal>
 
-                        <div className="grid gap-6 lg:grid-cols-2">
+                <ScrollReveal delay={60}>
+                    <section aria-labelledby="what-i-build-title">
+                        <SectionHeading id="what-i-build-title" title="What I Build" subtitle="Applied AI · Production software" />
+                        <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+                            {focusAreas.map((area, index) => {
+                                const isCyber = area.accent === 'cyber'
+
+                                return (
+                                    <article key={area.label} className={`relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-6 transition-colors duration-300 sm:p-8 ${isCyber ? 'hover:border-cyber/35' : 'hover:border-toxic/35'}`}>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <h3 className="font-display text-xl font-bold uppercase text-white sm:text-2xl">
+                                                {area.label}
+                                            </h3>
+                                            <span className={`font-mono text-xs font-bold ${isCyber ? 'text-cyber' : 'text-toxic'}`} aria-hidden="true">
+                                                0{index + 1}
+                                            </span>
+                                        </div>
+                                        <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+                                            {area.items.map((item) => (
+                                                <li key={item} className="flex items-start gap-3 text-sm leading-6 text-zinc-400">
+                                                    <span className={`mt-2 h-1 w-1 shrink-0 ${isCyber ? 'bg-cyber' : 'bg-toxic'}`} aria-hidden="true" />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </article>
+                                )
+                            })}
+                        </div>
+                    </section>
+                </ScrollReveal>
+
+                <ScrollReveal delay={70}>
+                    <section aria-labelledby="workflow-title">
+                        <SectionHeading id="workflow-title" title="How I Work" subtitle="A practical path from problem to product" />
+                        <ol className="grid overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card sm:grid-cols-2 lg:grid-cols-5">
+                            {workflowSteps.map((step, index) => (
+                                <li key={step.title} className={`relative min-w-0 p-5 sm:p-6 ${index > 0 ? 'border-t border-obsidian-border sm:border-t-0' : ''} ${index % 2 === 1 ? 'sm:border-l' : ''} ${index > 1 ? 'sm:border-t' : ''} ${index > 0 ? 'lg:border-l lg:border-t-0' : ''} ${index === 4 ? 'sm:col-span-2 lg:col-span-1' : ''}`}>
+                                    <span className="font-mono text-[10px] font-bold text-toxic">{String(index + 1).padStart(2, '0')}</span>
+                                    <h3 className="mt-5 font-display text-base font-bold uppercase text-white sm:text-lg">
+                                        {step.title}
+                                    </h3>
+                                    <p className="mt-2 text-xs leading-5 text-zinc-500">
+                                        {step.detail}
+                                    </p>
+                                    {index < workflowSteps.length - 1 ? (
+                                        <ArrowRight className="absolute -right-2.5 top-7 z-10 hidden h-5 w-5 rounded-full bg-obsidian-card p-1 text-zinc-600 lg:block" aria-hidden="true" />
+                                    ) : null}
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+                </ScrollReveal>
+
+                <ScrollReveal delay={80}>
+                    <section aria-labelledby="consistency-title" className="rounded-lg border border-obsidian-border bg-obsidian-card p-4 sm:p-6 lg:p-8">
+                        <SectionHeading id="consistency-title" title="Consistency in Practice" subtitle="GitHub activity · Problem solving" />
+                        <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
                             <a
                                 href="https://github.com/ggauravky"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group rounded-lg border border-obsidian-border bg-obsidian/60 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-toxic/30 hover:shadow-lg hover:shadow-toxic/5"
-                                aria-label="Open GitHub profile"
+                                className="group min-w-0 rounded-lg border border-obsidian-border bg-obsidian/60 p-3 transition-colors duration-300 hover:border-toxic/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic sm:p-4"
+                                aria-label="Open Gaurav Kumar Yadav's GitHub profile"
                             >
-                                <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-toxic font-mono">// GitHub Streak</h3>
-                                    <span className="text-xs text-zinc-500 group-hover:text-toxic font-mono">Open ↗</span>
+                                <div className="mb-3 flex items-center justify-between gap-4">
+                                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-toxic sm:text-xs">GitHub Streak</h3>
+                                    <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-colors group-hover:text-toxic" aria-hidden="true" />
                                 </div>
-                                <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
+                                <div className="overflow-hidden rounded-md border border-obsidian-border bg-obsidian p-1.5 sm:p-2">
                                     <LazyImage
-                                        src="https://camo.githubusercontent.com/80d675df3c581caef2a3fc4af3ab8bd8aeeff7037e331312e09e106dea1b3130/68747470733a2f2f73747265616b2d73746174732e64656d6f6c61622e636f6d3f757365723d676761757261766b79267468656d653d64726163756c6126686964655f626f726465723d74727565266261636b67726f756e643d3064306432622672696e673d37633361656426666972653d613738626661266375727253747265616b4c6162656c3d613738626661"
-                                        alt="GitHub streak stats for ggauravky"
+                                        src={githubStreakUrl}
+                                        alt="GitHub streak statistics for ggauravky"
                                         responsive={false}
-                                        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
+                                        className="block h-auto w-full"
                                     />
                                 </div>
                             </a>
@@ -134,19 +338,19 @@ function About() {
                                 href="https://leetcode.com/u/gauravky/"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="group rounded-lg border border-obsidian-border bg-obsidian/60 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyber/30 hover:shadow-lg hover:shadow-cyber/5"
-                                aria-label="Open LeetCode profile"
+                                className="group min-w-0 rounded-lg border border-obsidian-border bg-obsidian/60 p-3 transition-colors duration-300 hover:border-cyber/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyber sm:p-4"
+                                aria-label="Open Gaurav Kumar Yadav's LeetCode profile"
                             >
-                                <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-bold uppercase tracking-wider text-cyber font-mono">// LeetCode Stats</h3>
-                                    <span className="text-xs text-zinc-500 group-hover:text-cyber font-mono">Open ↗</span>
+                                <div className="mb-3 flex items-center justify-between gap-4">
+                                    <h3 className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-cyber sm:text-xs">LeetCode Stats</h3>
+                                    <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-colors group-hover:text-cyber" aria-hidden="true" />
                                 </div>
-                                <div className="overflow-hidden rounded-lg border border-obsidian-border bg-obsidian p-2">
+                                <div className="overflow-hidden rounded-md border border-obsidian-border bg-obsidian p-1.5 sm:p-2">
                                     <LazyImage
                                         src="https://leetcard.jacoblin.cool/gauravky?theme=dark&ext=heatmap"
-                                        alt="LeetCode stats for gauravky"
+                                        alt="LeetCode statistics and heatmap for gauravky"
                                         responsive={false}
-                                        className="block h-auto w-full transition-transform duration-500 group-hover:scale-[1.015]"
+                                        className="block h-auto w-full"
                                     />
                                 </div>
                             </a>
@@ -154,99 +358,29 @@ function About() {
                     </section>
                 </ScrollReveal>
 
-                <ScrollReveal delay={60}>
-                    <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {currentWork.map((item, idx) => {
-                            const isEven = idx % 2 === 0
-                            const accentBg = isEven ? 'bg-toxic/5 border-toxic/15 text-toxic' : 'bg-cyber/5 border-cyber/15 text-cyber'
-                            
-                            const commonClassName = `group relative rounded-lg border border-obsidian-border bg-obsidian-card p-6 transition-all duration-350 hover:-translate-y-1 hover:border-toxic/30 overflow-hidden ${item.href ? 'cursor-pointer' : ''}`
-
-                            const content = (
-                                <>
-                                    <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
-                                    <div className="relative z-10 flex flex-col h-full justify-between">
-                                        <div className="mb-4 flex items-center justify-between gap-3">
-                                            <span className={`inline-block px-3 py-1 rounded font-mono text-[10px] uppercase tracking-wider border ${accentBg}`}>{item.tag}</span>
-                                            {item.href ? <span className="text-[11px] font-mono text-zinc-500 group-hover:text-toxic transition-colors">Open ↗</span> : null}
-                                        </div>
-                                        <p className="text-sm sm:text-base font-semibold leading-relaxed text-zinc-300 group-hover:text-white transition-colors">{item.label}</p>
-                                    </div>
-                                </>
-                            )
-
-                            if (item.href) {
-                                return (
-                                    <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={commonClassName}>
-                                        {content}
-                                    </a>
-                                )
-                            }
-
-                            return (
-                                <article key={item.label} className={commonClassName}>
-                                    {content}
-                                </article>
-                            )
-                        })}
-                    </section>
-                </ScrollReveal>
-
-                <ScrollReveal delay={80}>
-                    <section className="grid gap-6 lg:grid-cols-2">
-                        <article className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-8 sm:p-10">
-                            <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
-                            <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white mb-6 border-b border-obsidian-border pb-4">// What I Focus On</h2>
-                            <ul className="space-y-4">
-                                {focusAreas.map((item) => (
-                                    <li key={item} className="flex items-start gap-3 text-zinc-300 text-sm sm:text-base leading-relaxed hover:text-white transition-colors">
-                                        <span className="text-toxic font-mono shrink-0 select-none">→</span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </article>
-
-                        <article className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-8 sm:p-10">
-                            <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none"></div>
-                            <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white mb-6 border-b border-obsidian-border pb-4">// How I Work</h2>
-                            <ul className="space-y-4">
-                                {workflow.map((item) => (
-                                    <li key={item} className="flex items-start gap-3 text-zinc-300 text-sm sm:text-base leading-relaxed hover:text-white transition-colors">
-                                        <span className="text-cyber font-mono shrink-0 select-none">→</span>
-                                        <span>{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </article>
-                    </section>
-                </ScrollReveal>
-
-                <ScrollReveal delay={100}>
-                    <section className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-8 text-center sm:p-12">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
-                        <h2 className="text-2xl sm:text-4xl font-display font-bold uppercase text-white mb-4">Open to Collaborate</h2>
-                        <p className="mx-auto max-w-2xl text-zinc-400 text-sm sm:text-base leading-relaxed mb-8">
-                            I am currently available for internships, freelance opportunities, and entry-level developer roles where I can contribute and keep growing.
-                        </p>
-                        <div className="flex flex-wrap items-center justify-center gap-4">
-                            <Link
-                                to="/contact"
-                                className="group relative px-6 py-3 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 hover:shadow-white/20 text-center overflow-hidden inline-flex items-center justify-center"
-                            >
-                                <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                    <span>Start a Conversation</span>
-                                    <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
-                                </span>
-                            </Link>
-                            <Link
-                                to="/services"
-                                className="group relative px-6 py-3 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center"
-                            >
-                                <span className="relative z-10 flex items-center justify-center gap-2 leading-none">
-                                    <span>Book Service</span>
-                                    <svg className="w-3.5 h-3.5 shrink-0 group-hover:rotate-12 transition-transform duration-300" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
-                                </span>
+                <ScrollReveal delay={90}>
+                    <section aria-labelledby="about-cta-title" className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card px-5 py-10 text-center sm:px-8 sm:py-12">
+                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/[0.05] via-transparent to-transparent" />
+                        <div className="relative">
+                            <h2 id="about-cta-title" className="font-display text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl lg:text-4xl">
+                                Let&apos;s Build Something Useful
+                            </h2>
+                            <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-zinc-400 sm:text-base">
+                                Open to software engineering, AI/ML opportunities, open-source work, and meaningful collaborations.
+                            </p>
+                            <div className="mt-7 flex flex-col items-stretch justify-center gap-3 min-[390px]:flex-row min-[390px]:items-center min-[390px]:flex-wrap">
+                                <Link to="/contact" className={primaryButtonClass}>
+                                    Get in Touch
+                                    <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                                </Link>
+                                <a href="/resume.pdf" target="_blank" rel="noopener noreferrer" className={secondaryButtonClass}>
+                                    View Resume
+                                    <Download className="h-3.5 w-3.5" aria-hidden="true" />
+                                </a>
+                            </div>
+                            <Link to="/journey" className="mt-6 inline-flex min-h-11 items-center gap-2 px-3 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-500 transition-colors hover:text-toxic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic">
+                                View Journey
+                                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                             </Link>
                         </div>
                     </section>
