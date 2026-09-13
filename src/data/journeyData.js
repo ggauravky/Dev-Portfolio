@@ -645,6 +645,44 @@ export const journeyData = [
     relatedBlogSlug: ''
   },
   {
+    id: 'ashoksoft-fullstack-intern-2026',
+    title: 'FullStack Developer Intern',
+    organization: 'Ashoksoft Technologies',
+    date: '2026-08-01',
+    dateLabel: 'August 2026 - Present',
+    location: 'Remote',
+    duration: 'Ongoing',
+    category: 'Internships',
+    mode: 'Remote',
+    status: 'In Progress',
+    description: 'Currently working as a FullStack Developer Intern at Ashoksoft Technologies, gaining hands-on experience with real-world web development, backend systems, APIs, databases, debugging, and practical software-development workflows.',
+    whatILearned: [
+      'Working with real-world full-stack application workflows',
+      'Building and integrating frontend and backend functionality',
+      'Working with APIs, databases, authentication, and application logic',
+      'Debugging and improving existing application features',
+      'Following professional development and Git workflows'
+    ],
+    skills: [
+      'Full-Stack Development',
+      'JavaScript',
+      'React',
+      'Node.js',
+      'Express.js',
+      'REST APIs',
+      'Databases',
+      'Git',
+      'Debugging',
+      'Problem Solving'
+    ],
+    coverImage: '/images/journey/ashokshoft.png',
+    images: ['/images/journey/ashokshoft.png'],
+    objectives: 'Gain hands-on experience with real-world full-stack development and professional software workflows.',
+    outcomes: 'Currently developing practical experience across frontend, backend, API, database, debugging, and Git workflows.',
+    technologies: ['JavaScript', 'React', 'Node.js', 'Express.js', 'REST APIs', 'Git'],
+    relatedBlogSlug: ''
+  },
+  {
     id: 'code-with-harry-data-science-2026',
     title: 'The Ultimate Job-Ready Data Science Course',
     organization: 'Code With Harry',
