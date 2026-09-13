@@ -702,10 +702,12 @@ export const projectsData = [
         techStack: ["React", "Node.js", "Express", "MongoDB", "Mongoose", "JWT", "Socket.io", "Redux", "Mailtrap", "AWS S3", "Zod", "Tailwind CSS"],
         categories: ["Full Stack"],
         github: "https://github.com/ggauravky/MERN-LinkedIn-Clone",
-        demo: "#",
-        image: "/images/projects/linkedin-clone.png",
+        demo: "https://mern-linkedin-clone-cnbw.onrender.com/",
+        image: "/images/projects/linkedin1.png",
         screenshots: [
-            "/images/projects/linkedin-clone.png"
+            "/images/projects/linkedin1.png",
+            "/images/projects/linkedin2.png",
+            "/images/projects/linkedin3.png"
         ],
         problem: "Building a professional networking platform requires handling complex multi-user interactions—ranging from asynchronous connection management to real-time notification streams, secure media uploads, schema validation across form inputs, and transactional email notifications—without compromising speed or UI responsiveness.",
         solution: "Engineered a production-ready MERN LinkedIn Clone. Users can build rich profiles (banner, avatar, work history, skills), connect with professionals via connection request pipelines, publish image-rich feed posts, interact through likes & comments, receive instant Socket.io and Mailtrap email alerts, and track engagement metrics on a unified dashboard.",
