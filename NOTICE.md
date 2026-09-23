@@ -15,8 +15,10 @@
 | **Lucide React** | ISC | Modern Vector Icon Suite | [lucide.dev](https://lucide.dev/) |
 | **Express.js** | MIT | Node.js Backend REST Web Framework | [expressjs.com](https://expressjs.com/) |
 | **Mongoose** | MIT | MongoDB Object Modeling Engine | [mongoosejs.com](https://mongoosejs.com/) |
-| **Cashfree SDK** | Commercial / Proprietary | Secure Gateway Payment Processing | [cashfree.com](https://www.cashfree.com/) |
 | **Pino & Pino-HTTP** | MIT | Structured High-Performance JSON Logging | [getpino.io](https://getpino.io/) |
+| **Razorpay Node SDK** | MIT | Server-side order and payment API integration | [razorpay.com](https://razorpay.com/) |
+| **PDF-Lib** | MIT | In-memory payment receipt generation | [pdf-lib.js.org](https://pdf-lib.js.org/) |
+| **Nodemailer** | MIT-0 | Transactional email delivery through Brevo SMTP | [nodemailer.com](https://nodemailer.com/) |
 
 ---
 

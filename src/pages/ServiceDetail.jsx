@@ -75,8 +75,8 @@ function ServiceDetail({ forcedSlug = '' }) {
         ? `${service.title} | Gaurav Kumar Yadav | AI/ML & Web Developer Lucknow`
         : 'Services | Gaurav Kumar Yadav | AI/ML & Web Developer'
     const seoDescription = service
-        ? `${service.summary} ${service.outcomePromise} Offered by Gaurav Kumar Yadav, BCA student at BBDU Lucknow. Pricing: ${service.priceLabel}. Secure booking via Cashfree.`
-        : 'Work with Gaurav Kumar Yadav — BCA student at BBDU Lucknow — for mentorship, debugging, portfolio reviews, and full-stack delivery. Secure booking via Cashfree.'
+        ? `${service.summary} ${service.outcomePromise} Offered by Gaurav Kumar Yadav, BCA student at BBDU Lucknow. Pricing: ${service.priceLabel}. Secure Razorpay checkout uses server-verified pricing.`
+        : 'Work with Gaurav Kumar Yadav — BCA student at BBDU Lucknow — for mentorship, debugging, portfolio reviews, and full-stack delivery with secure Razorpay checkout.'
     const seoKeywords = service
         ? `${service.title} Gaurav Kumar Yadav, ${service.category} developer service Lucknow, Gaurav Kumar Yadav services, AI ML developer services India, web developer booking BBDU`
         : 'Gaurav Kumar Yadav developer services, AI ML developer Lucknow, web developer booking India, BBDU student developer'
@@ -221,11 +221,11 @@ function ServiceDetail({ forcedSlug = '' }) {
                                 <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-1">// Pricing</p>
                                 <p className="text-3xl font-display font-black text-toxic">{service.priceLabel}</p>
                             </div>
-                            <p className="text-xs text-zinc-400 font-mono leading-relaxed">// Secure checkout via Cashfree. UPI, cards, and netbanking supported.</p>
+                            <p className="text-xs text-zinc-400 font-mono leading-relaxed">// Razorpay checkout with server-verified pricing and payment confirmation.</p>
 
                             <div className="grid grid-cols-1 gap-2 pt-2 text-[10px] font-mono uppercase text-zinc-500">
                                 <div className="rounded border border-obsidian-border bg-obsidian px-3 py-2">No payment pin stored here</div>
-                                <div className="rounded border border-obsidian-border bg-obsidian px-3 py-2">Manual check before confirmation</div>
+                                <div className="rounded border border-obsidian-border bg-obsidian px-3 py-2">Server verification before confirmation</div>
                             </div>
 
                             <PricingFaq items={service.pricingFaq || []} />

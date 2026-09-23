@@ -10,4 +10,4 @@ assignees: 'ggauravky'
 What would you like to know or clarify about Dev-Portfolio?
 
 ### Context
-Please mention if your question relates to local installation, Vercel deployment, Cashfree integration, or design token customization.
+Please mention if your question relates to local installation, Vercel deployment, Razorpay integration, or design token customization.

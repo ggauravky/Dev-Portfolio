@@ -56,7 +56,7 @@ Inspired by the design aesthetics of Vercel, Linear, Apple, and Stripe, the code
 1. **Obsidian Visual Hierarchy**: Pure `#070708` dark theme, glassmorphic backdrop blurs, and `#c5f82a` toxic accent contrast.
 2. **Sub-Second Rendering**: Code-split route chunks, Rollup manual chunking, and automated AVIF/WebP image variants ($402$ files generated at build).
 3. **Universal Accessibility (WCAG AA+)**: Full keyboard navigation, visible focus rings, ARIA roles, and responsive scaling across 10 viewports ($320\text{px}$ to $3840\text{px}$).
-4. **End-to-End Reliability**: Integrated Express backend API, MongoDB Atlas persistence, and Cashfree gateway payment flows.
+4. **End-to-End Reliability**: Integrated Express backend API, MongoDB Atlas persistence, authentication, and transactional email flows.
 
 ---
 
@@ -67,8 +67,8 @@ Inspired by the design aesthetics of Vercel, Linear, Apple, and Stripe, the code
 - **Universal Command Center (`⌘K`)**: Raycast-grade instant fuzzy search across all portfolio pages, project case studies, and services.
 - **Interactive Radial Navigation**: Contextual mouse radial navigation menu offering shortcuts to projects, resume, GitHub, and contact channels.
 - **Interactive Career Journey**: Filterable timeline of academic and engineering milestones with real-time multi-attribute filtering.
-- **Service Booking & Payments**: Production integration with Cashfree for 1-on-1 mentorship bookings, code reviews, and project estimates.
-- **Admin Management Portal**: Administrative portal for transaction verification, booking approvals, and activity history.
+- **Secure Service Checkout**: Eight paid services use server-owned pricing, Razorpay Standard Checkout, authenticated transaction history, and downloadable PDF receipts.
+- **Activity Center**: Authenticated history for sign-ins, blog support, and preserved transaction activity.
 
 ### 📐 System Architecture Diagram
 
@@ -86,8 +86,8 @@ Inspired by the design aesthetics of Vercel, Linear, Apple, and Stripe, the code
                               └─────────┬───────────────────┬──────────┘
                                         │                   │
                               ┌─────────▼────────┐  ┌───────▼────────┐
-                              │     MONGODB      │  │ CASHFREE API   │
-                              │   (Atlas DB)     │  │  (Checkout)    │
+                              │     MONGODB      │  │  BREVO EMAIL   │
+                              │   (Atlas DB)     │  │ (Transactional)│
                               └──────────────────┘  └────────────────┘
 ```
 
@@ -102,9 +102,10 @@ Inspired by the design aesthetics of Vercel, Linear, Apple, and Stripe, the code
 | **Styling** | [Tailwind CSS 3](https://tailwindcss.com/) | Utility-first styling, Obsidian theme tokens |
 | **Animations** | [Framer Motion 12](https://framer.com/motion) | Layout animations, page transitions, spring physics |
 | **Icons** | [Lucide React](https://lucide.dev/) | Clean vector SVG icon suite |
-| **Backend API** | [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/) | RESTful API server, payment webhooks, middleware |
+| **Backend API** | [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/) | RESTful API server, authentication, email, middleware |
 | **Database** | [MongoDB Atlas](https://www.mongodb.com/atlas) | Document store for transactions, sessions, & records |
-| **Payment Gateway** | [Cashfree SDK](https://www.cashfree.com/) | Direct Indian UPI / NetBanking / Card payments |
+| **Checkout** | Razorpay Standard Checkout | Server-created orders, signature verification, webhooks, and captured-payment checks |
+| **Receipts & Email** | PDF-Lib + Nodemailer + Brevo SMTP | Stable owned receipts and transactional PDF delivery |
 
 ---
 
@@ -116,7 +117,7 @@ dev-portfolio/
 │   └── github/                # SVG Logos, Monochrome variants, and Favicon
 ├── backend/
 │   ├── config/                # Database & environment configurations
-│   ├── controllers/           # API request controllers (Auth, Payment, Contact)
+│   ├── controllers/           # API request controllers (Auth, Activity, Contact)
 │   ├── models/                # Mongoose database schemas
 │   ├── routes/                # Express API route declarations
 │   └── server.js              # Node.js Express server entrypoint
@@ -155,7 +156,7 @@ npm install
 Create `.env.local` in the project root:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5000
 ```
 
 Create `.env` in the `backend/` directory:
@@ -165,8 +166,10 @@ PORT=5000
 NODE_ENV=development
 MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/dev-portfolio
 FRONTEND_URL=http://localhost:5173
-CASHFREE_APP_ID=your_cashfree_app_id
-CASHFREE_SECRET_KEY=your_cashfree_secret_key
+RAZORPAY_ENABLED=false
+RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_SECRET=your_api_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_separate_webhook_secret
 ```
 
 ### 3. Run Locally
@@ -213,7 +216,7 @@ vite v5.4.21 building for production...
 The portfolio is deployed using **Vercel**:
 
 1. **Frontend**: Deployed directly from GitHub main branch on Vercel (`ggauravky.vercel.app`).
-2. **Backend**: Deployed on Vercel Serverless / Node.js runtime.
+2. **Backend**: Deployed on Render using the Node.js runtime.
 3. **Database**: MongoDB Atlas cloud cluster with SRV connection strings.
 
 See the full [Deployment Guide](docs/DEPLOYMENT.md) for detailed instructions.

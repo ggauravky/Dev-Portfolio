@@ -4,14 +4,21 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+const { createHash, randomUUID } = require("node:crypto");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { logger } = require("../utils/logger");
-const {
-  sendWelcomeEmail,
-  sendWelcomeBackEmail,
-} = require("../utils/email");
+const { sendWelcomeEmail, sendWelcomeBackEmail } = require("../utils/email");
 const { recordActivityEvent } = require("../services/activityService");
+const {
+  PROFILE_SELECT,
+  buildProfileUpdate,
+  serializeUser,
+} = require("../services/auth/userProfileService");
+const {
+  GoogleAccountError,
+  reconcileGoogleAccount,
+} = require("../services/auth/googleAccountService");
 const {
   AUTH_COOKIE_NAME,
   issueSessionToken,
@@ -20,97 +27,84 @@ const {
 } = require("../utils/authSession");
 
 let googleClient = null;
+let googleClientIdForClient = "";
 
 const getGoogleClientId = () => String(process.env.GOOGLE_CLIENT_ID || "").trim();
 
-const getGoogleClient = () => {
+const requireGoogleClientId = () => {
   const clientId = getGoogleClientId();
-
   if (!clientId) {
-    const configError = new Error("GOOGLE_CLIENT_ID is missing");
-    configError.code = "GOOGLE_AUTH_CONFIG_MISSING";
-    throw configError;
+    const error = new Error("Google authentication is not configured");
+    error.code = "GOOGLE_AUTH_CONFIG_MISSING";
+    error.status = 503;
+    throw error;
   }
+  return clientId;
+};
 
-  if (!googleClient) {
+const getGoogleClient = (clientId) => {
+  if (!googleClient || googleClientIdForClient !== clientId) {
     googleClient = new OAuth2Client(clientId);
+    googleClientIdForClient = clientId;
   }
-
   return googleClient;
 };
 
-const buildUserPayload = (user) => {
-  const resolvedName = String(user.displayName || user.name || "User").trim() || "User";
-
-  return {
-    id: String(user._id),
-    name: resolvedName,
-    displayName: String(user.displayName || "").trim(),
-    email: user.email,
-    picture: user.picture,
-    emailLocked: true,
-  };
+const defaultDependencies = {
+  claimLoginEmailEvent: (input) => claimLoginEmailEvent(input),
+  markLifecycleEmailSent: (input) => markLifecycleEmailSent(input),
+  reconcileGoogleAccount,
+  recordActivityEvent,
+  sendWelcomeBackEmail,
+  sendWelcomeEmail,
+  verifyGoogleCredential: async (credential, clientId) => {
+    const ticket = await getGoogleClient(clientId).verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+    return ticket.getPayload();
+  },
 };
 
-const normalizeText = (value, maxLength) => String(value || "").trim().slice(0, maxLength);
-const normalizeLocale = (value) => normalizeText(value, 20).toLowerCase();
-const normalizeDisplayName = (value) => normalizeText(value, 120);
-const LOGIN_EMAIL_MAX_ATTEMPTS =
-  Number.parseInt(process.env.LOGIN_EMAIL_MAX_ATTEMPTS, 10) || 3;
-const LOGIN_EMAIL_RETRY_BASE_MS =
-  Number.parseInt(process.env.LOGIN_EMAIL_RETRY_BASE_MS, 10) || 2000;
+let authDependencies = { ...defaultDependencies };
 
-const buildAuthLifecycleMessage = (isNewUser) => {
-  if (isNewUser) {
-    return {
-      type: "welcome",
-      text: "Welcome. Please check your email for the welcome message.",
-    };
-  }
+const normalizeText = (value, maxLength) =>
+  String(value || "").trim().slice(0, maxLength);
 
-  return {
-    type: "welcome_back",
-    text: "Welcome back. Please check your email for the welcome-back message.",
-  };
-};
+const getLoginEmailMaxAttempts = () =>
+  Math.max(1, Number.parseInt(process.env.LOGIN_EMAIL_MAX_ATTEMPTS, 10) || 3);
+const getLoginEmailRetryBaseMs = () =>
+  Math.max(0, Number.parseInt(process.env.LOGIN_EMAIL_RETRY_BASE_MS, 10) || 2000);
 
-const resolveGoogleSignInConflict = ({
-  userByGoogleId,
-  userByEmail,
-  googleId,
-  normalizedEmail,
-  reqLogger,
-}) => {
-  if (
-    userByGoogleId &&
-    userByEmail &&
-    String(userByGoogleId._id) !== String(userByEmail._id)
-  ) {
-    reqLogger.warn(
-      {
-        googleId,
-        email: normalizedEmail,
-        userByGoogleId: String(userByGoogleId._id),
-        userByEmail: String(userByEmail._id),
+// A digest keeps retried POSTs for the same verified credential idempotent without storing the token.
+const buildLoginEventId = (credential) =>
+  `google-${createHash("sha256").update(credential).digest("hex").slice(0, 48)}`;
+
+const buildAuthLifecycleMessage = (isNewUser) => ({
+  type: isNewUser ? "welcome" : "welcome_back",
+  isNewUser: Boolean(isNewUser),
+  text: isNewUser ? "Welcome to the portfolio." : "Welcome back.",
+});
+
+const claimLoginEmailEvent = async ({ userId, loginEventId }) => {
+  const eventId = normalizeText(loginEventId, 80);
+  if (!userId || !eventId) return false;
+
+  const result = await User.updateOne(
+    { _id: userId, recentLoginEmailEventIds: { $ne: eventId } },
+    {
+      $push: {
+        recentLoginEmailEventIds: {
+          $each: [eventId],
+          $slice: -24,
+        },
       },
-      "Google sign-in rejected due to conflicting account ownership"
-    );
-
-    return "Account mapping conflict detected. Please contact support.";
-  }
-
-  if (userByEmail && userByEmail.googleId !== googleId) {
-    return "This email is already linked with a different Google account.";
-  }
-
-  if (userByGoogleId && userByGoogleId.email !== normalizedEmail) {
-    return "Your Google account email does not match the original sign-in email.";
-  }
-
-  return "";
+    }
+  );
+  return Number(result?.modifiedCount || 0) === 1;
 };
 
-const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
+const markLifecycleEmailSent = async ({ userId, type, providerId, loginEventId }) => {
   const now = new Date();
 
   if (type === "welcome") {
@@ -121,13 +115,11 @@ const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
           lastWelcomeEmailAt: now,
           lastLoginEmailType: "welcome",
           lastLoginEmailProviderId: String(providerId || ""),
+          lastLoginEmailEventId: normalizeText(loginEventId, 80),
         },
-        $inc: {
-          welcomeEmailSentCount: 1,
-        },
+        $inc: { welcomeEmailSentCount: 1 },
       }
     );
-
     return;
   }
 
@@ -138,53 +130,83 @@ const markLifecycleEmailSent = async ({ userId, type, providerId }) => {
         lastWelcomeBackEmailAt: now,
         lastLoginEmailType: "welcome_back",
         lastLoginEmailProviderId: String(providerId || ""),
+        lastLoginEmailEventId: normalizeText(loginEventId, 80),
       },
-      $inc: {
-        welcomeBackEmailSentCount: 1,
-      },
+      $inc: { welcomeBackEmailSentCount: 1 },
     }
   );
 };
 
-const delay = (ms) =>
+const delay = (milliseconds) =>
   new Promise((resolve) => {
-    setTimeout(resolve, ms);
+    setTimeout(resolve, milliseconds);
   });
 
 const dispatchLifecycleEmailWithRetry = async ({ isNewUser, userSnapshot }) => {
-  const maxAttempts = Math.max(1, LOGIN_EMAIL_MAX_ATTEMPTS);
-  let lastResult = {
-    sent: false,
-    skipped: true,
-    reason: "not_attempted",
-  };
+  let lastResult = { sent: false, skipped: true, reason: "not_attempted" };
+  const maxAttempts = getLoginEmailMaxAttempts();
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const result = isNewUser
-      ? await sendWelcomeEmail({ user: userSnapshot })
-      : await sendWelcomeBackEmail({
+      ? await authDependencies.sendWelcomeEmail({
+          user: userSnapshot,
+          loginEventId: userSnapshot.loginEventId,
+        })
+      : await authDependencies.sendWelcomeBackEmail({
           user: userSnapshot,
           loginEventId: userSnapshot.loginEventId,
         });
 
-    lastResult = {
-      ...result,
-      attempt,
-    };
-
-    if (result.sent || result.skipped) {
-      return lastResult;
-    }
+    lastResult = { ...result, attempt };
+    if (result.sent || result.skipped) return lastResult;
 
     if (attempt < maxAttempts) {
-      await delay(LOGIN_EMAIL_RETRY_BASE_MS * attempt);
+      await delay(getLoginEmailRetryBaseMs() * attempt);
     }
   }
 
   return lastResult;
 };
 
-const scheduleLifecycleLoginEmail = ({ user, isNewUser, loginEventId, reqLogger }) => {
+const processLifecycleEmail = async ({ userSnapshot, isNewUser, reqLogger }) => {
+  try {
+    const claimed = await authDependencies.claimLoginEmailEvent({
+      userId: userSnapshot._id,
+      loginEventId: userSnapshot.loginEventId,
+    });
+    if (!claimed) return;
+
+    const result = await dispatchLifecycleEmailWithRetry({ isNewUser, userSnapshot });
+
+    if (!result.sent) {
+      if (!result.skipped) {
+        reqLogger.warn(
+          {
+            userId: userSnapshot._id,
+            category: result.reason || "EMAIL_DELIVERY_FAILED",
+            attempt: result.attempt,
+          },
+          "Authentication lifecycle email was not delivered"
+        );
+      }
+      return;
+    }
+
+    await authDependencies.markLifecycleEmailSent({
+      userId: userSnapshot._id,
+      type: isNewUser ? "welcome" : "welcome_back",
+      providerId: result.providerId || result.messageId,
+      loginEventId: userSnapshot.loginEventId,
+    });
+  } catch (error) {
+    reqLogger.warn(
+      { userId: userSnapshot._id, category: error?.code || error?.name || "EMAIL_FAILED" },
+      "Authentication lifecycle email processing failed"
+    );
+  }
+};
+
+const schedulePostLoginTasks = ({ user, isNewUser, loginEventId, selectBy, reqLogger }) => {
   const userSnapshot = {
     _id: String(user._id),
     id: String(user._id),
@@ -193,85 +215,83 @@ const scheduleLifecycleLoginEmail = ({ user, isNewUser, loginEventId, reqLogger 
     givenName: user.givenName,
     familyName: user.familyName,
     picture: user.picture,
-    lastWelcomeBackEmailAt: user.lastWelcomeBackEmailAt,
-    loginEventId: normalizeText(loginEventId, 120),
+    loginAt: new Date(),
+    loginEventId,
   };
 
-  setImmediate(async () => {
-    try {
-      const result = await dispatchLifecycleEmailWithRetry({
-        isNewUser,
-        userSnapshot,
-      });
-
-      if (!result.sent) {
-        if (!result.skipped) {
-          reqLogger.warn(
-            {
-              userId: userSnapshot._id,
-              reason: result.reason,
-              error: result.error,
-              attempt: result.attempt,
-            },
-            isNewUser ? "Welcome email was not delivered" : "Welcome-back email was not delivered"
-          );
-        }
-        return;
-      }
-
-      await markLifecycleEmailSent({
-        userId: userSnapshot._id,
-        type: isNewUser ? "welcome" : "welcome_back",
-        providerId: result.providerId,
-      });
-
-      reqLogger.info(
-        {
-          userId: userSnapshot._id,
-          emailId: result.providerId,
-          idempotencyKey: result.idempotencyKey,
-          attempt: result.attempt,
+  setImmediate(() => {
+    Promise.resolve(
+      authDependencies.recordActivityEvent({
+        eventKey: `auth:login:${loginEventId}`,
+        userId: user._id,
+        userEmail: user.email,
+        domain: "auth",
+        actionType: "login_success",
+        title: isNewUser
+          ? "Google sign-in completed (new account)"
+          : "Google sign-in completed",
+        status: "success",
+        metadata: {
+          provider: "google",
+          isNewUser: Boolean(isNewUser),
+          selectBy,
         },
-        isNewUser ? "Welcome email sent" : "Welcome-back email sent"
+      })
+    ).catch((error) => {
+      reqLogger.warn(
+        { userId: String(user._id), category: error?.code || error?.name || "ACTIVITY_FAILED" },
+        "Failed to persist login activity event"
       );
-    } catch (error) {
-      reqLogger.error({ err: error, userId: userSnapshot._id }, "Lifecycle email processing failed");
-    }
+    });
+
+    void processLifecycleEmail({ userSnapshot, isNewUser, reqLogger });
   });
 };
 
-const recordLoginActivityEvent = async ({ user, isNewUser, loginEventId, reqLogger }) => {
-  try {
-    await recordActivityEvent({
-      eventKey: `auth:login:${normalizeText(loginEventId, 120)}`,
-      userId: user?._id || null,
-      userEmail: user?.email,
-      domain: "auth",
-      actionType: "login_success",
-      title: isNewUser ? "Google sign-in completed (new account)" : "Google sign-in completed",
-      status: "success",
-      metadata: {
-        provider: "google",
-        isNewUser: Boolean(isNewUser),
-      },
+const scheduleLogoutActivity = ({ user, reqLogger }) => {
+  if (!user?.id) return;
+
+  setImmediate(() => {
+    Promise.resolve(
+      authDependencies.recordActivityEvent({
+        eventKey: `auth:logout:${randomUUID()}`,
+        userId: user.id,
+        userEmail: user.email,
+        domain: "auth",
+        actionType: "logout_success",
+        title: "Signed out",
+        status: "success",
+        metadata: { provider: "google" },
+      })
+    ).catch((error) => {
+      reqLogger.warn(
+        { userId: user.id, category: error?.code || error?.name || "ACTIVITY_FAILED" },
+        "Failed to persist logout activity event"
+      );
     });
-  } catch (error) {
-    reqLogger.warn(
-      {
-        err: error,
-        userId: user?._id,
-      },
-      "Failed to persist login activity event"
-    );
+  });
+};
+
+const getFailureResponse = (error) => {
+  if (error?.code === "GOOGLE_AUTH_CONFIG_MISSING" || error?.code === "AUTH_CONFIG_MISSING") {
+    return { status: 503, message: "Google Sign-In is not configured on server" };
   }
+
+  if (error instanceof GoogleAccountError) {
+    return { status: error.status, message: error.message };
+  }
+
+  return { status: 401, message: "Google sign-in failed. Please try again" };
 };
 
 exports.getPublicAuthConfig = async (req, res) => {
+  const googleClientId = getGoogleClientId();
   return res.status(200).json({
     success: true,
     message: "Auth config fetched",
     data: {
-      googleClientId: getGoogleClientId(),
+      googleClientId,
+      googleAuthEnabled: Boolean(googleClientId),
     },
   });
 };
@@ -281,7 +301,6 @@ exports.googleSignIn = async (req, res) => {
 
   try {
     const credential = String(req.body?.credential || "").trim();
-
     if (!credential) {
       return res.status(400).json({
         success: false,
@@ -289,131 +308,49 @@ exports.googleSignIn = async (req, res) => {
       });
     }
 
-    const client = getGoogleClient();
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: getGoogleClientId(),
-    });
-
-    const payload = ticket.getPayload();
-
-    if (!payload?.sub || !payload?.email) {
-      return res.status(400).json({
-        success: false,
-        message: "Google account details are invalid",
-      });
-    }
-
-    if (payload.email_verified === false) {
-      return res.status(403).json({
-        success: false,
-        message: "Google account email is not verified",
-      });
-    }
-
-    const normalizedEmail = normalizeText(payload.email, 320).toLowerCase();
-    const fallbackUserName = normalizedEmail.split("@")[0] || "User";
-    const userName = normalizeText(payload.name || fallbackUserName, 120) || "User";
-    const givenName = normalizeText(payload.given_name, 80);
-    const familyName = normalizeText(payload.family_name, 80);
-    const locale = normalizeLocale(payload.locale);
-    const emailVerified = payload.email_verified !== false;
-    const picture = normalizeText(payload.picture, 2048);
-
-    const userByGoogleId = await User.findOne({ googleId: payload.sub });
-    const userByEmail = await User.findOne({ email: normalizedEmail });
-
-    const accountConflictMessage = resolveGoogleSignInConflict({
-      userByGoogleId,
-      userByEmail,
-      googleId: payload.sub,
-      normalizedEmail,
-      reqLogger,
-    });
-
-    if (accountConflictMessage) {
-      return res.status(409).json({
-        success: false,
-        message: accountConflictMessage,
-      });
-    }
-
-    const existingUser = userByGoogleId || userByEmail;
-
-    const isNewUser = !existingUser;
-    let user = existingUser;
-
-    if (user) {
-      user.googleId = payload.sub;
-      user.name = userName;
-      user.givenName = givenName;
-      user.familyName = familyName;
-      user.locale = locale;
-      user.emailVerified = emailVerified;
-      user.picture = picture;
-      if (!user.displayName) {
-        user.displayName = userName;
-      }
-      user.lastLoginAt = new Date();
-      await user.save();
-    } else {
-      user = await User.create({
-        googleId: payload.sub,
-        email: normalizedEmail,
-        name: userName,
-        displayName: userName,
-        givenName,
-        familyName,
-        locale,
-        emailVerified,
-        picture,
-        lastLoginAt: new Date(),
-      });
-    }
-
-    const sessionToken = issueSessionToken({
-      uid: String(user._id),
-      gid: user.googleId,
-    });
-
-    const loginEventId = `${String(user._id)}_${Date.now()}`;
+    const clientId = requireGoogleClientId();
+    const googlePayload = await authDependencies.verifyGoogleCredential(credential, clientId);
+    const { user, isNewUser } = await authDependencies.reconcileGoogleAccount(googlePayload);
+    const sessionToken = issueSessionToken({ uid: String(user._id) });
+    const loginEventId = buildLoginEventId(credential);
+    const selectBy = normalizeText(req.body?.selectBy, 40);
 
     res.cookie(AUTH_COOKIE_NAME, sessionToken, getSessionCookieOptions());
-
-    await recordLoginActivityEvent({
-      user,
-      isNewUser,
-      loginEventId,
-      reqLogger,
-    });
-
-    scheduleLifecycleLoginEmail({
-      user,
-      isNewUser,
-      loginEventId,
-      reqLogger,
-    });
-
-    return res.status(200).json({
+    const response = res.status(200).json({
       success: true,
       message: "Signed in successfully",
       data: {
-        user: buildUserPayload(user),
+      user: serializeUser(user),
         authMessage: buildAuthLifecycleMessage(isNewUser),
       },
     });
-  } catch (error) {
-    if (error?.code === "GOOGLE_AUTH_CONFIG_MISSING" || error?.code === "AUTH_CONFIG_MISSING") {
-      return res.status(503).json({
-        success: false,
-        message: "Google Sign-In is not configured on server",
-      });
-    }
 
-    reqLogger.error({ err: error }, "Google sign-in failed");
-    return res.status(401).json({
+    reqLogger.info(
+      {
+        requestId: req.id || req.headers?.["x-request-id"],
+        userId: String(user._id),
+        provider: "google",
+        accountStatus: isNewUser ? "new" : "returning",
+      },
+      "Google sign-in completed"
+    );
+
+    schedulePostLoginTasks({ user, isNewUser, loginEventId, selectBy, reqLogger });
+    return response;
+  } catch (error) {
+    const failure = getFailureResponse(error);
+    reqLogger.warn(
+      {
+        requestId: req.id || req.headers?.["x-request-id"],
+        provider: "google",
+        category: error?.code || error?.name || "GOOGLE_SIGN_IN_FAILED",
+      },
+      "Google sign-in rejected"
+    );
+
+    return res.status(failure.status).json({
       success: false,
-      message: "Google sign-in failed. Please try again",
+      message: failure.message,
     });
   }
 };
@@ -422,97 +359,91 @@ exports.getCurrentSession = async (req, res) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
 
-  if (!req.authUser) {
-    return res.status(200).json({
-      success: true,
-      message: "No active session",
-      data: {
-        user: null,
-      },
-    });
-  }
-
   return res.status(200).json({
     success: true,
-    message: "Session fetched successfully",
-    data: {
-      user: req.authUser,
-    },
+    message: req.authUser ? "Session fetched successfully" : "No active session",
+    data: { user: req.authUser || null },
   });
 };
 
 exports.getProfile = async (req, res) => {
   if (!req.authUser?.id) {
-    return res.status(401).json({
-      success: false,
-      message: "Please sign in first",
-    });
+    return res.status(401).json({ success: false, message: "Please sign in first" });
   }
 
-  const user = await User.findById(req.authUser.id).select("_id name displayName email picture");
+  const user = await User.findById(req.authUser.id).select(PROFILE_SELECT);
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User profile not found",
-    });
+    return res.status(404).json({ success: false, message: "User profile not found" });
   }
 
   return res.status(200).json({
     success: true,
     message: "Profile fetched successfully",
-    data: {
-      user: buildUserPayload(user),
-    },
+    data: { user: serializeUser(user) },
   });
 };
 
 exports.updateProfile = async (req, res) => {
   if (!req.authUser?.id) {
-    return res.status(401).json({
+    return res.status(401).json({ success: false, message: "Please sign in first" });
+  }
+
+  let profileUpdate;
+  try {
+    profileUpdate = buildProfileUpdate(req.body);
+  } catch (error) {
+    return res.status(error.status || 400).json({
       success: false,
-      message: "Please sign in first",
+      code: error.code,
+      message: error.message,
     });
   }
 
-  const updatedDisplayName = normalizeDisplayName(req.body?.displayName);
-
   const user = await User.findByIdAndUpdate(
     req.authUser.id,
-    {
-      $set: {
-        displayName: updatedDisplayName,
-      },
-    },
-    {
-      new: true,
-      runValidators: true,
-      fields: "_id name displayName email picture",
-    }
+    { $set: profileUpdate },
+    { new: true, runValidators: true, fields: PROFILE_SELECT }
   );
 
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User profile not found",
-    });
+    return res.status(404).json({ success: false, message: "User profile not found" });
   }
 
   return res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    data: {
-      user: buildUserPayload(user),
-    },
+    data: { user: serializeUser(user) },
   });
 };
 
 exports.logout = async (req, res) => {
+  const reqLogger = req.log || logger;
+  const authenticatedUser = req.authUser;
+
   res.clearCookie(AUTH_COOKIE_NAME, getClearCookieOptions());
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
 
-  return res.status(200).json({
+  const response = res.status(200).json({
     success: true,
     message: "Logged out successfully",
   });
+
+  scheduleLogoutActivity({ user: authenticatedUser, reqLogger });
+  return response;
+};
+
+exports._test = {
+  buildUserPayload: serializeUser,
+  buildLoginEventId,
+  claimLoginEmailEvent,
+  getFailureResponse,
+  resetDependencies() {
+    authDependencies = { ...defaultDependencies };
+  },
+  schedulePostLoginTasks,
+  setDependencies(overrides) {
+    authDependencies = { ...authDependencies, ...overrides };
+  },
+  processLifecycleEmail,
 };

@@ -34,7 +34,7 @@ This document outlines completed milestones, current active development, and pla
 ## 📋 Planned Initiatives (Q3 2026)
 
 - [ ] Interactive 3D interactive Canvas widgets for project case studies.
-- [ ] Multi-currency Cashfree checkout support.
+- [x] Reintroduce secure checkout with Razorpay, server-owned pricing, webhooks, PDF receipts, and Brevo delivery.
 - [ ] RSS Feed generation for technical blog posts (`/feed.xml`).
 
 ---

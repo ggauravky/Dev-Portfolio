@@ -14,7 +14,9 @@ We actively maintain and provide security updates for the following versions of 
 
 ## Reporting a Vulnerability
 
-We take the security of our application, API backend, user authentication flows, and payment integrations seriously.
+We take the security of our application, API backend, user authentication flows, and checkout integrations seriously.
+
+Payment amounts are resolved server-side. Razorpay API and webhook secrets remain backend-only, webhook signatures are checked against the raw request body, and receipts require authenticated transaction ownership. This application never stores card numbers, CVVs, UPI PINs, or bank credentials.
 
 If you discover a security vulnerability, please follow responsible disclosure guidelines:
 

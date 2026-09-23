@@ -5,7 +5,7 @@
 
 'use strict';
 
-const CACHE_NAME = 'portfolio-offline-v3';
+const CACHE_NAME = 'portfolio-offline-v4';
 
 // Minimal critical assets required to show the offline page
 const PRECACHE_URLS = [
@@ -15,6 +15,10 @@ const PRECACHE_URLS = [
 
 // Patterns that MUST NOT be cached and must always go directly to network
 const NETWORK_ONLY_PATTERNS = [
+  /^\/@vite(?:\/|$)/,
+  /^\/@react-refresh$/,
+  /^\/node_modules\//,
+  /^\/src\//,
   /^\/api\//,
   /^\/llms(-full)?\.txt$/,
   /^\/openapi\.json$/,

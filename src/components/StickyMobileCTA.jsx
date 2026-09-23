@@ -13,6 +13,9 @@ function StickyMobileCTA({
     title,
     primaryLabel,
     primaryTo,
+    onPrimaryClick,
+    primaryDisabled = false,
+    primaryTone = 'default',
     secondaryLabel,
     secondaryTo,
     secondaryExternal = false,
@@ -48,6 +51,21 @@ function StickyMobileCTA({
         }
     }
 
+    const primaryClassName = `inline-flex items-center justify-center rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60 ${
+        primaryTone === 'toxic'
+            ? 'bg-toxic text-obsidian hover:bg-white'
+            : 'text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
+    }`
+    const primaryAction = onPrimaryClick ? (
+        <button type="button" onClick={onPrimaryClick} disabled={primaryDisabled} className={primaryClassName}>
+            {primaryLabel}
+        </button>
+    ) : (
+        <Link to={primaryTo} className={primaryClassName}>
+            {primaryLabel}
+        </Link>
+    )
+
     return (
         <>
             <div className="md:hidden h-28" aria-hidden="true" />
@@ -72,12 +90,7 @@ function StickyMobileCTA({
                     </div>
 
                     <div className={`mt-3 grid gap-2 ${secondaryLabel && secondaryTo ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                        <Link
-                            to={primaryTo}
-                            className="inline-flex items-center justify-center rounded-xl px-3.5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 transition-all duration-300"
-                        >
-                            {primaryLabel}
-                        </Link>
+                        {primaryAction}
 
                         {secondaryAction}
                     </div>
@@ -91,7 +104,10 @@ StickyMobileCTA.propTypes = {
     badge: PropTypes.string,
     title: PropTypes.string.isRequired,
     primaryLabel: PropTypes.string.isRequired,
-    primaryTo: PropTypes.string.isRequired,
+    primaryTo: PropTypes.string,
+    onPrimaryClick: PropTypes.func,
+    primaryDisabled: PropTypes.bool,
+    primaryTone: PropTypes.oneOf(['default', 'toxic']),
     secondaryLabel: PropTypes.string,
     secondaryTo: PropTypes.string,
     secondaryExternal: PropTypes.bool,

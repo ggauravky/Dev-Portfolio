@@ -28,7 +28,7 @@ function Services() {
                     name: 'What services does Gaurav Kumar Yadav offer?',
                     acceptedAnswer: {
                         '@type': 'Answer',
-                        text: 'Gaurav Kumar Yadav offers 8 developer services: Mentorship (1:1 career roadmaps), Resume Review (ATS optimisation), Debugging Help (root-cause code fixes), Portfolio Review, Frontend Development, Backend Development, Full Stack Development, and AI & Data Science Guidance. All services are booked securely via Cashfree.'
+                        text: 'Gaurav Kumar Yadav offers 8 developer services: Mentorship (1:1 career roadmaps), Resume Review (ATS optimisation), Debugging Help (root-cause code fixes), Portfolio Review, Frontend Development, Backend Development, Full Stack Development, and AI & Data Science Guidance. Payments use server-verified Razorpay checkout.'
                     }
                 },
                 {
@@ -36,7 +36,7 @@ function Services() {
                     name: 'How can I book a session with Gaurav Kumar Yadav?',
                     acceptedAnswer: {
                         '@type': 'Answer',
-                        text: 'Visit https://ggauravky.vercel.app/booknow, select your service, fill in your project brief, and complete payment via Cashfree (UPI, cards, netbanking, wallets). Sessions are confirmed within 24-48 hours.'
+                        text: 'Visit https://ggauravky.vercel.app/booknow, select a service, sign in, and complete the server-verified Razorpay checkout.'
                     }
                 },
                 {
@@ -159,7 +159,7 @@ function Services() {
                                 Mobile-friendly delivery updates
                             </div>
                             <div className="rounded border border-toxic/20 bg-toxic/5 px-3 py-1.5 text-[10px] font-mono uppercase text-toxic">
-                                Secure checkout via Cashfree
+                                Razorpay secure checkout
                             </div>
                         </div>
 
@@ -193,7 +193,7 @@ function Services() {
                                 </div>
                                 <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
                                     <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Secure Checkout</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Cashfree</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Upgrading</p>
                                 </div>
                                 <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
                                     <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">View Details</p>
@@ -306,7 +306,7 @@ function Services() {
                                 </div>
                                 <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-cyber/20 transition-all">
                                     <p className="text-cyber text-xs font-mono font-bold uppercase tracking-widest mb-2">// Secure Process</p>
-                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Payments are processed securely via Cashfree, with restricted data usage standards.</p>
+                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Razorpay Standard Checkout handles payment details; this portfolio stores only the identifiers needed to verify the transaction.</p>
                                 </div>
                             </div>
                         </div>
@@ -359,8 +359,8 @@ function Services() {
 
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
-                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Cashfree Checkout</p>
-                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Live secure payments with UPI, cards, wallets, netbanking, and pay later.</p>
+                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Razorpay Checkout</p>
+                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">The server controls pricing and verifies captured payments before confirming a booking.</p>
                                     </div>
                                     <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
                                         <p className="text-cyber font-mono font-bold text-xs uppercase tracking-wider mb-1">Card Data Safety</p>
@@ -402,7 +402,7 @@ function Services() {
 
                         <div className="relative z-10 mt-6 flex items-center justify-center lg:justify-start gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
                             <span className="h-1.5 w-1.5 rounded-full bg-toxic" />
-                            <span>Cashfree Checkout + Verified Public Work Only</span>
+                            <span>Razorpay Checkout + Verified Public Work</span>
                         </div>
                     </div>
                 </ScrollReveal>

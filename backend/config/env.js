@@ -19,6 +19,13 @@ const normalizeEnv = (value) => String(value || "").trim();
 
 const hasValue = (value) => Boolean(normalizeEnv(value));
 
+const getRazorpayKeyMode = (value) => {
+  const keyId = normalizeEnv(value);
+  if (keyId.startsWith("rzp_test_")) return "test";
+  if (keyId.startsWith("rzp_live_")) return "live";
+  return "invalid";
+};
+
 const buildMissingKeyReport = (keys) =>
   keys
     .filter((key) => !hasValue(process.env[key]))
@@ -26,66 +33,73 @@ const buildMissingKeyReport = (keys) =>
     .sort((left, right) => left.localeCompare(right));
 
 const validateEnvironment = ({ strict = true } = {}) => {
-  const paymentGatewayEnabled = toBoolean(process.env.PAYMENT_GATEWAY_ENABLED, true);
-  const brevoEnabled = toBoolean(process.env.BREVO_ENABLED, true);
+  const emailEnabled = toBoolean(process.env.EMAIL_ENABLED, false);
+  const razorpayEnabled = toBoolean(
+    process.env.RAZORPAY_ENABLED || process.env.PAYMENT_GATEWAY_ENABLED,
+    false
+  );
 
   const requiredKeys = ["GOOGLE_CLIENT_ID", "AUTH_JWT_SECRET", "FRONTEND_URL"];
 
-  if (paymentGatewayEnabled) {
-    requiredKeys.push(
-      "CASHFREE_APP_ID",
-      "CASHFREE_SECRET_KEY",
-      "CASHFREE_WEBHOOK_SECRET",
-      "CASHFREE_ENV"
-    );
-  }
-
-  if (brevoEnabled) {
-    requiredKeys.push(
-      "BREVO_API_KEY",
-      "BREVO_SENDER_EMAIL",
-      "BREVO_ADMIN_NOTIFICATION_EMAIL"
-    );
+  if (razorpayEnabled) {
+    requiredKeys.push("RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET");
   }
 
   const missingKeys = buildMissingKeyReport(requiredKeys);
-
+  const emailMissingKeys = emailEnabled
+    ? buildMissingKeyReport(["BREVO_SMTP_USER", "BREVO_SMTP_PASS", "BREVO_SENDER_EMAIL"])
+    : [];
+  const smtpPort = Number(process.env.BREVO_SMTP_PORT || 587);
   const warnings = [];
+  const invalidKeys = [];
 
-  const queueEnabled = toBoolean(process.env.PAYMENT_QUEUE_ENABLED, true);
-  const hasQueueUrl = hasValue(process.env.PAYMENT_QUEUE_REDIS_URL) || hasValue(process.env.REDIS_URL);
-
-  if (queueEnabled && !hasQueueUrl) {
-    warnings.push(
-      "PAYMENT_QUEUE_ENABLED is true but PAYMENT_QUEUE_REDIS_URL/REDIS_URL is missing. " +
-        "Payment reconciliation will fallback to in-process scheduling."
-    );
+  if (razorpayEnabled && hasValue(process.env.RAZORPAY_KEY_ID)) {
+    const keyMode = getRazorpayKeyMode(process.env.RAZORPAY_KEY_ID);
+    if (keyMode === "invalid") {
+      invalidKeys.push("RAZORPAY_KEY_ID");
+    } else if (process.env.NODE_ENV === "development" && keyMode === "live") {
+      warnings.push("RAZORPAY_KEY_ID uses live mode while NODE_ENV is development");
+    }
   }
 
-
-  const cashfreeEnv = normalizeEnv(process.env.CASHFREE_ENV).toUpperCase();
-  if (paymentGatewayEnabled && !["SANDBOX", "PRODUCTION"].includes(cashfreeEnv)) {
+  if (emailMissingKeys.length) {
     warnings.push(
-      "CASHFREE_ENV should be SANDBOX or PRODUCTION. Current value may route requests incorrectly."
+      `Transactional email is enabled but incomplete; missing: ${emailMissingKeys.join(", ")}`
     );
+  }
+  if (!Number.isInteger(smtpPort) || smtpPort <= 0 || smtpPort > 65535) {
+    warnings.push("BREVO_SMTP_PORT is invalid; transactional email will be skipped");
+  }
+
+  const authSecret = normalizeEnv(process.env.AUTH_JWT_SECRET);
+  if (authSecret && authSecret.length < 32) {
+    warnings.push("AUTH_JWT_SECRET should contain at least 32 characters");
+  }
+
+  const cookieSameSite = normalizeEnv(process.env.AUTH_COOKIE_SAME_SITE).toLowerCase();
+  if (cookieSameSite && !["lax", "none", "strict"].includes(cookieSameSite)) {
+    warnings.push("AUTH_COOKIE_SAME_SITE must be lax, none, or strict");
   }
 
   const report = {
-    ok: missingKeys.length === 0,
+    ok: missingKeys.length === 0 && invalidKeys.length === 0,
     strict: Boolean(strict),
     missingKeys,
+    invalidKeys,
     warnings,
     flags: {
-      paymentGatewayEnabled,
-      brevoEnabled,
-      queueEnabled,
+      emailEnabled,
+      razorpayEnabled,
     },
   };
 
   if (!report.ok && strict) {
+    const issues = [
+      missingKeys.length ? `missing: ${missingKeys.join(", ")}` : "",
+      invalidKeys.length ? `invalid: ${invalidKeys.join(", ")}` : "",
+    ].filter(Boolean).join("; ");
     const error = new Error(
-      `Missing required environment variables: ${missingKeys.join(", ")}. ` +
-        "Fix backend environment configuration before starting the server."
+      `Environment validation failed (${issues}). Fix backend environment configuration before starting the server.`
     );
     error.code = "ENV_VALIDATION_FAILED";
     error.details = report;
@@ -96,6 +110,7 @@ const validateEnvironment = ({ strict = true } = {}) => {
 };
 
 module.exports = {
+  getRazorpayKeyMode,
   toBoolean,
   validateEnvironment,
 };

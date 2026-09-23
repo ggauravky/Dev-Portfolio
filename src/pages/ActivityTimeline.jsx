@@ -1,19 +1,33 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import {
+    Activity,
+    CalendarDays,
+    ChevronRight,
+    Download,
+    ExternalLink,
+    Heart,
+    Link as LinkIcon,
+    LogIn,
+    Mail,
+    MapPin,
+    Pencil,
+    ReceiptText,
+    RefreshCw,
+    ShieldCheck,
+    WalletCards,
+} from 'lucide-react'
 import useSEO from '../hooks/useSEO'
 import useAuth from '../hooks/useAuth'
 import { fetchMyActivityTimeline } from '../services/activity'
 import { fetchMySupports } from '../services/blogSupport'
-import {
-    fetchServiceReceiptImage,
-    fetchServiceReceiptPdf,
-    fetchSupportReceiptImage,
-    fetchSupportReceiptPdf,
-} from '../services/payment'
+import { fetchPaymentReceipt } from '../services/payment'
 import { trackEvent } from '../utils/analytics'
+import ProfileEditorDialog from '../components/account/ProfileEditorDialog'
+import PaymentDetailsDialog from '../components/account/PaymentDetailsDialog'
 
-const PAYMENT_INTERNAL_ACTIONS = new Set([
+const INTERNAL_PAYMENT_ACTIONS = new Set([
     'order_created',
     'reconciliation_started',
     'user_email_sent',
@@ -22,60 +36,18 @@ const PAYMENT_INTERNAL_ACTIONS = new Set([
     'receipt_downloaded',
 ])
 
-const PAYMENT_ACTION_RANK = {
-    payment_success: 4,
-    payment_failed: 3,
-    payment_record: 2,
-}
-
-const STATUS_RANK = {
-    success: 4,
-    pending: 3,
-    failed: 2,
-    info: 1,
-}
-
-const normalizeActivityTab = (value) => {
-    const normalized = String(value || '').trim().toLowerCase()
-
-    if (['payments', 'bookings'].includes(normalized)) {
-        return 'payments'
-    }
-
-    if (['blog-likes', 'supports', 'blog'].includes(normalized)) {
-        return 'blog-likes'
-    }
-
-    if (['logins', 'login', 'login-activity'].includes(normalized)) {
-        return 'logins'
-    }
-
-    return 'all'
-}
-
-const humanizeToken = (value, fallback = 'Event') => {
-    const raw = String(value || '')
-        .trim()
-        .replaceAll(/[_-]+/g, ' ')
-
-    if (!raw) {
-        return fallback
-    }
-
-    return raw
-        .split(' ')
-        .filter(Boolean)
-        .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
-        .join(' ')
+const normalizeTab = (value) => {
+    const tab = String(value || '').trim().toLowerCase()
+    if (['payments', 'bookings'].includes(tab)) return 'payments'
+    if (['sign-ins', 'logins', 'login', 'login-activity'].includes(tab)) return 'sign-ins'
+    if (['activity', 'blog-likes', 'supports', 'blog'].includes(tab)) return 'activity'
+    return 'overview'
 }
 
 const formatDateTime = (value) => {
-    const parsed = new Date(value)
-    if (Number.isNaN(parsed.getTime())) {
-        return 'Not available'
-    }
-
-    return parsed.toLocaleString('en-IN', {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'Not available'
+    return date.toLocaleString('en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -85,846 +57,384 @@ const formatDateTime = (value) => {
 }
 
 const formatDate = (value) => {
-    const parsed = new Date(value)
-    if (Number.isNaN(parsed.getTime())) {
-        return 'Not available'
-    }
-
-    return parsed.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    })
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'Not available'
+    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-const toEventTimestampMs = (entry) => {
-    const value = entry?.timestamp || entry?.createdAt || entry?.updatedAt || ''
-    const parsed = new Date(value)
-    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime()
+const timestamp = (entry) => {
+    const date = new Date(entry?.timestamp || entry?.createdAt || entry?.updatedAt || '')
+    return Number.isNaN(date.getTime()) ? 0 : date.getTime()
 }
 
-const saveBlobAsFile = (blob, filename) => {
-    const url = URL.createObjectURL(blob)
-    const link = globalThis.document.createElement('a')
-    link.href = url
-    link.download = filename
-    globalThis.document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
+const humanize = (value, fallback = 'Activity') => {
+    const text = String(value || '').trim().replaceAll(/[_-]+/g, ' ')
+    if (!text) return fallback
+    return text.replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
-const getStatusBadgeClass = (status) => {
-    const normalized = String(status || '').trim().toLowerCase()
-
-    if (normalized === 'success') {
-        return 'border-[#c5f82a]/30 bg-[#c5f82a]/10 text-[#c5f82a]'
-    }
-
-    if (normalized === 'pending') {
-        return 'border-[#ff5d00]/30 bg-[#ff5d00]/10 text-[#ff5d00]'
-    }
-
-    if (normalized === 'failed') {
-        return 'border-rose-500/30 bg-rose-500/10 text-rose-300'
-    }
-
-    return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa]'
-}
-
-const getFlowFromPaymentEvent = (event) => {
-    const normalizedReceiptKind = String(
-        event?.receipt?.kind || event?.receiptKind || event?.type || ''
-    )
-        .trim()
-        .toLowerCase()
-
-    return normalizedReceiptKind === 'support' ? 'support' : 'service'
-}
-
-const getPaymentCardTitle = ({ flow, actionType, fallbackTitle }) => {
-    const flowLabel = flow === 'support' ? 'Support Contribution' : 'Service Booking'
-
-    if (actionType === 'payment_success') {
-        return `${flowLabel} Confirmed`
-    }
-
-    if (actionType === 'payment_failed') {
-        return `${flowLabel} Failed`
-    }
-
-    if (fallbackTitle) {
-        return fallbackTitle
-    }
-
-    return `${flowLabel} Update`
-}
-
-const getEventIcon = (item) => {
-    if (item.cardType === 'blog') {
-        return '#'
-    }
-
-    if (item.cardType === 'login') {
-        return '@'
-    }
-
-    const normalizedAction = String(item?.actionType || '').trim().toLowerCase()
-
-    if (normalizedAction.includes('success')) {
-        return 'OK'
-    }
-
-    if (normalizedAction.includes('failed')) {
-        return '!'
-    }
-
-    return '$'
-}
-
-const resolvePaymentStatus = (actionType, fallbackStatus) => {
-    if (actionType === 'payment_success') {
-        return 'success'
-    }
-
-    if (actionType === 'payment_failed') {
-        return 'failed'
-    }
-
-    return fallbackStatus
-}
-
-const getFlowHintLabel = (flow) => {
-    if (flow === 'support') {
-        return ' (Support)'
-    }
-
-    if (flow === 'service') {
-        return ' (Service)'
-    }
-
-    return ''
-}
-
-const getEmptyStateMessage = (tab) => {
-    if (tab === 'payments') {
-        return 'No payment activity yet. Complete a booking or support contribution to see your payment cards here.'
-    }
-
-    if (tab === 'blog-likes') {
-        return 'No blog likes yet. Support a blog post and it will appear here.'
-    }
-
-    if (tab === 'logins') {
-        return 'No login activity found yet.'
-    }
-
-    return 'No activity yet. Your latest actions will appear here once available.'
-}
-
-const fetchReceiptBlobForTimeline = ({ kind, format, orderId, email }) => {
-    if (kind === 'support') {
-        if (format === 'pdf') {
-            return fetchSupportReceiptPdf(orderId, email)
-        }
-
-        return fetchSupportReceiptImage(orderId, email)
-    }
-
-    if (format === 'pdf') {
-        return fetchServiceReceiptPdf(orderId, email)
-    }
-
-    return fetchServiceReceiptImage(orderId, email)
-}
-
-const aggregatePaymentCards = (events) => {
-    const groupsByOrderId = new Map()
-
-    events.forEach((item) => {
-        const domain = String(item?.domain || '').trim().toLowerCase()
-        if (domain !== 'payment') {
-            return
-        }
-
-        const actionType = String(item?.actionType || '').trim().toLowerCase()
-        if (PAYMENT_INTERNAL_ACTIONS.has(actionType)) {
-            return
-        }
-
-        const groupKey = String(
-            item?.orderId ||
-            item?.receipt?.orderId ||
-            item?.transactionId ||
-            item?.paymentId ||
-            item?.id ||
-            ''
-        ).trim()
-
-        if (!groupKey) {
-            return
-        }
-
-        if (!groupsByOrderId.has(groupKey)) {
-            groupsByOrderId.set(groupKey, [])
-        }
-
-        groupsByOrderId.get(groupKey).push(item)
+const buildPaymentCards = (events) => {
+    const groups = new Map()
+    events.forEach((event) => {
+        if (String(event?.domain || '').toLowerCase() !== 'payment') return
+        const actionType = String(event?.actionType || '').toLowerCase()
+        if (INTERNAL_PAYMENT_ACTIONS.has(actionType)) return
+        const key = String(event.orderId || event.transactionId || event.paymentId || event.id || '').trim()
+        if (!key) return
+        groups.set(key, [...(groups.get(key) || []), event])
     })
 
-    const cards = []
-
-    groupsByOrderId.forEach((groupEvents, orderId) => {
-        const sorted = [...groupEvents].sort((left, right) => {
-            const leftActionRank = PAYMENT_ACTION_RANK[String(left?.actionType || '').trim().toLowerCase()] || 0
-            const rightActionRank = PAYMENT_ACTION_RANK[String(right?.actionType || '').trim().toLowerCase()] || 0
-            if (rightActionRank !== leftActionRank) {
-                return rightActionRank - leftActionRank
-            }
-
-            const leftStatusRank = STATUS_RANK[String(left?.status || '').trim().toLowerCase()] || 0
-            const rightStatusRank = STATUS_RANK[String(right?.status || '').trim().toLowerCase()] || 0
-            if (rightStatusRank !== leftStatusRank) {
-                return rightStatusRank - leftStatusRank
-            }
-
-            return toEventTimestampMs(right) - toEventTimestampMs(left)
-        })
-
-        const representative = sorted[0]
-        const flow = getFlowFromPaymentEvent(representative)
-        const actionType = String(representative?.actionType || '').trim().toLowerCase()
-        const fallbackStatus = String(representative?.status || 'info').trim().toLowerCase()
-        const resolvedStatus = resolvePaymentStatus(actionType, fallbackStatus)
-
-        const amountCandidate = sorted.find((entry) => {
-            const amount = Number(entry?.amount)
-            return Number.isFinite(amount) && amount > 0
-        })
-
-        const paymentId = String(
-            representative?.paymentId ||
-            sorted.find((entry) => String(entry?.paymentId || '').trim())?.paymentId ||
-            ''
-        ).trim()
-
-        const transactionId = String(
-            representative?.transactionId || paymentId || orderId
-        ).trim()
-
-        const receiptCarrier = sorted.find(
-            (entry) => entry?.receipt?.kind && entry?.receipt?.orderId
-        )
-
-        const receiptKind = String(
-            receiptCarrier?.receipt?.kind ||
-            representative?.receipt?.kind ||
-            representative?.receiptKind ||
-            flow
-        )
-            .trim()
-            .toLowerCase()
-
-        const receiptOrderId = String(
-            receiptCarrier?.receipt?.orderId ||
-            representative?.receipt?.orderId ||
-            representative?.receiptOrderId ||
-            orderId
-        ).trim()
-
-        cards.push({
-            id: `payment:${orderId}`,
-            cardType: 'payment',
-            domain: 'payment',
-            actionType: actionType || 'payment_record',
-            title: getPaymentCardTitle({
+    return [...groups.entries()]
+        .map(([orderId, group]) => {
+            const sorted = [...group].sort((left, right) => {
+                const rank = { payment_success: 3, payment_failed: 2, payment_record: 1 }
+                return (rank[right.actionType] || 0) - (rank[left.actionType] || 0) || timestamp(right) - timestamp(left)
+            })
+            const item = sorted[0]
+            const actionType = String(item.actionType || '').toLowerCase()
+            const flow = String(item.flow || item.metadata?.flow || '').toLowerCase() === 'support' ? 'support' : 'service'
+            const amountItem = sorted.find((entry) => Number(entry.amount) > 0)
+            const status = actionType === 'payment_success' ? 'success' : actionType === 'payment_failed' ? 'failed' : item.status || 'pending'
+            return {
+                ...item,
+                id: `payment:${orderId}`,
+                cardType: 'payment',
+                orderId,
+                transactionId: String(item.transactionId || item.paymentId || orderId),
+                paymentId: String(item.paymentId || sorted.find((entry) => entry.paymentId)?.paymentId || ''),
+                amount: Number(amountItem?.amount || 0),
                 flow,
-                actionType,
-                fallbackTitle: String(representative?.title || '').trim(),
-            }),
-            status: resolvedStatus,
-            amount: Number(amountCandidate?.amount || 0),
-            currency: String(representative?.currency || 'INR').trim(),
-            timestamp: representative?.timestamp || representative?.createdAt || representative?.updatedAt,
-            orderId,
-            paymentId,
-            transactionId,
-            flow,
-            receipt:
-                receiptOrderId && receiptKind
-                    ? {
-                        kind: receiptKind,
-                        orderId: receiptOrderId,
-                    }
-                    : null,
-            metadata: {
-                eventCount: groupEvents.length,
-            },
+                status,
+                title: flow === 'support'
+                    ? status === 'success' ? 'Support contribution' : 'Support payment'
+                    : String(item.title || 'Service booking'),
+            }
         })
-    })
-
-    return cards.sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
+        .sort((left, right) => timestamp(right) - timestamp(left))
 }
 
-const buildLoginCards = (events) =>
-    events
-        .filter((item) => String(item?.domain || '').trim().toLowerCase() === 'auth')
-        .filter((item) => String(item?.actionType || '').trim().toLowerCase() === 'login_success')
-        .map((item) => {
-            const isNewUser = Boolean(item?.metadata?.isNewUser)
+const buildSignIns = (events) => events
+    .filter((event) => String(event?.domain || '').toLowerCase() === 'auth')
+    .filter((event) => String(event?.actionType || '').toLowerCase() === 'login_success')
+    .map((event) => ({
+        ...event,
+        id: `login:${event.id}`,
+        cardType: 'login',
+        title: event.metadata?.isNewUser ? 'First Google sign-in' : 'Google sign-in',
+        status: 'success',
+    }))
+    .sort((left, right) => timestamp(right) - timestamp(left))
 
-            return {
-                id: `login:${String(item?.id || item?.timestamp || item?.createdAt || Math.random())}`,
-                cardType: 'login',
-                domain: 'auth',
-                actionType: 'login_success',
-                title: isNewUser ? 'Google sign-in completed for new account' : 'Google sign-in completed',
-                status: 'success',
-                timestamp: item?.timestamp || item?.createdAt || item?.updatedAt,
-                metadata: item?.metadata || {},
-            }
-        })
-        .sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
-
-const buildBlogCards = (supports) =>
-    (Array.isArray(supports) ? supports : [])
-        .map((item, index) => {
-            const blogSource = item?.blog || item?.blogSnapshot || {}
-            const slug = String(blogSource?.slug || '').trim()
-            const title = String(blogSource?.title || 'Supported blog post').trim()
-
-            return {
-                id: `blog:${String(item?.id || slug || item?.createdAt || index)}`,
-                cardType: 'blog',
-                domain: 'blog',
-                actionType: 'blog_support_added',
-                title: `Supported blog: ${title}`,
-                status: 'success',
-                timestamp: item?.createdAt || item?.updatedAt,
-                metadata: {
-                    slug,
-                    blogTitle: title,
-                    supportCount: Number(blogSource?.supportCount || 0),
-                },
-            }
-        })
-        .sort((left, right) => toEventTimestampMs(right) - toEventTimestampMs(left))
-
-// eslint-disable-next-line sonarjs/cognitive-complexity
-function ActivityTimeline() {
-    const { user, isLoading, isAuthenticated } = useAuth()
-    const [searchParams, setSearchParams] = useSearchParams()
-
-    useSEO({
-        title: 'My Activity | Gaurav Kumar Yadav',
-        description: 'Track payments, blog supports, and sign-in history in one organized activity center.',
-        keywords: 'activity, payments, blog supports, login history, receipts',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+const buildBlogActivity = (supports) => (Array.isArray(supports) ? supports : [])
+    .map((support, index) => {
+        const blog = support.blog || support.blogSnapshot || {}
+        return {
+            id: `blog:${support.id || blog.slug || index}`,
+            cardType: 'blog',
+            status: 'success',
+            timestamp: support.createdAt || support.updatedAt,
+            title: blog.title || 'Supported blog post',
+            metadata: { slug: blog.slug || '', supportCount: Number(blog.supportCount || 0) },
+        }
     })
+    .sort((left, right) => timestamp(right) - timestamp(left))
 
+const initialsFor = (name) => String(name || 'User')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || 'U'
+
+function ProfileImage({ user }) {
+    const [failed, setFailed] = useState(false)
+    useEffect(() => setFailed(false), [user?.picture])
+    if (user?.picture && !failed) {
+        return <img src={user.picture} alt={`${user.name || 'User'} profile`} onError={() => setFailed(true)} referrerPolicy="no-referrer" className="h-20 w-20 rounded-full border border-[#c5f82a]/55 bg-[#17171b] object-cover sm:h-24 sm:w-24" />
+    }
+    return <div aria-label={`${user?.name || 'User'} initials`} className="flex h-20 w-20 items-center justify-center rounded-full border border-[#c5f82a]/55 bg-[#17171b] font-display text-xl font-semibold text-[#c5f82a] sm:h-24 sm:w-24">{initialsFor(user?.name)}</div>
+}
+
+const Status = ({ value }) => {
+    const success = value === 'success'
+    return <span className={`inline-flex rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider ${success ? 'border-[#c5f82a]/30 bg-[#c5f82a]/8 text-[#c5f82a]' : 'border-rose-500/30 bg-rose-500/8 text-rose-300'}`}>{value}</span>
+}
+
+const EmptyState = ({ title, body, action }) => (
+    <div className="border border-dashed border-[#2a2a31] bg-[#0c0c0e] px-5 py-12 text-center">
+        <p className="font-display text-lg font-semibold text-white">{title}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-zinc-500">{body}</p>
+        {action}
+    </div>
+)
+
+const LoadingState = () => (
+    <div className="min-h-screen bg-[#070708] px-4 py-12">
+        <div className="mx-auto max-w-6xl animate-pulse space-y-5">
+            <div className="h-52 rounded-xl border border-[#1f1f24] bg-[#0e0e11]" />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {[0, 1, 2, 3].map((item) => <div key={item} className="h-24 rounded-lg border border-[#1f1f24] bg-[#0e0e11]" />)}
+            </div>
+            <div className="h-16 rounded-lg border border-[#1f1f24] bg-[#0e0e11]" />
+            <div className="h-36 rounded-lg border border-[#1f1f24] bg-[#0e0e11]" />
+        </div>
+    </div>
+)
+
+function ActivityTimeline() {
+    const { user, isLoading, isAuthenticated, openAuthDialog } = useAuth()
+    const [searchParams, setSearchParams] = useSearchParams()
     const [timeline, setTimeline] = useState([])
     const [blogSupports, setBlogSupports] = useState([])
     const [isPageLoading, setIsPageLoading] = useState(true)
     const [pageError, setPageError] = useState('')
-    const [downloadingKey, setDownloadingKey] = useState('')
+    const [paymentFilter, setPaymentFilter] = useState('all')
+    const [selectedPayment, setSelectedPayment] = useState(null)
+    const [downloadingId, setDownloadingId] = useState('')
+    const [isEditingProfile, setIsEditingProfile] = useState(false)
+    const editButtonRef = useRef(null)
+    const trackedViewRef = useRef('')
 
-    const activeTab = normalizeActivityTab(searchParams.get('tab'))
-    const highlightedOrderId = String(searchParams.get('orderId') || '').trim()
-    const flowFromQuery = normalizeFlow(searchParams.get('flow'))
-    const lastTrackedActivityViewRef = useRef('')
-    const showPaymentSuccessHint =
-        String(searchParams.get('source') || '').trim().toLowerCase() === 'payment' &&
-        String(searchParams.get('status') || '').trim().toLowerCase() === 'success'
+    const activeTab = normalizeTab(searchParams.get('tab'))
 
-    const transformedCards = useMemo(() => {
-        const paymentCards = aggregatePaymentCards(timeline)
-        const loginCards = buildLoginCards(timeline)
-        const blogCards = buildBlogCards(blogSupports)
-        const allCards = [...paymentCards, ...blogCards, ...loginCards].sort(
-            (left, right) => toEventTimestampMs(right) - toEventTimestampMs(left)
-        )
+    useSEO({
+        title: 'My Activity | Gaurav Kumar Yadav',
+        description: 'Manage your portfolio profile, payments, receipts, and sign-in history.',
+        keywords: 'account profile, transaction history, payment receipts, login history',
+        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+    })
 
-        return {
-            paymentCards,
-            loginCards,
-            blogCards,
-            allCards,
-        }
-    }, [timeline, blogSupports])
-
-    const hasPendingPayments = useMemo(
-        () => transformedCards.paymentCards.some((card) => card.status === 'pending'),
-        [transformedCards.paymentCards]
-    )
-
-    const tabs = useMemo(
-        () => [
-            { key: 'all', label: `All Activity (${transformedCards.allCards.length})` },
-            { key: 'payments', label: `Payments (${transformedCards.paymentCards.length})` },
-            { key: 'blog-likes', label: `Blog Likes (${transformedCards.blogCards.length})` },
-            { key: 'logins', label: `Login Activity (${transformedCards.loginCards.length})` },
-        ],
-        [
-            transformedCards.allCards.length,
-            transformedCards.blogCards.length,
-            transformedCards.loginCards.length,
-            transformedCards.paymentCards.length,
-        ]
-    )
-
-    const cardsForTab = useMemo(() => {
-        if (activeTab === 'payments') {
-            return transformedCards.paymentCards
-        }
-
-        if (activeTab === 'blog-likes') {
-            return transformedCards.blogCards
-        }
-
-        if (activeTab === 'logins') {
-            return transformedCards.loginCards
-        }
-
-        return transformedCards.allCards
-    }, [activeTab, transformedCards])
-
-    const loadTimeline = async ({ silent = false } = {}) => {
+    const loadData = useCallback(async () => {
         if (!isAuthenticated) {
             setTimeline([])
             setBlogSupports([])
-            setPageError('')
             setIsPageLoading(false)
             return
         }
-
-        if (!silent) {
-            setIsPageLoading(true)
-        }
-
-        const [timelineResult, supportsResult] = await Promise.allSettled([
+        setIsPageLoading(true)
+        const [activityResult, supportsResult] = await Promise.allSettled([
             fetchMyActivityTimeline({ limit: 120 }),
             fetchMySupports(),
         ])
-
-        if (timelineResult.status === 'fulfilled') {
-            const items = Array.isArray(timelineResult.value?.items) ? timelineResult.value.items : []
-            setTimeline(items)
+        if (activityResult.status === 'fulfilled') {
+            setTimeline(Array.isArray(activityResult.value?.items) ? activityResult.value.items : [])
             setPageError('')
         } else {
-            const timelineMessage = String(
-                timelineResult.reason?.message || 'Unable to load your activity timeline right now.'
-            )
-
-            if (!silent) {
-                toast.error(timelineMessage)
-            }
-            setPageError(timelineMessage)
+            setPageError(activityResult.reason?.message || 'Unable to load account activity right now.')
         }
-
         if (supportsResult.status === 'fulfilled') {
-            const supportItems = Array.isArray(supportsResult.value?.items) ? supportsResult.value.items : []
-            setBlogSupports(supportItems)
-        } else if (!silent) {
-            const supportsMessage = String(
-                supportsResult.reason?.message || 'Unable to load blog support activity right now.'
-            )
-            toast.error(supportsMessage)
+            setBlogSupports(Array.isArray(supportsResult.value?.items) ? supportsResult.value.items : [])
         }
-
         setIsPageLoading(false)
+    }, [isAuthenticated])
+
+    useEffect(() => {
+        if (!isLoading) void loadData()
+    }, [isLoading, loadData])
+
+    useEffect(() => {
+        if (!isAuthenticated || trackedViewRef.current === activeTab) return
+        trackedViewRef.current = activeTab
+        void trackEvent('activity_page_view', { tab: activeTab })
+    }, [activeTab, isAuthenticated])
+
+    const activity = useMemo(() => {
+        const payments = buildPaymentCards(timeline)
+        const signIns = buildSignIns(timeline)
+        const blogs = buildBlogActivity(blogSupports)
+        const all = [...payments, ...signIns, ...blogs].sort((left, right) => timestamp(right) - timestamp(left))
+        return { payments, signIns, blogs, all }
+    }, [blogSupports, timeline])
+
+    const visiblePayments = useMemo(() => paymentFilter === 'all'
+        ? activity.payments
+        : activity.payments.filter((payment) => payment.status === paymentFilter), [activity.payments, paymentFilter])
+
+    const stats = useMemo(() => ({
+        payments: activity.payments.length,
+        receipts: activity.payments.filter((payment) => payment.status === 'success' && payment.metadata?.receiptNumber).length,
+        support: activity.payments.filter((payment) => payment.flow === 'support' && payment.status === 'success').reduce((sum, payment) => sum + Number(payment.amount || 0), 0),
+        signIns: activity.signIns.length,
+    }), [activity])
+
+    const setTab = (tab) => {
+        const params = new URLSearchParams(searchParams)
+        if (tab === 'overview') params.delete('tab')
+        else params.set('tab', tab)
+        setSearchParams(params, { replace: true })
     }
 
-    useEffect(() => {
-        if (isLoading) {
-            return
-        }
-
-        void loadTimeline({ silent: false })
-    }, [isAuthenticated, isLoading])
-
-    useEffect(() => {
-        if (!hasPendingPayments || !isAuthenticated || isLoading) {
-            return
-        }
-
-        const timerId = setInterval(() => {
-            void loadTimeline({ silent: true })
-        }, 7000)
-
-        return () => {
-            clearInterval(timerId)
-        }
-    }, [hasPendingPayments, isAuthenticated, isLoading])
-
-    useEffect(() => {
-        const currentTab = String(searchParams.get('tab') || '').trim().toLowerCase()
-        if (!currentTab) {
-            return
-        }
-
-        const normalizedTab = normalizeActivityTab(currentTab)
-        if (normalizedTab === currentTab) {
-            return
-        }
-
-        const nextParams = new URLSearchParams(searchParams)
-        nextParams.set('tab', normalizedTab)
-        setSearchParams(nextParams, { replace: true })
-    }, [searchParams, setSearchParams])
-
-    useEffect(() => {
-        if (isLoading || !isAuthenticated) {
-            return
-        }
-
-        const viewKey = `${activeTab}:${highlightedOrderId || 'none'}`
-        if (lastTrackedActivityViewRef.current === viewKey) {
-            return
-        }
-
-        lastTrackedActivityViewRef.current = viewKey
-
-        void trackEvent('activity_page_view', {
-            tab: activeTab,
-            has_highlighted_order: Boolean(highlightedOrderId),
-            flow_hint: flowFromQuery,
-        })
-    }, [activeTab, flowFromQuery, highlightedOrderId, isAuthenticated, isLoading])
-
-    const updateActiveTab = (nextTab) => {
-        const normalizedTab = normalizeActivityTab(nextTab)
-        const nextParams = new URLSearchParams(searchParams)
-
-        if (normalizedTab === 'all') {
-            nextParams.delete('tab')
-        } else {
-            nextParams.set('tab', normalizedTab)
-        }
-
-        setSearchParams(nextParams, { replace: true })
-    }
-
-    const downloadReceipt = async ({ receipt, format }) => {
-        const orderId = String(receipt?.orderId || '').trim()
-        const kind = String(receipt?.kind || '').trim().toLowerCase()
-
-        if (!orderId || !kind || !user?.email) {
-            toast.error('Receipt metadata is incomplete for this payment card.')
-            return
-        }
-
-        const extension = format === 'pdf' ? 'pdf' : 'svg'
-        const key = `${format}:${kind}:${orderId}`
-        setDownloadingKey(key)
-
+    const downloadReceipt = async (payment) => {
+        if (!payment?.transactionId || downloadingId) return
+        setDownloadingId(payment.transactionId)
         try {
-            const blob = await fetchReceiptBlobForTimeline({
-                kind,
-                format,
-                orderId,
-                email: user.email,
-            })
-
-            const prefix = kind === 'support' ? 'support-receipt' : 'service-confirmation'
-            saveBlobAsFile(blob, `${prefix}-${orderId}.${extension}`)
-
-            void trackEvent('receipt_download', {
-                flow: kind,
-                format: extension === 'pdf' ? 'pdf' : 'image',
-                order_id: orderId,
-                source: 'activity_timeline',
-            })
-
-            toast.success(format === 'pdf' ? 'Receipt PDF downloaded' : 'Receipt image downloaded')
+            const blob = await fetchPaymentReceipt(payment.transactionId)
+            const url = URL.createObjectURL(blob)
+            const anchor = document.createElement('a')
+            anchor.href = url
+            anchor.download = `payment-receipt-${payment.metadata?.receiptNumber || payment.transactionId}.pdf`
+            document.body.appendChild(anchor)
+            anchor.click()
+            anchor.remove()
+            URL.revokeObjectURL(url)
+            void trackEvent('receipt_downloaded', { transaction_id: payment.transactionId })
+            toast.success('Receipt downloaded')
         } catch (error) {
-            const message = String(error?.message || 'Unable to download receipt')
-            toast.error(message)
+            toast.error(error?.message || 'Unable to download receipt')
         } finally {
-            setDownloadingKey('')
+            setDownloadingId('')
         }
     }
 
-    const flowHintLabel = getFlowHintLabel(flowFromQuery)
-    const emptyStateMessage = getEmptyStateMessage(activeTab)
-    const hasCardsForTab = cardsForTab.length > 0
-
-    const getTabButtonClass = (isActive) => {
-        if (isActive) {
-            return 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
-        }
-
-        return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa] hover:border-[#c5f82a]/30 hover:text-white'
-    }
-
-    const renderPaymentCard = (card) => {
-        const statusToken = String(card.status || 'info').toLowerCase()
-        const showReceiptActions = Boolean(card.receipt?.kind && card.receipt?.orderId)
-        const pdfDownloadKey = `pdf:${card.receipt?.kind}:${card.receipt?.orderId}`
-        const imageDownloadKey = `image:${card.receipt?.kind}:${card.receipt?.orderId}`
-        const isHighlighted = highlightedOrderId && highlightedOrderId === card.orderId
-        const flowLabel = card.flow === 'support' ? 'Support Contribution' : 'Service Booking'
-
-        return (
-            <article
-                key={card.id}
-                className={`rounded-md border bg-[#0e0e11] p-6 transition-all duration-200 ${
-                    isHighlighted
-                        ? 'border-[#c5f82a]/30 shadow-[2px_2px_0px_0px_rgba(197,248,42,0.15)]'
-                        : 'border-[#1a1a22]'
-                }`}
-            >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
-                                {getEventIcon(card)}
-                            </span>
-                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.title}</p>
-                        </div>
-                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">
-                            {flowLabel} • {formatDateTime(card.timestamp)} • {humanizeToken(card.actionType)}
-                        </p>
-                    </div>
-                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(statusToken)}`}>
-                        {statusToken}
-                    </span>
-                </div>
-
-                <div className="mt-3.5 grid gap-1.5 text-xs font-mono text-[#a1a1aa] leading-relaxed">
-                    {Number.isFinite(Number(card.amount)) && Number(card.amount) > 0 ? (
-                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {Number(card.amount).toLocaleString('en-IN')}</p>
-                    ) : null}
-                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {card.orderId}</p>
-                    {card.paymentId ? <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {card.paymentId}</p> : null}
-                    {card.transactionId ? <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Transaction:</span> {card.transactionId}</p> : null}
-                </div>
-
-                {showReceiptActions ? (
-                    <div className="mt-5 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                        <button
-                            type="button"
-                            disabled={downloadingKey === pdfDownloadKey}
-                            onClick={() => {
-                                void downloadReceipt({ receipt: card.receipt, format: 'pdf' })
-                            }}
-                            className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 disabled:opacity-60 transition-colors"
-                        >
-                            {downloadingKey === pdfDownloadKey ? 'Downloading PDF...' : 'Download PDF Receipt'}
-                        </button>
-                        <button
-                            type="button"
-                            disabled={downloadingKey === imageDownloadKey}
-                            onClick={() => {
-                                void downloadReceipt({ receipt: card.receipt, format: 'image' })
-                            }}
-                            className="rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-[#ff5d00] hover:border-[#ff5d00]/30 disabled:opacity-60 transition-colors"
-                        >
-                            {downloadingKey === imageDownloadKey ? 'Downloading Image...' : 'Download Image Receipt'}
-                        </button>
-
-                        {card.transactionId ? (
-                            <Link
-                                to={`/payment-success/${encodeURIComponent(card.transactionId)}?flow=${card.flow}&orderId=${encodeURIComponent(card.orderId)}`}
-                                className="inline-flex items-center justify-center rounded-md border border-[#1a1a22] bg-[#0e0e11] px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] hover:text-white hover:border-white transition-colors"
-                            >
-                                Open Success Page
-                            </Link>
-                        ) : null}
-                    </div>
-                ) : null}
-            </article>
-        )
-    }
-
-    const renderBlogCard = (card) => {
-        const slug = String(card.metadata?.slug || '').trim()
-        const content = (
-            <article
-                key={card.id}
-                className="rounded-md border border-[#1a1a22] bg-[#0e0e11] p-6 hover:border-[#c5f82a]/30 transition-colors duration-200"
-            >
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
-                                {getEventIcon(card)}
-                            </span>
-                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.metadata?.blogTitle}</p>
-                        </div>
-                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">Supported on {formatDateTime(card.timestamp)}</p>
-                    </div>
-                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
-                        supported
-                    </span>
-                </div>
-
-                <div className="mt-3.5 text-xs font-mono text-[#a1a1aa] leading-relaxed space-y-1">
-                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Post:</span> {card.metadata?.blogTitle}</p>
-                    {Number(card.metadata?.supportCount) > 0 ? (
-                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Supporters:</span> {Number(card.metadata.supportCount).toLocaleString('en-IN')}</p>
-                    ) : null}
-                </div>
-            </article>
-        )
-
-        if (!slug) {
-            return content
-        }
-
-        return (
-            <Link key={card.id} to={`/blog/${slug}`} className="block">
-                {content}
-            </Link>
-        )
-    }
-
-    const renderLoginCard = (card) => {
-        const provider = String(card.metadata?.provider || 'google').toUpperCase()
-        const isNewUser = Boolean(card.metadata?.isNewUser)
-
-        return (
-            <article key={card.id} className="rounded-md border border-[#1a1a22] bg-[#0e0e11] p-6">
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-[#1a1a22] bg-[#16161a] text-[10px] font-mono font-bold text-[#c5f82a]">
-                                {getEventIcon(card)}
-                            </span>
-                            <p className="text-base sm:text-lg font-display font-bold text-white">{card.title}</p>
-                        </div>
-                        <p className="mt-1.5 text-[11px] font-mono uppercase tracking-wider text-[#a1a1aa]/60">{provider} • {formatDateTime(card.timestamp)}</p>
-                    </div>
-                    <span className={`inline-flex rounded-md border px-3 py-1 text-[10px] font-mono uppercase tracking-wider ${getStatusBadgeClass(card.status)}`}>
-                        success
-                    </span>
-                </div>
-
-                <div className="mt-3.5 text-xs font-mono text-[#a1a1aa] leading-relaxed">
-                    <p>{isNewUser ? 'First sign-in for this account.' : 'Returning account sign-in completed.'}</p>
-                </div>
-            </article>
-        )
-    }
-
-    const renderCard = (card) => {
-        if (card.cardType === 'payment') {
-            return renderPaymentCard(card)
-        }
-
-        if (card.cardType === 'blog') {
-            return renderBlogCard(card)
-        }
-
-        return renderLoginCard(card)
-    }
-
-    if (isLoading || isPageLoading) {
-        return (
-            <div className="min-h-screen bg-[#070708] flex items-center justify-center px-4">
-                <div className="rounded-md border border-[#1a1a22] bg-[#16161a] px-6 py-5 text-[#a1a1aa] font-mono text-xs uppercase tracking-wider">
-                    Loading activity timeline...
-                </div>
-            </div>
-        )
-    }
+    if (isLoading || isPageLoading) return <LoadingState />
 
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-[#070708] px-4 py-16 flex items-center justify-center">
-                <div className="mx-auto max-w-3xl w-full rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-8 text-center">
-                    <h1 className="text-3xl font-display font-bold text-white">Sign In Required</h1>
-                    <p className="mt-3 text-[#a1a1aa] text-sm leading-relaxed">
-                        Sign in with your Google account to view your activity history.
-                    </p>
-                    <div className="mt-6">
-                        <Link
-                            to="/booknow"
-                            className="inline-flex items-center justify-center rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-5 py-3"
-                        >
-                            Continue to Booking
-                        </Link>
-                    </div>
+            <main className="flex min-h-screen items-center justify-center bg-[#070708] px-4 py-16">
+                <div className="w-full max-w-xl border border-[#24242a] bg-[#0e0e11] p-7 text-center sm:p-10">
+                    <ShieldCheck className="mx-auto h-8 w-8 text-[#c5f82a]" />
+                    <h1 className="mt-5 font-display text-2xl font-semibold text-white sm:text-3xl">Your private account area</h1>
+                    <p className="mt-3 text-sm leading-relaxed text-zinc-500">Sign in with Google to manage your profile and view payments, receipts, and account activity.</p>
+                    <button type="button" onClick={() => openAuthDialog({ reason: 'activity' })} className="mt-6 rounded-md bg-[#c5f82a] px-5 py-3 text-sm font-semibold text-[#09090a] hover:bg-[#d4ff50]">Sign in with Google</button>
                 </div>
+            </main>
+        )
+    }
+
+    const tabs = [
+        { key: 'overview', label: 'Overview', icon: Activity },
+        { key: 'payments', label: `Payments ${activity.payments.length}`, icon: WalletCards },
+        { key: 'sign-ins', label: `Sign-ins ${activity.signIns.length}`, icon: LogIn },
+        { key: 'activity', label: `Activity ${activity.all.length}`, icon: ReceiptText },
+    ]
+
+    const renderActivityRow = (item) => {
+        const Icon = item.cardType === 'payment' ? WalletCards : item.cardType === 'login' ? LogIn : Heart
+        return (
+            <div key={item.id} className="flex items-start gap-3 border-b border-[#202025] py-4 last:border-b-0">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[#292930] bg-[#151518] text-[#c5f82a]"><Icon className="h-4 w-4" /></span>
+                <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-zinc-100">{item.title}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-zinc-600">{formatDateTime(item.timestamp)}</p>
+                </div>
+                <Status value={item.status || 'success'} />
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-80 w-80 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-96 w-96 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
+        <main className="min-h-screen overflow-x-hidden bg-[#070708] text-white">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+                <section className="overflow-hidden rounded-xl border border-[#24242a] bg-[#0d0d0f]">
+                    <div className="h-1 bg-[#c5f82a]" />
+                    <div className="flex flex-col gap-6 p-5 sm:p-7 lg:flex-row lg:items-center">
+                        <ProfileImage user={user} />
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h1 className="truncate font-display text-2xl font-semibold tracking-tight sm:text-3xl">{user.name}</h1>
+                                <span className="inline-flex items-center gap-1 rounded-full border border-[#2c2c32] px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-zinc-500"><ShieldCheck className="h-3 w-3" />Google account</span>
+                            </div>
+                            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">{user.bio || 'Add a short bio so your account feels like yours.'}</p>
+                            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-zinc-500">
+                                <span className="inline-flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{user.email}</span>
+                                {user.location ? <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{user.location}</span> : null}
+                                {user.website ? <a href={user.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-[#c5f82a]"><LinkIcon className="h-3.5 w-3.5" />Website<ExternalLink className="h-3 w-3" /></a> : null}
+                            </div>
+                        </div>
+                        <button ref={editButtonRef} type="button" onClick={() => setIsEditingProfile(true)} className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#35353c] px-4 py-2.5 text-sm font-medium text-zinc-200 hover:border-[#c5f82a]/55 hover:text-[#c5f82a] focus:outline-none focus:ring-2 focus:ring-[#c5f82a] lg:w-auto"><Pencil className="h-4 w-4" />Edit profile</button>
+                    </div>
+                    <div className="grid border-t border-[#24242a] sm:grid-cols-2">
+                        <div className="flex items-center gap-3 border-b border-[#24242a] px-5 py-3 text-xs text-zinc-500 sm:border-b-0 sm:border-r sm:px-7"><CalendarDays className="h-3.5 w-3.5" /><span>Member since <strong className="font-medium text-zinc-300">{formatDate(user.createdAt)}</strong></span></div>
+                        <div className="flex items-center gap-3 px-5 py-3 text-xs text-zinc-500 sm:px-7"><LogIn className="h-3.5 w-3.5" /><span>Last sign-in <strong className="font-medium text-zinc-300">{formatDateTime(user.lastLoginAt)}</strong></span></div>
+                    </div>
+                </section>
 
-            <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-14">
-                <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-                    <div>
-                        <p className="text-xs font-mono uppercase tracking-wider text-[#c5f82a]">Activity Center</p>
-                        <h1 className="text-3xl sm:text-4xl font-display font-bold text-white mt-1">My Activity</h1>
-                        <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed max-w-xl">
-                            Payments, blog likes, and sign-in events organized in one clean view.
-                        </p>
+                <section aria-label="Account summary" className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[#24242a] bg-[#24242a] lg:grid-cols-4">
+                    {[
+                        ['Payments', stats.payments, WalletCards],
+                        ['Receipts', stats.receipts, ReceiptText],
+                        ['Support total', `INR ${stats.support.toLocaleString('en-IN')}`, Heart],
+                        ['Sign-ins', stats.signIns, LogIn],
+                    ].map(([label, value, Icon]) => (
+                        <div key={label} className="bg-[#0d0d0f] p-4 sm:p-5">
+                            <div className="flex items-center justify-between"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-zinc-600">{label}</p><Icon className="h-3.5 w-3.5 text-[#c5f82a]" /></div>
+                            <p className="mt-3 font-display text-xl font-semibold text-white sm:text-2xl">{value}</p>
+                        </div>
+                    ))}
+                </section>
+
+                <div className="mt-8 flex items-center justify-between gap-4">
+                    <div className="min-w-0 overflow-x-auto" role="tablist" aria-label="Account sections">
+                        <div className="flex min-w-max gap-1 rounded-lg border border-[#24242a] bg-[#0d0d0f] p-1">
+                            {tabs.map(({ key, label, icon: Icon }) => (
+                                <button key={key} type="button" role="tab" aria-selected={activeTab === key} onClick={() => setTab(key)} className={`inline-flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium transition-colors sm:px-4 ${activeTab === key ? 'bg-[#202025] text-white' : 'text-zinc-500 hover:text-zinc-200'}`}><Icon className={`h-3.5 w-3.5 ${activeTab === key ? 'text-[#c5f82a]' : ''}`} />{label}</button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex flex-wrap gap-2.5">
-                        <Link
-                            to="/services"
-                            className="rounded-md border border-[#1a1a22] px-4 py-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:border-[#c5f82a]/30 hover:text-[#c5f82a] transition-all"
-                        >
-                            Explore Services
-                        </Link>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                void loadTimeline({ silent: false })
-                            }}
-                            className="rounded-md bg-[#ff5d00] text-white border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-2"
-                        >
-                            Refresh
-                        </button>
-                    </div>
+                    <button type="button" onClick={() => void loadData()} className="shrink-0 rounded-md border border-[#2a2a31] p-2.5 text-zinc-500 hover:text-[#c5f82a] focus:outline-none focus:ring-2 focus:ring-[#c5f82a]" aria-label="Refresh account activity"><RefreshCw className="h-4 w-4" /></button>
                 </div>
 
-                {showPaymentSuccessHint ? (
-                    <div className="mb-4 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/5 px-4 py-3 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
-                        Payment confirmation completed. Your latest transaction is now available under Payments.
-                        {highlightedOrderId ? ` Order ID: ${highlightedOrderId}` : ''}
-                        {flowHintLabel}
-                    </div>
-                ) : null}
+                {pageError ? <p role="alert" className="mt-5 border border-amber-500/25 bg-amber-500/5 px-4 py-3 text-sm text-amber-200">{pageError}</p> : null}
 
-                {pageError ? (
-                    <div className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-mono uppercase tracking-wider text-amber-300">
-                        {pageError}
-                    </div>
-                ) : null}
+                <section role="tabpanel" className="mt-5">
+                    {activeTab === 'overview' ? (
+                        <div className="grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
+                            <div className="rounded-lg border border-[#24242a] bg-[#0d0d0f] p-5 sm:p-6">
+                                <div className="flex items-center justify-between"><div><p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#c5f82a]">Recent</p><h2 className="mt-1 font-display text-xl font-semibold">Latest activity</h2></div><button type="button" onClick={() => setTab('activity')} className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white">View all<ChevronRight className="h-3.5 w-3.5" /></button></div>
+                                <div className="mt-4">{activity.all.length ? activity.all.slice(0, 5).map(renderActivityRow) : <EmptyState title="No activity yet" body="Your latest payments, sign-ins, and blog activity will appear here." />}</div>
+                            </div>
+                            <aside className="rounded-lg border border-[#24242a] bg-[#0d0d0f] p-5 sm:p-6">
+                                <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#c5f82a]">Account</p>
+                                <h2 className="mt-1 font-display text-xl font-semibold">Quick actions</h2>
+                                <div className="mt-5 space-y-2">
+                                    <Link to="/services" className="flex items-center justify-between rounded-md border border-[#26262c] px-3.5 py-3 text-sm text-zinc-300 hover:border-[#c5f82a]/40 hover:text-white"><span>Explore services</span><ChevronRight className="h-4 w-4" /></Link>
+                                    <button type="button" onClick={() => setTab('payments')} className="flex w-full items-center justify-between rounded-md border border-[#26262c] px-3.5 py-3 text-sm text-zinc-300 hover:border-[#c5f82a]/40 hover:text-white"><span>View receipts</span><ChevronRight className="h-4 w-4" /></button>
+                                    <Link to="/contact" className="flex items-center justify-between rounded-md border border-[#26262c] px-3.5 py-3 text-sm text-zinc-300 hover:border-[#c5f82a]/40 hover:text-white"><span>Payment help</span><ChevronRight className="h-4 w-4" /></Link>
+                                </div>
+                            </aside>
+                        </div>
+                    ) : null}
 
-                <div className="mt-6 flex flex-wrap gap-2 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-1.5">
-                    {tabs.map((tab) => {
-                        const isActive = activeTab === tab.key
+                    {activeTab === 'payments' ? (
+                        <div>
+                            <div className="mb-4 flex flex-wrap gap-2" aria-label="Filter payments">
+                                {['all', 'success', 'failed'].map((filter) => <button key={filter} type="button" onClick={() => setPaymentFilter(filter)} className={`rounded-md border px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider ${paymentFilter === filter ? 'border-[#c5f82a]/50 bg-[#c5f82a]/10 text-[#c5f82a]' : 'border-[#292930] text-zinc-600 hover:text-zinc-300'}`}>{filter}</button>)}
+                            </div>
+                            {visiblePayments.length ? <div className="space-y-3">{visiblePayments.map((payment) => (
+                                <article key={payment.id} className="rounded-lg border border-[#24242a] bg-[#0d0d0f] p-4 sm:p-5">
+                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                        <button type="button" onClick={() => setSelectedPayment(payment)} className="min-w-0 flex-1 text-left focus:outline-none focus:ring-2 focus:ring-[#c5f82a]">
+                                            <div className="flex flex-wrap items-center gap-2"><Status value={payment.status} /><span className="font-mono text-[10px] uppercase tracking-wider text-zinc-600">{payment.flow === 'support' ? 'Support Contribution' : 'Service Booking'}</span></div>
+                                            <p className="mt-2 truncate text-base font-medium text-white">{payment.title}</p>
+                                            <p className="mt-1 text-xs text-zinc-600">{formatDateTime(payment.timestamp)}</p>
+                                        </button>
+                                        <div className="flex items-center justify-between gap-4 sm:justify-end">
+                                            <p className="font-display text-lg font-semibold">INR {Number(payment.amount || 0).toLocaleString('en-IN')}</p>
+                                            {payment.status === 'success' && payment.metadata?.receiptNumber ? <button type="button" onClick={() => void downloadReceipt(payment)} disabled={Boolean(downloadingId)} className="rounded-md border border-[#34343b] p-2.5 text-zinc-400 hover:border-[#c5f82a]/50 hover:text-[#c5f82a] disabled:opacity-50" aria-label={`Download receipt for ${payment.title}`}><Download className={`h-4 w-4 ${downloadingId === payment.transactionId ? 'animate-pulse' : ''}`} /></button> : null}
+                                            <button type="button" onClick={() => setSelectedPayment(payment)} className="rounded-md p-2 text-zinc-600 hover:text-white" aria-label={`View details for ${payment.title}`}><ChevronRight className="h-4 w-4" /></button>
+                                        </div>
+                                    </div>
+                                </article>
+                            ))}</div> : <EmptyState title="No payments yet" body="You'll find your booking and support receipts here after your first payment." action={<Link to="/services" className="mt-5 inline-flex rounded-md bg-[#c5f82a] px-4 py-2.5 text-sm font-semibold text-[#09090a]">Explore services</Link>} />}
+                        </div>
+                    ) : null}
 
-                        return (
-                            <button
-                                key={tab.key}
-                                type="button"
-                                onClick={() => updateActiveTab(tab.key)}
-                                className={`rounded-md border px-4 py-2 text-xs font-mono uppercase tracking-wider transition-colors ${getTabButtonClass(isActive)}`}
-                            >
-                                {tab.label}
-                            </button>
-                        )
-                    })}
-                </div>
+                    {activeTab === 'sign-ins' ? (
+                        activity.signIns.length ? <div className="rounded-lg border border-[#24242a] bg-[#0d0d0f] px-5 sm:px-6">{activity.signIns.map((item) => (
+                            <div key={item.id} className="flex items-center gap-4 border-b border-[#202025] py-5 last:border-b-0"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#c5f82a]/25 bg-[#c5f82a]/7 text-[#c5f82a]"><LogIn className="h-4 w-4" /></span><div className="min-w-0 flex-1"><p className="text-sm font-medium text-white">{item.title}</p><p className="mt-1 text-xs text-zinc-600">{formatDateTime(item.timestamp)} / Google</p></div><Status value="success" /></div>
+                        ))}</div> : <EmptyState title="No sign-ins found" body="Successful Google sign-ins will appear here as your account history grows." />
+                    ) : null}
 
-                {hasCardsForTab ? (
-                    <div className="mt-8 grid gap-4">{cardsForTab.map((card) => renderCard(card))}</div>
-                ) : (
-                    <div className="mt-8 rounded-md border border-[#1a1a22] bg-[#0e0e11] p-8 text-center text-[#a1a1aa] text-sm leading-relaxed">
-                        {emptyStateMessage}
-                    </div>
-                )}
+                    {activeTab === 'activity' ? (
+                        activity.all.length ? <div className="rounded-lg border border-[#24242a] bg-[#0d0d0f] px-5 sm:px-6">{activity.all.map(renderActivityRow)}</div> : <EmptyState title="No account activity yet" body="Payments, sign-ins, and supported blog posts will appear here." />
+                    ) : null}
+                </section>
             </div>
-        </div>
+
+            <ProfileEditorDialog isOpen={isEditingProfile} onClose={() => setIsEditingProfile(false)} openerRef={editButtonRef} />
+            <PaymentDetailsDialog payment={selectedPayment} onClose={() => setSelectedPayment(null)} onDownload={downloadReceipt} isDownloading={Boolean(downloadingId)} />
+        </main>
     )
 }
-
-const normalizeFlow = (value) => (String(value || '').trim().toLowerCase() === 'support' ? 'support' : 'service')
 
 export default ActivityTimeline

@@ -2,7 +2,7 @@
 // Minimal & Premium Contextual Radial Navigation Command Menu Overlay
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
@@ -31,8 +31,6 @@ export default function RadialMenu() {
 
     const [hoveredItem, setHoveredItem] = useState(null)
     const [focusedIndex, setFocusedIndex] = useState(-1)
-    const menuRef = useRef(null)
-
     const reducedMotion = useMemo(() => {
         if (typeof window === 'undefined') return false
         return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -124,7 +122,6 @@ export default function RadialMenu() {
             {isOpen && (
                 <motion.div
                     key="radial-menu-overlay"
-                    ref={menuRef}
                     role="menu"
                     aria-label="Contextual Radial Command Menu"
                     aria-expanded={isOpen}

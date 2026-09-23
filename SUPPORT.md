@@ -27,4 +27,4 @@ For technical consulting, custom full-stack web application development, 1-on-1 
 | **Email** | `kumar.gaurav.yadav2007@gmail.com` | Business & Direct Communication |
 | **LinkedIn** | [linkedin.com/in/gauravky](https://www.linkedin.com/in/gauravky/) | Professional Networking |
 | **Instagram** | [@the_gau_rav](https://www.instagram.com/the_gau_rav/) | Social Updates |
-| **Direct Booking** | [ggauravky.vercel.app/booknow](https://ggauravky.vercel.app/booknow) | 1-on-1 Mentorship & Code Reviews |
+| **Service Booking** | [ggauravky.vercel.app/booknow](https://ggauravky.vercel.app/booknow) | Authenticated Razorpay checkout and booking details |

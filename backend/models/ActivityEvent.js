@@ -36,7 +36,7 @@ const activityEventSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 40,
-      default: "payment",
+      default: "activity",
       index: true,
     },
     title: {

@@ -28,7 +28,7 @@ function ServiceCard({ service, featured = false }) {
             </div>
 
             <p className="text-2xl sm:text-3xl font-display font-black text-toxic mb-1">{service.priceLabel}</p>
-            <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mb-5">// Secure checkout via Cashfree (UPI, cards, netbanking)</p>
+            <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mb-5">// Server-verified Razorpay checkout</p>
 
             {service.outcomePromise ? (
                 <div className="mb-5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3.5">

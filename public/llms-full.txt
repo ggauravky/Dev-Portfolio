@@ -30,7 +30,7 @@
 
 ### Backend & Database Systems
 - Stack: Node.js, Express.js, MongoDB, MERN Stack
-- APIs & Protocols: RESTful API Design, JSON Web Tokens (JWT), OAuth / Google Identity Services, Cashfree Payment Gateway Integration, Socket.io (WebSockets)
+- APIs & Protocols: RESTful API Design, JSON Web Tokens (JWT), OAuth / Google Identity Services, Socket.io (WebSockets)
 - Databases: MongoDB, Mongoose ODM, MySQL basics, Prisma ORM
 
 ### Developer Tools & DevOps
@@ -104,8 +104,8 @@
 
 ### 12. Shopease — E-Commerce Platform
 - URL: https://ggauravky.vercel.app/projects/shopease
-- Description: Production-grade e-commerce application with product catalog, cart state management, user authentication, and Cashfree checkout gateway integration.
-- Tech Stack: React, Node.js, Express.js, MongoDB, Cashfree SDK
+- Description: Production-grade e-commerce application with product catalog, cart state management, user authentication, and checkout integration.
+- Tech Stack: React, Node.js, Express.js, MongoDB
 
 ### 13. DishDash
 - URL: https://ggauravky.vercel.app/projects/dishdash

@@ -43,11 +43,10 @@ const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Services = lazy(() => import('./pages/Services'))
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
+const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const BookNow = lazy(() => import('./pages/BookNow'))
 const Support = lazy(() => import('./pages/Support'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
-const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
-const UnderConstruction = lazy(() => import('./pages/UnderConstruction'))
 const Journey = lazy(() => import('./pages/Journey'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -56,7 +55,6 @@ const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
-const MySupports = lazy(() => import('./pages/MySupports'))
 
 // Per-route loading fallback — keeps loading state isolated per route
 const PageLoader = () => (
@@ -182,7 +180,6 @@ function AnimatedRoutes() {
                 <Route path="/support"                    element={<R><Support /></R>} />
                 <Route path="/payment-success/:transactionId" element={<R><PaymentSuccess /></R>} />
                 <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
-                <Route path="/payment-under-construction" element={<R><UnderConstruction variant="payment" /></R>} />
                 <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
                 <Route path="/resume-review"              element={<R><ServiceDetail forcedSlug="resume-review" /></R>} />
                 <Route path="/debugging-help"             element={<R><ServiceDetail forcedSlug="debugging-help" /></R>} />
@@ -193,7 +190,7 @@ function AnimatedRoutes() {
                 <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
                 <Route path="/contact"                    element={<R><Contact /></R>} />
                 <Route path="/my-activity"               element={<R><ActivityTimeline /></R>} />
-                <Route path="/my-supports"                element={<R><MySupports /></R>} />
+                <Route path="/my-supports"                element={<R><ActivityTimeline /></R>} />
                 <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />
                 <Route path="/terms"                      element={<R><Terms /></R>} />

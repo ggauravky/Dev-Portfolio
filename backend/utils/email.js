@@ -4,10 +4,12 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { BrevoClient } = require("@getbrevo/brevo");
+const nodemailer = require("nodemailer");
 const { logger } = require("./logger");
 
 const normalizeEnvString = (value) => String(value || "").trim();
+const DEFAULT_OWNER_EMAIL = "kumar.gaurav.yadav2007@gmail.com";
+const EMAIL_OWNER_NAME = "Gaurav Kumar Yadav";
 
 const toBoolean = (value, fallback) => {
   const normalized = normalizeEnvString(value).toLowerCase();
@@ -68,43 +70,6 @@ const parseAddress = (value) => {
   };
 };
 
-const formatDateTime = (value) => {
-  const parsed = new Date(value || Date.now());
-  if (Number.isNaN(parsed.getTime())) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Kolkata",
-  }).format(parsed);
-};
-
-const formatDate = (value) => {
-  const parsed = new Date(value || Date.now());
-  if (Number.isNaN(parsed.getTime())) {
-    return "Not available";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
-    timeZone: "Asia/Kolkata",
-  }).format(parsed);
-};
-
-const formatCurrencyInr = (value) => {
-  const amount = Number(value || 0);
-  if (!Number.isFinite(amount)) {
-    return "INR 0";
-  }
-
-  return `INR ${amount.toLocaleString("en-IN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })}`;
-};
-
 const getDisplayName = (entity) => {
   const givenName = normalizeEnvString(entity?.givenName);
   if (givenName) {
@@ -129,51 +94,127 @@ const getDisplayName = (entity) => {
 const defaultHomeUrl =
   normalizeEnvString(process.env.FRONTEND_URL).replace(/\/$/, "") || "https://ggauravky.vercel.app";
 
-const parsedSender = parseAddress(process.env.BREVO_SENDER_EMAIL);
-const parsedReplyTo = parseAddress(process.env.BREVO_REPLY_TO_EMAIL);
-
-const BREVO_ENABLED = toBoolean(process.env.BREVO_ENABLED, true);
-const BREVO_API_KEY = normalizeEnvString(process.env.BREVO_API_KEY);
-const BREVO_SENDER_EMAIL = parsedSender.email;
-const BREVO_SENDER_NAME =
-  normalizeEnvString(process.env.BREVO_SENDER_NAME) ||
-  parsedSender.name ||
-  normalizeEnvString(process.env.EMAIL_APP_NAME) ||
-  "Gaurav Kumar Portfolio";
-const BREVO_REPLY_TO_EMAIL = parsedReplyTo.email;
-const BREVO_REPLY_TO_NAME = normalizeEnvString(process.env.BREVO_REPLY_TO_NAME) || parsedReplyTo.name;
-
 const EMAIL_APP_NAME = normalizeEnvString(process.env.EMAIL_APP_NAME) || "Gaurav Kumar Portfolio";
 const EMAIL_HOME_URL = defaultHomeUrl;
 const EMAIL_SUPPORT_URL =
   normalizeEnvString(process.env.EMAIL_SUPPORT_URL) || `${defaultHomeUrl}/contact`;
 const EMAIL_BLOG_URL = normalizeEnvString(process.env.EMAIL_BLOG_URL) || `${defaultHomeUrl}/blog`;
-const EMAIL_ACTIVITY_URL =
-  normalizeEnvString(process.env.EMAIL_ACTIVITY_URL) || `${defaultHomeUrl}/my-activity`;
+let smtpTransporter = null;
+let smtpTransporterFingerprint = "";
+let testTransporter = null;
 
-let brevoClient = null;
+const getEmailConfig = () => {
+  const isProduction = normalizeEnvString(process.env.NODE_ENV).toLowerCase() === "production";
+  const sender = parseAddress(
+    process.env.BREVO_SENDER_EMAIL || (!isProduction ? DEFAULT_OWNER_EMAIL : "")
+  );
+  const replyTo = parseAddress(process.env.BREVO_REPLY_TO_EMAIL || DEFAULT_OWNER_EMAIL);
+  const port = Number(process.env.BREVO_SMTP_PORT || 587);
 
-const isBrevoConfigured = () => BREVO_ENABLED && Boolean(BREVO_API_KEY) && Boolean(BREVO_SENDER_EMAIL);
+  return {
+    enabled: toBoolean(process.env.EMAIL_ENABLED, false),
+    host: normalizeEnvString(process.env.BREVO_SMTP_HOST) || "smtp-relay.brevo.com",
+    port,
+    secure: port === 465,
+    user: normalizeEnvString(process.env.BREVO_SMTP_USER),
+    pass: normalizeEnvString(process.env.BREVO_SMTP_PASS),
+    senderEmail: sender.email,
+    senderName:
+      normalizeEnvString(process.env.BREVO_SENDER_NAME) ||
+      sender.name ||
+      EMAIL_OWNER_NAME,
+    replyToEmail: replyTo.email,
+    replyToName:
+      normalizeEnvString(process.env.BREVO_REPLY_TO_NAME) || replyTo.name || EMAIL_OWNER_NAME,
+    adminEmail: normalizeEnvString(
+      process.env.PAYMENT_ADMIN_EMAIL ||
+        process.env.BREVO_ADMIN_NOTIFICATION_EMAIL ||
+        DEFAULT_OWNER_EMAIL
+    ).toLowerCase(),
+    paymentNotificationsEnabled: toBoolean(
+      process.env.PAYMENT_EMAIL_NOTIFICATIONS_ENABLED,
+      true
+    ),
+  };
+};
 
-const getBrevoClient = () => {
-  if (!isBrevoConfigured()) {
-    return null;
-  }
+const isEmailConfigured = () => {
+  const config = getEmailConfig();
+  return (
+    config.enabled &&
+    Boolean(config.host) &&
+    Number.isInteger(config.port) &&
+    config.port > 0 &&
+    config.port <= 65535 &&
+    Boolean(config.user) &&
+    Boolean(config.pass) &&
+    Boolean(config.senderEmail)
+  );
+};
 
-  if (!brevoClient) {
-    brevoClient = new BrevoClient({
-      apiKey: BREVO_API_KEY,
-      timeoutInSeconds: 30,
-      maxRetries: 2,
+const getEmailTransporter = () => {
+  if (testTransporter) return testTransporter;
+  if (!isEmailConfigured()) return null;
+
+  const config = getEmailConfig();
+  const fingerprint = [config.host, config.port, config.secure, config.user, config.pass].join("|");
+  if (!smtpTransporter || smtpTransporterFingerprint !== fingerprint) {
+    smtpTransporter = nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      auth: {
+        user: config.user,
+        pass: config.pass,
+      },
+      pool: true,
+      maxConnections: 3,
+      maxMessages: 100,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000,
     });
+    smtpTransporterFingerprint = fingerprint;
   }
 
-  return brevoClient;
+  return smtpTransporter;
 };
 
 const buildIdempotencyKey = (...parts) => parts.map((part) => sanitizeTagValue(part)).join("-");
 
-const buildEmailLayout = ({
+const buildDetailTable = (detailRows) => {
+  const rows = (Array.isArray(detailRows) ? detailRows : [])
+    .filter((row) => row?.label && row?.value !== undefined && row?.value !== null && row?.value !== "")
+    .map(
+      (row) => `<tr>
+        <td width="38%" valign="top" style="padding:11px 12px;border-bottom:1px solid #e7e7e4;font-size:12px;line-height:1.45;font-weight:600;color:#66666f;">${escapeHtml(row.label)}</td>
+        <td valign="top" style="padding:11px 12px;border-bottom:1px solid #e7e7e4;font-size:13px;line-height:1.45;color:#18181b;word-break:break-word;">${escapeHtml(row.value)}</td>
+      </tr>`
+    )
+    .join("");
+
+  return rows
+    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:8px 0 20px;border:1px solid #e7e7e4;background:#f8f8f6;">${rows}</table>`
+    : "";
+};
+
+const buildEmailButton = ({ label, href }) => {
+  if (!label || !href) return "";
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:7px 0 3px;">
+    <tr>
+      <td style="background:#18181b;border-radius:7px;border-bottom:3px solid #c5f82a;">
+        <a href="${escapeHtml(href)}" style="display:inline-block;padding:11px 17px;color:#ffffff;text-decoration:none;font-size:13px;line-height:1.2;font-weight:650;">${escapeHtml(label)}</a>
+      </td>
+    </tr>
+  </table>`;
+};
+
+const buildStatusPill = (label) =>
+  label
+    ? `<span style="display:inline-block;margin:0 0 16px;padding:5px 9px;border:1px solid #d9e8a4;border-radius:999px;background:#f7fbdc;color:#3f4a12;font-size:11px;line-height:1;font-weight:700;letter-spacing:.4px;text-transform:uppercase;">${escapeHtml(label)}</span>`
+    : "";
+
+const buildEmailShell = ({
   preheader,
   heading,
   intro,
@@ -182,46 +223,25 @@ const buildEmailLayout = ({
   actionLabel,
   actionHref,
   footer,
+  statusLabel,
 }) => {
+  const config = getEmailConfig();
+  const footerLines = [
+    footer,
+    `${EMAIL_OWNER_NAME} / Developer Portfolio`,
+    config.replyToEmail || DEFAULT_OWNER_EMAIL,
+  ].filter(Boolean);
   const safeBody = (Array.isArray(bodyParagraphs) ? bodyParagraphs : [])
     .map(
       (paragraph) =>
-        `<p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#1f2937;">${escapeHtml(
+        `<p style="margin:0 0 15px;font-size:15px;line-height:1.65;color:#3f3f46;">${escapeHtml(
           paragraph
         )}</p>`
     )
     .join("");
 
-  const safeDetails = (Array.isArray(detailRows) ? detailRows : [])
-    .map(
-      (row) =>
-        `<tr>
-          <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;">${escapeHtml(
-            row.label
-          )}</td>
-          <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${escapeHtml(
-            row.value
-          )}</td>
-        </tr>`
-    )
-    .join("");
-
-  const detailsTable = safeDetails
-    ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin:8px 0 18px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">${safeDetails}</table>`
-    : "";
-
-  const cta =
-    actionLabel && actionHref
-      ? `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:8px 0 4px;">
-          <tr>
-            <td style="border-radius:10px;background:#0f172a;">
-              <a href="${escapeHtml(actionHref)}" style="display:inline-block;padding:12px 20px;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;">${escapeHtml(
-                actionLabel
-              )}</a>
-            </td>
-          </tr>
-        </table>`
-      : "";
+  const detailsTable = buildDetailTable(detailRows);
+  const cta = buildEmailButton({ label: actionLabel, href: actionHref });
 
   return `<!doctype html>
 <html lang="en">
@@ -230,25 +250,23 @@ const buildEmailLayout = ({
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${escapeHtml(heading)}</title>
   </head>
-  <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;">
+  <body style="margin:0;padding:0;background:#f5f5f3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#18181b;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;visibility:hidden;">${escapeHtml(preheader)}</div>
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="padding:22px 10px;background:#f8fafc;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="padding:24px 10px;background:#f5f5f3;">
       <tr>
         <td align="center">
-          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:620px;background:#ffffff;border:1px solid #dbeafe;border-radius:16px;overflow:hidden;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px;background:#ffffff;border:1px solid #e7e7e4;border-top:4px solid #c5f82a;">
             <tr>
-              <td style="background:linear-gradient(135deg,#0284c7,#1d4ed8);padding:26px 30px;">
-                <p style="margin:0;color:#dbeafe;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700;">${escapeHtml(
-                  EMAIL_APP_NAME
-                )}</p>
-                <h1 style="margin:8px 0 0;font-size:26px;line-height:1.25;color:#ffffff;">${escapeHtml(
-                  heading
-                )}</h1>
+              <td style="padding:23px 28px 17px;border-bottom:1px solid #e7e7e4;">
+                <p style="margin:0;color:#18181b;font-size:14px;line-height:1.3;font-weight:700;">${escapeHtml(EMAIL_OWNER_NAME)}</p>
+                <p style="margin:3px 0 0;color:#797980;font-size:11px;line-height:1.4;letter-spacing:.5px;text-transform:uppercase;">Developer Portfolio</p>
               </td>
             </tr>
             <tr>
-              <td style="padding:28px 30px;">
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#111827;">${escapeHtml(
+              <td style="padding:27px 28px 25px;">
+                ${buildStatusPill(statusLabel)}
+                <h1 style="margin:0 0 18px;font-size:23px;line-height:1.25;color:#18181b;font-weight:700;letter-spacing:-.3px;">${escapeHtml(heading)}</h1>
+                <p style="margin:0 0 15px;font-size:15px;line-height:1.65;color:#18181b;">${escapeHtml(
                   intro
                 )}</p>
                 ${safeBody}
@@ -257,8 +275,10 @@ const buildEmailLayout = ({
               </td>
             </tr>
             <tr>
-              <td style="padding:0 30px 22px;">
-                <p style="margin:0;font-size:12px;line-height:1.6;color:#64748b;">${escapeHtml(footer)}</p>
+              <td style="padding:18px 28px 23px;border-top:1px solid #e7e7e4;background:#fafaf8;">
+                <p style="margin:0;font-size:11px;line-height:1.65;color:#77777f;">${footerLines
+                  .map((line) => escapeHtml(line))
+                  .join("<br />")}</p>
               </td>
             </tr>
           </table>
@@ -276,11 +296,11 @@ const normalizeRecipients = (to) => {
     .map((recipient) => {
       if (typeof recipient === "string") {
         return {
-          email: normalizeEnvString(recipient).toLowerCase(),
+          address: normalizeEnvString(recipient).toLowerCase(),
         };
       }
 
-      const recipientEmail = normalizeEnvString(recipient?.email).toLowerCase();
+      const recipientEmail = normalizeEnvString(recipient?.address || recipient?.email).toLowerCase();
       const recipientName = normalizeEnvString(recipient?.name);
 
       if (!recipientEmail) {
@@ -289,11 +309,11 @@ const normalizeRecipients = (to) => {
 
       return recipientName
         ? {
-            email: recipientEmail,
+            address: recipientEmail,
             name: recipientName,
           }
         : {
-            email: recipientEmail,
+            address: recipientEmail,
           };
     })
     .filter(Boolean);
@@ -302,51 +322,85 @@ const normalizeRecipients = (to) => {
 const normalizeAttachments = (attachments) =>
   (Array.isArray(attachments) ? attachments : [])
     .map((attachment) => {
-      const name = normalizeEnvString(attachment?.name).slice(0, 120);
-      const rawContent = attachment?.contentBase64 || attachment?.content || attachment?.base64;
+      const filename = normalizeEnvString(attachment?.filename || attachment?.name).slice(0, 120);
+      const rawContent = attachment?.content ?? attachment?.contentBase64 ?? attachment?.base64;
 
-      if (!name || !rawContent) {
+      if (!filename || rawContent === undefined || rawContent === null || rawContent === "") {
         return null;
       }
 
-      const contentBase64 = Buffer.isBuffer(rawContent)
-        ? rawContent.toString("base64")
-        : normalizeEnvString(rawContent);
-
-      if (!contentBase64) {
-        return null;
-      }
+      const isExplicitBase64 = !Buffer.isBuffer(rawContent) && Boolean(attachment?.contentBase64 || attachment?.base64);
+      const content = isExplicitBase64
+        ? Buffer.from(normalizeEnvString(rawContent), "base64")
+        : rawContent;
 
       return {
-        name,
-        content: contentBase64,
+        filename,
+        content,
+        contentType: normalizeEnvString(attachment?.contentType) || undefined,
       };
     })
     .filter(Boolean);
 
-const serializeProviderError = (error) => {
-  const responseData = error?.response?.data || error?.body || null;
+const sanitizeSmtpText = (value, maxLength = 500) => {
+  let output = normalizeEnvString(value).replaceAll(/[\r\n]+/g, " ");
+  for (const secret of [process.env.BREVO_SMTP_USER, process.env.BREVO_SMTP_PASS]) {
+    const normalizedSecret = normalizeEnvString(secret);
+    if (normalizedSecret) output = output.replaceAll(normalizedSecret, "[REDACTED]");
+  }
+  return output.slice(0, maxLength);
+};
 
+const buildEmailLayout = buildEmailShell;
+
+const serializeSmtpError = (error) => {
+  const response = sanitizeSmtpText(error?.response);
   return {
-    message: normalizeEnvString(error?.message) || "Unknown email provider error",
-    statusCode: Number(error?.statusCode || error?.response?.status || 0) || undefined,
+    message: sanitizeSmtpText(error?.message) || "Unknown SMTP error",
     code: normalizeEnvString(error?.code) || undefined,
-    details:
-      responseData?.message ||
-      responseData?.code ||
-      responseData?.error ||
-      (typeof responseData === "string" ? responseData : undefined),
+    responseCode: Number(error?.responseCode || 0) || undefined,
+    command: normalizeEnvString(error?.command).slice(0, 80) || undefined,
+    ...(response && { response }),
   };
+};
+
+const normalizeReplyTo = (value) => {
+  if (!value) return null;
+  if (typeof value === "string") {
+    const parsed = parseAddress(value);
+    return parsed.email ? { address: parsed.email, ...(parsed.name && { name: parsed.name }) } : null;
+  }
+  const address = normalizeEnvString(value.address || value.email).toLowerCase();
+  const name = normalizeEnvString(value.name);
+  return address ? { address, ...(name && { name }) } : null;
+};
+
+const normalizeHeaders = (headers) => {
+  if (!headers || typeof headers !== "object" || Array.isArray(headers)) return {};
+
+  return Object.fromEntries(
+    Object.entries(headers)
+      .filter(([key, value]) => /^[a-z0-9-]{1,80}$/i.test(key) && value !== undefined && value !== null)
+      .map(([key, value]) => [
+        key,
+        normalizeEnvString(value).replaceAll(/[\r\n]+/g, " ").slice(0, 500),
+      ])
+      .filter(([, value]) => Boolean(value))
+  );
 };
 
 const sendTransactionalEmail = async ({
   to,
   subject,
+  html,
+  text,
   htmlContent,
   textContent,
   tags = [],
   attachments = [],
   idempotencyKey,
+  replyTo,
+  headers: customHeaders,
 }) => {
   const recipients = normalizeRecipients(to);
   if (!recipients.length) {
@@ -357,70 +411,67 @@ const sendTransactionalEmail = async ({
     };
   }
 
-  const brevo = getBrevoClient();
-  if (!brevo) {
+  const transporter = getEmailTransporter();
+  if (!transporter) {
+    const config = getEmailConfig();
     logger.debug(
       {
-        brevoEnabled: BREVO_ENABLED,
-        hasApiKey: Boolean(BREVO_API_KEY),
-        hasSenderEmail: Boolean(BREVO_SENDER_EMAIL),
+        emailEnabled: config.enabled,
+        hasSmtpHost: Boolean(config.host),
+        hasSmtpUser: Boolean(config.user),
+        hasSmtpPass: Boolean(config.pass),
+        hasSenderEmail: Boolean(config.senderEmail),
       },
-      "Transactional email skipped: Brevo is not configured"
+      "Transactional email skipped: SMTP is not configured"
     );
 
     return {
       sent: false,
       skipped: true,
-      reason: "brevo_not_configured",
+      reason: "smtp_not_configured",
     };
   }
 
+  const config = getEmailConfig();
   const normalizedTags = (Array.isArray(tags) ? tags : [])
     .map((tag) => sanitizeTagValue(tag, "email"))
     .filter(Boolean)
     .slice(0, 12);
 
   const payload = {
-    sender: {
-      email: BREVO_SENDER_EMAIL,
-      name: BREVO_SENDER_NAME,
+    from: {
+      address: config.senderEmail,
+      name: config.senderName,
     },
     to: recipients,
     subject: normalizeEnvString(subject),
-    htmlContent,
-    textContent,
-    tags: normalizedTags,
+    html: htmlContent ?? html,
+    text: textContent ?? text,
   };
 
   const normalizedAttachments = normalizeAttachments(attachments);
   if (normalizedAttachments.length) {
-    payload.attachment = normalizedAttachments;
+    payload.attachments = normalizedAttachments;
   }
 
-  if (BREVO_REPLY_TO_EMAIL) {
-    payload.replyTo = BREVO_REPLY_TO_NAME
-      ? {
-          email: BREVO_REPLY_TO_EMAIL,
-          name: BREVO_REPLY_TO_NAME,
-        }
-      : {
-          email: BREVO_REPLY_TO_EMAIL,
-        };
+  const configuredReplyTo = config.replyToEmail
+    ? { address: config.replyToEmail, ...(config.replyToName && { name: config.replyToName }) }
+    : null;
+  const resolvedReplyTo = normalizeReplyTo(replyTo) || configuredReplyTo;
+  if (resolvedReplyTo) {
+    payload.replyTo = resolvedReplyTo;
   }
 
-  if (idempotencyKey) {
-    payload.headers = {
-      "Idempotency-Key": idempotencyKey,
-    };
+  const headers = normalizeHeaders(customHeaders);
+  if (idempotencyKey) headers["X-Email-Idempotency-Key"] = normalizeEnvString(idempotencyKey);
+  if (normalizedTags.length) headers["X-Email-Tags"] = normalizedTags.join(",");
+  if (Object.keys(headers).length) {
+    payload.headers = headers;
   }
 
   try {
-    const response = await brevo.transactionalEmails.sendTransacEmail(payload);
-    const messageId =
-      normalizeEnvString(response?.messageId) ||
-      normalizeEnvString(response?.messageIds?.[0]) ||
-      normalizeEnvString(response?.data?.messageId) ||
-      normalizeEnvString(response?.data?.messageIds?.[0]);
+    const response = await transporter.sendMail(payload);
+    const messageId = normalizeEnvString(response?.messageId);
 
     return {
       sent: true,
@@ -431,13 +482,31 @@ const sendTransactionalEmail = async ({
       idempotencyKey: normalizeEnvString(idempotencyKey),
     };
   } catch (error) {
+    const safeError = serializeSmtpError(error);
+    logger.warn(safeError, "Transactional email delivery failed");
     return {
       sent: false,
       skipped: false,
-      reason: "provider_error",
-      error: serializeProviderError(error),
+      reason: "smtp_error",
+      error: safeError,
       idempotencyKey: normalizeEnvString(idempotencyKey),
     };
+  }
+};
+
+const verifyEmailTransport = async () => {
+  const transporter = getEmailTransporter();
+  if (!transporter) {
+    return { verified: false, skipped: true, reason: "smtp_not_configured" };
+  }
+
+  try {
+    await transporter.verify();
+    return { verified: true, skipped: false };
+  } catch (error) {
+    const safeError = serializeSmtpError(error);
+    logger.warn(safeError, "SMTP connection verification failed");
+    return { verified: false, skipped: false, reason: "smtp_error", error: safeError };
   }
 };
 
@@ -447,30 +516,32 @@ const buildWelcomePayload = (user) => {
   const text = [
     `Hi ${displayName},`,
     "",
-    `Welcome to ${EMAIL_APP_NAME}. Your account is now active and ready.`,
+    "Thanks for signing in to my portfolio.",
+    "You can now keep your bookings, payment receipts, and account activity in one place.",
+    "I created your profile using your Google account, and you can personalize it anytime from My Activity.",
     "",
-    `Open your portfolio: ${EMAIL_HOME_URL}`,
-    `Need help? ${EMAIL_SUPPORT_URL}`,
+    `Open My Activity: ${EMAIL_HOME_URL}/my-activity`,
     "",
     "Thanks,",
-    "Gaurav Kumar",
+    EMAIL_OWNER_NAME,
   ].join("\n");
 
-  const html = buildEmailLayout({
-    preheader: `Welcome to ${EMAIL_APP_NAME}`,
-    heading: `Welcome, ${displayName}`,
-    intro: `Hi ${displayName}, your account is now ready.`,
+  const html = buildEmailShell({
+    preheader: "Your portfolio profile is ready",
+    heading: "Good to have you here",
+    intro: `Hi ${displayName},`,
     bodyParagraphs: [
-      "Thanks for signing in. Your profile is active and your support actions are now linked to your account.",
-      "You can continue reading blogs, track your activity, and support content anytime.",
+      "Thanks for signing in to my portfolio.",
+      "You can now keep your bookings, payment receipts, and account activity in one place.",
+      "I created your profile using your Google account, and you can personalize it anytime from My Activity.",
     ],
-    actionLabel: "Open Portfolio",
-    actionHref: EMAIL_HOME_URL,
-    footer: `Need help? Reach us at ${EMAIL_SUPPORT_URL}`,
+    actionLabel: "Open My Activity",
+    actionHref: `${EMAIL_HOME_URL}/my-activity`,
+    footer: "You received this because you signed in with Google.",
   });
 
   return {
-    subject: `Welcome to ${EMAIL_APP_NAME}`,
+    subject: "Welcome \u2014 good to have you here",
     text,
     html,
   };
@@ -478,34 +549,44 @@ const buildWelcomePayload = (user) => {
 
 const buildWelcomeBackPayload = (user) => {
   const displayName = getDisplayName(user);
+  const accountEmail = normalizeEnvString(user?.email).toLowerCase();
+  const formattedLoginTime = formatIndiaDateTime(user?.loginAt || Date.now());
+  const loginTime = formattedLoginTime === "Not available" ? formattedLoginTime : `${formattedLoginTime} IST`;
 
   const text = [
     `Hi ${displayName},`,
     "",
-    `Welcome back to ${EMAIL_APP_NAME}. Your account is active and ready.`,
+    "A sign-in to your portfolio account was completed successfully.",
     "",
-    `Continue from here: ${EMAIL_HOME_URL}`,
-    `Need anything? ${EMAIL_SUPPORT_URL}`,
+    `Account: ${accountEmail}`,
+    `Time: ${loginTime}`,
     "",
-    "Regards,",
-    "Gaurav Kumar",
+    "If this was you, nothing else is needed.",
+    "",
+    "Thanks,",
+    EMAIL_OWNER_NAME,
   ].join("\n");
 
-  const html = buildEmailLayout({
-    preheader: `Welcome back to ${EMAIL_APP_NAME}`,
-    heading: `Welcome back, ${displayName}`,
-    intro: `Hi ${displayName}, great to have you back.`,
+  const html = buildEmailShell({
+    preheader: "A successful sign-in to your portfolio account",
+    heading: "Sign-in completed",
+    intro: `Hi ${displayName},`,
     bodyParagraphs: [
-      "Your account is active and linked to your latest activity.",
-      "Continue from where you left off and keep learning.",
+      "A sign-in to your portfolio account was completed successfully.",
+      "If this was you, nothing else is needed.",
     ],
-    actionLabel: "Continue",
-    actionHref: EMAIL_HOME_URL,
-    footer: `Need support? Contact us at ${EMAIL_SUPPORT_URL}`,
+    detailRows: [
+      { label: "Account", value: accountEmail },
+      { label: "Time", value: loginTime },
+    ],
+    actionLabel: "View My Activity",
+    actionHref: `${EMAIL_HOME_URL}/my-activity?tab=sign-ins`,
+    footer: "You received this security note after signing in with Google.",
+    statusLabel: "Successful sign-in",
   });
 
   return {
-    subject: `Welcome back to ${EMAIL_APP_NAME}`,
+    subject: "You signed in to Gaurav's portfolio",
     text,
     html,
   };
@@ -547,102 +628,7 @@ const buildNewsletterPayload = (email) => {
   };
 };
 
-const buildServiceReceiptPayload = (booking) => {
-  const displayName = getDisplayName(booking);
-  const detailRows = [
-    { label: "Service", value: normalizeEnvString(booking?.service) || "Not available" },
-    { label: "Amount", value: formatCurrencyInr(booking?.amount) },
-    { label: "Order ID", value: normalizeEnvString(booking?.orderId) || "Not available" },
-    { label: "Payment ID", value: normalizeEnvString(booking?.paymentId) || "Not available" },
-    { label: "Session Date", value: formatDate(booking?.preferredDate) },
-    { label: "Session Time", value: normalizeEnvString(booking?.preferredTime) || "Not available" },
-    { label: "Paid At", value: formatDateTime(booking?.paidAt || booking?.updatedAt || Date.now()) },
-  ];
-
-  const text = [
-    `Hi ${displayName},`,
-    "",
-    "Thanks for your booking. Your payment was successful.",
-    `Service: ${normalizeEnvString(booking?.service) || "Not available"}`,
-    `Amount: ${formatCurrencyInr(booking?.amount)}`,
-    `Order ID: ${normalizeEnvString(booking?.orderId) || "Not available"}`,
-    `Payment ID: ${normalizeEnvString(booking?.paymentId) || "Not available"}`,
-    "",
-    "Your PDF receipt is attached in this email.",
-    `You can also download it from My Activity: ${EMAIL_ACTIVITY_URL}`,
-    "",
-    "Thanks,",
-    "Gaurav Kumar",
-  ].join("\n");
-
-  const html = buildEmailLayout({
-    preheader: "Your booking payment was successful",
-    heading: "Booking Payment Successful",
-    intro: `Hi ${displayName}, your payment is confirmed.`,
-    bodyParagraphs: [
-      "Thank you for booking a service. Your receipt PDF is attached with this email.",
-      "You can also access the same receipt from My Activity anytime.",
-    ],
-    detailRows,
-    actionLabel: "Open My Activity",
-    actionHref: EMAIL_ACTIVITY_URL,
-    footer: `Need help? Reach us at ${EMAIL_SUPPORT_URL}`,
-  });
-
-  return {
-    subject: `Booking confirmed: ${normalizeEnvString(booking?.service) || "Service"}`,
-    text,
-    html,
-  };
-};
-
-const buildSupportReceiptPayload = (supportPayment) => {
-  const displayName = getDisplayName(supportPayment);
-  const detailRows = [
-    { label: "Contributor", value: normalizeEnvString(supportPayment?.contributorName) || "Supporter" },
-    { label: "Amount", value: formatCurrencyInr(supportPayment?.amount) },
-    { label: "Order ID", value: normalizeEnvString(supportPayment?.orderId) || "Not available" },
-    { label: "Payment ID", value: normalizeEnvString(supportPayment?.paymentId) || "Not available" },
-    { label: "Paid At", value: formatDateTime(supportPayment?.paidAt || supportPayment?.updatedAt || Date.now()) },
-  ];
-
-  const text = [
-    `Hi ${displayName},`,
-    "",
-    "Thanks for supporting my work. Your payment was successful.",
-    `Amount: ${formatCurrencyInr(supportPayment?.amount)}`,
-    `Order ID: ${normalizeEnvString(supportPayment?.orderId) || "Not available"}`,
-    `Payment ID: ${normalizeEnvString(supportPayment?.paymentId) || "Not available"}`,
-    "",
-    "Your PDF receipt is attached in this email.",
-    `You can also download it from My Activity: ${EMAIL_ACTIVITY_URL}`,
-    "",
-    "With gratitude,",
-    "Gaurav Kumar",
-  ].join("\n");
-
-  const html = buildEmailLayout({
-    preheader: "Your support payment was successful",
-    heading: "Support Payment Successful",
-    intro: `Hi ${displayName}, thank you for your support.`,
-    bodyParagraphs: [
-      "Your contribution has been received successfully and your receipt PDF is attached.",
-      "You can always access this receipt again from My Activity.",
-    ],
-    detailRows,
-    actionLabel: "Open My Activity",
-    actionHref: EMAIL_ACTIVITY_URL,
-    footer: `Need support? Reach us at ${EMAIL_SUPPORT_URL}`,
-  });
-
-  return {
-    subject: `Support payment received: ${formatCurrencyInr(supportPayment?.amount)}`,
-    text,
-    html,
-  };
-};
-
-const sendLifecycleEmail = async ({ type, user, deliveryToken }) => {
+const sendLifecycleEmail = async ({ type, user, deliveryToken, subjectPrefix = "" }) => {
   const email = normalizeEnvString(user?.email).toLowerCase();
   const userId = normalizeEnvString(user?._id || user?.id || email);
 
@@ -663,7 +649,7 @@ const sendLifecycleEmail = async ({ type, user, deliveryToken }) => {
 
   return sendTransactionalEmail({
     to: [{ email, name: normalizeEnvString(user?.name) }],
-    subject: template.subject,
+    subject: `${normalizeEnvString(subjectPrefix)}${template.subject}`,
     htmlContent: template.html,
     textContent: template.text,
     tags: ["auth", type, EMAIL_APP_NAME],
@@ -671,13 +657,15 @@ const sendLifecycleEmail = async ({ type, user, deliveryToken }) => {
   });
 };
 
-const sendWelcomeEmail = async ({ user }) => sendLifecycleEmail({ type: "welcome", user });
+const sendWelcomeEmail = async ({ user, loginEventId, subjectPrefix }) =>
+  sendLifecycleEmail({ type: "welcome", user, deliveryToken: loginEventId, subjectPrefix });
 
-const sendWelcomeBackEmail = async ({ user, loginEventId }) =>
+const sendWelcomeBackEmail = async ({ user, loginEventId, subjectPrefix }) =>
   sendLifecycleEmail({
     type: "welcome_back",
     user,
     deliveryToken: loginEventId,
+    subjectPrefix,
   });
 
 const sendNewsletterThankYouEmail = async ({ email }) => {
@@ -702,171 +690,201 @@ const sendNewsletterThankYouEmail = async ({ email }) => {
   });
 };
 
-const sendServiceReceiptEmail = async ({ booking, attachments = [] }) => {
-  const recipientEmail = normalizeEnvString(booking?.email).toLowerCase();
-  const normalizedOrderId = normalizeEnvString(booking?.orderId);
+const formatPaymentAmount = (amount) =>
+  new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(amount || 0));
 
-  if (!recipientEmail) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_recipient",
-    };
-  }
-
-  if (!normalizedOrderId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_order_id",
-    };
-  }
-
-  if (String(booking?.paymentStatus || "").toLowerCase() !== "paid") {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "payment_not_paid",
-    };
-  }
-
-  const template = buildServiceReceiptPayload(booking);
-
-  return sendTransactionalEmail({
-    to: [{ email: recipientEmail, name: normalizeEnvString(booking?.name) }],
-    subject: template.subject,
-    htmlContent: template.html,
-    textContent: template.text,
-    tags: ["payment", "service", "receipt"],
-    attachments,
-    idempotencyKey: buildIdempotencyKey("receipt", "service", normalizedOrderId),
-  });
+const formatIndiaDateTime = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
 };
 
-const sendSupportReceiptEmail = async ({ supportPayment, attachments = [] }) => {
-  const recipientEmail = normalizeEnvString(supportPayment?.email).toLowerCase();
-  const normalizedOrderId = normalizeEnvString(supportPayment?.orderId);
-
-  if (!recipientEmail) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_recipient",
-    };
+const sendPaymentReceiptEmail = async ({ transaction, receiptPdf, subjectPrefix = "" }) => {
+  const config = getEmailConfig();
+  if (!config.paymentNotificationsEnabled) {
+    return { sent: false, skipped: true, reason: "payment_email_disabled" };
+  }
+  if (String(transaction?.status || "").trim().toLowerCase() !== "paid") {
+    return { sent: false, skipped: true, reason: "payment_not_paid" };
+  }
+  if (!Buffer.isBuffer(receiptPdf) || !receiptPdf.length) {
+    return { sent: false, skipped: true, reason: "receipt_pdf_missing" };
   }
 
-  if (!normalizedOrderId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_order_id",
-    };
-  }
-
-  if (String(supportPayment?.paymentStatus || "").toLowerCase() !== "paid") {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "payment_not_paid",
-    };
-  }
-
-  const template = buildSupportReceiptPayload(supportPayment);
-
-  return sendTransactionalEmail({
-    to: [{ email: recipientEmail, name: normalizeEnvString(supportPayment?.contributorName) }],
-    subject: template.subject,
-    htmlContent: template.html,
-    textContent: template.text,
-    tags: ["payment", "support", "receipt"],
-    attachments,
-    idempotencyKey: buildIdempotencyKey("receipt", "support", normalizedOrderId),
-  });
-};
-
-const sendAdminPaymentNotificationEmail = async ({ kind, record, attachments = [] }) => {
-  const normalizedKind = normalizeEnvString(kind).toLowerCase() === "support" ? "support" : "service";
-  const adminEmail = normalizeEnvString(process.env.BREVO_ADMIN_NOTIFICATION_EMAIL).toLowerCase();
-  const orderId = normalizeEnvString(record?.orderId);
-  const paymentId = normalizeEnvString(record?.paymentId);
-
-  if (!adminEmail) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_admin_recipient",
-    };
-  }
-
-  if (!orderId) {
-    return {
-      sent: false,
-      skipped: true,
-      reason: "missing_order_id",
-    };
-  }
-
-  const amount = formatCurrencyInr(record?.amount);
-  const eventTitle = normalizedKind === "support" ? "Support Jar Payment" : "Service Purchase Payment";
-  const customerName =
-    normalizeEnvString(record?.name || record?.contributorName || record?.customerName) || "Customer";
-  const customerEmail = normalizeEnvString(record?.email).toLowerCase() || "unknown";
-  const status = normalizeEnvString(record?.paymentStatus || "paid") || "paid";
-  const paidAt = formatDateTime(record?.paidAt || record?.updatedAt || Date.now());
-
-  const detailRows = [
-    { label: "Event", value: eventTitle },
-    { label: "Amount", value: amount },
-    { label: "Order ID", value: orderId },
-    { label: "Payment ID", value: paymentId || "Not available" },
-    { label: "Customer", value: customerName },
-    { label: "Customer Email", value: customerEmail },
-    { label: "Status", value: status.toUpperCase() },
-    { label: "Timestamp", value: paidAt },
-  ];
+  const email = normalizeEnvString(transaction?.email).toLowerCase();
+  const receiptNumber = normalizeEnvString(transaction?.receiptNumber);
+  const serviceName = normalizeEnvString(transaction?.serviceName) || "Service Booking";
+  const paymentId = normalizeEnvString(transaction?.razorpayPaymentId);
+  const amount = formatPaymentAmount(transaction?.amount);
+  const name = getDisplayName(transaction);
+  const isSupport = transaction?.flowType === "support";
+  const preferredDate = transaction?.preferredDate
+    ? formatIndiaDateTime(transaction.preferredDate).split(",")[0]
+    : "";
+  const preferredTime = normalizeEnvString(transaction?.preferredTime);
+  const formattedPaymentDate = formatIndiaDateTime(transaction?.paidAt || transaction?.updatedAt);
+  const paymentDate = formattedPaymentDate === "Not available"
+    ? formattedPaymentDate
+    : `${formattedPaymentDate} IST`;
+  const amountLabel = `\u20B9${amount}`;
 
   const text = [
-    `${eventTitle} successful`,
-    `Amount: ${amount}`,
-    `Order ID: ${orderId}`,
-    `Payment ID: ${paymentId || "Not available"}`,
-    `Customer: ${customerName}`,
-    `Customer Email: ${customerEmail}`,
-    `Status: ${status.toUpperCase()}`,
-    `Timestamp: ${paidAt}`,
+    `Hi ${name},`,
+    "",
+    isSupport
+      ? "Thank you for supporting my work. I really appreciate it."
+      : `I received your payment for ${serviceName}.`,
+    "",
+    ...(isSupport ? [] : [`Service: ${serviceName}`]),
+    `Amount: ${amountLabel}`,
+    `Receipt: ${receiptNumber}`,
+    `Razorpay Payment ID: ${paymentId}`,
+    `Date: ${paymentDate}`,
+    ...(!isSupport && preferredDate ? [`Preferred Date: ${preferredDate}`] : []),
+    ...(!isSupport && preferredTime ? [`Preferred Time: ${preferredTime}`] : []),
+    "",
+    isSupport
+      ? `Your ${amountLabel} payment went through successfully, and I attached the receipt to this email.`
+      : "Your receipt is attached. I'll follow up with the next steps.",
+    "",
+    "Thanks,",
+    "Gaurav Kumar Yadav",
   ].join("\n");
 
-  const html = buildEmailLayout({
-    preheader: `${eventTitle} confirmation`,
-    heading: `${eventTitle} Successful`,
-    intro: "A customer payment was confirmed and reconciled successfully.",
-    bodyParagraphs: [
-      "This is an automated admin notification from the payment reconciliation pipeline.",
-      "Receipt attachment from the user email workflow is included when available.",
+  const html = buildEmailShell({
+    preheader: `Payment received for ${serviceName}`,
+    heading: isSupport ? "Thanks for the support" : "Payment received",
+    intro: `Hi ${name},`,
+    bodyParagraphs: isSupport
+      ? [
+          "Thank you for supporting my work. I really appreciate it.",
+          `Your ${amountLabel} payment went through successfully, and I attached the receipt to this email.`,
+        ]
+      : [
+          `I received your payment for ${serviceName}. Here are the details for your records.`,
+          "Your receipt is attached. I'll follow up with the next steps.",
+        ],
+    detailRows: [
+      { label: isSupport ? "Type" : "Service", value: serviceName },
+      { label: "Amount", value: amountLabel },
+      { label: "Receipt", value: receiptNumber },
+      { label: "Razorpay Payment ID", value: paymentId },
+      { label: "Date", value: paymentDate },
+      ...(!isSupport && preferredDate ? [{ label: "Preferred Date", value: preferredDate }] : []),
+      ...(!isSupport && preferredTime ? [{ label: "Preferred Time", value: preferredTime }] : []),
     ],
-    detailRows,
-    actionLabel: "Open Activity",
-    actionHref: EMAIL_ACTIVITY_URL,
-    footer: `Generated by ${EMAIL_APP_NAME} payment notifications`,
+    actionLabel: "View My Activity",
+    actionHref: `${EMAIL_HOME_URL}/my-activity?tab=payments`,
+    footer: `Questions about this payment? ${EMAIL_SUPPORT_URL}`,
+    statusLabel: "Paid",
   });
 
   return sendTransactionalEmail({
-    to: [{ email: adminEmail, name: "Admin" }],
-    subject: `[Admin] ${eventTitle}: ${amount}`,
+    to: [{ email, name: normalizeEnvString(transaction?.customerName) }],
+    subject: `${normalizeEnvString(subjectPrefix)}${
+      isSupport
+        ? `Thanks for the support \u2014 ${amountLabel}`
+        : `Payment received \u2014 ${serviceName}`
+    }`,
     htmlContent: html,
     textContent: text,
-    tags: ["payment", "admin", normalizedKind, "notification"],
-    attachments,
-    idempotencyKey: buildIdempotencyKey("payment-admin", normalizedKind, orderId, paymentId || "pending"),
+    tags: ["payment", "receipt", "razorpay"],
+    attachments: [{
+      filename: `receipt-${receiptNumber}.pdf`,
+      content: receiptPdf,
+      contentType: "application/pdf",
+    }],
+    idempotencyKey: buildIdempotencyKey("payment-receipt", receiptNumber),
+  });
+};
+
+const sendAdminPaymentEmail = async ({ transaction, subjectPrefix = "" }) => {
+  const config = getEmailConfig();
+  if (!config.paymentNotificationsEnabled || !config.adminEmail) {
+    return { sent: false, skipped: true, reason: "admin_email_not_configured" };
+  }
+  if (String(transaction?.status || "").trim().toLowerCase() !== "paid") {
+    return { sent: false, skipped: true, reason: "payment_not_paid" };
+  }
+
+  const isSupport = transaction?.flowType === "support";
+  const detailRows = [
+    { label: "Customer", value: normalizeEnvString(transaction?.customerName) },
+    { label: "Email", value: normalizeEnvString(transaction?.email).toLowerCase() },
+    ...(transaction?.phone ? [{ label: "Phone", value: normalizeEnvString(transaction.phone) }] : []),
+    { label: isSupport ? "Type" : "Service", value: normalizeEnvString(transaction?.serviceName) },
+    { label: "Amount", value: `INR ${formatPaymentAmount(transaction?.amount)}` },
+    { label: "Transaction", value: normalizeEnvString(transaction?._id) },
+    { label: "Payment ID", value: normalizeEnvString(transaction?.razorpayPaymentId) },
+    { label: "Receipt", value: normalizeEnvString(transaction?.receiptNumber) },
+    { label: "Timestamp", value: formatIndiaDateTime(transaction?.paidAt || transaction?.updatedAt) },
+    ...(!isSupport
+      ? [
+          {
+            label: "Preferred date",
+            value: formatIndiaDateTime(transaction?.preferredDate).split(",")[0],
+          },
+          { label: "Preferred time", value: normalizeEnvString(transaction?.preferredTime) },
+        ]
+      : []),
+  ];
+
+  return sendTransactionalEmail({
+    to: [{ email: config.adminEmail }],
+    subject: `${normalizeEnvString(subjectPrefix)}${
+      isSupport
+        ? `New support payment - INR ${formatPaymentAmount(transaction?.amount)}`
+        : `New paid booking - ${normalizeEnvString(transaction?.serviceName)}`
+    }`,
+    htmlContent: buildEmailShell({
+      preheader: isSupport ? "A support payment was confirmed" : "A service booking payment was confirmed",
+      heading: isSupport ? "NEW SUPPORT PAYMENT" : "NEW PAID BOOKING",
+      intro: isSupport
+        ? "A Razorpay support payment has been verified."
+        : "A Razorpay payment has been verified and the booking is ready for follow-up.",
+      detailRows,
+      footer: "Private administrative notification.",
+      statusLabel: "Verified",
+    }),
+    textContent: detailRows.map((row) => `${row.label}: ${row.value}`).join("\n"),
+    tags: ["payment", "admin", "razorpay"],
+    idempotencyKey: buildIdempotencyKey("payment-admin", transaction?.receiptNumber),
   });
 };
 
 module.exports = {
-  isBrevoConfigured,
+  isEmailConfigured,
+  sendTransactionalEmail,
+  sendAdminPaymentEmail,
+  sendPaymentReceiptEmail,
   sendWelcomeEmail,
   sendWelcomeBackEmail,
   sendNewsletterThankYouEmail,
-  sendServiceReceiptEmail,
-  sendSupportReceiptEmail,
-  sendAdminPaymentNotificationEmail,
+  verifyEmailTransport,
+  _test: {
+    buildDetailTable,
+    buildEmailButton,
+    buildEmailShell,
+    buildEmailLayout,
+    buildWelcomeBackPayload,
+    buildWelcomePayload,
+    getEmailConfig,
+    normalizeAttachments,
+    normalizeHeaders,
+    resetTransporter: () => {
+      smtpTransporter = null;
+      smtpTransporterFingerprint = "";
+      testTransporter = null;
+    },
+    setTransporter: (transporter) => {
+      testTransporter = transporter;
+    },
+  },
 };

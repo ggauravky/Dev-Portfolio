@@ -1,989 +1,232 @@
-// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Unauthorized copying, modification, or distribution of this software,
-// via any medium, is strictly prohibited without the express written
-// consent of the author. See LICENSE for details.
-// Source: https://github.com/ggauravky/Dev-Portfolio
-
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { CreditCard, HeartHandshake, ReceiptText, ShieldCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
-import useSEO from '../hooks/useSEO'
-import useAuth from '../hooks/useAuth'
-import {
-    createSupportOrder,
-    fetchPaymentStatus,
-    fetchSupportReceiptImage,
-    fetchSupportReceiptPdf,
-    openCashfreeCheckout,
-    verifySupportPayment,
-} from '../services/payment'
 import TrustStrip from '../components/TrustStrip'
-import GoogleSignInModal from '../components/support/GoogleSignInModal'
+import useAuth from '../hooks/useAuth'
+import useSEO from '../hooks/useSEO'
+import {
+    createSupportPaymentOrder,
+    openRazorpayCheckout,
+    recordPaymentFailure,
+    verifyPayment,
+} from '../services/payment'
+import { trackEvent } from '../utils/analytics'
 
-const quickAmounts = [49, 99, 199, 499, 999, 1999]
+const QUICK_AMOUNTS = [49, 99, 199, 499, 999, 1999]
+const fieldClass = 'mt-2 w-full rounded-md border border-obsidian-border bg-obsidian px-3.5 py-3 text-sm text-slate-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-toxic/60'
 
 function Support() {
     const navigate = useNavigate()
-    const { user, isAuthenticated, isLoading, refreshSession, updateProfile } = useAuth()
+    const { user, isAuthenticated, isLoading, openAuthDialog, refreshSession } = useAuth()
+    const checkoutLock = useRef(false)
+    const [form, setForm] = useState({ name: '', phone: '', message: '', amount: '199' })
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [paymentMessage, setPaymentMessage] = useState('')
 
     useSEO({
-        title: 'Support Jar | Gaurav Kumar Yadav | Support My Open Source Work',
-        description: 'Support Gaurav Kumar Yadav’s open source projects and developer portfolio. Any contribution helps fund AI/ML research, web development projects, and free educational content. Secure checkout via Cashfree.',
-        keywords: 'support Gaurav Kumar Yadav, tip jar developer, support AI ML developer India, Gaurav Kumar Yadav donation, Cashfree secure payment, support open source Lucknow',
+        title: 'Support My Work | Gaurav Kumar Yadav',
+        description: 'Support Gaurav Kumar Yadav through secure Razorpay checkout with server verification and a downloadable payment receipt.',
+        keywords: 'support Gaurav Kumar Yadav, Razorpay support payment, developer portfolio support',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
-    const [form, setForm] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        amount: '199',
-        message: '',
-    })
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [supportSuccess, setSupportSuccess] = useState(null)
-    const [thankYouNote, setThankYouNote] = useState('')
-    const [paymentFailure, setPaymentFailure] = useState('')
-    const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
-    const [receiptDownloadError, setReceiptDownloadError] = useState('')
-    const [showSignInModal, setShowSignInModal] = useState(false)
-
-    const pendingSupportKey = 'pendingSupportOrder'
-    const paymentSuccessStorageKey = 'paymentSuccess:support'
-    const requiresSignIn = isAuthenticated !== true
-    const getCheckoutButtonLabel = () => {
-        if (isLoading) {
-            return 'Checking Sign-In...'
-        }
-
-        if (requiresSignIn) {
-            return 'Sign In to Continue'
-        }
-
-        if (isSubmitting) {
-            return 'Starting Secure Checkout...'
-        }
-
-        return 'Support with Cashfree'
-    }
-    const checkoutButtonLabel = getCheckoutButtonLabel()
-
-    const handleChange = (event) => {
-        const { name, value } = event.target
-
-        if (name === 'phone') {
-            const digitsOnly = value.replaceAll(/\D/g, '').slice(0, 10)
-            setForm((prev) => ({ ...prev, phone: digitsOnly }))
-            return
-        }
-
-        setForm((prev) => ({ ...prev, [name]: value }))
-    }
-
     useEffect(() => {
-        if (!isAuthenticated || !user) {
-            return
-        }
-
-        setForm((prev) => ({
-            ...prev,
-            name: prev.name || user.displayName || user.name || '',
-            email: user.email || prev.email,
+        if (!user) return
+        setForm((previous) => ({
+            ...previous,
+            name: previous.name || user.displayName || user.name || '',
         }))
-    }, [isAuthenticated, user])
+    }, [user])
 
-    const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-    const getRetryDelay = (attempt) => [1200, 2000, 3200, 5000, 7000][attempt] || 7000
-    const maxStatusPollingAttempts = 20
-    const maxBackgroundVerificationRetries = 6
-    const classifyVerificationFailure = (message, statusCode) => {
-        const text = String(message || '')
-        const normalizedStatus = Number(statusCode)
-        const isPendingGatewayState = /not completed yet|processing|finaliz|reconcil/i.test(text)
-        const isRetryableServerState =
-            [429, 500, 502, 503, 504].includes(normalizedStatus) ||
-            /temporarily unavailable|timed out|timeout|network|gateway|try again shortly/i.test(text)
-
-        return {
-            isPendingGatewayState,
-            isRetryable: isPendingGatewayState || isRetryableServerState,
-        }
-    }
-    const isTerminalPaymentFailure = (message) => /cancelled|canceled|failed|dropped|expired|not completed(?! yet)/i.test(String(message || ''))
-    const isPendingVerificationPayload = (verification) => {
-        const verificationState = String(verification?.verificationStatus || '').toLowerCase()
-        const paymentState = String(verification?.paymentStatus || '').toLowerCase()
-
-        if (verificationState === 'complete' || paymentState === 'paid') {
-            return false
-        }
-
-        return ['pending_gateway', 'pending_local', 'queued', 'processing', 'pending', 'created'].includes(verificationState || paymentState)
+    const updateField = (event) => {
+        const { name, value } = event.target
+        setPaymentMessage('')
+        setForm((previous) => ({
+            ...previous,
+            [name]: ['phone', 'amount'].includes(name)
+                ? value.replaceAll(/\D/g, '').slice(0, name === 'phone' ? 10 : 6)
+                : value,
+        }))
     }
 
-    const saveBlobAsFile = (blob, filename) => {
-        const url = URL.createObjectURL(blob)
-        const link = globalThis.document.createElement('a')
-        link.href = url
-        link.download = filename
-        globalThis.document.body.appendChild(link)
-        link.click()
-        link.remove()
-        URL.revokeObjectURL(url)
+    const validateForm = () => {
+        const amount = Number(form.amount)
+        if (form.name.trim().length < 2) throw new Error('Please enter your name')
+        if (!/^[6-9]\d{9}$/.test(form.phone)) throw new Error('Please enter a valid 10-digit Indian mobile number')
+        if (!Number.isSafeInteger(amount) || amount < 49 || amount > 100000) {
+            throw new Error('Support amount must be between INR 49 and INR 100000')
+        }
+        return amount
     }
 
-    const downloadSupportReceipt = async (details, options = {}) => {
-        const { silent = false, auto = false } = options
-
-        if (!details?.orderId || !details?.email) {
-            if (!silent) {
-                toast.error('Receipt details are incomplete for image download')
-            }
-            return false
-        }
-
-        setIsDownloadingReceipt(true)
+    const startCheckout = async (authenticatedUser = user) => {
+        if (checkoutLock.current) return
+        checkoutLock.current = true
+        setIsSubmitting(true)
+        setPaymentMessage('')
+        let transactionId = ''
 
         try {
-            const blob = await fetchSupportReceiptImage(details.orderId, details.email)
-            saveBlobAsFile(blob, `support-receipt-${details.orderId}.svg`)
-            setReceiptDownloadError(
-                auto
-                    ? 'PDF download was unavailable, so an image backup receipt was downloaded instead.'
-                    : ''
-            )
-
-            if (!silent) {
-                toast.success('Support receipt image downloaded')
+            const amount = validateForm()
+            const refreshedUser = await refreshSession()
+            if (!refreshedUser?.email && !authenticatedUser?.email) {
+                throw new Error('Please sign in again before checkout')
             }
 
-            return true
-        } catch (error) {
-            const message = String(error?.message || 'Unable to download support receipt image')
-            if (!auto) {
-                setReceiptDownloadError(message)
-            }
-
-            if (!silent) {
-                toast.error(message)
-            }
-
-            return false
-        } finally {
-            setIsDownloadingReceipt(false)
-        }
-    }
-
-    const downloadSupportReceiptPdf = async (details, options = {}) => {
-        const { silent = false, auto = false } = options
-
-        if (!details?.orderId || !details?.email) {
-            if (!silent) {
-                toast.error('Receipt details are incomplete for PDF download')
-            }
-            return false
-        }
-
-        setIsDownloadingReceipt(true)
-
-        try {
-            const blob = await fetchSupportReceiptPdf(details.orderId, details.email)
-            saveBlobAsFile(blob, `support-receipt-${details.orderId}.pdf`)
-            setReceiptDownloadError('')
-
-            if (!silent) {
-                toast.success('Support receipt PDF downloaded')
-            }
-
-            return true
-        } catch (error) {
-            if (auto) {
-                const imageFallbackDownloaded = await downloadSupportReceipt(details, {
-                    silent: true,
-                    auto: true,
-                })
-
-                if (imageFallbackDownloaded) {
-                    return true
-                }
-            }
-
-            const message = String(error?.message || 'Unable to download support receipt PDF')
-            setReceiptDownloadError(
-                auto
-                    ? 'Automatic PDF download was blocked. Use the image backup receipt button below.'
-                    : message
-            )
-
-            if (!silent) {
-                toast.error(message)
-            }
-
-            return false
-        } finally {
-            setIsDownloadingReceipt(false)
-        }
-    }
-
-    const applyVerifiedSupport = (pendingDetails, verification, silent) => {
-        const merged = {
-            ...pendingDetails,
-            amount: Number(verification.amount || pendingDetails.amount || 0),
-            contributorName: verification.contributorName || pendingDetails.contributorName || 'Supporter',
-            paymentId: verification.paymentId || pendingDetails.paymentId || `cf_${pendingDetails.orderId}`,
-        }
-        const successDetails = {
-            ...merged,
-            orderId: String(merged.orderId || pendingDetails.orderId || '').trim(),
-        }
-
-        setSupportSuccess(null)
-        setPaymentFailure('')
-        setReceiptDownloadError('')
-        sessionStorage.removeItem(pendingSupportKey)
-        sessionStorage.setItem(paymentSuccessStorageKey, JSON.stringify(successDetails))
-        setThankYouNote('Thank you for helping me grow. Your support means a lot. Check your mail for updates!')
-
-        if (!silent) {
-            toast.success('Support payment verified. Thank you! Check your mail for updates.')
-        }
-
-        const successOrderId = encodeURIComponent(successDetails.orderId)
-        const transactionId = encodeURIComponent(String(successDetails.paymentId || successDetails.orderId || '').trim())
-
-        navigate(`/payment-success/${transactionId}?flow=support&orderId=${successOrderId}`, {
-            state: {
-                flow: 'support',
-                checkoutOrigin: 'callback-success',
-                details: successDetails,
-            },
-        })
-
-        return true
-    }
-
-    const scheduleSupportBackgroundVerification = (orderId, pendingDetails, attempt = 1) => {
-        if (attempt > maxBackgroundVerificationRetries) {
-            return
-        }
-
-        const retryDelay = Math.max(6000, getRetryDelay(Math.min(attempt + 1, 4)))
-
-        setTimeout(async () => {
-            const pendingRaw = sessionStorage.getItem(pendingSupportKey)
-            if (!pendingRaw) {
-                return
-            }
-
-            let nextPending = pendingDetails
-            try {
-                const parsed = JSON.parse(pendingRaw)
-                if (parsed?.orderId === orderId) {
-                    nextPending = parsed
-                }
-            } catch {
-                nextPending = pendingDetails
-            }
-
-            const activeEmail = String(user?.email || nextPending?.email || '').trim()
-            if (!activeEmail || !nextPending?.orderId) {
-                return
-            }
-
-            if (activeEmail.toLowerCase() !== String(nextPending.email || '').trim().toLowerCase()) {
-                sessionStorage.removeItem(pendingSupportKey)
-                setPaymentFailure('Your signed-in account changed. Please start checkout again with this account.')
-                return
-            }
-
-            const resolved = await finalizeSupportVerification(orderId, nextPending, {
-                silent: true,
+            const order = await createSupportPaymentOrder({
+                name: form.name.trim(),
+                phone: form.phone,
+                message: form.message.trim(),
+                amount,
             })
+            transactionId = order.transactionId
+            void trackEvent('support_checkout_started', { transaction_id: transactionId, amount: order.amount })
 
-            if (!resolved) {
-                scheduleSupportBackgroundVerification(orderId, nextPending, attempt + 1)
+            const checkout = await openRazorpayCheckout({ order })
+            if (checkout.type === 'dismissed') {
+                setPaymentMessage('Checkout closed. No support payment was confirmed.')
+                return
             }
-        }, retryDelay)
+            if (checkout.type === 'failed') {
+                const code = String(checkout.response?.code || '').slice(0, 80)
+                const reason = String(checkout.response?.reason || checkout.response?.description || '').slice(0, 200)
+                await recordPaymentFailure({ transactionId, code, reason }).catch(() => undefined)
+                void trackEvent('support_payment_failed', { transaction_id: transactionId })
+                throw new Error('Payment could not be completed. No successful contribution was recorded.')
+            }
+
+            const verified = await verifyPayment({ transactionId, ...checkout.response })
+            if (verified.status !== 'paid') {
+                setPaymentMessage('Payment is still being confirmed. Please check My Activity shortly.')
+                return
+            }
+
+            void trackEvent('support_payment_verified', { transaction_id: transactionId, amount: verified.amount })
+            toast.success('Support payment verified')
+            navigate(`/payment-success/${encodeURIComponent(transactionId)}`)
+        } catch (error) {
+            const message = error?.code === 'PAYMENT_GATEWAY_AUTH_FAILED'
+                ? 'Payment gateway is temporarily unavailable. Please try again shortly.'
+                : error?.message || 'Unable to start secure checkout'
+            setPaymentMessage(message)
+            toast.error(message)
+        } finally {
+            checkoutLock.current = false
+            setIsSubmitting(false)
+        }
     }
 
-    const pollSupportStatusUntilResolved = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false, scheduleBackgroundRetry = true } = options
-        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
-        setPaymentFailure('')
-
-        for (let attempt = 0; attempt < maxStatusPollingAttempts; attempt += 1) {
-            try {
-                const status = await fetchPaymentStatus(orderId, activeEmail)
-                const verificationState = String(status?.verificationStatus || '').toLowerCase()
-                const paymentState = String(status?.paymentStatus || '').toLowerCase()
-
-                if (verificationState === 'complete' || paymentState === 'paid') {
-                    return applyVerifiedSupport(pendingDetails, status, silent)
-                }
-
-                if (verificationState === 'failed' || paymentState === 'failed') {
-                    const failedMessage =
-                        'Payment could not be confirmed. If amount was deducted, gateway will auto-reconcile it.'
-                    setPaymentFailure(failedMessage)
-                    sessionStorage.removeItem(pendingSupportKey)
-                    if (!silent) {
-                        toast.error(failedMessage)
-                    }
-                    return false
-                }
-
-                const nextDelay = Number(status?.nextPollMs || getRetryDelay(Math.min(attempt, 4)))
-                await pause(Math.max(1200, Math.min(nextDelay, 12000)))
-            } catch (statusError) {
-                const message = String(statusError?.message || '')
-                const statusCode = Number(statusError?.status)
-                const failure = classifyVerificationFailure(message, statusCode)
-
-                if (!failure.isRetryable) {
-                    break
-                }
-
-                await pause(getRetryDelay(Math.min(attempt, 4)))
-            }
-        }
-
-        const pendingMessage =
-            'Payment is still being finalized. Keep this page open, or check My Activity in a minute with the same email.'
-        setPaymentFailure(pendingMessage)
-        if (!silent) {
-            toast.error(pendingMessage)
-        }
-
-        if (scheduleBackgroundRetry) {
-            scheduleSupportBackgroundVerification(orderId, pendingDetails)
-        }
-
-        return false
-    }
-
-    const handleSupportVerificationError = async (error, attempt, silent, options = {}) => {
-        const { skipStatusPollingOnPending = false } = options
-        const message = String(error?.message || '')
-        const statusCode = Number(error?.status)
-        const failure = classifyVerificationFailure(message, statusCode)
-        const shouldRetry = failure.isRetryable && attempt < 4
-
-        if (shouldRetry) {
-            await pause(getRetryDelay(attempt))
-            return { shouldRetry: true, result: false }
-        }
-
-        if (isTerminalPaymentFailure(message)) {
-            setPaymentFailure(message || 'Payment was not completed. No support amount has been confirmed.')
-            sessionStorage.removeItem(pendingSupportKey)
-            if (!silent) {
-                toast.error(message || 'Payment was not completed. No support amount has been confirmed.')
-            }
-            return { shouldRetry: false, result: false }
-        }
-
-        if (failure.isPendingGatewayState) {
-            if (skipStatusPollingOnPending) {
-                if (attempt < 4) {
-                    await pause(getRetryDelay(attempt))
-                    return { shouldRetry: true, result: false }
-                }
-
-                return { shouldRetry: false, result: false }
-            }
-
-            return { shouldRetry: false, shouldPollStatus: true, result: false }
-        }
-
-        if (failure.isRetryable) {
-            const retryableServerMessage =
-                'Payment was captured but verification is temporarily unavailable on server. Please retry shortly with the same email, or contact support with your order ID.'
-            setPaymentFailure(retryableServerMessage)
-            if (!silent) {
-                toast.error(retryableServerMessage)
-            }
-            return { shouldRetry: false, result: false }
-        }
-
-        setPaymentFailure(message || 'Unable to verify support payment')
-        if (!silent) {
-            toast.error(message || 'Unable to verify support payment')
-        }
-
-        return { shouldRetry: false, result: false }
-    }
-
-    const handlePendingSupportVerification = async ({
-        verification,
-        attempt,
-        orderId,
-        pendingDetails,
-        silent,
-        skipStatusPollingOnPending,
-    }) => {
-        if (!isPendingVerificationPayload(verification)) {
-            return { shouldContinue: false, shouldReturn: false, result: false }
-        }
-
-        if (skipStatusPollingOnPending) {
-            if (attempt < 4) {
-                await pause(getRetryDelay(attempt))
-                return { shouldContinue: true, shouldReturn: false, result: false }
-            }
-
-            return { shouldContinue: false, shouldReturn: true, result: false }
-        }
-
-        const pollResult = await pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
-        return { shouldContinue: false, shouldReturn: true, result: pollResult }
-    }
-
-    const resolveSupportVerificationError = async ({
-        error,
-        attempt,
-        silent,
-        skipStatusPollingOnPending,
-        orderId,
-        pendingDetails,
-    }) => {
-        const outcome = await handleSupportVerificationError(error, attempt, silent, {
-            skipStatusPollingOnPending,
-        })
-
-        if (outcome.shouldRetry) {
-            return { shouldContinue: true, result: false }
-        }
-
-        if (outcome.shouldPollStatus && !skipStatusPollingOnPending) {
-            const pollResult = await pollSupportStatusUntilResolved(orderId, pendingDetails, { silent })
-            return { shouldContinue: false, result: pollResult }
-        }
-
-        return { shouldContinue: false, result: outcome.result }
-    }
-
-    const finalizeSupportVerification = async (orderId, pendingDetails, options = {}) => {
-        const { silent = false, skipStatusPollingOnPending = false } = options
-        const activeEmail = String(user?.email || pendingDetails?.email || '').trim()
-
-        for (let attempt = 0; attempt < 5; attempt += 1) {
-            try {
-                const verification = await verifySupportPayment(orderId, activeEmail)
-
-                const pendingOutcome = await handlePendingSupportVerification({
-                    verification,
-                    attempt,
-                    orderId,
-                    pendingDetails,
-                    silent,
-                    skipStatusPollingOnPending,
-                })
-
-                if (pendingOutcome.shouldContinue) {
-                    continue
-                }
-
-                if (pendingOutcome.shouldReturn) {
-                    return pendingOutcome.result
-                }
-
-                return applyVerifiedSupport(pendingDetails, verification, silent)
-            } catch (error) {
-                const errorOutcome = await resolveSupportVerificationError({
-                    error,
-                    attempt,
-                    silent,
-                    skipStatusPollingOnPending,
-                    orderId,
-                    pendingDetails,
-                })
-
-                if (errorOutcome.shouldContinue) {
-                    continue
-                }
-
-                return errorOutcome.result
-            }
-        }
-
-        if (!silent) {
-            toast.error('Verification timed out. Please try again with same email.')
-        }
-        return false
-    }
-
-    useEffect(() => {
-        if (!thankYouNote) {
-            return
-        }
-
-        const timer = setTimeout(() => {
-            setThankYouNote('')
-        }, 9000)
-
-        return () => clearTimeout(timer)
-    }, [thankYouNote])
-
-    useEffect(() => {
-        if (isLoading || !isAuthenticated) {
-            return
-        }
-
-        const pendingRaw = sessionStorage.getItem(pendingSupportKey)
-        if (!pendingRaw) {
-            return
-        }
-
-        let pending = null
-        try {
-            pending = JSON.parse(pendingRaw)
-        } catch {
-            pending = null
-        }
-
-        if (!pending?.orderId || !pending?.email) {
-            sessionStorage.removeItem(pendingSupportKey)
-            return
-        }
-
-        const activeEmail = String(user?.email || '').trim().toLowerCase()
-        if (activeEmail && activeEmail !== String(pending.email || '').trim().toLowerCase()) {
-            sessionStorage.removeItem(pendingSupportKey)
-            setPaymentFailure('Your signed-in account changed. Please start checkout again with this account.')
-            return
-        }
-
-        setPaymentFailure('')
-        void finalizeSupportVerification(pending.orderId, pending, { silent: true })
-    }, [isAuthenticated, isLoading, user?.email])
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault()
-
-        if (isLoading) {
-            toast.error('Checking your sign-in session. Please wait a second.')
+        if (checkoutLock.current || isLoading) return
+        try {
+            validateForm()
+        } catch (error) {
+            setPaymentMessage(error.message)
             return
         }
 
         if (!isAuthenticated || !user?.email) {
-            setShowSignInModal(true)
-            toast.error('Please sign in with Google before starting support payment.')
+            openAuthDialog({
+                reason: 'checkout',
+                onSuccess: (authenticatedUser) => startCheckout(authenticatedUser),
+            })
             return
         }
-
-        const runCheckout = async () => {
-            setIsSubmitting(true)
-            setPaymentFailure('')
-            try {
-                const refreshedUser = await refreshSession()
-                const activeEmail = String(refreshedUser?.email || user?.email || '').trim()
-
-                if (!activeEmail) {
-                    throw new Error('Your sign-in session is not ready. Please sign in again.')
-                }
-
-                const resolvedName = String(form.name || '').trim()
-                const profileName = String(user?.displayName || user?.name || '').trim()
-
-                if (!resolvedName) {
-                    throw new Error('Name is required')
-                }
-
-                if (resolvedName !== profileName) {
-                    try {
-                        await updateProfile({ displayName: resolvedName })
-                    } catch (profileError) {
-                        toast.error(profileError?.message || 'Unable to save your profile name right now')
-                    }
-                }
-
-                if (!/^[6-9]\d{9}$/.test(String(form.phone || '').trim())) {
-                    throw new Error('Phone must be a valid 10-digit Indian mobile number')
-                }
-
-                const numericAmount = Number.parseInt(form.amount, 10)
-                if (!Number.isFinite(numericAmount) || numericAmount < 1 || numericAmount > 100000) {
-                    throw new Error('Amount must be between INR 1 and INR 100000')
-                }
-
-                const order = await createSupportOrder({
-                    ...form,
-                    name: resolvedName,
-                    email: activeEmail,
-                    amount: numericAmount,
-                })
-
-                const pending = {
-                    orderId: order.orderId,
-                    email: activeEmail,
-                    contributorName: resolvedName,
-                    amount: numericAmount,
-                }
-                sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
-
-                const checkoutResult = await openCashfreeCheckout({
-                    paymentSessionId: order.paymentSessionId,
-                    environment: order.environment,
-                })
-
-                if (checkoutResult?.paymentDetails?.cf_payment_id) {
-                    pending.paymentId = String(checkoutResult.paymentDetails.cf_payment_id)
-                    sessionStorage.setItem(pendingSupportKey, JSON.stringify(pending))
-                }
-
-                if (checkoutResult?.error) {
-                    const recovered = await finalizeSupportVerification(order.orderId, pending, {
-                        silent: true,
-                    })
-
-                    if (recovered) {
-                        return
-                    }
-
-                    const checkoutMessage = String(checkoutResult.error.message || '').trim()
-                    throw new Error(
-                        checkoutMessage
-                            ? `Payment window closed: ${checkoutMessage}. We are still verifying your payment in background. Keep this page open, or check My Activity.`
-                            : 'Payment window closed before confirmation. We are still verifying your payment in background. Keep this page open, or check My Activity.'
-                    )
-                }
-
-                await finalizeSupportVerification(order.orderId, pending)
-            } catch (error) {
-                const message = error?.message || 'Unable to start support checkout'
-                setPaymentFailure(message)
-                toast.error(message)
-            } finally {
-                setIsSubmitting(false)
-            }
-        }
-
-        runCheckout()
+        await startCheckout(user)
     }
 
+    const checkoutLabel = isLoading
+        ? 'Checking Sign-In...'
+        : !isAuthenticated
+            ? 'Sign In to Continue'
+            : isSubmitting
+                ? 'Starting Secure Checkout...'
+                : `Support with INR ${Number(form.amount || 0).toLocaleString('en-IN')}`
+
     return (
-        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-obsidian relative overflow-hidden">
+            <div className="pointer-events-none absolute -top-24 right-0 h-[420px] w-[420px] rounded-full bg-toxic/5 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 left-0 h-[420px] w-[420px] rounded-full bg-cyber/5 blur-3xl" />
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
-                {thankYouNote ? (
-                    <div className="mb-4 rounded-md border border-[#c5f82a]/35 bg-[#c5f82a]/10 px-4 py-3 text-xs font-mono uppercase text-[#c5f82a]">
-                        {thankYouNote}
-                    </div>
-                ) : null}
+            <main className="relative z-10 mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+                <Link to="/" className="text-xs font-mono uppercase tracking-wider text-zinc-400 transition-colors hover:text-toxic">&larr; Back Home</Link>
 
-                <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-                    <Link to="/services" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:text-[#c5f82a] transition-colors">
-                        <span>{'<-'}</span>
-                        <span>Back to Services</span>
-                    </Link>
-                    <span className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
-                        Support Jar
-                    </span>
-                </div>
-
-                <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
-                    <section className="lg:col-span-3 rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
-                        <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">Support My Work</h1>
-                        <p className="text-[#a1a1aa] mt-2 text-sm leading-relaxed">
-                            If my work helped you, you can send any amount directly. Secure checkout is powered by Cashfree.
-                        </p>
-
-                        {/* 4-Step Progressive Journey Header */}
-                        <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                            <div className={`rounded-lg border p-3 transition-all ${requiresSignIn ? 'border-toxic bg-toxic/10 ring-1 ring-toxic/40' : 'border-emerald-500/30 bg-emerald-500/5'}`}>
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-toxic">Step 1</p>
-                                <p className="text-xs font-semibold text-white mt-1 flex items-center justify-between">
-                                    <span>Google Auth</span>
-                                    {!requiresSignIn && <span className="text-emerald-400">✓</span>}
-                                </p>
-                            </div>
-                            <div className={`rounded-lg border p-3 transition-all ${!requiresSignIn ? 'border-toxic/40 bg-toxic/5' : 'border-obsidian-border bg-obsidian/60 opacity-60'}`}>
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 2</p>
-                                <p className="text-xs font-semibold text-white mt-1">Select Amount</p>
-                            </div>
-                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 3</p>
-                                <p className="text-xs font-semibold text-white mt-1">Cashfree Checkout</p>
-                            </div>
-                            <div className="rounded-lg border border-obsidian-border bg-obsidian/60 p-3 opacity-60">
-                                <p className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">Step 4</p>
-                                <p className="text-xs font-semibold text-white mt-1">Instant Receipt</p>
-                            </div>
+                <div className="mt-7 grid gap-6 lg:grid-cols-5 lg:gap-8">
+                    <section className="rounded-lg border border-obsidian-border bg-obsidian-card p-5 sm:p-8 lg:col-span-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded border border-toxic/30 bg-toxic/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-toxic">Support My Work</span>
+                            <span className="rounded border border-obsidian-border px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500">Razorpay Standard Checkout</span>
                         </div>
+                        <h1 className="mt-5 text-3xl font-display font-bold tracking-tight text-white sm:text-4xl">Help Me Keep Building</h1>
+                        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">If my projects, articles, or resources have helped you, you can support the time and care that goes into creating them.</p>
 
-                        {paymentFailure ? (
-                            <div className="mt-4 rounded-md border border-rose-500/35 bg-rose-500/5 px-4 py-3 text-xs font-mono uppercase text-rose-300">
-                                {paymentFailure}
-                            </div>
-                        ) : null}
+                        {paymentMessage ? <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-200">{paymentMessage}</div> : null}
 
-                        {/* Step 1 Prominent Identity Callout Card */}
-                        {requiresSignIn ? (
-                            <div className="mt-5 rounded-xl border border-toxic/40 bg-toxic/5 p-5 shadow-lg shadow-toxic/5">
-                                <div className="flex items-center gap-2">
-                                    <span className="flex h-2 w-2 rounded-full bg-toxic animate-pulse" />
-                                    <span className="text-xs font-mono uppercase tracking-wider text-toxic font-bold">Step 1 Required — Google Authentication</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-white mt-2">Sign In with Google to Unlock Checkout</h3>
-                                <p className="text-xs text-zinc-300 mt-1.5 leading-relaxed">
-                                    Google authentication is required before checkout. Your email is auto-filled and locked to generate verified support receipts and order tracking in <span className="font-mono text-toxic">My Activity</span>.
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowSignInModal(true)}
-                                    className="mt-4 inline-flex items-center gap-2 rounded-lg bg-toxic text-obsidian px-5 py-3 text-xs font-mono uppercase font-bold shadow-[0_0_20px_rgba(197,248,42,0.25)] hover:shadow-[0_0_30px_rgba(197,248,42,0.4)] hover:bg-[#b0e620] transition-all duration-200"
-                                >
-                                    <span>Continue with Google</span>
-                                    <span>↗</span>
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="mt-5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold">✓</span>
-                                    <div>
-                                        <p className="text-xs font-semibold text-white">Signed in as {user?.email}</p>
-                                        <p className="text-[10px] font-mono text-zinc-400">Email is locked for support receipts & order tracking.</p>
-                                    </div>
-                                </div>
-                                <span className="text-[10px] font-mono uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded">Verified</span>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit} className="mt-6 space-y-4 sm:space-y-5">
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Full Name</label>
-                                    <input
-                                        id="name"
-                                        name="name"
-                                        value={form.name}
-                                        onChange={handleChange}
-                                        maxLength={80}
-                                        disabled={requiresSignIn || isLoading}
-                                        required
-                                        placeholder="Your name"
-                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="email" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Email</label>
-                                    <input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        value={form.email}
-                                        readOnly
-                                        disabled
-                                        maxLength={120}
-                                        required
-                                        placeholder="Sign in with Google to auto-fill"
-                                        className="w-full rounded-md border border-[#1a1a22]/80 bg-[#16161a]/50 px-4 py-3 text-[#a1a1aa]/60 placeholder:text-[#a1a1aa]/20 focus:outline-none focus:border-[#c5f82a] font-mono text-sm cursor-not-allowed"
-                                    />
-                                    <p className="mt-1.5 text-[10px] font-mono uppercase text-[#a1a1aa]/40">Email is locked to your signed-in Google account.</p>
-                                </div>
-                            </div>
-
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label htmlFor="phone" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Phone</label>
-                                    <input
-                                        id="phone"
-                                        name="phone"
-                                        type="tel"
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        minLength={10}
-                                        maxLength={10}
-                                        inputMode="numeric"
-                                        pattern="[6-9][0-9]{9}"
-                                        autoComplete="tel-national"
-                                        disabled={requiresSignIn || isLoading}
-                                        required
-                                        placeholder="10-digit number"
-                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="amount" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Amount (INR)</label>
-                                    <input
-                                        id="amount"
-                                        name="amount"
-                                        type="number"
-                                        min="1"
-                                        max="100000"
-                                        value={form.amount}
-                                        onChange={handleChange}
-                                        disabled={requiresSignIn || isLoading}
-                                        required
-                                        placeholder="Enter any amount"
-                                        className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <p className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-2">Quick Amounts</p>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {quickAmounts.map((amt) => (
+                        <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+                            <fieldset>
+                                <legend className="text-xs font-mono uppercase tracking-wider text-zinc-400">Choose an amount</legend>
+                                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-6">
+                                    {QUICK_AMOUNTS.map((amount) => (
                                         <button
-                                            key={amt}
+                                            key={amount}
                                             type="button"
-                                            disabled={requiresSignIn || isLoading}
-                                            onClick={() => setForm((prev) => ({ ...prev, amount: String(amt) }))}
-                                            className={`rounded-md px-3.5 py-2 text-xs font-mono uppercase tracking-wider border transition-colors ${
-                                                Number.parseInt(form.amount, 10) === amt
-                                                    ? 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
-                                                    : 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa] hover:border-[#c5f82a]/30'
-                                            }`}
+                                            onClick={() => setForm((previous) => ({ ...previous, amount: String(amount) }))}
+                                            className={`rounded-md border px-2 py-3 text-xs font-mono font-bold transition-colors ${Number(form.amount) === amount ? 'border-toxic bg-toxic text-obsidian' : 'border-obsidian-border bg-obsidian text-zinc-300 hover:border-toxic/50 hover:text-toxic'}`}
                                         >
-                                            INR {amt}
+                                            INR {amount}
                                         </button>
                                     ))}
                                 </div>
+                            </fieldset>
+
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Custom Amount
+                                    <input className={fieldClass} name="amount" value={form.amount} onChange={updateField} inputMode="numeric" min="49" max="100000" required aria-describedby="support-amount-help" />
+                                    <span id="support-amount-help" className="mt-1.5 block text-[10px] normal-case tracking-normal text-zinc-600">Whole rupees, INR 49 to INR 100,000</span>
+                                </label>
+                                <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Account Email
+                                    <input className={`${fieldClass} cursor-not-allowed opacity-70`} value={user?.email || 'Sign in to continue'} readOnly aria-label="Account email" />
+                                </label>
                             </div>
 
-                            <div>
-                                <label htmlFor="message" className="block text-xs font-mono uppercase tracking-wider text-[#a1a1aa] mb-1.5">Message (optional)</label>
-                                <textarea
-                                    id="message"
-                                    name="message"
-                                    rows="4"
-                                    value={form.message}
-                                    onChange={handleChange}
-                                    disabled={requiresSignIn || isLoading}
-                                    maxLength={300}
-                                    placeholder="Write a short note"
-                                    className="w-full rounded-md border border-[#1a1a22] bg-[#16161a] px-4 py-3 text-white placeholder:text-[#a1a1aa]/30 focus:outline-none focus:border-[#c5f82a] font-mono text-sm resize-none"
-                                />
+                            <div className="grid gap-5 sm:grid-cols-2">
+                                <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Name
+                                    <input className={fieldClass} name="name" value={form.name} onChange={updateField} minLength="2" maxLength="80" required autoComplete="name" />
+                                </label>
+                                <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Phone
+                                    <input className={fieldClass} name="phone" value={form.phone} onChange={updateField} inputMode="numeric" pattern="[6-9][0-9]{9}" placeholder="10-digit mobile number" required autoComplete="tel" />
+                                </label>
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || requiresSignIn || isLoading}
-                                className="w-full rounded-md px-5 py-3.5 font-mono text-xs uppercase font-bold text-[#070708] bg-[#c5f82a] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
-                            >
-                                {checkoutButtonLabel}
+                            <label className="block text-xs font-mono uppercase tracking-wider text-zinc-400">Message <span className="normal-case text-zinc-600">(optional)</span>
+                                <textarea className={`${fieldClass} min-h-24 resize-y`} name="message" value={form.message} onChange={updateField} maxLength="300" placeholder="Leave a short note..." />
+                            </label>
+
+                            <button type="submit" disabled={isSubmitting || isLoading} className="inline-flex min-h-12 w-full items-center justify-center rounded-md bg-toxic px-5 py-3 text-xs font-mono font-bold uppercase text-obsidian shadow-[2px_2px_0_rgba(197,248,42,.3)] transition-all hover:translate-y-0.5 hover:shadow-none disabled:cursor-not-allowed disabled:opacity-60">
+                                {checkoutLabel}
                             </button>
                         </form>
                     </section>
 
-                    <aside className="lg:col-span-2 rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-7 h-fit sticky top-28">
-                        <h2 className="text-xl sm:text-2xl font-display font-bold text-white">Why this Support Jar?</h2>
-                        <p className="text-[#a1a1aa] text-sm mt-3 leading-relaxed">
-                            This helps me keep sharing useful projects, guides, and learning content consistently.
-                        </p>
-
-                        <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4">
-                            <p className="text-xs font-mono uppercase text-[#c5f82a] font-semibold">Trust and Security</p>
-                            <ul className="mt-2.5 space-y-2 text-xs text-[#a1a1aa] leading-relaxed">
-                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> Secure checkout via Cashfree</li>
-                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> UPI, cards, netbanking, wallets</li>
-                                <li className="flex items-center gap-1.5"><span className="text-[#c5f82a]">→</span> No card number or UPI PIN stored</li>
-                            </ul>
+                    <aside className="space-y-5 lg:col-span-2">
+                        <div className="rounded-lg border border-obsidian-border bg-obsidian-card p-6">
+                            <HeartHandshake className="h-7 w-7 text-toxic" />
+                            <p className="mt-5 text-[10px] font-mono uppercase tracking-widest text-toxic">A Direct Contribution</p>
+                            <h2 className="mt-2 text-2xl font-display font-bold text-white">Thank you for backing independent work.</h2>
+                            <p className="mt-3 text-sm leading-relaxed text-zinc-400">Your contribution supports new portfolio projects, technical writing, and practical learning resources.</p>
                         </div>
-
-                        <div className="mt-5 grid grid-cols-1 gap-2.5">
-                            <Link to="/projects" className="rounded-md border border-[#1a1a22] px-4 py-2.5 text-xs text-[#a1a1aa] hover:border-[#c5f82a] hover:text-[#c5f82a] font-mono uppercase tracking-wider transition-all duration-200 text-center">
-                                Explore Projects
-                            </Link>
-                            <Link to="/contact" className="rounded-md border border-[#1a1a22] px-4 py-2.5 text-xs text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono uppercase tracking-wider transition-all duration-200 text-center">
-                                Contact Me
-                            </Link>
+                        <div className="space-y-4 rounded-lg border border-obsidian-border bg-obsidian-card p-6">
+                            <div className="flex gap-3"><ShieldCheck className="h-5 w-5 shrink-0 text-toxic" /><p className="text-sm text-zinc-300">The server verifies every Razorpay payment before confirmation.</p></div>
+                            <div className="flex gap-3"><CreditCard className="h-5 w-5 shrink-0 text-cyber" /><p className="text-sm text-zinc-300">Card, UPI, and bank details stay inside hosted checkout.</p></div>
+                            <div className="flex gap-3"><ReceiptText className="h-5 w-5 shrink-0 text-toxic" /><p className="text-sm text-zinc-300">Confirmed payments receive a downloadable PDF receipt.</p></div>
                         </div>
                     </aside>
                 </div>
 
-                <section className="mt-8 sm:mt-10">
-                    <TrustStrip variant="support" />
-                </section>
-
-                {supportSuccess ? (
-                    <div className="fixed inset-0 z-50 bg-[#070708]/80 backdrop-blur-sm px-4 py-8 overflow-y-auto flex items-center justify-center">
-                        <div className="relative max-w-xl w-full overflow-hidden rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
-                            <div className="pointer-events-none absolute -top-20 -right-16 h-52 w-52 rounded-full bg-[#c5f82a]/5 blur-3xl" />
-                            <div className="relative">
-                                <div className="inline-flex items-center gap-2 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3.5 py-1.5 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
-                                    <span>Support Confirmed</span>
-                                </div>
-                                <h2 className="mt-4 text-2xl sm:text-3xl font-display font-bold text-white">Thank You for Supporting</h2>
-                                <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed">
-                                    Your contribution has been received successfully.
-                                </p>
-                                <p className="mt-2 text-xs text-[#a1a1aa]/70 leading-relaxed">
-                                    Your PDF receipt download starts automatically. Thank you for supporting, and check your mail for updates.
-                                </p>
-
-                                <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4 text-xs font-mono text-[#a1a1aa] space-y-1.5 leading-relaxed">
-                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Name:</span> {supportSuccess.contributorName || supportSuccess.contributor}</p>
-                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {supportSuccess.amount}</p>
-                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {supportSuccess.orderId}</p>
-                                    <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {supportSuccess.paymentId}</p>
-                                </div>
-
-                                <div className="mt-5">
-                                    <button
-                                        type="button"
-                                        disabled={isDownloadingReceipt}
-                                        onClick={() => downloadSupportReceiptPdf(supportSuccess)}
-                                        className="w-full rounded-md px-4 py-3 text-xs font-mono uppercase font-bold text-[#070708] bg-[#c5f82a] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
-                                    >
-                                        {isDownloadingReceipt ? 'Downloading PDF Receipt...' : 'Download Support Receipt PDF'}
-                                    </button>
-                                </div>
-
-                                <div className="mt-3">
-                                    <button
-                                        type="button"
-                                        disabled={isDownloadingReceipt}
-                                        onClick={() => downloadSupportReceipt(supportSuccess)}
-                                        className="w-full rounded-md px-4 py-2.5 text-xs font-mono uppercase text-[#a1a1aa] border border-[#1a1a22] hover:border-[#c5f82a] hover:text-[#c5f82a] transition-all"
-                                    >
-                                        {isDownloadingReceipt ? 'Downloading Image Receipt...' : 'Download Image Backup Receipt'}
-                                    </button>
-                                </div>
-
-                                {receiptDownloadError ? (
-                                    <div className="mt-3 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
-                                        {receiptDownloadError}
-                                    </div>
-                                ) : null}
-
-                                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setSupportSuccess(null)
-                                            setReceiptDownloadError('')
-                                            setForm((prev) => ({ ...prev, message: '' }))
-                                        }}
-                                        className="rounded-md px-4 py-3 text-xs font-mono uppercase text-[#a1a1aa] border border-[#1a1a22] hover:border-white transition-colors"
-                                    >
-                                        Close
-                                    </button>
-                                    <Link
-                                        to="/services"
-                                        className="inline-flex justify-center rounded-md px-4 py-3 text-xs font-mono uppercase font-bold text-white bg-[#ff5d00] border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200"
-                                    >
-                                        Explore Services
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : null}
-            </div>
-
-            <GoogleSignInModal
-                isOpen={showSignInModal}
-                onClose={() => setShowSignInModal(false)}
-                onAuthenticated={async () => {
-                    await refreshSession()
-                    setShowSignInModal(false)
-                }}
-            />
+                <TrustStrip variant="support" className="mt-8" />
+            </main>
         </div>
     )
 }

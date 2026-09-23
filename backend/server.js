@@ -24,15 +24,15 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const connectDatabase = require("./config/database");
 const contactRoutes = require("./routes/contactRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
-const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const blogSupportRoutes = require("./routes/blogSupportRoutes");
 const activityRoutes = require("./routes/activityRoutes");
-const { closePaymentQueueWorkers, getPaymentQueueStatus } = require("./queues/paymentQueue");
+const paymentRoutes = require("./routes/paymentRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
 const { validateEnvironment } = require("./config/env");
+const { corsOrigin } = require("./config/trustedOrigins");
 
 
 const envValidation = validateEnvironment({ strict: true });
@@ -53,44 +53,8 @@ connectDatabase();
 app.use(helmet());
 app.use(mongoSanitize());
 
-// CORS configuration
-// Allowed origins: production URL + localhost dev servers + explicitly listed preview URLs.
-// We do NOT blanket-allow all *.vercel.app origins — that would let any Vercel project
-// bypass CORS on this API.
-const VERCEL_PROJECT_SLUG = process.env.VERCEL_PROJECT_SLUG || "dev-portfolio";
-// Matches only preview deployments of THIS specific project (e.g. dev-portfolio-abc123.vercel.app)
-const VERCEL_PREVIEW_PATTERN = new RegExp(
-  String.raw`^https://${VERCEL_PROJECT_SLUG}[a-z0-9\-]*\.vercel\.app$`,
-  "i"
-);
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:5173",
-      "http://localhost:5174",
-    ]
-      .filter(Boolean)
-      .map((url) => url.replace(/\/$/, ""));
-
-    // Allow requests with no origin (curl, Postman, same-origin server calls)
-    if (!origin) return callback(null, true);
-
-    const normalizedOrigin = origin.replace(/\/$/, "");
-
-    // Only allow preview deployments of THIS specific Vercel project
-    const isOwnVercelPreview = VERCEL_PREVIEW_PATTERN.test(normalizedOrigin);
-
-    if (allowedOrigins.includes(normalizedOrigin) || isOwnVercelPreview) {
-      callback(null, true);
-    } else {
-      logger.warn({ origin }, "CORS blocked request");
-      callback(new Error(`Origin ${origin} not allowed by CORS`));
-    }
-  },
+  origin: corsOrigin,
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -107,7 +71,7 @@ app.use(
     limit: "2mb",
     verify: (req, res, buffer) => {
       if (buffer?.length) {
-        req.rawBody = buffer.toString("utf8");
+        req.rawBody = Buffer.from(buffer);
       }
     },
   })
@@ -128,17 +92,16 @@ app.get("/health", (req, res) => {
     success: true,
     message: "Server is running",
     timestamp: new Date().toISOString(),
-    paymentQueue: getPaymentQueueStatus(),
   });
 });
 
 // API routes
 app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
-app.use("/api/payment", paymentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/blog", blogSupportRoutes);
 app.use("/api/activity", activityRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Root route
 app.get("/", (req, res) => {
@@ -235,7 +198,7 @@ const gracefulShutdown = async ({ reason = "shutdown", exitCode = 0 } = {}) => {
       : Promise.resolve();
 
   try {
-    await Promise.allSettled([closeServerPromise, closePaymentQueueWorkers()]);
+    await closeServerPromise;
   } catch (error) {
     logger.error({ err: error, reason }, "Graceful shutdown encountered an error");
   }

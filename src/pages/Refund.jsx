@@ -91,7 +91,7 @@ function Refund() {
                             <span className="break-words">Payment Security Note</span>
                         </h2>
                         <p className="text-[#a1a1aa] leading-relaxed">
-                            Payments are processed via Cashfree secure checkout. No card number, CVV, or UPI PIN data is stored on this website.
+                            Payments use Razorpay Standard Checkout. No card number, CVV, UPI PIN, or bank credential is stored on this website.
                         </p>
                     </section>
                 </div>

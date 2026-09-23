@@ -152,14 +152,14 @@
       "category": "Full Stack - SaaS",
       "featured": true,
       "isCaseStudy": true,
-      "summary": "A dynamic, full-stack portfolio platform with Google authentication, Stripe/Cashfree payment integration, blog support, activity tracking, and an AI chatbot.",
-      "problem": "Most portfolios are static and don't demonstrate real-world engineering skills or visitor interaction. Developers struggle to showcase end-to-end systems, payment processing, or live user engagement.",
-      "solution": "Built a full-stack SaaS-level portfolio platform with:\n- Google OAuth authentication\n- Payment system integration (Cashfree/Stripe)\n- Blog support with comments\n- Activity tracking for visitor engagement\n- AI chatbot integration (RAG + DeepSeek)\n- Admin dashboard for content management\n- Newsletter subscription system",
-      "impact": "- Demonstrates real-world SaaS architecture and engineering depth\n- Handles actual user interactions (payments, subscriptions, support tickets)\n- Shows scalability, security (JWT, payments, CORS), and production-grade tooling\n- Live platform with genuine user engagement and analytics",
-      "realWorldUsage": "Used as a live portfolio by Gaurav to attract recruiters and clients. Visitors can explore projects, book services, engage via chatbot, and understand full-stack capabilities in real time.",
+      "summary": "A dynamic, full-stack portfolio platform with Google authentication, blog support, activity tracking, newsletter delivery, and an AI chatbot.",
+      "problem": "Most portfolios are static and don't demonstrate real-world engineering skills or visitor interaction. Developers struggle to showcase end-to-end systems or live user engagement.",
+      "solution": "Built a full-stack SaaS-level portfolio platform with:\n- Google OAuth authentication\n- Blog support with comments\n- Activity tracking for visitor engagement\n- AI chatbot integration (RAG + DeepSeek)\n- Admin dashboard for content management\n- Newsletter subscription system\n- Server-verified Razorpay checkout and PDF receipts",
+      "impact": "- Demonstrates real-world SaaS architecture and engineering depth\n- Handles actual user interactions such as subscriptions and support tickets\n- Shows scalability, security (JWT and CORS), and production-grade tooling\n- Live platform with genuine user engagement and analytics",
+      "realWorldUsage": "Used as a live portfolio by Gaurav to attract recruiters and clients. Visitors can explore projects, review services, engage via chatbot, and understand full-stack capabilities in real time.",
       "highlights": [
         "Google OAuth + JWT authentication",
-        "Stripe and Cashfree payment processing",
+        "Razorpay checkout with server-controlled pricing",
         "Blog system with support tickets",
         "Activity event tracking and analytics",
         "AI chatbot with RAG retrieval",
@@ -167,8 +167,8 @@
         "Admin dashboard for operations",
         "Responsive React frontend"
       ],
-      "architecture": "Frontend: React, Tailwind, Vite on Vercel. Backend: Node.js/Express, MongoDB, payment webhooks. Chatbot: DeepSeek API with RAG retrieval.",
-      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "Stripe/Cashfree", "DeepSeek API", "Tailwind CSS", "Vercel", "Render"],
+      "architecture": "Frontend: React, Tailwind, Vite on Vercel. Backend: Node.js/Express and MongoDB. Chatbot: DeepSeek API with RAG retrieval.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "JWT", "DeepSeek API", "Tailwind CSS", "Vercel", "Render"],
       "links": {
         "github": "https://github.com/ggauravky/Dev-Portfolio",
         "demo": "https://ggauravky.vercel.app"
@@ -207,23 +207,22 @@
       "category": "Full Stack - Business",
       "featured": true,
       "isCaseStudy": true,
-      "summary": "Integrated service delivery platform with service selection, secure payments, booking management, activity tracking, and automated receipts.",
-      "problem": "Freelancers and consultants struggle to manage clients, payments, and service delivery in one cohesive system. Each platform (booking, payments, support) requires separate integrations.",
-      "solution": "Created an integrated service platform with:\n- Service catalog with descriptions and pricing\n- Booking and scheduling system\n- Secure payment processing\n- Support ticket tracking\n- Activity event logging\n- Automated receipt generation\n- Client communication workflows",
-      "impact": "- Streamlined client interaction from discovery to delivery\n- Demonstrates real business use-case with revenue model\n- Shows backend + payment integration expertise\n- Built-in analytics for service performance\n- Professional client experience",
-      "realWorldUsage": "Used on Gaurav's portfolio for service offerings. Clients can browse mentorship, debugging help, resume review, and development services, then book and pay seamlessly.",
+      "summary": "Service discovery platform with detailed offerings, transparent pricing, authenticated Razorpay checkout, and activity tracking.",
+      "problem": "Freelancers and consultants struggle to manage client discovery, support, and service delivery in one cohesive system. Separate tools create a fragmented experience.",
+      "solution": "Created an integrated service platform with:\n- Service catalog with descriptions and pricing\n- Server-owned payment amounts\n- Razorpay order and signature verification\n- Activity event logging\n- PDF receipts and Brevo delivery",
+      "impact": "- Streamlined client interaction from discovery to contact\n- Demonstrates a practical business service catalog\n- Built-in analytics for service interest\n- Professional client experience",
+      "realWorldUsage": "Used on Gaurav's portfolio for service offerings. Signed-in clients can select a service, complete Razorpay checkout, and access verified payment activity and receipts.",
       "highlights": [
         "Service discovery and filtering",
-        "Booking with timeline management",
-        "Secure payment integration",
+        "Transparent pricing and delivery timelines",
+        "Authenticated Razorpay checkout",
         "Support ticket system",
         "Activity tracking and notifications",
-        "Receipt and invoice generation",
         "Admin dashboard for operations",
         "Client communication threads"
       ],
-      "architecture": "Frontend: Service listing and booking flows. Backend: Service management APIs, payment webhooks, ticket system. Database: MongoDB for all operational data.",
-      "techStack": ["React", "Node.js", "Express", "MongoDB", "Stripe/Cashfree", "PDF generation", "Email service"],
+      "architecture": "Frontend: Service listing and maintenance routing. Backend: Support and activity APIs. Database: MongoDB for operational data.",
+      "techStack": ["React", "Node.js", "Express", "MongoDB", "Email service"],
       "links": {
         "demo": "https://ggauravky.vercel.app/services"
       }
@@ -817,7 +816,7 @@
   "faq": [
     {
       "question": "What technologies do you use?",
-      "answer": "I mainly work with React and JavaScript for frontend development, Node.js and Express for backend APIs, Python for AI/ML and data work, and MongoDB for databases. I'm also experienced with authentication (JWT), real-time communication (Socket.IO), payment processing (Stripe, Cashfree), and AI integration (DeepSeek API).",
+      "answer": "I mainly work with React and JavaScript for frontend development, Node.js and Express for backend APIs, Python for AI/ML and data work, and MongoDB for databases. I'm also experienced with authentication (JWT), real-time communication (Socket.IO), and AI integration (DeepSeek API).",
       "category": "skills",
       "priority": "high"
     },
@@ -829,7 +828,7 @@
     },
     {
       "question": "What kind of projects have you built?",
-      "answer": "I've built full-stack applications including a dynamic portfolio platform with payments and chatbot integration, real-time chat applications with Socket.IO, service platforms with booking systems, hostel management systems, certificate verification platforms, and AI/computer vision prototypes in Python. Most of my projects are publicly available on GitHub.",
+      "answer": "I've built full-stack applications including a dynamic portfolio platform with chatbot integration, real-time chat applications with Socket.IO, service discovery platforms, hostel management systems, certificate verification platforms, and AI/computer vision prototypes in Python. Most of my projects are publicly available on GitHub.",
       "category": "projects",
       "priority": "high"
     },

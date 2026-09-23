@@ -85,8 +85,7 @@ const bookingSchema = new mongoose.Schema(
     paymentProvider: {
       type: String,
       trim: true,
-      enum: ["cashfree", "razorpay"],
-      default: "cashfree",
+      default: "",
     },
     paymentStatus: {
       type: String,

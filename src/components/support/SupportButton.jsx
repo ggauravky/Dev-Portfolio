@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
@@ -6,15 +6,12 @@ import useAuth from '../../hooks/useAuth'
 import { fetchSupportStatus, supportBlogPost } from '../../services/blogSupport'
 import { trackEvent } from '../../utils/analytics'
 
-const GoogleSignInModal = lazy(() => import('./GoogleSignInModal'))
-
 function SupportButton({ slug, title, content = '' }) {
-    const { isAuthenticated, isLoading, refreshSession } = useAuth()
+    const { isAuthenticated, isLoading, openAuthDialog } = useAuth()
     const [supportCount, setSupportCount] = useState(0)
     const [supported, setSupported] = useState(false)
     const [isFetching, setIsFetching] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isModalOpen, setIsModalOpen] = useState(false)
     const [pulseActive, setPulseActive] = useState(false)
 
     const normalizedSlug = useMemo(() => String(slug || '').trim().toLowerCase(), [slug])
@@ -92,15 +89,14 @@ function SupportButton({ slug, title, content = '' }) {
 
             const message = error?.message || 'Unable to support right now'
             if (/sign in|session/i.test(message)) {
-                toast.error('Please sign in first')
-                setIsModalOpen(true)
+                openAuthDialog({ reason: 'blog-support', onSuccess: runSupportRequest })
             } else {
                 toast.error(message)
             }
         } finally {
             setIsSubmitting(false)
         }
-    }, [normalizedSlug, title, content, isSubmitting, supported, supportCount])
+    }, [normalizedSlug, title, content, isSubmitting, supported, supportCount, openAuthDialog])
 
     const onSupportClick = async () => {
         if (isFetching || isSubmitting) {
@@ -114,22 +110,15 @@ function SupportButton({ slug, title, content = '' }) {
         })
 
         if (!isAuthenticated) {
-            setIsModalOpen(true)
+            openAuthDialog({ reason: 'blog-support', onSuccess: runSupportRequest })
             return
         }
 
         await runSupportRequest()
     }
 
-    const handleAuthenticated = async () => {
-        setIsModalOpen(false)
-        await refreshSession()
-        await runSupportRequest()
-    }
-
     return (
-        <>
-            <div className="rounded-2xl border border-slate-700/70 bg-slate-800/50 p-4 sm:p-5">
+        <div className="rounded-2xl border border-slate-700/70 bg-slate-800/50 p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Appreciation</p>
@@ -166,18 +155,7 @@ function SupportButton({ slug, title, content = '' }) {
                         ) : null}
                     </motion.button>
                 </div>
-            </div>
-
-            {isModalOpen ? (
-                <Suspense fallback={null}>
-                    <GoogleSignInModal
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        onAuthenticated={handleAuthenticated}
-                    />
-                </Suspense>
-            ) : null}
-        </>
+        </div>
     )
 }
 

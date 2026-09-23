@@ -184,11 +184,11 @@ const updates = [
         description: 'This release introduces a complete upgrade to the portfolio platform, including real-time payment handling, analytics tracking, and a refined user experience.',
         sections: [
             {
-                title: 'Payment System (Cashfree Integration)',
+                title: 'Legacy Payment System',
                 icon: 'credit-card',
                 tone: 'emerald',
                 items: [
-                    'Integrated secure payment gateway using Cashfree',
+                    'Integrated the former secure payment gateway',
                     'Support Jar and Service Purchase flows fully implemented',
                     'Webhook-based payment verification (backend-first confirmation)',
                     'Real-time payment status reconciliation',
@@ -197,7 +197,7 @@ const updates = [
                 ],
             },
             {
-                title: 'Receipt & PDF System',
+                title: 'Legacy Receipt & PDF System',
                 icon: 'file-text',
                 tone: 'blue',
                 items: [
@@ -271,7 +271,7 @@ const updates = [
                 tone: 'amber',
                 items: [
                     'Some analytics scripts may be blocked by browser extensions (expected behavior).',
-                    'Minor non-critical warnings may appear from third-party scripts (Cashfree / Google).',
+                    'Minor non-critical warnings may appear from third-party scripts.',
                 ],
             },
             {

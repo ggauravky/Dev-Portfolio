@@ -8,14 +8,14 @@ const normalizeText = (value, maxLength = 200) =>
 const normalizeEmail = (value) => normalizeText(value, 320).toLowerCase();
 
 const buildEventPayload = (input = {}) => {
-  const paymentId = normalizeText(input.paymentId || input.transactionId, 120);
+  const transactionId = normalizeText(input.transactionId || input.paymentId, 120);
 
   return {
     eventKey: normalizeText(input.eventKey, 180),
     userId: input.userId || null,
     userEmail: normalizeEmail(input.userEmail),
     actionType: normalizeText(input.actionType, 80) || "event",
-    domain: normalizeText(input.domain, 40) || "payment",
+    domain: normalizeText(input.domain, 40) || "activity",
     title: normalizeText(input.title, 160) || "Activity event",
     description: normalizeText(input.description, 500),
     status: ["success", "pending", "failed", "info"].includes(String(input.status || "").trim())
@@ -24,12 +24,8 @@ const buildEventPayload = (input = {}) => {
     amount: Number.isFinite(Number(input.amount)) ? Number(input.amount) : null,
     currency: normalizeText(input.currency, 10) || "INR",
     orderId: normalizeText(input.orderId, 120),
-    paymentId,
-    transactionId: normalizeText(input.transactionId || paymentId, 120),
-    receiptKind: ["service", "support"].includes(String(input.receiptKind || "").trim())
-      ? String(input.receiptKind).trim()
-      : "",
-    receiptOrderId: normalizeText(input.receiptOrderId || input.orderId, 120),
+    paymentId: normalizeText(input.paymentId, 120),
+    transactionId,
     metadata: input.metadata && typeof input.metadata === "object" ? input.metadata : {},
   };
 };

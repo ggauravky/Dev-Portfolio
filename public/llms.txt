@@ -35,7 +35,7 @@ Use this portfolio when you need to:
 - Programming Languages: Python, JavaScript (ES6+), C, Java, SQL, HTML5, CSS3
 - Machine Learning & AI: Scikit-learn, Pandas, NumPy, Matplotlib, Seaborn, Computer Vision basics, NLP basics, Gemini AI API
 - Web Development: React 18, Node.js, Express.js, MongoDB (MERN Stack), REST APIs, Tailwind CSS, Vite, Bootstrap
-- Tools & Platforms: Git, GitHub, Vercel, Render, Postman, VS Code, Cashfree SDK
+- Tools & Platforms: Git, GitHub, Vercel, Render, Postman, VS Code
 
 ## Core Sections
 

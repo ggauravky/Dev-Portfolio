@@ -1,258 +1,149 @@
-// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Unauthorized copying, modification, or distribution of this software,
-// via any medium, is strictly prohibited without the express written
-// consent of the author. See LICENSE for details.
-// Source: https://github.com/ggauravky/Dev-Portfolio
-
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
-const CASHFREE_SDK_SRC = 'https://sdk.cashfree.com/js/v3/cashfree.js'
+const RAZORPAY_SDK_URL = 'https://checkout.razorpay.com/v1/checkout.js'
 
-const assertResponse = async (response) => {
-    let data = null
+let razorpaySdkPromise = null
 
+const parseJsonSafe = async (response) => {
     try {
-        data = await response.json()
+        return await response.json()
     } catch {
-        data = null
+        return null
     }
+}
 
-    if (!response.ok || !data?.success) {
-        const error = new Error(data?.message || 'Payment request failed')
+const requestPaymentApi = async (endpoint, options = {}) => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        ...options,
+    })
+    const payload = await parseJsonSafe(response)
+    if (!response.ok || !payload?.success) {
+        const error = new Error(payload?.message || 'Payment request failed')
         error.status = response.status
-        error.payload = data
+        error.code = payload?.code || 'PAYMENT_REQUEST_FAILED'
+        error.payload = payload
         throw error
     }
-
-    return data
+    return payload.data || {}
 }
 
-export const createCashfreeOrder = async (payload) => {
-    const response = await fetch(`${API_URL}/api/payment/create-order`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    })
+export const createPaymentOrder = (booking) => requestPaymentApi('/api/payment/create-order', {
+    method: 'POST',
+    body: JSON.stringify(booking),
+})
 
-    const data = await assertResponse(response)
-    return data.data
-}
+export const createSupportPaymentOrder = (support) => requestPaymentApi('/api/payment/create-support-order', {
+    method: 'POST',
+    body: JSON.stringify(support),
+})
 
-export const verifyCashfreePayment = async (orderId, email) => {
-    const response = await fetch(`${API_URL}/api/payment/verify`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderId, email }),
-    })
+export const verifyPayment = (payload) => requestPaymentApi('/api/payment/verify', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+})
 
-    const data = await assertResponse(response)
-    return data.data
-}
+export const recordPaymentFailure = (payload) => requestPaymentApi('/api/payment/failure', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+})
 
-export const createSupportOrder = async (payload) => {
-    const response = await fetch(`${API_URL}/api/payment/create-support-order`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-    })
+export const fetchPaymentTransaction = (transactionId) =>
+    requestPaymentApi(`/api/payment/transaction/${encodeURIComponent(transactionId)}`, { method: 'GET' })
 
-    const data = await assertResponse(response)
-    return data.data
-}
-
-export const verifySupportPayment = async (orderId, email) => {
-    const response = await fetch(`${API_URL}/api/payment/verify-support`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ orderId, email }),
-    })
-
-    const data = await assertResponse(response)
-    return data.data
-}
-
-export const fetchMyBookings = async () => {
-    const response = await fetch(`${API_URL}/api/payment/my-bookings`, {
+export const fetchPaymentReceipt = async (transactionId) => {
+    const response = await fetch(`${API_URL}/api/payment/${encodeURIComponent(transactionId)}/receipt`, {
         method: 'GET',
         credentials: 'include',
     })
-
-    const data = await assertResponse(response)
-    return data.data
-}
-
-export const fetchMySupportPayments = async () => {
-    const response = await fetch(`${API_URL}/api/payment/my-support-payments`, {
-        method: 'GET',
-        credentials: 'include',
-    })
-
-    const data = await assertResponse(response)
-    return data.data
-}
-
-export const fetchPaymentStatus = async (orderId, email) => {
-    const normalizedEmail = String(email || '').trim()
-    const endpoint = `${API_URL}/api/payment/status/${encodeURIComponent(String(orderId || '').trim())}`
-    const statusUrl = normalizedEmail
-        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
-        : endpoint
-
-    const response = await fetch(statusUrl, {
-        method: 'GET',
-        credentials: 'include',
-    })
-
-    const data = await assertResponse(response)
-    return data.data
-}
-
-export const fetchTransactionStatus = async (transactionId) => {
-    const normalizedTransactionId = String(transactionId || '').trim()
-    const response = await fetch(
-        `${API_URL}/api/payment/transaction/${encodeURIComponent(normalizedTransactionId)}`,
-        {
-            method: 'GET',
-            credentials: 'include',
-        }
-    )
-
-    const data = await assertResponse(response)
-    return data.data
-}
-
-const assertBlobResponse = async (response, fallbackMessage = 'Unable to download receipt file') => {
     if (!response.ok) {
-        let data = null
-
-        try {
-            data = await response.json()
-        } catch {
-            data = null
-        }
-
-        const error = new Error(data?.message || fallbackMessage)
+        const payload = await parseJsonSafe(response)
+        const error = new Error(payload?.message || 'Unable to download receipt')
         error.status = response.status
-        error.payload = data
         throw error
     }
-
     return response.blob()
 }
 
-export const fetchServiceReceiptPdf = async (orderId, email) => {
-    const normalizedEmail = String(email || '').trim()
-    const endpoint = `${API_URL}/api/payment/receipt/service/${encodeURIComponent(String(orderId || '').trim())}`
-    const receiptUrl = normalizedEmail
-        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
-        : endpoint
+export const loadRazorpaySdk = () => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+        return Promise.reject(new Error('Razorpay Checkout requires a browser'))
+    }
+    if (window.Razorpay) return Promise.resolve(window.Razorpay)
+    if (razorpaySdkPromise) return razorpaySdkPromise
 
-    const response = await fetch(receiptUrl, {
-        method: 'GET',
-        credentials: 'include',
-    })
+    razorpaySdkPromise = new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[data-razorpay-checkout="true"]')
+        let timeoutId
+        const finish = (callback) => {
+            window.clearTimeout(timeoutId)
+            callback()
+        }
+        const handleLoad = () => finish(() => window.Razorpay
+            ? resolve(window.Razorpay)
+            : reject(new Error('Razorpay Checkout did not initialize')))
+        const handleError = () => {
+            window.clearTimeout(timeoutId)
+            document.querySelector('script[data-razorpay-checkout="true"]')?.remove()
+            reject(new Error('Unable to load Razorpay Checkout'))
+        }
 
-    return assertBlobResponse(response, 'Unable to download service confirmation PDF')
-}
+        timeoutId = window.setTimeout(() => {
+            document.querySelector('script[data-razorpay-checkout="true"]')?.remove()
+            reject(new Error('Razorpay Checkout took too long to load'))
+        }, 12000)
 
-export const fetchSupportReceiptPdf = async (orderId, email) => {
-    const normalizedEmail = String(email || '').trim()
-    const endpoint = `${API_URL}/api/payment/receipt/support/${encodeURIComponent(String(orderId || '').trim())}`
-    const receiptUrl = normalizedEmail
-        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
-        : endpoint
-
-    const response = await fetch(receiptUrl, {
-        method: 'GET',
-        credentials: 'include',
-    })
-
-    return assertBlobResponse(response, 'Unable to download support receipt PDF')
-}
-
-export const fetchServiceReceiptImage = async (orderId, email) => {
-    const normalizedEmail = String(email || '').trim()
-    const endpoint = `${API_URL}/api/payment/receipt-image/service/${encodeURIComponent(String(orderId || '').trim())}`
-    const receiptUrl = normalizedEmail
-        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
-        : endpoint
-
-    const response = await fetch(receiptUrl, {
-        method: 'GET',
-        credentials: 'include',
-    })
-
-    return assertBlobResponse(response, 'Unable to download service confirmation image')
-}
-
-export const fetchSupportReceiptImage = async (orderId, email) => {
-    const normalizedEmail = String(email || '').trim()
-    const endpoint = `${API_URL}/api/payment/receipt-image/support/${encodeURIComponent(String(orderId || '').trim())}`
-    const receiptUrl = normalizedEmail
-        ? `${endpoint}?email=${encodeURIComponent(normalizedEmail)}`
-        : endpoint
-
-    const response = await fetch(receiptUrl, {
-        method: 'GET',
-        credentials: 'include',
-    })
-
-    return assertBlobResponse(response, 'Unable to download support receipt image')
-}
-
-export const loadCashfreeSdk = () =>
-    new Promise((resolve, reject) => {
-        if (!globalThis.document) {
-            reject(new Error('Browser environment is required for payment checkout'))
+        if (existing) {
+            existing.addEventListener('load', handleLoad, { once: true })
+            existing.addEventListener('error', handleError, { once: true })
             return
         }
 
-        if (globalThis.Cashfree) {
-            resolve(globalThis.Cashfree)
-            return
-        }
-
-        const existingScript = globalThis.document.querySelector(`script[src="${CASHFREE_SDK_SRC}"]`)
-        if (existingScript) {
-            existingScript.addEventListener('load', () => resolve(globalThis.Cashfree))
-            existingScript.addEventListener('error', () => reject(new Error('Unable to load Cashfree checkout SDK')))
-            return
-        }
-
-        const script = globalThis.document.createElement('script')
-        script.src = CASHFREE_SDK_SRC
+        const script = document.createElement('script')
+        script.src = RAZORPAY_SDK_URL
         script.async = true
-        script.onload = () => {
-            if (globalThis.Cashfree) {
-                resolve(globalThis.Cashfree)
-            } else {
-                reject(new Error('Cashfree SDK loaded but not initialized'))
-            }
-        }
-        script.onerror = () => reject(new Error('Unable to load Cashfree checkout SDK'))
-        globalThis.document.body.appendChild(script)
+        script.dataset.razorpayCheckout = 'true'
+        script.addEventListener('load', handleLoad, { once: true })
+        script.addEventListener('error', handleError, { once: true })
+        document.head.appendChild(script)
+    }).catch((error) => {
+        razorpaySdkPromise = null
+        throw error
     })
 
-export const openCashfreeCheckout = async ({ paymentSessionId, environment }) => {
-    const Cashfree = await loadCashfreeSdk()
+    return razorpaySdkPromise
+}
 
-    const mode = String(environment || 'sandbox').toLowerCase() === 'production' ? 'production' : 'sandbox'
-    const cashfree = Cashfree({ mode })
+export const openRazorpayCheckout = async ({ order, onOpen }) => {
+    const RazorpayCheckout = await loadRazorpaySdk()
 
-    return cashfree.checkout({
-        paymentSessionId,
-        redirectTarget: '_modal',
-        components: ['order-details', 'card', 'upi', 'netbanking', 'app', 'paylater'],
+    return new Promise((resolve, reject) => {
+        let settled = false
+        const settle = (value) => {
+            if (settled) return
+            settled = true
+            resolve(value)
+        }
+
+        try {
+            const checkout = new RazorpayCheckout({
+                key: order.keyId,
+                amount: order.amountPaise,
+                currency: order.currency,
+                name: 'Gaurav Kumar Yadav',
+                description: order.flowType === 'support' ? "Support Gaurav's Work" : order.serviceName,
+                order_id: order.razorpayOrderId,
+                prefill: order.prefill,
+                theme: { color: '#9fc51d' },
+                handler: (response) => settle({ type: 'success', response }),
+                modal: { ondismiss: () => settle({ type: 'dismissed' }), escape: true },
+            })
+
+            checkout.on('payment.failed', (response) => settle({ type: 'failed', response: response?.error || {} }))
+            onOpen?.()
+            checkout.open()
+        } catch (error) {
+            reject(error)
+        }
     })
 }

@@ -10,7 +10,31 @@ import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 
-const getProfileInitial = (user) => String(user?.name || user?.email || 'U').slice(0, 1)
+const getProfileInitial = (user) => String(user?.name || user?.email || 'U').slice(0, 1).toUpperCase()
+
+function ProfileAvatar({ user, sizeClass }) {
+    const [imageFailed, setImageFailed] = useState(false)
+
+    useEffect(() => setImageFailed(false), [user?.picture])
+
+    if (user?.picture && !imageFailed) {
+        return (
+            <img
+                src={user.picture}
+                alt={user.name || 'User'}
+                className={`${sizeClass} rounded-full border border-obsidian-border object-cover shrink-0`}
+                referrerPolicy="no-referrer"
+                onError={() => setImageFailed(true)}
+            />
+        )
+    }
+
+    return (
+        <span className={`${sizeClass} inline-flex items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic shrink-0`}>
+            {getProfileInitial(user)}
+        </span>
+    )
+}
 
 const renderDesktopProfileMenu = ({
     user,
@@ -26,18 +50,7 @@ const renderDesktopProfileMenu = ({
             className="group inline-flex items-center justify-center h-9 gap-1.5 rounded-full border border-obsidian-border bg-obsidian-card px-2.5 sm:px-3 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors leading-none shrink-0"
             aria-label="Open profile menu"
         >
-            {user.picture ? (
-                <img
-                    src={user.picture}
-                    alt={user.name || 'User'}
-                    className="h-6 w-6 rounded-full border border-obsidian-border object-cover shrink-0"
-                    referrerPolicy="no-referrer"
-                />
-            ) : (
-                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic shrink-0">
-                    {getProfileInitial(user)}
-                </span>
-            )}
+            <ProfileAvatar user={user} sizeClass="h-6 w-6" />
             <svg className={`h-3.5 w-3.5 shrink-0 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
@@ -73,18 +86,7 @@ const renderDesktopProfileMenu = ({
 const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
     <div className="rounded-2xl border border-obsidian-border bg-obsidian-card p-3">
         <div className="flex items-center gap-3">
-            {user.picture ? (
-                <img
-                    src={user.picture}
-                    alt={user.name || 'User'}
-                    className="h-10 w-10 rounded-full border border-obsidian-border object-cover"
-                    referrerPolicy="no-referrer"
-                />
-            ) : (
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-sm font-bold uppercase text-toxic">
-                    {getProfileInitial(user)}
-                </span>
-            )}
+            <ProfileAvatar user={user} sizeClass="h-10 w-10" />
             <div className="min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{user.name || 'Google User'}</p>
                 <p className="text-xs text-zinc-500 truncate">{user.email}</p>
@@ -118,7 +120,7 @@ function Navbar({ navReady = true, logoRef }) {
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const profileMenuRef = useRef(null)
     const location = useLocation()
-    const { user, isAuthenticated, signOut } = useAuth()
+    const { user, isAuthenticated, openAuthDialog, signOut } = useAuth()
 
     const navLinks = useMemo(() => [
         { path: '/', name: 'Home', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg> },
@@ -319,6 +321,15 @@ function Navbar({ navReady = true, logoRef }) {
                             </a>
 
                             {/* User Profile Menu */}
+                            {!isAuthenticated ? (
+                                <button
+                                    type="button"
+                                    onClick={() => openAuthDialog({ reason: 'navbar' })}
+                                    className="hidden lg:inline-flex h-9 items-center justify-center rounded-full border border-toxic/45 bg-toxic/10 px-3.5 text-xs font-bold text-toxic transition-colors hover:bg-toxic hover:text-obsidian focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
+                                >
+                                    Sign In
+                                </button>
+                            ) : null}
                             {isAuthenticated && user
                                 ? renderDesktopProfileMenu({
                                     user,
@@ -413,6 +424,19 @@ function Navbar({ navReady = true, logoRef }) {
 
                 <div className="shrink-0 px-4 pt-4 pb-8 border-t border-obsidian-border space-y-3">
                     {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
+
+                    {!isAuthenticated ? (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                closeMenu()
+                                openAuthDialog({ reason: 'navbar' })
+                            }}
+                            className="flex w-full items-center justify-center rounded-full border border-toxic/45 bg-toxic/10 px-4 py-3 text-sm font-bold text-toxic transition-colors hover:bg-toxic hover:text-obsidian focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
+                        >
+                            Sign In with Google
+                        </button>
+                    ) : null}
 
                     <a
                         href="/resume.pdf"

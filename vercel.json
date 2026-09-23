@@ -74,10 +74,6 @@
             "destination": "/index.html"
         },
         {
-            "source": "/payment-under-construction",
-            "destination": "/index.html"
-        },
-        {
             "source": "/mentorship",
             "destination": "/index.html"
         },
@@ -368,7 +364,7 @@
                 },
                 {
                     "key": "Permissions-Policy",
-                    "value": "camera=(), microphone=(), geolocation=(), accelerometer=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\"), gyroscope=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\"), magnetometer=(self \"https://sdk.cashfree.com\" \"https://webapp-assets.cashfree.com\")"
+                    "value": "camera=(), microphone=(), geolocation=(), accelerometer=(), gyroscope=(), magnetometer=()"
                 },
                 {
                     "key": "Cross-Origin-Opener-Policy",

@@ -22,14 +22,13 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       unique: true,
       index: true,
-      immutable: true,
       match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
     displayName: {
       type: String,
       trim: true,
       default: "",
-      maxlength: 120,
+      maxlength: 80,
     },
     name: {
       type: String,
@@ -66,6 +65,49 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 2048,
+    },
+    avatarPublicId: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 500,
+      select: false,
+    },
+    bio: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 180,
+    },
+    location: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 80,
+    },
+    website: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 300,
+      validate: {
+        validator(value) {
+          if (!value) return true;
+          try {
+            const url = new URL(value);
+            return url.protocol === "http:" || url.protocol === "https:";
+          } catch {
+            return false;
+          }
+        },
+        message: "Website must be a valid http or https URL",
+      },
+    },
     lastLoginAt: {
       type: Date,
       default: Date.now,
@@ -98,6 +140,17 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: "",
       maxlength: 200,
+    },
+    lastLoginEmailEventId: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 80,
+    },
+    recentLoginEmailEventIds: {
+      type: [{ type: String, trim: true, maxlength: 80 }],
+      default: [],
+      select: false,
     },
   },
   {

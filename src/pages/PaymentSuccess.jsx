@@ -1,797 +1,148 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { CheckCircle2, Download, ReceiptText } from 'lucide-react'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
-import {
-    fetchTransactionStatus,
-    fetchServiceReceiptImage,
-    fetchServiceReceiptPdf,
-    fetchSupportReceiptImage,
-    fetchSupportReceiptPdf,
-} from '../services/payment'
-import { trackEvent, trackEventOnce } from '../utils/analytics'
+import { fetchPaymentReceipt, fetchPaymentTransaction } from '../services/payment'
+import { trackEvent } from '../utils/analytics'
 
-const normalizeFlow = (value) => (String(value || '').trim().toLowerCase() === 'support' ? 'support' : 'service')
-
-const getStorageKey = (flow) => `paymentSuccess:${flow}`
-const CALLBACK_BOARD_MIN_DURATION_MS = 1600
-const HYDRATION_BOARD_TIMEOUT_MS = 30000
-
-const getProcessingSteps = (flow) =>
-    flow === 'support'
-        ? ['Creating secure session', 'Verifying support payment', 'Preparing receipt and activity links']
-        : ['Creating secure session', 'Verifying booking payment', 'Preparing confirmation and receipt links']
-
-const getProcessingStepClassName = ({ isActive, isCompleted }) => {
-    if (isActive) {
-        return 'border-[#c5f82a] bg-[#c5f82a]/10 text-[#c5f82a]'
-    }
-
-    if (isCompleted) {
-        return 'border-[#c5f82a]/30 bg-[#c5f82a]/5 text-[#c5f82a]/80'
-    }
-
-    return 'border-[#1a1a22] bg-[#16161a] text-[#a1a1aa]'
+const formatDate = (value) => {
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return 'Not available'
+    return date.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-const getProcessingStepBadge = ({ isActive, isCompleted, index }) => {
-    if (isCompleted) {
-        return 'OK'
-    }
-
-    if (isActive) {
-        return '.'
-    }
-
-    return String(index + 1)
-}
-
-const buildActivityUrl = (details, effectiveFlow) => {
-    if (!details?.orderId) {
-        return '/my-activity'
-    }
-
-    const activityParams = new URLSearchParams({
-        source: 'payment',
-        status: 'success',
-        flow: effectiveFlow,
-        tab: 'payments',
-        orderId: String(details.orderId || '').trim(),
-    })
-
-    const paymentId = String(details.paymentId || '').trim()
-    if (paymentId) {
-        activityParams.set('paymentId', paymentId)
-    }
-
-    return `/my-activity?${activityParams.toString()}`
-}
-
-function ProcessingBoard({
-    effectiveFlow,
-    isHydrationBoardVisible,
-    processingStepIndex,
-    processingSteps,
-}) {
-    const heading =
-        effectiveFlow === 'support'
-            ? 'Finalizing your support confirmation'
-            : 'Finalizing your booking confirmation'
-
-    const subtitle = isHydrationBoardVisible
-        ? 'Fetching your latest verified transaction details from server.'
-        : 'Preparing your confirmation screen with receipt actions.'
-
-    const progressWidth = `${((processingStepIndex + 1) / processingSteps.length) * 100}%`
-
-    return (
-        <div className="fixed inset-0 z-40 bg-[#070708]/80 backdrop-blur-sm px-4 py-6">
-            <div className="mx-auto flex min-h-full max-w-xl items-center justify-center">
-                <div className="w-full overflow-hidden rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8 shadow-2xl">
-                    <div className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
-                        Processing Payment
-                    </div>
-                    <h2 className="mt-4 text-2xl sm:text-3xl font-display font-bold text-white">{heading}</h2>
-                    <p className="mt-2 text-sm text-[#a1a1aa] leading-relaxed">{subtitle}</p>
-
-                    <div className="mt-5 h-2 w-full rounded-full bg-[#16161a]">
-                        <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#ff5d00] to-[#c5f82a] transition-all duration-700"
-                            style={{ width: progressWidth }}
-                        />
-                    </div>
-
-                    <ul className="mt-5 space-y-2.5">
-                        {processingSteps.map((step, index) => {
-                            const isActive = index === processingStepIndex
-                            const isCompleted = index < processingStepIndex
-                            const stepClassName = getProcessingStepClassName({
-                                isActive,
-                                isCompleted,
-                            })
-                            const stepBadge = getProcessingStepBadge({
-                                isActive,
-                                isCompleted,
-                                index,
-                            })
-
-                            return (
-                                <li
-                                    key={step}
-                                    className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-mono uppercase tracking-wider transition-colors ${stepClassName}`}
-                                >
-                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-current text-[10px] font-bold">
-                                        {stepBadge}
-                                    </span>
-                                    <span>{step}</span>
-                                </li>
-                            )
-                        })}
-                    </ul>
-
-                    <p className="mt-4.5 text-[10px] font-mono uppercase tracking-wider text-[#a1a1aa]/50">
-                        Please keep this page open while we finish the final confirmation checks.
-                    </p>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-ProcessingBoard.propTypes = {
-    effectiveFlow: PropTypes.string.isRequired,
-    isHydrationBoardVisible: PropTypes.bool.isRequired,
-    processingStepIndex: PropTypes.number.isRequired,
-    processingSteps: PropTypes.arrayOf(PropTypes.string).isRequired,
-}
-
-const saveBlobAsFile = (blob, filename) => {
-    const url = URL.createObjectURL(blob)
-    const link = globalThis.document.createElement('a')
-    link.href = url
-    link.download = filename
-    globalThis.document.body.appendChild(link)
-    link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
-}
-
-const downloadBlob = (content, filename, mimeType) => {
-    const blob = new Blob([content], { type: mimeType })
-    saveBlobAsFile(blob, filename)
-}
-
-const formatDateForDisplay = (dateString) => {
-    const value = new Date(dateString)
-    if (Number.isNaN(value.getTime())) {
-        return String(dateString || 'Not available')
-    }
-
-    return value.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-    })
-}
-
-const escapeHtml = (value) =>
-    String(value || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;')
-
-// eslint-disable-next-line sonarjs/cognitive-complexity
 function PaymentSuccess() {
-    const navigate = useNavigate()
-    const location = useLocation()
-    const { transactionId: routeTransactionId } = useParams()
-    const { isAuthenticated, isLoading, user } = useAuth()
-    const [params] = useSearchParams()
-    const flow = normalizeFlow(params.get('flow') || location.state?.flow)
-    const checkoutOrigin = String(location.state?.checkoutOrigin || '').trim().toLowerCase()
+    const { transactionId = '' } = useParams()
+    const { isAuthenticated, isLoading } = useAuth()
+    const [transaction, setTransaction] = useState(null)
+    const [pageError, setPageError] = useState('')
+    const [isFetching, setIsFetching] = useState(true)
+    const [isDownloading, setIsDownloading] = useState(false)
+    const isSupport = transaction?.flowType === 'support'
 
     useSEO({
-        title: flow === 'support' ? 'Support Payment Success | Gaurav Kumar Yadav' : 'Booking Payment Success | Gaurav Kumar Yadav',
-        description: 'Payment verified successfully. Download your confirmation files and check your email for updates.',
-        keywords: 'payment success, receipt download, confirmation',
+        title: `${isSupport ? 'Support ' : ''}Payment Status | Gaurav Kumar Yadav`,
+        description: isSupport
+            ? 'View an authenticated support payment status and download its receipt.'
+            : 'View an authenticated booking payment status and download its receipt.',
+        keywords: `payment status, ${isSupport ? 'support' : 'booking'} receipt, Razorpay payment`,
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
 
-    const [details, setDetails] = useState(() => {
-        const stateDetails = location.state?.details
-        if (stateDetails && typeof stateDetails === 'object') {
-            return stateDetails
-        }
-
-        try {
-            const raw = sessionStorage.getItem(getStorageKey(flow))
-            return raw ? JSON.parse(raw) : null
-        } catch {
-            return null
-        }
-    })
-
-    const [isDownloadingReceipt, setIsDownloadingReceipt] = useState(false)
-    const [isHydratingDetails, setIsHydratingDetails] = useState(false)
-    const [detailsLoadError, setDetailsLoadError] = useState('')
-    const [receiptDownloadError, setReceiptDownloadError] = useState('')
-    const [isCallbackBoardVisible, setIsCallbackBoardVisible] = useState(false)
-    const [isHydrationTimedOut, setIsHydrationTimedOut] = useState(false)
-    const [processingStepIndex, setProcessingStepIndex] = useState(0)
-    const autoDownloadKeyRef = useRef('')
-    const callbackBoardTimerRef = useRef(null)
-    const hydrationBoardTimerRef = useRef(null)
-    const stepIntervalRef = useRef(null)
-    const callbackBoardKeyRef = useRef('')
-    const trackedSuccessEventKeyRef = useRef('')
-    const effectiveFlow = normalizeFlow(details?.type || flow)
-    const processingSteps = useMemo(() => getProcessingSteps(effectiveFlow), [effectiveFlow])
-    const isHydrationBoardVisible = isHydratingDetails && isAuthenticated && !detailsLoadError && !isHydrationTimedOut
-    const isProcessingBoardVisible = isCallbackBoardVisible || isHydrationBoardVisible
-
-    useEffect(
-        () => () => {
-            clearTimeout(callbackBoardTimerRef.current)
-            callbackBoardTimerRef.current = null
-
-            clearTimeout(hydrationBoardTimerRef.current)
-            hydrationBoardTimerRef.current = null
-
-            clearInterval(stepIntervalRef.current)
-            stepIntervalRef.current = null
-        },
-        []
-    )
-
     useEffect(() => {
-        const callbackKey = `${flow}:${routeTransactionId || location.key || 'payment-success'}`
-        if (checkoutOrigin !== 'callback-success' || callbackBoardKeyRef.current === callbackKey) {
+        if (isLoading) return
+        if (!isAuthenticated) {
+            setPageError('Please sign in with the account used for this payment.')
+            setIsFetching(false)
             return
         }
 
-        callbackBoardKeyRef.current = callbackKey
-        setIsCallbackBoardVisible(true)
-        clearTimeout(callbackBoardTimerRef.current)
-
-        callbackBoardTimerRef.current = setTimeout(() => {
-            setIsCallbackBoardVisible(false)
-            callbackBoardTimerRef.current = null
-        }, CALLBACK_BOARD_MIN_DURATION_MS)
-    }, [checkoutOrigin, flow, location.key, routeTransactionId])
-
-    useEffect(() => {
-        if (!isHydrationBoardVisible) {
-            clearTimeout(hydrationBoardTimerRef.current)
-            hydrationBoardTimerRef.current = null
-            setIsHydrationTimedOut(false)
-            return
-        }
-
-        clearTimeout(hydrationBoardTimerRef.current)
-
-        hydrationBoardTimerRef.current = setTimeout(() => {
-            setIsHydrationTimedOut(true)
-            setDetailsLoadError((previous) =>
-                previous || 'Loading is taking longer than expected. Please refresh this page.'
-            )
-            setIsHydratingDetails(false)
-        }, HYDRATION_BOARD_TIMEOUT_MS)
-
-        return () => {
-            clearTimeout(hydrationBoardTimerRef.current)
-            hydrationBoardTimerRef.current = null
-        }
-    }, [isHydrationBoardVisible])
-
-    useEffect(() => {
-        if (!isProcessingBoardVisible) {
-            setProcessingStepIndex(0)
-            clearInterval(stepIntervalRef.current)
-            stepIntervalRef.current = null
-            return
-        }
-
-        clearInterval(stepIntervalRef.current)
-
-        stepIntervalRef.current = setInterval(() => {
-            setProcessingStepIndex((previous) => (previous + 1) % processingSteps.length)
-        }, 1200)
-
-        return () => {
-            clearInterval(stepIntervalRef.current)
-            stepIntervalRef.current = null
-        }
-    }, [isProcessingBoardVisible, processingSteps.length])
-
-    useEffect(() => {
-        const stateDetails = location.state?.details
-        if (stateDetails && typeof stateDetails === 'object') {
-            setDetails(stateDetails)
-            sessionStorage.setItem(getStorageKey(flow), JSON.stringify(stateDetails))
-            return
-        }
-
-        try {
-            const raw = sessionStorage.getItem(getStorageKey(flow))
-            setDetails(raw ? JSON.parse(raw) : null)
-        } catch {
-            setDetails(null)
-        }
-    }, [flow, location.state])
-
-    useEffect(() => {
-        if (!routeTransactionId || isLoading) {
-            return
-        }
-
-        if (!isAuthenticated || !user?.email) {
-            setDetailsLoadError('Please sign in with your payment account to view this transaction.')
-            return
-        }
-
-        let isCancelled = false
-
-        const hydrateDetails = async () => {
-            setIsHydrationTimedOut(false)
-            setIsHydratingDetails(true)
-            setDetailsLoadError('')
-
-            try {
-                const transaction = await fetchTransactionStatus(routeTransactionId)
-                if (isCancelled || !transaction) {
-                    return
+        let cancelled = false
+        setIsFetching(true)
+        fetchPaymentTransaction(transactionId)
+            .then((data) => {
+                if (cancelled) return
+                setTransaction(data)
+                setPageError('')
+                if (data.status === 'paid') {
+                    void trackEvent('payment_success', { transaction_id: data.transactionId, service_slug: data.serviceSlug, flow_type: data.flowType })
                 }
-
-                const transactionFlow = normalizeFlow(transaction.type || flow)
-
-                setDetails((previous) => {
-                    const mergedDetails = {
-                        ...previous,
-                        ...transaction,
-                        type: transactionFlow,
-                        flow: transactionFlow,
-                        orderId: String(transaction.orderId || previous?.orderId || '').trim(),
-                        paymentId: String(
-                            transaction.paymentId ||
-                            transaction.transactionId ||
-                            previous?.paymentId ||
-                            routeTransactionId
-                        ).trim(),
-                        email: String(transaction.email || previous?.email || user.email || '').trim(),
-                    }
-
-                    sessionStorage.setItem(getStorageKey(transactionFlow), JSON.stringify(mergedDetails))
-                    return mergedDetails
-                })
-            } catch (error) {
-                if (isCancelled) {
-                    return
-                }
-
-                const message = String(error?.message || 'Unable to load payment details right now.')
-                setDetailsLoadError(message)
-            } finally {
-                if (!isCancelled) {
-                    setIsHydratingDetails(false)
-                }
-            }
-        }
-
-        void hydrateDetails()
-
-        return () => {
-            isCancelled = true
-        }
-    }, [flow, isAuthenticated, isLoading, routeTransactionId, user?.email])
-
-    const activityUrl = useMemo(() => buildActivityUrl(details, effectiveFlow), [details, effectiveFlow])
-
-    const downloadReceiptImage = async (options = {}) => {
-        const { silent = false, auto = false } = options
-
-        if (!details?.orderId || !details?.email) {
-            if (!silent) {
-                toast.error('Receipt details are incomplete for image download')
-            }
-            return false
-        }
-
-        setIsDownloadingReceipt(true)
-
-        try {
-            const blob = effectiveFlow === 'support'
-                ? await fetchSupportReceiptImage(details.orderId, details.email)
-                : await fetchServiceReceiptImage(details.orderId, details.email)
-
-            const filenamePrefix = effectiveFlow === 'support' ? 'support-receipt' : 'service-confirmation'
-            saveBlobAsFile(blob, `${filenamePrefix}-${details.orderId}.svg`)
-
-            setReceiptDownloadError(
-                auto
-                    ? 'PDF was unavailable, so an image backup receipt was downloaded instead.'
-                    : ''
-            )
-
-            void trackEvent('receipt_download', {
-                flow: effectiveFlow,
-                format: 'image',
-                order_id: String(details.orderId || '').trim(),
-                auto,
             })
+            .catch((error) => {
+                if (!cancelled) setPageError(error?.message || 'Unable to load this payment')
+            })
+            .finally(() => {
+                if (!cancelled) setIsFetching(false)
+            })
+        return () => { cancelled = true }
+    }, [isAuthenticated, isLoading, transactionId])
 
-            if (!silent) {
-                toast.success('Receipt image downloaded')
-            }
-            return true
+    const downloadReceipt = async () => {
+        if (!transaction?.transactionId || isDownloading) return
+        setIsDownloading(true)
+        try {
+            const blob = await fetchPaymentReceipt(transaction.transactionId)
+            const url = URL.createObjectURL(blob)
+            const anchor = document.createElement('a')
+            anchor.href = url
+            anchor.download = `payment-receipt-${transaction.receiptNumber}.pdf`
+            document.body.appendChild(anchor)
+            anchor.click()
+            anchor.remove()
+            URL.revokeObjectURL(url)
+            void trackEvent('receipt_downloaded', { transaction_id: transaction.transactionId })
+            toast.success('Receipt downloaded')
         } catch (error) {
-            const message = String(error?.message || 'Unable to download receipt image')
-            if (!auto) {
-                setReceiptDownloadError(message)
-            }
-
-            if (!silent) {
-                toast.error(message)
-            }
-            return false
+            toast.error(error?.message || 'Unable to download receipt')
         } finally {
-            setIsDownloadingReceipt(false)
+            setIsDownloading(false)
         }
     }
 
-    const handlePdfDownloadFailure = async ({ error, auto, silent }) => {
-        if (auto) {
-            const downloadedFallback = await downloadReceiptImage({ silent: true, auto: true })
-            if (downloadedFallback) {
-                return true
-            }
-        }
-
-        const message = String(error?.message || 'Unable to download receipt PDF')
-        setReceiptDownloadError(
-            auto
-                ? 'Automatic PDF download was blocked. Use the image backup receipt button below.'
-                : message
-        )
-
-        if (!silent) {
-            toast.error(message)
-        }
-
-        return false
+    if (isLoading || isFetching) {
+        return <div className="min-h-screen bg-obsidian flex items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-2 border-toxic border-t-transparent" /></div>
     }
 
-    const downloadReceiptPdf = async (options = {}) => {
-        const { silent = false, auto = false } = options
-
-        if (!details?.orderId || !details?.email) {
-            if (!silent) {
-                toast.error('Receipt details are incomplete for PDF download')
-            }
-            return false
-        }
-
-        setIsDownloadingReceipt(true)
-
-        try {
-            const blob = effectiveFlow === 'support'
-                ? await fetchSupportReceiptPdf(details.orderId, details.email)
-                : await fetchServiceReceiptPdf(details.orderId, details.email)
-
-            const filenamePrefix = effectiveFlow === 'support' ? 'support-receipt' : 'service-confirmation'
-            saveBlobAsFile(blob, `${filenamePrefix}-${details.orderId}.pdf`)
-            setReceiptDownloadError('')
-
-            void trackEvent('receipt_download', {
-                flow: effectiveFlow,
-                format: 'pdf',
-                order_id: String(details.orderId || '').trim(),
-                auto,
-            })
-
-            if (!silent) {
-                toast.success('Receipt PDF downloaded')
-            }
-            return true
-        } catch (error) {
-            return handlePdfDownloadFailure({ error, auto, silent })
-        } finally {
-            setIsDownloadingReceipt(false)
-        }
-    }
-
-    const downloadInvitationCard = () => {
-        const safeName = escapeHtml(details.name)
-        const safeService = escapeHtml(details.service)
-        const safeDate = escapeHtml(formatDateForDisplay(details.preferredDate))
-        const safeTime = escapeHtml(details.preferredTime)
-        const safeAmount = escapeHtml(details.amount)
-        const safeOrderId = escapeHtml(details.orderId)
-        const safePaymentId = escapeHtml(details.paymentId)
-        const safeEmail = escapeHtml(details.email)
-        const safeBrief = escapeHtml(details.projectBrief || 'Not provided')
-
-        const html = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Booking Invitation</title>
-    <style>
-      body { font-family: Arial, sans-serif; background:#0f172a; color:#e2e8f0; padding:20px; }
-      .card { max-width:620px; margin:0 auto; border:1px solid #334155; border-radius:16px; padding:24px; background:#111827; }
-      h1 { color:#22d3ee; margin:0 0 10px 0; }
-      p { margin:8px 0; line-height:1.5; }
-      .meta { color:#94a3b8; font-size:14px; }
-      .tag { display:inline-block; padding:6px 12px; border-radius:999px; background:#0f2740; color:#7dd3fc; border:1px solid #164e63; font-size:12px; margin-bottom:16px; }
-    </style>
-  </head>
-  <body>
-    <div class="card">
-      <div class="tag">Booking Confirmed</div>
-      <h1>${safeService}</h1>
-      <p>Hi ${safeName}, your booking request has been confirmed successfully.</p>
-      <p><strong>Date:</strong> ${safeDate}</p>
-      <p><strong>Time:</strong> ${safeTime}</p>
-      <p><strong>Amount Paid:</strong> INR ${safeAmount}</p>
-      <p><strong>Order ID:</strong> ${safeOrderId}</p>
-      <p><strong>Payment ID:</strong> ${safePaymentId}</p>
-      <p><strong>Email:</strong> ${safeEmail}</p>
-      <p class="meta">Project Brief: ${safeBrief}</p>
-      <p class="meta">Thanks for booking with Gaurav Kumar Yadav.</p>
-    </div>
-  </body>
-</html>`
-
-        downloadBlob(html, `booking-invitation-${details.orderId}.html`, 'text/html;charset=utf-8')
-        toast.success('Invitation pass downloaded')
-    }
-
-    const downloadCalendarInvite = () => {
-        const preferredDate = String(details?.preferredDate || '').trim() || new Date().toISOString().slice(0, 10)
-        const preferredTime = String(details?.preferredTime || '').trim() || '10:00'
-        const orderId = String(details?.orderId || details?.paymentId || 'booking').trim()
-        const paymentId = String(details?.paymentId || orderId).trim()
-        const service = String(details?.service || 'Service Session').trim()
-
-        const [hours, minutes] = preferredTime.split(':').map((value) => Number.parseInt(value, 10) || 0)
-        const start = new Date(preferredDate)
-        start.setHours(hours, minutes, 0, 0)
-        const end = new Date(start.getTime() + 60 * 60 * 1000)
-
-        const toUtc = (value) =>
-            value
-                .toISOString()
-                .replaceAll('-', '')
-                .replaceAll(':', '')
-                .replaceAll('.000', '')
-
-        const ics = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//Gaurav Kumar Yadav//Service Booking//EN',
-            'BEGIN:VEVENT',
-            `UID:${orderId}@ggauravky.vercel.app`,
-            `DTSTAMP:${toUtc(new Date())}`,
-            `DTSTART:${toUtc(start)}`,
-            `DTEND:${toUtc(end)}`,
-            `SUMMARY:${service} - Booking Session`,
-            `DESCRIPTION:Booking ID ${orderId} | Payment ID ${paymentId}`,
-            'END:VEVENT',
-            'END:VCALENDAR',
-        ].join('\r\n')
-
-        downloadBlob(ics, `booking-calendar-${orderId}.ics`, 'text/calendar;charset=utf-8')
-        toast.success('Calendar file downloaded')
-    }
-
-    useEffect(() => {
-        if (!details?.orderId) {
-            return
-        }
-
-        const autoDownloadKey = `${effectiveFlow}:${details.orderId}`
-        if (autoDownloadKeyRef.current === autoDownloadKey) {
-            return
-        }
-
-        autoDownloadKeyRef.current = autoDownloadKey
-        void downloadReceiptPdf({ silent: true, auto: true })
-    }, [details, effectiveFlow])
-
-    useEffect(() => {
-        const orderId = String(details?.orderId || '').trim()
-        if (!orderId) {
-            return
-        }
-
-        const paymentId = String(details?.paymentId || '').trim()
-        const eventKey = `${effectiveFlow}:${orderId}:${paymentId || 'missing-payment-id'}`
-        if (trackedSuccessEventKeyRef.current === eventKey) {
-            return
-        }
-
-        trackedSuccessEventKeyRef.current = eventKey
-
-        const amountValue = Number(details?.amount)
-        const baseEventData = {
-            flow: effectiveFlow,
-            order_id: orderId,
-            payment_id: paymentId,
-        }
-
-        if (Number.isFinite(amountValue) && amountValue > 0) {
-            baseEventData.amount = amountValue
-        }
-
-        void trackEventOnce({
-            eventName: 'payment_success',
-            eventData: baseEventData,
-            eventKey: `payment_success:${eventKey}`,
-        })
-
-        if (effectiveFlow === 'support') {
-            void trackEventOnce({
-                eventName: 'support_jar_conversion',
-                eventData: baseEventData,
-                eventKey: `support_jar_conversion:${eventKey}`,
-            })
-            return
-        }
-
-        void trackEventOnce({
-            eventName: 'service_purchase_conversion',
-            eventData: {
-                ...baseEventData,
-                service: String(details?.service || '').trim(),
-            },
-            eventKey: `service_purchase_conversion:${eventKey}`,
-        })
-    }, [details?.amount, details?.orderId, details?.paymentId, details?.service, effectiveFlow])
-
-    return (
-        <div className="min-h-screen bg-[#070708] relative overflow-hidden">
-            <div className="absolute -top-20 right-0 h-72 w-72 rounded-full bg-[#ff5d00]/5 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 left-0 h-80 w-80 rounded-full bg-[#c5f82a]/5 blur-3xl pointer-events-none" />
-
-            {isProcessingBoardVisible ? (
-                <ProcessingBoard
-                    effectiveFlow={effectiveFlow}
-                    isHydrationBoardVisible={isHydrationBoardVisible}
-                    processingStepIndex={processingStepIndex}
-                    processingSteps={processingSteps}
-                />
-            ) : null}
-
-            <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18">
-                <div className="mb-6 flex items-center justify-between gap-3">
-                    <button
-                        type="button"
-                        onClick={() => navigate(effectiveFlow === 'support' ? '/support' : '/booknow')}
-                        className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa] hover:text-[#c5f82a] transition-colors"
-                    >
-                        <span>{'<-'}</span>
-                        <span>Back</span>
-                    </button>
-                    <span className="inline-flex items-center rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-wider text-[#c5f82a]">
-                        Payment Successful
-                    </span>
-                </div>
-
-                <div className="rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8">
-                    <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">
-                        {effectiveFlow === 'support' ? 'Support Payment Confirmed' : 'Booking Payment Confirmed'}
-                    </h1>
-                    <p className="mt-2 text-[#a1a1aa] text-sm leading-relaxed">
-                        Payment is verified successfully. Thank you, and check your mail for updates.
-                    </p>
-                    <p className="mt-2 text-xs font-mono uppercase tracking-wider text-[#a1a1aa]/50">
-                        This page is your next step: download your receipt files and open My Activity if you need history.
-                    </p>
-
-                    {isHydratingDetails ? (
-                        <div className="mt-4 rounded-md border border-[#c5f82a]/20 bg-[#c5f82a]/5 px-3 py-2 text-xs font-mono uppercase text-[#c5f82a]">
-                            Loading latest payment details from server...
-                        </div>
-                    ) : null}
-
-                    {detailsLoadError ? (
-                        <div className="mt-4 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
-                            {detailsLoadError}
-                        </div>
-                    ) : null}
-
-                    {details ? (
-                        <>
-                            <div className="mt-5 rounded-md border border-[#1a1a22] bg-[#16161a] p-4 text-xs font-mono text-[#a1a1aa] space-y-1.5 leading-relaxed">
-                                <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Order ID:</span> {details.orderId}</p>
-                                <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Payment ID:</span> {details.paymentId || 'Not available'}</p>
-                                {effectiveFlow === 'support' ? (
-                                    <>
-                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Name:</span> {details.contributorName || details.contributor || 'Supporter'}</p>
-                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Amount:</span> INR {details.amount}</p>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Service:</span> {details.service}</p>
-                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Session Date:</span> {formatDateForDisplay(details.preferredDate)}</p>
-                                        <p><span className="text-[#a1a1aa]/50 uppercase tracking-wider">Session Time:</span> {details.preferredTime}</p>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                                <button
-                                    type="button"
-                                    disabled={isDownloadingReceipt}
-                                    onClick={() => {
-                                        void downloadReceiptPdf({ silent: false, auto: false })
-                                    }}
-                                    className="rounded-md bg-[#c5f82a] text-[#070708] border-none shadow-[2px_2px_0px_0px_rgba(197,248,42,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-3"
-                                >
-                                    {isDownloadingReceipt ? 'Downloading PDF...' : 'Download Receipt PDF'}
-                                </button>
-                                <button
-                                    type="button"
-                                    disabled={isDownloadingReceipt}
-                                    onClick={() => {
-                                        void downloadReceiptImage({ silent: false, auto: false })
-                                    }}
-                                    className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#c5f82a] hover:text-[#c5f82a] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
-                                >
-                                    {isDownloadingReceipt ? 'Downloading Image...' : 'Download Image Backup Receipt'}
-                                </button>
-                            </div>
-
-                            {effectiveFlow === 'service' ? (
-                                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                    <button
-                                        type="button"
-                                        onClick={downloadInvitationCard}
-                                        className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
-                                    >
-                                        Download Invitation Pass
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={downloadCalendarInvite}
-                                        className="rounded-md border border-[#1a1a22] text-[#a1a1aa] hover:border-[#ff5d00] hover:text-[#ff5d00] font-mono text-xs uppercase px-4 py-3 transition-all duration-200"
-                                    >
-                                        Download Calendar File
-                                    </button>
-                                </div>
-                            ) : null}
-
-                            {receiptDownloadError ? (
-                                <div className="mt-3 rounded-md border border-amber-500/35 bg-amber-500/5 px-3 py-2 text-xs font-mono uppercase text-amber-300">
-                                    {receiptDownloadError}
-                                </div>
-                            ) : null}
-                        </>
-                    ) : (
-                        <div className="mt-6 rounded-md border border-amber-500/35 bg-amber-500/5 px-4 py-3 text-xs font-mono uppercase text-amber-300">
-                            Payment details are not available right now. Please open My Activity to view your latest transaction.
-                        </div>
-                    )}
-
-                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                        <Link
-                            to={activityUrl}
-                            className="inline-flex justify-center rounded-md border border-[#1a1a22] bg-transparent text-[#a1a1aa] hover:text-[#c5f82a] hover:border-[#c5f82a]/30 transition-all px-4 py-3 text-xs font-mono uppercase"
-                        >
-                            Open My Activity
-                        </Link>
-                        <Link
-                            to="/services"
-                            className="inline-flex justify-center rounded-md bg-[#ff5d00] text-white border-none shadow-[2px_2px_0px_0px_rgba(255,93,0,0.3)] hover:shadow-none hover:translate-y-[2px] transition-all duration-200 font-mono text-xs uppercase font-bold px-4 py-3"
-                        >
-                            Explore Services
-                        </Link>
-                    </div>
+    if (pageError || !transaction) {
+        return (
+            <div className="min-h-screen bg-obsidian px-4 py-16 flex items-center justify-center">
+                <div className="w-full max-w-xl rounded-lg border border-obsidian-border bg-obsidian-card p-8 text-center">
+                    <h1 className="text-3xl font-display font-bold text-white">Payment Details Unavailable</h1>
+                    <p className="mt-3 text-sm text-zinc-400">{pageError || 'This transaction could not be found.'}</p>
+                    <Link to="/services" className="mt-6 inline-flex rounded-md bg-toxic px-5 py-3 text-xs font-mono font-bold uppercase text-obsidian">Back to Services</Link>
                 </div>
             </div>
+        )
+    }
+
+    const isPaid = transaction.status === 'paid'
+    const isFailed = transaction.status === 'failed'
+
+    return (
+        <div className="min-h-screen bg-obsidian relative overflow-hidden">
+            <div className="absolute -top-24 right-0 h-80 w-80 rounded-full bg-toxic/5 blur-3xl" />
+            <main className="relative z-10 mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
+                <Link to={isSupport ? '/' : '/services'} className="text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-toxic">&larr; {isSupport ? 'Back Home' : 'Back to Services'}</Link>
+                <section className="mt-7 rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-9">
+                    <div className={`inline-flex h-14 w-14 items-center justify-center rounded-full border ${isPaid ? 'border-toxic/40 bg-toxic/10 text-toxic' : isFailed ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-amber-500/40 bg-amber-500/10 text-amber-300'}`}>
+                        {isPaid ? <CheckCircle2 className="h-7 w-7" /> : <ReceiptText className="h-7 w-7" />}
+                    </div>
+                    <p className="mt-5 text-[10px] font-mono uppercase tracking-widest text-toxic">Server-Verified Payment</p>
+                    <h1 className="mt-2 text-3xl font-display font-bold text-white sm:text-4xl">{isPaid ? 'Payment Successful' : isFailed ? 'Payment Failed' : 'Payment Pending'}</h1>
+                    <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
+                        {isPaid
+                            ? isSupport
+                                ? transaction.receiptEmailSent
+                                    ? `Thank you for your support. A receipt has been sent to ${transaction.email}.`
+                                    : 'Thank you for your support. The receipt is ready to download below; email delivery may still be pending.'
+                                : transaction.receiptEmailSent
+                                    ? `Your booking is confirmed. A receipt has been sent to ${transaction.email}.`
+                                    : 'Your booking is confirmed. The receipt is ready to download below; email delivery may still be pending.'
+                            : isFailed
+                                ? isSupport
+                                    ? 'This support payment was not confirmed. You can return home or try again from the support page.'
+                                    : 'This booking was not confirmed. You can return to services and start a fresh checkout.'
+                                : 'Razorpay has not confirmed a captured payment yet. Check My Activity shortly.'}
+                    </p>
+
+                    <div className="mt-7 grid gap-3 rounded-md border border-obsidian-border bg-obsidian p-5 text-sm sm:grid-cols-2">
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">{isSupport ? 'Type' : 'Service'}</span><span className="text-white">{isSupport ? 'Support Contribution' : transaction.serviceName}</span></p>
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Amount</span><span className="text-white">INR {Number(transaction.amount).toLocaleString('en-IN')}</span></p>
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Receipt</span><span className="break-all text-white">{transaction.receiptNumber || 'Pending'}</span></p>
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Payment ID</span><span className="break-all text-white">{transaction.razorpayPaymentId || 'Pending'}</span></p>
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Date</span><span className="text-white">{formatDate(transaction.paidAt || transaction.createdAt)}</span></p>
+                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Provider</span><span className="text-white">Razorpay</span></p>
+                    </div>
+
+                    <div className="mt-7 flex flex-wrap gap-3">
+                        {isPaid ? <button type="button" onClick={downloadReceipt} disabled={isDownloading} className="inline-flex items-center gap-2 rounded-md bg-toxic px-5 py-3 text-xs font-mono font-bold uppercase text-obsidian disabled:opacity-60"><Download className="h-4 w-4" />{isDownloading ? 'Preparing...' : 'Download Receipt'}</button> : null}
+                        <Link to="/my-activity?tab=payments" className="rounded-md border border-obsidian-border px-5 py-3 text-xs font-mono font-bold uppercase text-white hover:border-toxic/40 hover:text-toxic">View My Activity</Link>
+                        <Link to={isSupport ? '/' : '/services'} className="rounded-md border border-obsidian-border px-5 py-3 text-xs font-mono font-bold uppercase text-zinc-400 hover:text-white">{isSupport ? 'Back Home' : 'Back to Services'}</Link>
+                    </div>
+                </section>
+            </main>
         </div>
     )
 }

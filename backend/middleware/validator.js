@@ -4,51 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-const { body, query, param, validationResult } = require("express-validator");
-
-const getMinBookingDate = () => {
-  const minDate = new Date();
-  minDate.setHours(0, 0, 0, 0);
-  minDate.setDate(minDate.getDate() + 2);
-  return minDate;
-};
-
-const bookingDetailValidationRules = [
-  body("phone")
-    .trim()
-    .notEmpty()
-    .withMessage("Phone number is required")
-    .matches(/^[6-9]\d{9}$/)
-    .withMessage("Phone number must be a valid 10-digit Indian mobile number"),
-
-  body("preferredDate")
-    .notEmpty()
-    .withMessage("Preferred date is required")
-    .isISO8601({ strict: true, strictSeparator: true })
-    .withMessage("Preferred date must be a valid date in YYYY-MM-DD format")
-    .custom((value) => {
-      const selectedDate = new Date(value);
-      selectedDate.setHours(0, 0, 0, 0);
-
-      if (selectedDate < getMinBookingDate()) {
-        throw new Error("Preferred date must be at least 2 days from today");
-      }
-      return true;
-    }),
-
-  body("preferredTime")
-    .trim()
-    .notEmpty()
-    .withMessage("Preferred time is required")
-    .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
-    .withMessage("Preferred time must be in HH:MM format"),
-
-  body("projectBrief")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isLength({ max: 1200 })
-    .withMessage("Project brief cannot exceed 1200 characters"),
-];
+const { body, param, query, validationResult } = require("express-validator");
 
 // Validation rules for contact form
 exports.contactValidationRules = [
@@ -86,134 +42,6 @@ exports.contactValidationRules = [
     .withMessage("Message must be between 10 and 2000 characters"),
 ];
 
-exports.paymentCreateOrderValidationRules = [
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 80 })
-    .withMessage("Name must be between 2 and 80 characters"),
-
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-
-  body("service")
-    .trim()
-    .notEmpty()
-    .withMessage("Service is required")
-    .isLength({ min: 3, max: 60 })
-    .withMessage("Service is invalid"),
-
-  ...bookingDetailValidationRules,
-];
-
-exports.paymentVerifyValidationRules = [
-  body("orderId")
-    .trim()
-    .notEmpty()
-    .withMessage("Order ID is required")
-    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
-    .withMessage("Order ID format is invalid"),
-
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-];
-
-exports.supportCreateOrderValidationRules = [
-  body("name")
-    .trim()
-    .notEmpty()
-    .withMessage("Name is required")
-    .isLength({ min: 2, max: 80 })
-    .withMessage("Name must be between 2 and 80 characters"),
-
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-
-  body("phone")
-    .trim()
-    .notEmpty()
-    .withMessage("Phone number is required")
-    .matches(/^[6-9]\d{9}$/)
-    .withMessage("Phone number must be a valid 10-digit Indian mobile number"),
-
-  body("amount")
-    .notEmpty()
-    .withMessage("Amount is required")
-    .isInt({ min: 1, max: 100000 })
-    .withMessage("Amount must be between INR 1 and INR 100000"),
-
-  body("message")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isLength({ max: 300 })
-    .withMessage("Message cannot exceed 300 characters"),
-];
-
-exports.supportVerifyValidationRules = [
-  body("orderId")
-    .trim()
-    .notEmpty()
-    .withMessage("Order ID is required")
-    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
-    .withMessage("Order ID format is invalid"),
-
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-];
-
-exports.paymentReceiptValidationRules = [
-  param("orderId")
-    .trim()
-    .notEmpty()
-    .withMessage("Order ID is required")
-    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
-    .withMessage("Order ID format is invalid"),
-
-  query("email")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-];
-
-exports.paymentStatusValidationRules = [
-  param("orderId")
-    .trim()
-    .notEmpty()
-    .withMessage("Order ID is required")
-    .matches(/^svc_\d{10,16}_[a-f0-9]{6}$/)
-    .withMessage("Order ID format is invalid"),
-
-  query("email")
-    .optional({ checkFalsy: true })
-    .trim()
-    .isEmail()
-    .withMessage("Please provide a valid email address")
-    .normalizeEmail(),
-];
-
 exports.blogSupportValidationRules = [
   body("slug")
     .trim()
@@ -245,13 +73,170 @@ exports.blogSupportStatusValidationRules = [
 ];
 
 exports.authProfileUpdateValidationRules = [
+  body().custom((value) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("Profile update must be an object");
+    }
+
+    const allowed = new Set(["displayName", "bio", "location", "website"]);
+    const protectedFields = new Set([
+      "_id",
+      "id",
+      "email",
+      "emailVerified",
+      "googleId",
+      "name",
+      "picture",
+      "providerPicture",
+      "avatarUrl",
+      "avatarPublicId",
+      "createdAt",
+      "lastLoginAt",
+      "provider",
+    ]);
+    const keys = Object.keys(value);
+    const locked = keys.filter((key) => protectedFields.has(key));
+    if (locked.length) {
+      throw new Error(`These account fields cannot be changed: ${locked.join(", ")}`);
+    }
+    const unknown = keys.filter((key) => !allowed.has(key));
+    if (unknown.length) {
+      throw new Error(`Unsupported profile fields: ${unknown.join(", ")}`);
+    }
+    if (!keys.length) {
+      throw new Error("Add at least one profile field to update");
+    }
+    return true;
+  }),
   body("displayName")
+    .optional()
     .trim()
     .notEmpty()
     .withMessage("Display name is required")
-    .isLength({ min: 2, max: 120 })
-    .withMessage("Display name must be between 2 and 120 characters"),
+    .isLength({ min: 2, max: 80 })
+    .withMessage("Display name must be between 2 and 80 characters"),
+  body("bio")
+    .optional()
+    .trim()
+    .isLength({ max: 180 })
+    .withMessage("Bio must be 180 characters or fewer"),
+  body("location")
+    .optional()
+    .trim()
+    .isLength({ max: 80 })
+    .withMessage("Location must be 80 characters or fewer"),
+  body("website")
+    .optional({ values: "falsy" })
+    .trim()
+    .isLength({ max: 300 })
+    .withMessage("Website must be 300 characters or fewer")
+    .isURL({ protocols: ["http", "https"], require_protocol: true })
+    .withMessage("Website must start with http:// or https://"),
 ];
+
+exports.googleSignInValidationRules = [
+  body("credential")
+    .isString()
+    .withMessage("Google credential is required")
+    .trim()
+    .notEmpty()
+    .withMessage("Google credential is required")
+    .isLength({ max: 10000 })
+    .withMessage("Google credential is invalid"),
+  body("selectBy")
+    .optional({ checkFalsy: true })
+    .isString()
+    .trim()
+    .isLength({ max: 40 })
+    .withMessage("Google sign-in method is invalid"),
+];
+
+const transactionIdRule = (location = "body") => {
+  const builder = location === "param" ? param("transactionId") : body("transactionId");
+  return builder.trim().isMongoId().withMessage("Transaction ID is invalid");
+};
+
+exports.paymentOrderValidationRules = [
+  body("serviceSlug")
+    .trim()
+    .notEmpty()
+    .matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .isLength({ max: 80 })
+    .withMessage("Service selection is invalid"),
+  body("name")
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .matches(/^[a-zA-Z\u00C0-\u024F\s'.-]+$/)
+    .withMessage("Please provide a valid name"),
+  body("phone")
+    .trim()
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage("Phone must be a valid 10-digit Indian mobile number"),
+  body("preferredDate")
+    .trim()
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage("Preferred date is invalid")
+    .custom((value) => {
+      const selected = new Date(`${value}T00:00:00.000Z`);
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      if (selected < today) throw new Error("Preferred date cannot be in the past");
+      return true;
+    }),
+  body("preferredTime")
+    .trim()
+    .matches(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage("Preferred time must be in HH:MM format"),
+  body("projectBrief")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 1200 })
+    .withMessage("Project brief cannot exceed 1200 characters"),
+];
+
+exports.supportOrderValidationRules = [
+  body("name")
+    .trim()
+    .isLength({ min: 2, max: 80 })
+    .matches(/^[a-zA-Z\u00C0-\u024F\s'.-]+$/)
+    .withMessage("Please provide a valid name"),
+  body("phone")
+    .trim()
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage("Phone must be a valid 10-digit Indian mobile number"),
+  body("amount")
+    .isInt({ min: 49, max: 100000 })
+    .withMessage("Support amount must be between INR 49 and INR 100000"),
+  body("message")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 300 })
+    .withMessage("Support message cannot exceed 300 characters"),
+];
+
+exports.paymentVerificationValidationRules = [
+  transactionIdRule(),
+  body("razorpay_payment_id")
+    .trim()
+    .matches(/^pay_[a-zA-Z0-9]{6,100}$/)
+    .withMessage("Razorpay payment ID is invalid"),
+  body("razorpay_order_id")
+    .trim()
+    .matches(/^order_[a-zA-Z0-9]{6,100}$/)
+    .withMessage("Razorpay order ID is invalid"),
+  body("razorpay_signature")
+    .trim()
+    .matches(/^[a-fA-F0-9]{64}$/)
+    .withMessage("Razorpay signature is invalid"),
+];
+
+exports.paymentFailureValidationRules = [
+  transactionIdRule(),
+  body("code").optional({ checkFalsy: true }).trim().isLength({ max: 80 }),
+  body("reason").optional({ checkFalsy: true }).trim().isLength({ max: 200 }),
+];
+
+exports.paymentTransactionParamValidationRules = [transactionIdRule("param")];
 
 exports.validate = (req, res, next) => {
   const errors = validationResult(req);

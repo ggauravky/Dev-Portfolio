@@ -1,142 +1,37 @@
-// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Unauthorized copying, modification, or distribution of this software,
-// via any medium, is strictly prohibited without the express written
-// consent of the author. See LICENSE for details.
-// Source: https://github.com/ggauravky/Dev-Portfolio
-
 const express = require("express");
 const {
   createOrder,
-  handleCashfreeWebhook,
-  verifyPayment,
   createSupportOrder,
-  verifySupportPayment,
-  getMyBookings,
-  getMySupportPayments,
-  getPaymentStatus,
-  getTransactionStatus,
-  downloadServiceReceipt,
-  downloadSupportReceipt,
-  downloadServiceReceiptImage,
-  downloadSupportReceiptImage,
-  getPaymentQueueAdminStatus,
+  downloadReceipt,
+  getTransaction,
+  handleRazorpayWebhook,
+  recordPaymentFailure,
+  verifyPayment,
 } = require("../controllers/paymentController");
+const { requireAuth } = require("../middleware/auth");
 const {
-  paymentRateLimiter,
+  paymentOrderRateLimiter,
+  paymentReadRateLimiter,
+  paymentVerificationRateLimiter,
   paymentWebhookRateLimiter,
 } = require("../middleware/rateLimiter");
 const {
-  paymentCreateOrderValidationRules,
-  paymentVerifyValidationRules,
-  supportCreateOrderValidationRules,
-  supportVerifyValidationRules,
-  paymentReceiptValidationRules,
-  paymentStatusValidationRules,
+  paymentFailureValidationRules,
+  paymentOrderValidationRules,
+  supportOrderValidationRules,
+  paymentTransactionParamValidationRules,
+  paymentVerificationValidationRules,
   validate,
 } = require("../middleware/validator");
-const { requireAuth } = require("../middleware/auth");
-const { requireAdminKey } = require("../middleware/adminAuth");
 
 const router = express.Router();
 
-const isPaymentGatewayEnabled = () =>
-  String(process.env.PAYMENT_GATEWAY_ENABLED || "true").trim().toLowerCase() === "true";
-
-const blockIfGatewayDisabled = (req, res, next) => {
-  if (isPaymentGatewayEnabled()) {
-    return next();
-  }
-
-  return res.status(503).json({
-    success: false,
-    message: "Payment gateway is under construction. Please try again later.",
-  });
-};
-
-router.post("/webhook/cashfree", paymentWebhookRateLimiter, handleCashfreeWebhook);
-router.get("/admin/queue-status", paymentRateLimiter, requireAdminKey, getPaymentQueueAdminStatus);
-
-router.use(blockIfGatewayDisabled);
-
-router.post(
-  "/create-order",
-  paymentRateLimiter,
-  requireAuth,
-  paymentCreateOrderValidationRules,
-  validate,
-  createOrder
-);
-router.post(
-  "/verify",
-  paymentRateLimiter,
-  requireAuth,
-  paymentVerifyValidationRules,
-  validate,
-  verifyPayment
-);
-router.post(
-  "/create-support-order",
-  paymentRateLimiter,
-  requireAuth,
-  supportCreateOrderValidationRules,
-  validate,
-  createSupportOrder
-);
-router.post(
-  "/verify-support",
-  paymentRateLimiter,
-  requireAuth,
-  supportVerifyValidationRules,
-  validate,
-  verifySupportPayment
-);
-router.get("/my-bookings", paymentRateLimiter, requireAuth, getMyBookings);
-router.get("/my-support-payments", paymentRateLimiter, requireAuth, getMySupportPayments);
-router.get(
-  "/transaction/:transactionId",
-  paymentRateLimiter,
-  requireAuth,
-  getTransactionStatus
-);
-router.get(
-  "/status/:orderId",
-  paymentRateLimiter,
-  requireAuth,
-  paymentStatusValidationRules,
-  validate,
-  getPaymentStatus
-);
-router.get(
-  "/receipt/service/:orderId",
-  paymentRateLimiter,
-  requireAuth,
-  paymentReceiptValidationRules,
-  validate,
-  downloadServiceReceipt
-);
-router.get(
-  "/receipt/support/:orderId",
-  paymentRateLimiter,
-  requireAuth,
-  paymentReceiptValidationRules,
-  validate,
-  downloadSupportReceipt
-);
-router.get(
-  "/receipt-image/service/:orderId",
-  paymentRateLimiter,
-  requireAuth,
-  paymentReceiptValidationRules,
-  validate,
-  downloadServiceReceiptImage
-);
-router.get(
-  "/receipt-image/support/:orderId",
-  paymentRateLimiter,
-  requireAuth,
-  paymentReceiptValidationRules,
-  validate,
-  downloadSupportReceiptImage
-);
+router.post("/webhook/razorpay", paymentWebhookRateLimiter, handleRazorpayWebhook);
+router.post("/create-order", paymentOrderRateLimiter, requireAuth, paymentOrderValidationRules, validate, createOrder);
+router.post("/create-support-order", paymentOrderRateLimiter, requireAuth, supportOrderValidationRules, validate, createSupportOrder);
+router.post("/verify", paymentVerificationRateLimiter, requireAuth, paymentVerificationValidationRules, validate, verifyPayment);
+router.post("/failure", paymentVerificationRateLimiter, requireAuth, paymentFailureValidationRules, validate, recordPaymentFailure);
+router.get("/transaction/:transactionId", paymentReadRateLimiter, requireAuth, paymentTransactionParamValidationRules, validate, getTransaction);
+router.get("/:transactionId/receipt", paymentReadRateLimiter, requireAuth, paymentTransactionParamValidationRules, validate, downloadReceipt);
 
 module.exports = router;

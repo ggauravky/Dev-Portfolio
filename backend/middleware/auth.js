@@ -6,28 +6,14 @@
 
 const User = require("../models/User");
 const { logger } = require("../utils/logger");
+const { PROFILE_SELECT, serializeUser } = require("../services/auth/userProfileService");
 const {
   AUTH_COOKIE_NAME,
   verifySessionToken,
   getClearCookieOptions,
 } = require("../utils/authSession");
 
-const readBearerToken = (headerValue) => {
-  const raw = String(headerValue || "").trim();
-  if (!raw.toLowerCase().startsWith("bearer ")) {
-    return "";
-  }
-  return raw.slice(7).trim();
-};
-
-const readSessionToken = (req) => {
-  const cookieToken = req.cookies?.[AUTH_COOKIE_NAME];
-  if (cookieToken) {
-    return cookieToken;
-  }
-
-  return readBearerToken(req.headers.authorization);
-};
+const readSessionToken = (req) => req.cookies?.[AUTH_COOKIE_NAME] || "";
 
 const clearSessionCookie = (res) => {
   res.clearCookie(AUTH_COOKIE_NAME, getClearCookieOptions());
@@ -58,19 +44,6 @@ const handleMissingToken = (req, res, required) => {
   return setAnonymousUser(req);
 };
 
-const buildAuthUser = (user) => {
-  const resolvedName = String(user.displayName || user.name || "User").trim() || "User";
-
-  return {
-    id: String(user._id),
-    name: resolvedName,
-    displayName: String(user.displayName || "").trim(),
-    email: user.email,
-    picture: user.picture,
-    emailLocked: true,
-  };
-};
-
 const handleMissingUser = (req, res, required) => {
   clearSessionCookie(res);
   const rejection = rejectIfRequired(res, required, 401, "Session is invalid. Please sign in again");
@@ -98,7 +71,10 @@ const handleTokenError = (req, res, required, error) => {
   }
 
   if (!isConfigError) {
-    logger.warn({ err: error }, "Optional auth token validation failed");
+    logger.warn(
+      { category: error?.name || "SESSION_VALIDATION_FAILED" },
+      "Optional auth token validation failed"
+    );
   }
 
   return setAnonymousUser(req);
@@ -114,13 +90,13 @@ const attachUserFromToken = async (req, res, options = {}) => {
 
   try {
     const payload = verifySessionToken(token);
-    const user = await User.findById(payload.uid).select("_id name displayName email picture");
+    const user = await User.findById(payload.uid).select(PROFILE_SELECT);
 
     if (!user) {
       return handleMissingUser(req, res, required);
     }
 
-    req.authUser = buildAuthUser(user);
+    req.authUser = serializeUser(user);
 
     return null;
   } catch (error) {
