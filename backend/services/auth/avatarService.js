@@ -1,5 +1,5 @@
 const { randomUUID } = require("node:crypto");
-const cloudinary = require("../../config/cloudinary");
+const { cloudinary, isCloudinaryConfigured } = require("../../config/cloudinary");
 
 const DEFAULT_AVATAR_FOLDER = "dev-portfolio/user-avatars";
 
@@ -7,11 +7,6 @@ const getAvatarFolder = () =>
   String(process.env.CLOUDINARY_AVATAR_FOLDER || DEFAULT_AVATAR_FOLDER)
     .trim()
     .replace(/^\/+|\/+$/g, "") || DEFAULT_AVATAR_FOLDER;
-
-const isCloudinaryConfigured = () =>
-  ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"].every((key) =>
-    Boolean(String(process.env[key] || "").trim())
-  );
 
 const uploadAvatar = ({ buffer, userId, client = cloudinary }) => {
   if (!isCloudinaryConfigured()) {

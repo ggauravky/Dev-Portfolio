@@ -11,8 +11,8 @@ const crypto = require("node:crypto");
  * Set ADMIN_KEY in your .env (backend) and pass it in the
  * `x-admin-key` request header when calling protected endpoints.
  *
- * If ADMIN_KEY is not configured the server will refuse to start
- * (logged as a warning) and all guarded routes will return 503.
+ * Production validation refuses startup when ADMIN_KEY is missing or insecure.
+ * Guarded routes also fail closed when the key is unavailable.
  */
 exports.requireAdminKey = (req, res, next) => {
   const adminKey = process.env.ADMIN_KEY;

@@ -6,11 +6,30 @@
 
 const cloudinary = require("cloudinary").v2;
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true, // always https
+const getCloudinaryConfig = () => ({
+  cloudName: String(process.env.CLOUDINARY_CLOUD_NAME || "").trim(),
+  apiKey: String(process.env.CLOUDINARY_API_KEY || "").trim(),
+  apiSecret: String(process.env.CLOUDINARY_API_SECRET || "").trim(),
 });
 
-module.exports = cloudinary;
+const isCloudinaryConfigured = () => Object.values(getCloudinaryConfig()).every(Boolean);
+
+const configureCloudinary = () => {
+  const config = getCloudinaryConfig();
+  cloudinary.config({
+    cloud_name: config.cloudName,
+    api_key: config.apiKey,
+    api_secret: config.apiSecret,
+    secure: true,
+  });
+  return cloudinary;
+};
+
+configureCloudinary();
+
+module.exports = {
+  cloudinary,
+  configureCloudinary,
+  getCloudinaryConfig,
+  isCloudinaryConfigured,
+};

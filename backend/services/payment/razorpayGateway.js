@@ -15,7 +15,7 @@ const getKeyMode = (keyId) => {
 
 const isRazorpayEnabled = () =>
   ["1", "true", "yes", "on"].includes(
-    normalize(process.env.RAZORPAY_ENABLED || process.env.PAYMENT_GATEWAY_ENABLED).toLowerCase()
+    normalize(process.env.RAZORPAY_ENABLED).toLowerCase()
   );
 
 const requireGatewayConfig = () => {

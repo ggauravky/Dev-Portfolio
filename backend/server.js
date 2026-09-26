@@ -31,6 +31,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const { generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
+const { buildPublicErrorPayload } = require("./utils/publicError");
 const { validateEnvironment } = require("./config/env");
 const { corsOrigin } = require("./config/trustedOrigins");
 
@@ -90,6 +91,9 @@ app.use(generalRateLimiter);
 app.get("/health", (req, res) => {
   res.status(200).json({
     success: true,
+    status: "ok",
+    service: "portfolio-backend",
+    environment: process.env.NODE_ENV || "development",
     message: "Server is running",
     timestamp: new Date().toISOString(),
   });
@@ -130,12 +134,11 @@ app.use((err, req, res, next) => {
     path: req.originalUrl,
   });
 
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Internal server error",
+  const publicError = buildPublicErrorPayload(err, {
+    production: process.env.NODE_ENV === "production",
     requestId,
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
+  res.status(publicError.status).json(publicError.payload);
 });
 
 // Start server

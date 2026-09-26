@@ -28,7 +28,8 @@ FRONTEND_URL=http://localhost:5173
 GOOGLE_CLIENT_ID=your_google_oauth_web_client_id.apps.googleusercontent.com
 AUTH_JWT_SECRET=replace_with_at_least_32_random_characters
 AUTH_SESSION_TTL_SECONDS=604800
-AUTH_WELCOME_BACK_COOLDOWN_HOURS=24
+AUTH_COOKIE_SAME_SITE=none
+ADMIN_KEY=replace_with_at_least_32_random_characters
 RAZORPAY_ENABLED=false
 RAZORPAY_KEY_ID=rzp_test_your_key_id
 RAZORPAY_KEY_SECRET=your_api_key_secret
@@ -43,6 +44,10 @@ BREVO_SENDER_NAME=Gaurav Kumar Yadav
 BREVO_REPLY_TO_EMAIL=
 BREVO_REPLY_TO_NAME=
 PAYMENT_EMAIL_NOTIFICATIONS_ENABLED=true
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_AVATAR_FOLDER=dev-portfolio/user-avatars
 ```
 
 ### Installation & Launch
@@ -103,6 +108,10 @@ For Render, set `FRONTEND_URL` to the exact Vercel production origin. Add previe
 6. Keep `RAZORPAY_ENABLED=false` until MongoDB, keys, webhook, and Brevo settings are verified; then change it to `true` and redeploy.
 
 Test and live modes use the same code. Switching modes requires the matching Razorpay key ID, key secret, dashboard webhook, and webhook secret. Never place either secret in `VITE_*` variables.
+
+### Credential Exposure
+
+If a credential is pasted into chat, source control, logs, screenshots, an issue tracker, or any other external system, treat it as compromised and rotate it with the provider. Never copy exposed values into source files or commit local `.env` files.
 
 ## 6. Brevo SMTP Receipt Email Setup
 

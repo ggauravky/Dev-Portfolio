@@ -17,7 +17,6 @@ const withPaymentEnvironment = (values, run) => {
     "FRONTEND_URL",
     "GOOGLE_CLIENT_ID",
     "NODE_ENV",
-    "PAYMENT_GATEWAY_ENABLED",
     "RAZORPAY_ENABLED",
     "RAZORPAY_KEY_ID",
     "RAZORPAY_KEY_SECRET",
