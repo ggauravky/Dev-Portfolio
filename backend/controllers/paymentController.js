@@ -14,7 +14,7 @@ const {
   verifyPaymentSignature,
   verifyWebhookSignature,
 } = require("../services/payment/razorpayGateway");
-const { finalizeSuccessfulPayment } = require("../services/payment/paymentFinalizationService");
+const paymentFinalizationService = require("../services/payment/paymentFinalizationService");
 const { generatePaymentReceipt } = require("../utils/paymentReceipt");
 const { recordActivityEvent } = require("../services/activityService");
 const { logger } = require("../utils/logger");
@@ -243,6 +243,7 @@ exports.verifyPayment = async (req, res) => {
     if (!signatureValid) return res.status(422).json({ success: false, message: "Payment signature verification failed" });
 
     if (transaction.status === "paid" && transaction.razorpayPaymentId === paymentId) {
+      paymentFinalizationService.schedulePaymentEmailRecovery(transaction);
       return res.status(200).json({ success: true, data: toPublicTransaction(transaction) });
     }
 
@@ -259,7 +260,11 @@ exports.verifyPayment = async (req, res) => {
       return res.status(202).json({ success: true, data: toPublicTransaction(pending) });
     }
 
-    const finalized = await finalizeSuccessfulPayment({ transaction, payment, source: "verification" });
+    const finalized = await paymentFinalizationService.finalizeSuccessfulPayment({
+      transaction,
+      payment,
+      source: "verification",
+    });
     reqLogger.info({ transactionId, razorpayOrderId: transaction.razorpayOrderId, state: "paid" }, "Razorpay payment verified");
     return res.status(200).json({ success: true, data: toPublicTransaction(finalized) });
   } catch (error) {
@@ -395,7 +400,23 @@ exports.handleRazorpayWebhook = async (req, res) => {
   let claimed;
   try {
     claimed = await claimWebhookEvent({ eventId, eventType });
-    if (claimed.duplicate) return res.status(200).json({ success: true, duplicate: true });
+    if (claimed.duplicate) {
+      if (claimed.event?.transactionId) {
+        try {
+          const transaction = await PaymentTransaction.findById(claimed.event.transactionId);
+          paymentFinalizationService.schedulePaymentEmailRecovery(transaction);
+        } catch (error) {
+          reqLogger.warn(
+            {
+              transactionId: String(claimed.event.transactionId),
+              category: normalize(error?.code || error?.name, 80) || "EMAIL_RECOVERY_FAILED",
+            },
+            "Duplicate webhook email recovery could not be queued"
+          );
+        }
+      }
+      return res.status(200).json({ success: true, duplicate: true });
+    }
 
     if (!["payment.captured", "payment.failed", "order.paid"].includes(eventType)) {
       claimed.event.status = "ignored";
@@ -439,7 +460,7 @@ exports.handleRazorpayWebhook = async (req, res) => {
       if (!payment?.id) throw new Error("Captured payment was missing from webhook payload");
       assertPaymentMatchesTransaction(payment, transaction);
       if (!(payment.captured === true || payment.status === "captured")) throw new Error("Webhook payment is not captured");
-      await finalizeSuccessfulPayment({ transaction, payment, source: "webhook" });
+      await paymentFinalizationService.finalizeSuccessfulPayment({ transaction, payment, source: "webhook" });
     }
 
     claimed.event.status = "processed";

@@ -9,6 +9,7 @@ const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { logger } = require("../utils/logger");
 const {
+  classifyEmailDeliveryResult,
   classifySmtpError,
   sendWelcomeEmail,
   sendWelcomeBackEmail,
@@ -174,24 +175,25 @@ const dispatchLifecycleEmailWithRetry = async ({ isNewUser, userSnapshot, reqLog
     }
 
     lastResult = { ...result, attempt };
-    const classification = result.skipped
-      ? null
-      : result.error?.category
-        ? result.error
-        : classifySmtpError(result.error || {});
+    const delivery = classifyEmailDeliveryResult(result);
+    const classification = result.error?.category
+      ? result.error
+      : delivery.outcome === "failed"
+        ? { ...classifySmtpError(result.error || {}), ...delivery }
+        : delivery;
     const context = {
       userId: userSnapshot._id,
       emailType,
       attempt,
       messageId: result.sent ? String(result.messageId || result.providerId || "") : undefined,
-      smtpCode: !result.sent ? result.error?.code : undefined,
-      smtpCategory: !result.sent && !result.skipped ? classification?.category : undefined,
+      smtpCode: delivery.outcome === "failed" ? result.error?.code : undefined,
+      smtpCategory: delivery.outcome === "failed" ? classification?.category : undefined,
     };
-    if (result.sent) reqLogger.info({ ...context, event: "email.login.sent" }, "Login email sent");
-    else if (result.skipped) reqLogger.info({ ...context, event: "email.login.skipped" }, "Login email skipped");
+    if (delivery.outcome === "sent") reqLogger.info({ ...context, event: "email.login.sent" }, "Login email sent");
+    else if (delivery.outcome === "skipped") reqLogger.info({ ...context, event: "email.login.skipped" }, "Login email skipped");
     else reqLogger.warn({ ...context, event: "email.login.failed" }, "Login email attempt failed");
 
-    if (result.sent || result.skipped || classification?.retryable === false) return lastResult;
+    if (delivery.outcome !== "failed" || classification?.retryable === false) return lastResult;
 
     if (attempt < maxAttempts) {
       await delay(getLoginEmailRetryBaseMs() * attempt);

@@ -2,6 +2,7 @@ const Booking = require("../../models/Booking");
 const PaymentTransaction = require("../../models/PaymentTransaction");
 const { recordActivityEvent } = require("../activityService");
 const {
+  classifyEmailDeliveryResult,
   classifySmtpError,
   sendAdminPaymentEmail,
   sendPaymentReceiptEmail,
@@ -192,29 +193,31 @@ const deliverEmailWithRetry = async ({ transaction, kind, deliver }) => {
     }
 
     const safeError = lastResult.error || {};
-    const classification = lastResult.skipped
-      ? null
-      : safeError.category
-        ? safeError
-        : classifySmtpError(safeError);
+    const delivery = classifyEmailDeliveryResult(lastResult);
+    const classification = safeError.category
+      ? safeError
+      : delivery.outcome === "failed"
+        ? { ...classifySmtpError(safeError), ...delivery }
+        : delivery;
     const logContext = {
+      userId: String(transaction.userId || ""),
       transactionId: String(transaction._id),
       emailKind: kind,
       attempt,
-      event: lastResult.sent
+      event: delivery.outcome === "sent"
         ? `email.${kind === "receipt" ? "customer" : "admin"}.sent`
-        : lastResult.skipped
+        : delivery.outcome === "skipped"
           ? `email.${kind === "receipt" ? "customer" : "admin"}.skipped`
           : `email.${kind === "receipt" ? "customer" : "admin"}.failed`,
-      messageId: lastResult.sent ? String(lastResult.messageId || "") : undefined,
-      smtpCode: !lastResult.sent ? safeError.code : undefined,
-      smtpCategory: !lastResult.sent && !lastResult.skipped ? classification?.category : undefined,
+      messageId: delivery.outcome === "sent" ? String(lastResult.messageId || "") : undefined,
+      smtpCode: delivery.outcome === "failed" ? safeError.code : undefined,
+      smtpCategory: delivery.outcome === "failed" ? classification?.category : undefined,
     };
-    if (lastResult.sent) logger.info(logContext, "Payment email sent");
-    else if (lastResult.skipped) logger.info(logContext, "Payment email skipped");
+    if (delivery.outcome === "sent") logger.info(logContext, "Payment email sent");
+    else if (delivery.outcome === "skipped") logger.info(logContext, "Payment email skipped");
     else logger.warn(logContext, "Payment email attempt failed");
 
-    if (lastResult.sent || lastResult.skipped || classification?.retryable === false) return lastResult;
+    if (delivery.outcome !== "failed" || classification?.retryable === false) return lastResult;
     if (attempt < maxAttempts) {
       await delay(getPaymentEmailRetryBaseMs() * 2 ** (attempt - 1));
     }
@@ -232,36 +235,55 @@ const deliverEmailWithRetry = async ({ transaction, kind, deliver }) => {
   return lastResult;
 };
 
+const getPendingPaymentEmailKinds = (transaction) => [
+  !transaction?.receiptEmailSentAt ? "receipt" : "",
+  !transaction?.adminEmailSentAt ? "admin" : "",
+].filter(Boolean);
+
 const runPaymentEmailWorkflow = async (transaction) => {
-  await Promise.all([
+  const pendingKinds = getPendingPaymentEmailKinds(transaction);
+  await Promise.all(pendingKinds.map((kind) =>
     deliverEmailWithRetry({
       transaction,
-      kind: "receipt",
-      deliver: deliverReceiptEmailOnce,
-    }),
-    deliverEmailWithRetry({
-      transaction,
-      kind: "admin",
-      deliver: deliverAdminEmailOnce,
-    }),
-  ]);
+      kind,
+      deliver: kind === "receipt" ? deliverReceiptEmailOnce : deliverAdminEmailOnce,
+    })
+  ));
 };
 
 const schedulePaymentEmailWorkflow = (transaction) => {
-  logger.info(
-    { transactionId: String(transaction._id), event: "email.customer.queued" },
-    "Payment customer email queued"
-  );
-  logger.info(
-    { transactionId: String(transaction._id), event: "email.admin.queued" },
-    "Payment admin email queued"
-  );
+  const pendingKinds = getPendingPaymentEmailKinds(transaction);
+  if (transaction?.status !== "paid" || !pendingKinds.length) return false;
+
+  if (pendingKinds.includes("receipt")) {
+    logger.info(
+      {
+        userId: String(transaction.userId || ""),
+        transactionId: String(transaction._id),
+        event: "email.customer.queued",
+      },
+      "Payment customer email queued"
+    );
+  }
+  if (pendingKinds.includes("admin")) {
+    logger.info(
+      {
+        userId: String(transaction.userId || ""),
+        transactionId: String(transaction._id),
+        event: "email.admin.queued",
+      },
+      "Payment admin email queued"
+    );
+  }
   scheduleBackgroundTask({
     name: "payment-email-workflow",
     context: { transactionId: String(transaction._id) },
     task: () => runPaymentEmailWorkflow(transaction),
   });
+  return true;
 };
+
+const schedulePaymentEmailRecovery = (transaction) => schedulePaymentEmailWorkflow(transaction);
 
 const waitForPendingEmailJobs = async () => {
   await waitForBackgroundTasks();
@@ -305,6 +327,7 @@ const finalizeSuccessfulPayment = async ({ transaction, payment, source = "verif
 
   logger.info(
     {
+      userId: String(finalized.userId || ""),
       transactionId: String(finalized._id),
       flowType: finalized.flowType,
       source,
@@ -334,9 +357,11 @@ module.exports = {
   finalizeSuccessfulPayment,
   reconcilePaymentEmails,
   recordPaidActivity,
+  schedulePaymentEmailRecovery,
   _test: {
     deliverAdminEmailOnce,
     deliverEmailWithRetry,
+    getPendingPaymentEmailKinds,
     claimEmailDelivery,
     runPaymentEmailWorkflow,
     waitForPendingEmailJobs,

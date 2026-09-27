@@ -397,6 +397,34 @@ const classifySmtpError = (error) => {
   return { category: "SMTP_DELIVERY_FAILED", retryable: true, providerActionRequired: false };
 };
 
+const classifyEmailDeliveryResult = (result = {}) => {
+  if (result.sent) {
+    return { outcome: "sent", category: "", retryable: false };
+  }
+
+  if (!result.skipped) {
+    return { outcome: "failed", ...classifySmtpError(result.error || {}) };
+  }
+
+  const permanentFailureCategories = {
+    smtp_not_configured: "SMTP_NOT_CONFIGURED",
+    missing_recipient: "EMAIL_RECIPIENT_MISSING",
+    receipt_pdf_missing: "RECEIPT_PDF_MISSING",
+    admin_email_not_configured: "ADMIN_EMAIL_NOT_CONFIGURED",
+  };
+  const category = permanentFailureCategories[result.reason];
+  if (category) {
+    return {
+      outcome: "failed",
+      category,
+      retryable: false,
+      providerActionRequired: result.reason === "smtp_not_configured",
+    };
+  }
+
+  return { outcome: "skipped", category: "", retryable: false };
+};
+
 const serializeSmtpError = (error) => {
   const response = sanitizeSmtpText(error?.response);
   const classification = classifySmtpError(error);
@@ -908,6 +936,7 @@ const sendAdminPaymentEmail = async ({ transaction, subjectPrefix = "" }) => {
 };
 
 module.exports = {
+  classifyEmailDeliveryResult,
   classifySmtpError,
   getEmailDiagnostics,
   isEmailConfigured,
@@ -925,6 +954,7 @@ module.exports = {
     buildEmailLayout,
     buildWelcomeBackPayload,
     buildWelcomePayload,
+    classifyEmailDeliveryResult,
     classifySmtpError,
     getEmailConfig,
     normalizeAttachments,

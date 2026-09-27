@@ -340,3 +340,19 @@ test("temporary SMTP failures remain retryable", () => {
   });
   assert.equal(email.classifySmtpError({ responseCode: 451 }).retryable, true);
 });
+
+test("missing SMTP configuration is an explicit permanent delivery failure", () => {
+  assert.deepEqual(
+    email.classifyEmailDeliveryResult({
+      sent: false,
+      skipped: true,
+      reason: "smtp_not_configured",
+    }),
+    {
+      outcome: "failed",
+      category: "SMTP_NOT_CONFIGURED",
+      retryable: false,
+      providerActionRequired: true,
+    }
+  );
+});

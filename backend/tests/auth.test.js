@@ -614,3 +614,32 @@ test("40. separate explicit login event IDs allow legitimate later notifications
   await authController._test.waitForBackgroundTasks();
   assert.equal(deliveries, 2);
 });
+
+test("41. missing SMTP configuration is logged as a login email failure", async () => {
+  process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "3";
+  let attempts = 0;
+  const events = [];
+  authController._test.setDependencies({
+    sendWelcomeBackEmail: async () => {
+      attempts += 1;
+      return { sent: false, skipped: true, reason: "smtp_not_configured" };
+    },
+  });
+
+  try {
+    await authController._test.dispatchLifecycleEmailWithRetry({
+      isNewUser: false,
+      userSnapshot: { _id: "user-1", loginEventId: "login-config-failure" },
+      reqLogger: {
+        info(context) { events.push(context); },
+        warn(context) { events.push(context); },
+      },
+    });
+    assert.equal(attempts, 1);
+    assert.ok(events.some((event) =>
+      event.event === "email.login.failed" && event.smtpCategory === "SMTP_NOT_CONFIGURED"
+    ));
+  } finally {
+    process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "1";
+  }
+});

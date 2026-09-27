@@ -53,6 +53,8 @@ const buildTransaction = (overrides = {}) => ({
   razorpayPaymentId: "pay_1234567890",
   status: "paid",
   receiptNumber: "GKY-2026-DE860EA",
+  receiptEmailSentAt: new Date("2026-09-14T10:01:00.000Z"),
+  adminEmailSentAt: new Date("2026-09-14T10:01:00.000Z"),
   paidAt: new Date("2026-09-14T10:00:00.000Z"),
   createdAt: new Date("2026-09-14T09:59:00.000Z"),
   ...overrides,
@@ -150,6 +152,49 @@ test("duplicate verification of an already paid transaction is idempotent", asyn
     assert.equal(payload.data.status, "paid");
   } finally {
     PaymentTransaction.findOne = originalFindOne;
+    if (originalSecret === undefined) delete process.env.RAZORPAY_KEY_SECRET;
+    else process.env.RAZORPAY_KEY_SECRET = originalSecret;
+  }
+});
+
+test("already-paid verification re-queues missing payment emails", async () => {
+  const finalizer = require("../services/payment/paymentFinalizationService");
+  const originalFindOne = PaymentTransaction.findOne;
+  const originalScheduleRecovery = finalizer.schedulePaymentEmailRecovery;
+  const originalSecret = process.env.RAZORPAY_KEY_SECRET;
+  const transaction = buildTransaction({ receiptEmailSentAt: null, adminEmailSentAt: null });
+  let recoveredTransaction;
+  PaymentTransaction.findOne = async () => transaction;
+  finalizer.schedulePaymentEmailRecovery = (candidate) => {
+    recoveredTransaction = candidate;
+    return true;
+  };
+  process.env.RAZORPAY_KEY_SECRET = "test-secret";
+  const signature = gateway.createHmacSignature(
+    `${transaction.razorpayOrderId}|${transaction.razorpayPaymentId}`,
+    process.env.RAZORPAY_KEY_SECRET
+  );
+  const req = {
+    body: {
+      transactionId: validTransactionId,
+      razorpay_order_id: transaction.razorpayOrderId,
+      razorpay_payment_id: transaction.razorpayPaymentId,
+      razorpay_signature: signature,
+    },
+    authUser: { id: validUserId },
+    log: { info() {}, error() {} },
+  };
+  const res = {
+    status() { return this; },
+    json(value) { return value; },
+  };
+
+  try {
+    await paymentController.verifyPayment(req, res);
+    assert.equal(recoveredTransaction, transaction);
+  } finally {
+    PaymentTransaction.findOne = originalFindOne;
+    finalizer.schedulePaymentEmailRecovery = originalScheduleRecovery;
     if (originalSecret === undefined) delete process.env.RAZORPAY_KEY_SECRET;
     else process.env.RAZORPAY_KEY_SECRET = originalSecret;
   }
@@ -287,6 +332,62 @@ test("new webhook event is claimed once", async () => {
   } finally {
     PaymentWebhookEvent.findOne = originalFind;
     PaymentWebhookEvent.create = originalCreate;
+  }
+});
+
+test("duplicate signed webhook re-queues missing paid-transaction emails", async () => {
+  const finalizer = require("../services/payment/paymentFinalizationService");
+  const originalWebhookFindOne = PaymentWebhookEvent.findOne;
+  const originalTransactionFindById = PaymentTransaction.findById;
+  const originalScheduleRecovery = finalizer.schedulePaymentEmailRecovery;
+  const originalEnabled = process.env.RAZORPAY_ENABLED;
+  const originalWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const webhookSecret = "webhook-test-secret";
+  const rawBody = Buffer.from('{"event":"payment.captured"}');
+  const transaction = buildTransaction({ receiptEmailSentAt: null, adminEmailSentAt: null });
+  let recoveredTransaction;
+  let responseBody;
+  let statusCode;
+
+  PaymentWebhookEvent.findOne = async () => ({
+    status: "processed",
+    transactionId: validTransactionId,
+  });
+  PaymentTransaction.findById = async () => transaction;
+  finalizer.schedulePaymentEmailRecovery = (candidate) => {
+    recoveredTransaction = candidate;
+    return true;
+  };
+  process.env.RAZORPAY_ENABLED = "true";
+  process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;
+
+  const req = {
+    body: { event: "payment.captured" },
+    rawBody,
+    headers: {
+      "x-razorpay-event-id": "event-duplicate-recovery",
+      "x-razorpay-signature": crypto.createHmac("sha256", webhookSecret).update(rawBody).digest("hex"),
+    },
+    log: { info() {}, warn() {}, error() {} },
+  };
+  const res = {
+    status(code) { statusCode = code; return this; },
+    json(value) { responseBody = value; return value; },
+  };
+
+  try {
+    await paymentController.handleRazorpayWebhook(req, res);
+    assert.equal(statusCode, 200);
+    assert.equal(responseBody.duplicate, true);
+    assert.equal(recoveredTransaction, transaction);
+  } finally {
+    PaymentWebhookEvent.findOne = originalWebhookFindOne;
+    PaymentTransaction.findById = originalTransactionFindById;
+    finalizer.schedulePaymentEmailRecovery = originalScheduleRecovery;
+    if (originalEnabled === undefined) delete process.env.RAZORPAY_ENABLED;
+    else process.env.RAZORPAY_ENABLED = originalEnabled;
+    if (originalWebhookSecret === undefined) delete process.env.RAZORPAY_WEBHOOK_SECRET;
+    else process.env.RAZORPAY_WEBHOOK_SECRET = originalWebhookSecret;
   }
 });
 
@@ -591,6 +692,38 @@ test("permanent SMTP authentication failure is not retried repeatedly", async ()
         reason: "smtp_error",
         error: { code: "EAUTH", category: "SMTP_AUTH_FAILED", retryable: false },
       };
+    },
+    run: async ({ finalizer }) => {
+      const state = buildTransaction({ receiptEmailSentAt: null, receiptEmailClaimedAt: null });
+      PaymentTransaction.findOneAndUpdate = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return state;
+      };
+      PaymentTransaction.updateOne = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return { acknowledged: true };
+      };
+
+      const result = await finalizer._test.deliverEmailWithRetry({
+        transaction: state,
+        kind: "receipt",
+        deliver: finalizer.deliverReceiptEmailOnce,
+      });
+      assert.equal(result.sent, false);
+      assert.equal(sendCount, 1);
+      assert.equal(state.receiptEmailClaimedAt, null);
+      assert.equal(state.receiptEmailStatus, "failed");
+    },
+  });
+});
+
+test("missing payment SMTP configuration fails visibly without repeated retries", async () => {
+  let sendCount = 0;
+  await withMockedFinalizer({
+    maxAttempts: 3,
+    receiptEmail: async () => {
+      sendCount += 1;
+      return { sent: false, skipped: true, reason: "smtp_not_configured" };
     },
     run: async ({ finalizer }) => {
       const state = buildTransaction({ receiptEmailSentAt: null, receiptEmailClaimedAt: null });
