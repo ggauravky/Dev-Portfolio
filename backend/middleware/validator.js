@@ -5,6 +5,10 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 const { body, param, query, validationResult } = require("express-validator");
+const {
+  SUPPORT_MAX_AMOUNT_INR,
+  SUPPORT_MIN_AMOUNT_INR,
+} = require("../config/payment");
 
 // Validation rules for contact form
 exports.contactValidationRules = [
@@ -149,6 +153,10 @@ exports.googleSignInValidationRules = [
     .trim()
     .isLength({ max: 40 })
     .withMessage("Google sign-in method is invalid"),
+  body("loginEventId")
+    .optional({ checkFalsy: true })
+    .isUUID()
+    .withMessage("Google login event ID is invalid"),
 ];
 
 const transactionIdRule = (location = "body") => {
@@ -205,8 +213,8 @@ exports.supportOrderValidationRules = [
     .matches(/^[6-9]\d{9}$/)
     .withMessage("Phone must be a valid 10-digit Indian mobile number"),
   body("amount")
-    .isInt({ min: 49, max: 100000 })
-    .withMessage("Support amount must be between INR 49 and INR 100000"),
+    .isInt({ min: SUPPORT_MIN_AMOUNT_INR, max: SUPPORT_MAX_AMOUNT_INR })
+    .withMessage(`Support amount must be between INR ${SUPPORT_MIN_AMOUNT_INR} and INR ${SUPPORT_MAX_AMOUNT_INR}`),
   body("message")
     .optional({ checkFalsy: true })
     .trim()

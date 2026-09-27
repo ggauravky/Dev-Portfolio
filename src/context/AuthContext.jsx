@@ -65,13 +65,13 @@ export function AuthProvider({ children }) {
 
     useEffect(() => () => activeRequestControllerRef.current?.abort(), [])
 
-    const signIn = useCallback(async ({ credential, selectBy = '' }) => {
+    const signIn = useCallback(async ({ credential, selectBy = '', loginEventId = '' }) => {
         const controller = replaceActiveRequestController()
         setIsLoading(true)
 
         try {
             const data = await signInWithGoogleCredential(
-                { credential, selectBy },
+                { credential, selectBy, loginEventId },
                 { signal: controller.signal }
             )
             if (activeRequestControllerRef.current !== controller) return null
@@ -132,6 +132,7 @@ export function AuthProvider({ children }) {
             const result = await signIn({
                 credential,
                 selectBy: String(response?.select_by || '').trim(),
+                loginEventId: globalThis.crypto?.randomUUID?.() || '',
             })
             if (!result?.user) return
 

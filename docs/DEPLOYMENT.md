@@ -124,3 +124,11 @@ Set `TEST_EMAIL_TO` locally and run `npm run test:email` inside `backend/` for o
 ## 7. Payment Verification
 
 Run `npm test` inside `backend/`, then `npm run build` at the repository root. In Razorpay test mode, verify a successful payment, checkout dismissal, failed payment, duplicate verification, webhook retry, owned receipt download, activity history, and receipt email attachment before enabling live keys.
+
+### Transactional email diagnostics
+
+Startup and `npm run preflight` report only structural email readiness booleans. They never connect to SMTP or print SMTP credentials. Use `npm run test:email` for an explicit SMTP connection and delivery check.
+
+If a safe email log reports `BREVO_IP_NOT_AUTHORIZED`, authorize the Render service's outbound IP in Brevo or update the applicable Brevo SMTP security policy. Do not disable TLS or bypass SMTP authentication. `SMTP_AUTH_FAILED` requires a valid Brevo SMTP Login and SMTP Key, while `SMTP_SENDER_REJECTED` requires a verified sender address.
+
+Already-paid transactions with a missing customer or admin email can be inspected safely with `npm run email:reconcile`. The command is dry-run by default. After reviewing the listed transaction IDs, use `npm run email:reconcile -- --send` to retry through the same atomic email claims used by payment verification and webhooks. Optional `--days=N` and `--limit=N` arguments bound the scan.

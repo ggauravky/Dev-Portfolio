@@ -152,6 +152,21 @@ const isEmailConfigured = () => {
   );
 };
 
+const getEmailDiagnostics = () => {
+  const config = getEmailConfig();
+  return {
+    enabled: config.enabled,
+    configured: isEmailConfigured(),
+    hostConfigured: Boolean(config.host),
+    port: Number.isInteger(config.port) ? config.port : null,
+    smtpUserConfigured: Boolean(config.user),
+    smtpPasswordConfigured: Boolean(config.pass),
+    senderConfigured: Boolean(config.senderEmail),
+    paymentNotificationsEnabled: config.paymentNotificationsEnabled,
+    adminRecipientConfigured: Boolean(config.adminEmail),
+  };
+};
+
 const getEmailTransporter = () => {
   if (testTransporter) return testTransporter;
   if (!isEmailConfigured()) return null;
@@ -353,13 +368,44 @@ const sanitizeSmtpText = (value, maxLength = 500) => {
 
 const buildEmailLayout = buildEmailShell;
 
+const classifySmtpError = (error) => {
+  const code = normalizeEnvString(error?.code).toUpperCase();
+  const responseCode = Number(error?.responseCode || 0) || 0;
+  const diagnosticText = `${error?.message || ""} ${error?.response || ""}`.toLowerCase();
+
+  if (
+    diagnosticText.includes("unauthorized ip") ||
+    (responseCode === 525 && diagnosticText.includes("5.7.1"))
+  ) {
+    return { category: "BREVO_IP_NOT_AUTHORIZED", retryable: false, providerActionRequired: true };
+  }
+  if (code === "EAUTH" || responseCode === 535 || diagnosticText.includes("authentication failed")) {
+    return { category: "SMTP_AUTH_FAILED", retryable: false, providerActionRequired: true };
+  }
+  if (
+    [550, 551, 553].includes(responseCode) &&
+    /sender|from address|not verified|invalid address/.test(diagnosticText)
+  ) {
+    return { category: "SMTP_SENDER_REJECTED", retryable: false, providerActionRequired: true };
+  }
+  if (
+    ["ETIMEDOUT", "ECONNECTION", "ECONNRESET", "EAI_AGAIN", "ESOCKET"].includes(code) ||
+    (responseCode >= 400 && responseCode < 500)
+  ) {
+    return { category: "SMTP_TEMPORARY_FAILURE", retryable: true, providerActionRequired: false };
+  }
+  return { category: "SMTP_DELIVERY_FAILED", retryable: true, providerActionRequired: false };
+};
+
 const serializeSmtpError = (error) => {
   const response = sanitizeSmtpText(error?.response);
+  const classification = classifySmtpError(error);
   return {
     message: sanitizeSmtpText(error?.message) || "Unknown SMTP error",
     code: normalizeEnvString(error?.code) || undefined,
     responseCode: Number(error?.responseCode || 0) || undefined,
     command: normalizeEnvString(error?.command).slice(0, 80) || undefined,
+    ...classification,
     ...(response && { response }),
   };
 };
@@ -692,7 +738,7 @@ const sendNewsletterThankYouEmail = async ({ email }) => {
 
 const formatPaymentAmount = (amount) =>
   new Intl.NumberFormat("en-IN", {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(Number(amount || 0));
 
@@ -746,6 +792,7 @@ const sendPaymentReceiptEmail = async ({ transaction, receiptPdf, subjectPrefix 
     `Amount: ${amountLabel}`,
     `Receipt: ${receiptNumber}`,
     `Razorpay Payment ID: ${paymentId}`,
+    `Transaction ID: ${normalizeEnvString(transaction?._id)}`,
     `Date: ${paymentDate}`,
     ...(!isSupport && preferredDate ? [`Preferred Date: ${preferredDate}`] : []),
     ...(!isSupport && preferredTime ? [`Preferred Time: ${preferredTime}`] : []),
@@ -776,6 +823,7 @@ const sendPaymentReceiptEmail = async ({ transaction, receiptPdf, subjectPrefix 
       { label: "Amount", value: amountLabel },
       { label: "Receipt", value: receiptNumber },
       { label: "Razorpay Payment ID", value: paymentId },
+      { label: "Transaction ID", value: normalizeEnvString(transaction?._id) },
       { label: "Date", value: paymentDate },
       ...(!isSupport && preferredDate ? [{ label: "Preferred Date", value: preferredDate }] : []),
       ...(!isSupport && preferredTime ? [{ label: "Preferred Time", value: preferredTime }] : []),
@@ -860,6 +908,8 @@ const sendAdminPaymentEmail = async ({ transaction, subjectPrefix = "" }) => {
 };
 
 module.exports = {
+  classifySmtpError,
+  getEmailDiagnostics,
   isEmailConfigured,
   sendTransactionalEmail,
   sendAdminPaymentEmail,
@@ -875,6 +925,7 @@ module.exports = {
     buildEmailLayout,
     buildWelcomeBackPayload,
     buildWelcomePayload,
+    classifySmtpError,
     getEmailConfig,
     normalizeAttachments,
     normalizeHeaders,

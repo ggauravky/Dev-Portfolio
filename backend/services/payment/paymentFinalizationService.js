@@ -1,19 +1,25 @@
 const Booking = require("../../models/Booking");
 const PaymentTransaction = require("../../models/PaymentTransaction");
 const { recordActivityEvent } = require("../activityService");
-const { sendAdminPaymentEmail, sendPaymentReceiptEmail } = require("../../utils/email");
+const {
+  classifySmtpError,
+  sendAdminPaymentEmail,
+  sendPaymentReceiptEmail,
+} = require("../../utils/email");
 const { generatePaymentReceipt } = require("../../utils/paymentReceipt");
 const { logger } = require("../../utils/logger");
+const { scheduleBackgroundTask, waitForBackgroundTasks } = require("../../utils/backgroundTasks");
 
 const EMAIL_CLAIM_TIMEOUT_MS = 5 * 60 * 1000;
-const pendingEmailJobs = new Set();
 
 const compactError = (error) => String(error?.message || error || "Unknown error").trim().slice(0, 200);
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 const getPaymentEmailMaxAttempts = () =>
   Math.min(3, Math.max(1, Number.parseInt(process.env.PAYMENT_EMAIL_MAX_ATTEMPTS, 10) || 3));
-const getPaymentEmailRetryBaseMs = () =>
-  Math.max(0, Number.parseInt(process.env.PAYMENT_EMAIL_RETRY_BASE_MS, 10) || 1000);
+const getPaymentEmailRetryBaseMs = () => {
+  const value = Number.parseInt(process.env.PAYMENT_EMAIL_RETRY_BASE_MS, 10);
+  return Number.isFinite(value) ? Math.max(0, value) : 1000;
+};
 
 const buildReceiptNumber = (transaction) => {
   const paidAt = new Date(transaction?.paidAt || Date.now());
@@ -103,6 +109,8 @@ const claimEmailDelivery = (transactionId, kind) => {
   const sentField = kind === "receipt" ? "receiptEmailSentAt" : "adminEmailSentAt";
   const claimField = kind === "receipt" ? "receiptEmailClaimedAt" : "adminEmailClaimedAt";
   const attemptField = kind === "receipt" ? "receiptEmailLastAttemptAt" : "adminEmailLastAttemptAt";
+  const statusField = kind === "receipt" ? "receiptEmailStatus" : "adminEmailStatus";
+  const attemptCountField = kind === "receipt" ? "receiptEmailAttemptCount" : "adminEmailAttemptCount";
 
   return PaymentTransaction.findOneAndUpdate(
     {
@@ -110,7 +118,10 @@ const claimEmailDelivery = (transactionId, kind) => {
       [sentField]: null,
       $or: [{ [claimField]: null }, { [claimField]: { $lt: staleBefore } }],
     },
-    { $set: { [claimField]: now, [attemptField]: now } },
+    {
+      $set: { [claimField]: now, [attemptField]: now, [statusField]: "processing" },
+      $inc: { [attemptCountField]: 1 },
+    },
     { new: true }
   );
 };
@@ -120,9 +131,20 @@ const persistEmailResult = async ({ transactionId, kind, result }) => {
   const messageField = kind === "receipt" ? "receiptEmailMessageId" : "adminEmailMessageId";
   const errorField = kind === "receipt" ? "receiptEmailError" : "adminEmailError";
   const claimField = kind === "receipt" ? "receiptEmailClaimedAt" : "adminEmailClaimedAt";
+  const statusField = kind === "receipt" ? "receiptEmailStatus" : "adminEmailStatus";
   const update = result?.sent
-    ? { [sentField]: new Date(), [messageField]: String(result.messageId || "").slice(0, 200), [errorField]: "", [claimField]: null }
-    : { [errorField]: compactError(result?.error?.message || result?.reason || "Email was not sent"), [claimField]: null };
+    ? {
+        [sentField]: new Date(),
+        [messageField]: String(result.messageId || "").slice(0, 200),
+        [errorField]: "",
+        [claimField]: null,
+        [statusField]: "sent",
+      }
+    : {
+        [errorField]: compactError(result?.error?.message || result?.reason || "Email was not sent"),
+        [claimField]: null,
+        [statusField]: "failed",
+      };
   await PaymentTransaction.updateOne({ _id: transactionId }, { $set: update });
 };
 
@@ -132,6 +154,10 @@ const deliverReceiptEmailOnce = async (transaction) => {
 
   try {
     const receiptPdf = await generatePaymentReceipt(claimed);
+    logger.info(
+      { transactionId: String(claimed._id), event: "receipt.generated" },
+      "Payment receipt generated"
+    );
     const result = await sendPaymentReceiptEmail({ transaction: claimed, receiptPdf });
     await persistEmailResult({ transactionId: claimed._id, kind: "receipt", result });
     return result;
@@ -165,7 +191,30 @@ const deliverEmailWithRetry = async ({ transaction, kind, deliver }) => {
       lastResult = { sent: false, skipped: false, reason: "delivery_error", error, attempt };
     }
 
-    if (lastResult.sent || lastResult.skipped) return lastResult;
+    const safeError = lastResult.error || {};
+    const classification = lastResult.skipped
+      ? null
+      : safeError.category
+        ? safeError
+        : classifySmtpError(safeError);
+    const logContext = {
+      transactionId: String(transaction._id),
+      emailKind: kind,
+      attempt,
+      event: lastResult.sent
+        ? `email.${kind === "receipt" ? "customer" : "admin"}.sent`
+        : lastResult.skipped
+          ? `email.${kind === "receipt" ? "customer" : "admin"}.skipped`
+          : `email.${kind === "receipt" ? "customer" : "admin"}.failed`,
+      messageId: lastResult.sent ? String(lastResult.messageId || "") : undefined,
+      smtpCode: !lastResult.sent ? safeError.code : undefined,
+      smtpCategory: !lastResult.sent && !lastResult.skipped ? classification?.category : undefined,
+    };
+    if (lastResult.sent) logger.info(logContext, "Payment email sent");
+    else if (lastResult.skipped) logger.info(logContext, "Payment email skipped");
+    else logger.warn(logContext, "Payment email attempt failed");
+
+    if (lastResult.sent || lastResult.skipped || classification?.retryable === false) return lastResult;
     if (attempt < maxAttempts) {
       await delay(getPaymentEmailRetryBaseMs() * 2 ** (attempt - 1));
     }
@@ -199,21 +248,23 @@ const runPaymentEmailWorkflow = async (transaction) => {
 };
 
 const schedulePaymentEmailWorkflow = (transaction) => {
-  let job;
-  job = new Promise((resolve) => setImmediate(resolve))
-    .then(() => runPaymentEmailWorkflow(transaction))
-    .catch((error) => {
-      logger.error(
-        { transactionId: String(transaction._id), error: compactError(error) },
-        "Payment email workflow failed"
-      );
-    })
-    .finally(() => pendingEmailJobs.delete(job));
-  pendingEmailJobs.add(job);
+  logger.info(
+    { transactionId: String(transaction._id), event: "email.customer.queued" },
+    "Payment customer email queued"
+  );
+  logger.info(
+    { transactionId: String(transaction._id), event: "email.admin.queued" },
+    "Payment admin email queued"
+  );
+  scheduleBackgroundTask({
+    name: "payment-email-workflow",
+    context: { transactionId: String(transaction._id) },
+    task: () => runPaymentEmailWorkflow(transaction),
+  });
 };
 
 const waitForPendingEmailJobs = async () => {
-  await Promise.all([...pendingEmailJobs]);
+  await waitForBackgroundTasks();
 };
 
 const finalizeSuccessfulPayment = async ({ transaction, payment, source = "verification" }) => {
@@ -252,19 +303,41 @@ const finalizeSuccessfulPayment = async ({ transaction, payment, source = "verif
   }
   await recordPaidActivity(finalized);
 
+  logger.info(
+    {
+      transactionId: String(finalized._id),
+      flowType: finalized.flowType,
+      source,
+      event: "payment.finalized",
+    },
+    "Payment finalized"
+  );
+
   schedulePaymentEmailWorkflow(finalized);
 
   return PaymentTransaction.findById(finalized._id);
+};
+
+const reconcilePaymentEmails = async (transaction) => {
+  if (!transaction?._id || transaction.status !== "paid") {
+    const error = new Error("Only paid transactions can be reconciled");
+    error.code = "PAYMENT_NOT_PAID";
+    throw error;
+  }
+  const withReceipt = await ensureReceiptIdentity(transaction);
+  return runPaymentEmailWorkflow(withReceipt);
 };
 
 module.exports = {
   buildReceiptNumber,
   deliverReceiptEmailOnce,
   finalizeSuccessfulPayment,
+  reconcilePaymentEmails,
   recordPaidActivity,
   _test: {
     deliverAdminEmailOnce,
     deliverEmailWithRetry,
+    claimEmailDelivery,
     runPaymentEmailWorkflow,
     waitForPendingEmailJobs,
   },

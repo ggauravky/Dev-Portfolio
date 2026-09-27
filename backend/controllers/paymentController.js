@@ -18,6 +18,7 @@ const { finalizeSuccessfulPayment } = require("../services/payment/paymentFinali
 const { generatePaymentReceipt } = require("../utils/paymentReceipt");
 const { recordActivityEvent } = require("../services/activityService");
 const { logger } = require("../utils/logger");
+const { parseSupportAmountInr } = require("../config/payment");
 
 const normalize = (value, maxLength = 300) => String(value || "").trim().slice(0, maxLength);
 const normalizeEmail = (value) => normalize(value, 320).toLowerCase();
@@ -61,13 +62,7 @@ const buildTransactionInput = ({ body, authUser, req }) => {
 };
 
 const buildSupportTransactionInput = ({ body, authUser, req }) => {
-  const amount = Number(body?.amount);
-  if (!Number.isSafeInteger(amount) || amount < 49 || amount > 100000) {
-    const error = new Error("Support amount must be between INR 49 and INR 100000");
-    error.status = 400;
-    error.code = "INVALID_SUPPORT_AMOUNT";
-    throw error;
-  }
+  const amount = parseSupportAmountInr(body?.amount);
 
   const contributorName = normalize(body?.name, 80);
   return {

@@ -68,10 +68,10 @@ const requestAuthApi = async (endpoint, options = {}) => {
 export const fetchCurrentSession = (options = {}) =>
     requestAuthApi('/api/auth/me', { method: 'GET', ...options })
 
-export const signInWithGoogleCredential = ({ credential, selectBy = '' }, options = {}) =>
+export const signInWithGoogleCredential = ({ credential, selectBy = '', loginEventId = '' }, options = {}) =>
     requestAuthApi('/api/auth/google', {
         method: 'POST',
-        body: JSON.stringify({ credential, selectBy }),
+        body: JSON.stringify({ credential, selectBy, loginEventId }),
         ...options,
     })
 

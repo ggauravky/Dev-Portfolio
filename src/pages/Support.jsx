@@ -13,7 +13,9 @@ import {
 } from '../services/payment'
 import { trackEvent } from '../utils/analytics'
 
-const QUICK_AMOUNTS = [49, 99, 199, 499, 999, 1999]
+const SUPPORT_MIN_AMOUNT_INR = 5
+const SUPPORT_MAX_AMOUNT_INR = 100000
+const QUICK_AMOUNTS = [5, 49, 99, 199, 499, 999]
 const fieldClass = 'mt-2 w-full rounded-md border border-obsidian-border bg-obsidian px-3.5 py-3 text-sm text-slate-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-toxic/60'
 
 function Support() {
@@ -54,9 +56,10 @@ function Support() {
         const amount = Number(form.amount)
         if (form.name.trim().length < 2) throw new Error('Please enter your name')
         if (!/^[6-9]\d{9}$/.test(form.phone)) throw new Error('Please enter a valid 10-digit Indian mobile number')
-        if (!Number.isSafeInteger(amount) || amount < 49 || amount > 100000) {
-            throw new Error('Support amount must be between INR 49 and INR 100000')
+        if (!Number.isSafeInteger(amount) || amount < SUPPORT_MIN_AMOUNT_INR) {
+            throw new Error('Minimum support amount is ₹5.')
         }
+        if (amount > SUPPORT_MAX_AMOUNT_INR) throw new Error('Maximum support amount is ₹1,00,000.')
         return amount
     }
 
@@ -160,6 +163,7 @@ function Support() {
                             <span className="rounded border border-obsidian-border px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500">Razorpay Standard Checkout</span>
                         </div>
                         <h1 className="mt-5 text-3xl font-display font-bold tracking-tight text-white sm:text-4xl">Help Me Keep Building</h1>
+                        <p className="mt-2 text-xs font-mono uppercase tracking-wider text-toxic">Support from ₹5</p>
                         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">If my projects, articles, or resources have helped you, you can support the time and care that goes into creating them.</p>
 
                         {paymentMessage ? <div className="mt-5 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-200">{paymentMessage}</div> : null}
@@ -183,8 +187,8 @@ function Support() {
 
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Custom Amount
-                                    <input className={fieldClass} name="amount" value={form.amount} onChange={updateField} inputMode="numeric" min="49" max="100000" required aria-describedby="support-amount-help" />
-                                    <span id="support-amount-help" className="mt-1.5 block text-[10px] normal-case tracking-normal text-zinc-600">Whole rupees, INR 49 to INR 100,000</span>
+                                    <input className={fieldClass} name="amount" value={form.amount} onChange={updateField} inputMode="numeric" min="5" max="100000" placeholder="₹5 or more" required aria-describedby="support-amount-help" />
+                                    <span id="support-amount-help" className="mt-1.5 block text-[10px] normal-case tracking-normal text-zinc-600">Whole rupees, ₹5 to ₹1,00,000</span>
                                 </label>
                                 <label className="text-xs font-mono uppercase tracking-wider text-zinc-400">Account Email
                                     <input className={`${fieldClass} cursor-not-allowed opacity-70`} value={user?.email || 'Sign in to continue'} readOnly aria-label="Account email" />

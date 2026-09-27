@@ -110,7 +110,7 @@ function PaymentSuccess() {
                         {isPaid ? <CheckCircle2 className="h-7 w-7" /> : <ReceiptText className="h-7 w-7" />}
                     </div>
                     <p className="mt-5 text-[10px] font-mono uppercase tracking-widest text-toxic">Server-Verified Payment</p>
-                    <h1 className="mt-2 text-3xl font-display font-bold text-white sm:text-4xl">{isPaid ? 'Payment Successful' : isFailed ? 'Payment Failed' : 'Payment Pending'}</h1>
+                    <h1 className="mt-2 text-3xl font-display font-bold text-white sm:text-4xl">{isPaid ? (isSupport ? 'Thanks for the support.' : 'Payment confirmed.') : isFailed ? 'Payment Failed' : 'Payment Pending'}</h1>
                     <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
                         {isPaid
                             ? isSupport

@@ -8,7 +8,12 @@ const { createHash, randomUUID } = require("node:crypto");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/User");
 const { logger } = require("../utils/logger");
-const { sendWelcomeEmail, sendWelcomeBackEmail } = require("../utils/email");
+const {
+  classifySmtpError,
+  sendWelcomeEmail,
+  sendWelcomeBackEmail,
+} = require("../utils/email");
+const { scheduleBackgroundTask, waitForBackgroundTasks } = require("../utils/backgroundTasks");
 const { recordActivityEvent } = require("../services/activityService");
 const {
   PROFILE_SELECT,
@@ -73,12 +78,17 @@ const normalizeText = (value, maxLength) =>
 
 const getLoginEmailMaxAttempts = () =>
   Math.max(1, Number.parseInt(process.env.LOGIN_EMAIL_MAX_ATTEMPTS, 10) || 3);
-const getLoginEmailRetryBaseMs = () =>
-  Math.max(0, Number.parseInt(process.env.LOGIN_EMAIL_RETRY_BASE_MS, 10) || 2000);
+const getLoginEmailRetryBaseMs = () => {
+  const value = Number.parseInt(process.env.LOGIN_EMAIL_RETRY_BASE_MS, 10);
+  return Number.isFinite(value) ? Math.max(0, value) : 2000;
+};
 
-// A digest keeps retried POSTs for the same verified credential idempotent without storing the token.
-const buildLoginEventId = (credential) =>
-  `google-${createHash("sha256").update(credential).digest("hex").slice(0, 48)}`;
+// The client event distinguishes explicit sign-ins; the credential digest keeps retried POSTs idempotent.
+const buildLoginEventId = (credential, clientEventId = "") =>
+  `google-${createHash("sha256")
+    .update(`${credential}:${normalizeText(clientEventId, 80)}`)
+    .digest("hex")
+    .slice(0, 48)}`;
 
 const buildAuthLifecycleMessage = (isNewUser) => ({
   type: isNewUser ? "welcome" : "welcome_back",
@@ -142,23 +152,46 @@ const delay = (milliseconds) =>
     setTimeout(resolve, milliseconds);
   });
 
-const dispatchLifecycleEmailWithRetry = async ({ isNewUser, userSnapshot }) => {
+const dispatchLifecycleEmailWithRetry = async ({ isNewUser, userSnapshot, reqLogger }) => {
   let lastResult = { sent: false, skipped: true, reason: "not_attempted" };
   const maxAttempts = getLoginEmailMaxAttempts();
+  const emailType = isNewUser ? "welcome" : "welcome_back";
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const result = isNewUser
-      ? await authDependencies.sendWelcomeEmail({
-          user: userSnapshot,
-          loginEventId: userSnapshot.loginEventId,
-        })
-      : await authDependencies.sendWelcomeBackEmail({
-          user: userSnapshot,
-          loginEventId: userSnapshot.loginEventId,
-        });
+    let result;
+    try {
+      result = isNewUser
+        ? await authDependencies.sendWelcomeEmail({
+            user: userSnapshot,
+            loginEventId: userSnapshot.loginEventId,
+          })
+        : await authDependencies.sendWelcomeBackEmail({
+            user: userSnapshot,
+            loginEventId: userSnapshot.loginEventId,
+          });
+    } catch (error) {
+      result = { sent: false, skipped: false, reason: "delivery_error", error };
+    }
 
     lastResult = { ...result, attempt };
-    if (result.sent || result.skipped) return lastResult;
+    const classification = result.skipped
+      ? null
+      : result.error?.category
+        ? result.error
+        : classifySmtpError(result.error || {});
+    const context = {
+      userId: userSnapshot._id,
+      emailType,
+      attempt,
+      messageId: result.sent ? String(result.messageId || result.providerId || "") : undefined,
+      smtpCode: !result.sent ? result.error?.code : undefined,
+      smtpCategory: !result.sent && !result.skipped ? classification?.category : undefined,
+    };
+    if (result.sent) reqLogger.info({ ...context, event: "email.login.sent" }, "Login email sent");
+    else if (result.skipped) reqLogger.info({ ...context, event: "email.login.skipped" }, "Login email skipped");
+    else reqLogger.warn({ ...context, event: "email.login.failed" }, "Login email attempt failed");
+
+    if (result.sent || result.skipped || classification?.retryable === false) return lastResult;
 
     if (attempt < maxAttempts) {
       await delay(getLoginEmailRetryBaseMs() * attempt);
@@ -176,7 +209,7 @@ const processLifecycleEmail = async ({ userSnapshot, isNewUser, reqLogger }) => 
     });
     if (!claimed) return;
 
-    const result = await dispatchLifecycleEmailWithRetry({ isNewUser, userSnapshot });
+    const result = await dispatchLifecycleEmailWithRetry({ isNewUser, userSnapshot, reqLogger });
 
     if (!result.sent) {
       if (!result.skipped) {
@@ -219,32 +252,46 @@ const schedulePostLoginTasks = ({ user, isNewUser, loginEventId, selectBy, reqLo
     loginEventId,
   };
 
-  setImmediate(() => {
-    Promise.resolve(
-      authDependencies.recordActivityEvent({
-        eventKey: `auth:login:${loginEventId}`,
-        userId: user._id,
-        userEmail: user.email,
-        domain: "auth",
-        actionType: "login_success",
-        title: isNewUser
-          ? "Google sign-in completed (new account)"
-          : "Google sign-in completed",
-        status: "success",
-        metadata: {
-          provider: "google",
-          isNewUser: Boolean(isNewUser),
-          selectBy,
-        },
-      })
-    ).catch((error) => {
-      reqLogger.warn(
-        { userId: String(user._id), category: error?.code || error?.name || "ACTIVITY_FAILED" },
-        "Failed to persist login activity event"
-      );
-    });
+  reqLogger.info(
+    {
+      userId: String(user._id),
+      emailType: isNewUser ? "welcome" : "welcome_back",
+      event: "email.login.queued",
+    },
+    "Login email queued"
+  );
 
-    void processLifecycleEmail({ userSnapshot, isNewUser, reqLogger });
+  scheduleBackgroundTask({
+    name: "post-login",
+    context: { userId: String(user._id) },
+    taskLogger: reqLogger,
+    task: async () => {
+      Promise.resolve(
+        authDependencies.recordActivityEvent({
+          eventKey: `auth:login:${loginEventId}`,
+          userId: user._id,
+          userEmail: user.email,
+          domain: "auth",
+          actionType: "login_success",
+          title: isNewUser
+            ? "Google sign-in completed (new account)"
+            : "Google sign-in completed",
+          status: "success",
+          metadata: {
+            provider: "google",
+            isNewUser: Boolean(isNewUser),
+            selectBy,
+          },
+        })
+      ).catch((error) => {
+        reqLogger.warn(
+          { userId: String(user._id), category: error?.code || error?.name || "ACTIVITY_FAILED" },
+          "Failed to persist login activity event"
+        );
+      });
+
+      await processLifecycleEmail({ userSnapshot, isNewUser, reqLogger });
+    },
   });
 };
 
@@ -312,7 +359,7 @@ exports.googleSignIn = async (req, res) => {
     const googlePayload = await authDependencies.verifyGoogleCredential(credential, clientId);
     const { user, isNewUser } = await authDependencies.reconcileGoogleAccount(googlePayload);
     const sessionToken = issueSessionToken({ uid: String(user._id) });
-    const loginEventId = buildLoginEventId(credential);
+    const loginEventId = buildLoginEventId(credential, req.body?.loginEventId);
     const selectBy = normalizeText(req.body?.selectBy, 40);
 
     res.cookie(AUTH_COOKIE_NAME, sessionToken, getSessionCookieOptions());
@@ -446,4 +493,6 @@ exports._test = {
     authDependencies = { ...authDependencies, ...overrides };
   },
   processLifecycleEmail,
+  dispatchLifecycleEmailWithRetry,
+  waitForBackgroundTasks,
 };

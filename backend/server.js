@@ -34,6 +34,8 @@ const { initMonitoring, captureException } = require("./utils/monitoring");
 const { buildPublicErrorPayload } = require("./utils/publicError");
 const { validateEnvironment } = require("./config/env");
 const { corsOrigin } = require("./config/trustedOrigins");
+const { getEmailDiagnostics } = require("./utils/email");
+const { waitForBackgroundTasks } = require("./utils/backgroundTasks");
 
 
 const envValidation = validateEnvironment({ strict: true });
@@ -41,6 +43,7 @@ for (const warning of envValidation.warnings) {
   logger.warn({ warning }, "Environment validation warning");
 }
 logger.info({ flags: envValidation.flags }, "Environment configuration validated");
+logger.info(getEmailDiagnostics(), "Transactional email configuration");
 
 // Initialize express app
 const app = express();
@@ -202,6 +205,7 @@ const gracefulShutdown = async ({ reason = "shutdown", exitCode = 0 } = {}) => {
 
   try {
     await closeServerPromise;
+    await waitForBackgroundTasks({ timeoutMs: 5000 });
   } catch (error) {
     logger.error({ err: error, reason }, "Graceful shutdown encountered an error");
   }

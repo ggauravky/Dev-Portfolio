@@ -170,6 +170,27 @@ test("support payment email uses contribution wording and attaches one PDF", asy
   assert.equal(sentMessages[0].attachments[0].content, pdf);
 });
 
+test("INR 5 support email keeps the rupee amount in subject and body", async () => {
+  await email.sendPaymentReceiptEmail({
+    transaction: {
+      _id: "support-transaction-5",
+      flowType: "support",
+      customerName: "Test Supporter",
+      email: "supporter@example.test",
+      serviceName: "Support Contribution",
+      amount: 5,
+      receiptNumber: "GKY-2026-SUPPORT5",
+      razorpayPaymentId: "pay_support500",
+      status: "paid",
+    },
+    receiptPdf: Buffer.from("%PDF-support-five"),
+  });
+
+  assert.match(sentMessages[0].subject, /₹5$/);
+  assert.match(sentMessages[0].text, /Amount: ₹5/);
+  assert.doesNotMatch(sentMessages[0].text, /₹500|₹0\.05/);
+});
+
 test("shared email shell escapes dynamic customer fields", () => {
   const html = email._test.buildEmailShell({
     preheader: '<script>alert("preheader")</script>',
@@ -282,7 +303,40 @@ test("SMTP failures return safe diagnostic fields", async () => {
     code: "EAUTH",
     responseCode: 535,
     command: "AUTH PLAIN",
+    category: "SMTP_AUTH_FAILED",
+    retryable: false,
+    providerActionRequired: true,
     response: "535 [REDACTED] rejected [REDACTED]",
   });
   assert.doesNotMatch(JSON.stringify(result), /smtp-test-key/);
+});
+
+test("Brevo unauthorized IP failures receive a safe manual-action classification", async () => {
+  email._test.setTransporter({
+    sendMail: async () => {
+      const error = new Error("Delivery rejected");
+      error.code = "EENVELOPE";
+      error.responseCode = 525;
+      error.response = "525 5.7.1 Unauthorized IP address";
+      throw error;
+    },
+  });
+
+  const result = await email.sendTransactionalEmail({
+    to: "user@example.test",
+    subject: "IP diagnostic",
+    textContent: "Test",
+  });
+  assert.equal(result.error.category, "BREVO_IP_NOT_AUTHORIZED");
+  assert.equal(result.error.retryable, false);
+  assert.equal(result.error.providerActionRequired, true);
+});
+
+test("temporary SMTP failures remain retryable", () => {
+  assert.deepEqual(email.classifySmtpError({ code: "ETIMEDOUT" }), {
+    category: "SMTP_TEMPORARY_FAILURE",
+    retryable: true,
+    providerActionRequired: false,
+  });
+  assert.equal(email.classifySmtpError({ responseCode: 451 }).retryable, true);
 });

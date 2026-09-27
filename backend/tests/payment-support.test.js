@@ -6,7 +6,7 @@ const gateway = require("../services/payment/razorpayGateway");
 const paymentController = require("../controllers/paymentController");
 const authMiddleware = require("../middleware/auth");
 const { getRazorpayKeyMode, validateEnvironment } = require("../config/env");
-const { generatePaymentReceipt } = require("../utils/paymentReceipt");
+const { generatePaymentReceipt, _test: receiptTest } = require("../utils/paymentReceipt");
 
 const validUserId = "507f1f77bcf86cd799439011";
 const validTransactionId = "507f191e810c19729de860ea";
@@ -176,8 +176,34 @@ test("unauthenticated support requests are rejected by the shared auth middlewar
   assert.equal(nextCalled, false);
 });
 
-test("support amount below INR 49 is rejected", () => {
-  assert.throws(() => buildSupportInput({ amount: 48 }), { code: "INVALID_SUPPORT_AMOUNT", status: 400 });
+test("support amounts below INR 5 are rejected with a useful message", () => {
+  for (const amount of [4, 3, 2, 1, 0, -1]) {
+    assert.throws(
+      () => buildSupportInput({ amount }),
+      (error) => error.code === "INVALID_SUPPORT_AMOUNT" && error.message === "Minimum support amount is INR 5."
+    );
+  }
+});
+
+test("support accepts INR 5 and other valid whole-rupee amounts", () => {
+  for (const amount of [5, 10, 20, 49, 99, 199]) {
+    const input = buildSupportInput({ amount });
+    assert.equal(input.amount, amount);
+    assert.equal(input.amountPaise, amount * 100);
+  }
+});
+
+test("support rejects malformed, fractional, and non-finite amounts", () => {
+  for (const amount of ["not-an-amount", 5.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.throws(() => buildSupportInput({ amount }), { code: "INVALID_SUPPORT_AMOUNT", status: 400 });
+  }
+});
+
+test("support paise conversion preserves exact server-validated value", () => {
+  assert.equal(buildSupportInput({ amount: 5 }).amountPaise, 500);
+  assert.equal(buildSupportInput({ amount: 10 }).amountPaise, 1000);
+  assert.equal(buildSupportInput({ amount: 49 }).amountPaise, 4900);
+  assert.equal(buildSupportInput({ amount: 199 }).amountPaise, 19900);
 });
 
 test("support amount above INR 100000 is rejected", () => {
@@ -216,6 +242,12 @@ test("paid support contribution generates a PDF receipt", async () => {
   const receipt = await generatePaymentReceipt(buildSupportTransaction());
   assert.ok(Buffer.isBuffer(receipt));
   assert.equal(receipt.subarray(0, 4).toString(), "%PDF");
+});
+
+test("INR 5 support receipt keeps the trusted rupee amount", () => {
+  const receipt = receiptTest.buildReceiptData(buildSupportTransaction({ amount: 5, amountPaise: 500 }));
+  assert.equal(receipt.amount, "INR 5.00");
+  assert.equal(receipt.itemName, "Support Contribution");
 });
 
 test("unpaid support contribution cannot generate a receipt", async () => {

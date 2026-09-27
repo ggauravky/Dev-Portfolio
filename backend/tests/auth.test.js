@@ -420,6 +420,14 @@ test("32. login event ID is stable for a retried credential", () => {
     authController._test.buildLoginEventId("same-google-credential"),
     authController._test.buildLoginEventId("different-google-credential")
   );
+  assert.equal(
+    authController._test.buildLoginEventId("same-google-credential", "98ee6b87-2f9f-44ca-bc12-8ff4ba12ce1d"),
+    authController._test.buildLoginEventId("same-google-credential", "98ee6b87-2f9f-44ca-bc12-8ff4ba12ce1d")
+  );
+  assert.notEqual(
+    authController._test.buildLoginEventId("same-google-credential", "98ee6b87-2f9f-44ca-bc12-8ff4ba12ce1d"),
+    authController._test.buildLoginEventId("same-google-credential", "91648e91-cbae-4bdb-bda3-c4da15acb92d")
+  );
 });
 
 test("33. successful Google login emails the verified user exactly once", async () => {
@@ -511,4 +519,98 @@ test("37. login event claim is an atomic bounded MongoDB update", async () => {
   } finally {
     User.updateOne = originalUpdateOne;
   }
+});
+
+test("38. temporary login email failure retries without failing authentication", async () => {
+  process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "3";
+  process.env.LOGIN_EMAIL_RETRY_BASE_MS = "0";
+  let attempts = 0;
+  authController._test.setDependencies({
+    sendWelcomeBackEmail: async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        return {
+          sent: false,
+          skipped: false,
+          reason: "smtp_error",
+          error: { code: "ETIMEDOUT", category: "SMTP_TEMPORARY_FAILURE", retryable: true },
+        };
+      }
+      return { sent: true, messageId: "login-after-retry" };
+    },
+  });
+
+  try {
+    const result = await authController._test.dispatchLifecycleEmailWithRetry({
+      isNewUser: false,
+      userSnapshot: { _id: "user-1", loginEventId: "login-retry-1" },
+      reqLogger: quietLogger,
+    });
+    assert.equal(result.sent, true);
+    assert.equal(attempts, 2);
+  } finally {
+    process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "1";
+  }
+});
+
+test("39. permanent login SMTP authentication failure stops bounded retry", async () => {
+  process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "3";
+  let attempts = 0;
+  authController._test.setDependencies({
+    sendWelcomeBackEmail: async () => {
+      attempts += 1;
+      return {
+        sent: false,
+        skipped: false,
+        reason: "smtp_error",
+        error: { code: "EAUTH", category: "SMTP_AUTH_FAILED", retryable: false },
+      };
+    },
+  });
+
+  try {
+    const result = await authController._test.dispatchLifecycleEmailWithRetry({
+      isNewUser: false,
+      userSnapshot: { _id: "user-1", loginEventId: "login-auth-failure" },
+      reqLogger: quietLogger,
+    });
+    assert.equal(result.sent, false);
+    assert.equal(attempts, 1);
+  } finally {
+    process.env.LOGIN_EMAIL_MAX_ATTEMPTS = "1";
+  }
+});
+
+test("40. separate explicit login event IDs allow legitimate later notifications", async () => {
+  const claimedEvents = new Set();
+  let deliveries = 0;
+  const dependencies = {
+    claimLoginEmailEvent: async ({ loginEventId }) => {
+      if (claimedEvents.has(loginEventId)) return false;
+      claimedEvents.add(loginEventId);
+      return true;
+    },
+    sendWelcomeBackEmail: async () => {
+      deliveries += 1;
+      return { sent: true, messageId: `login-${deliveries}` };
+    },
+  };
+
+  await runGoogleSignIn({
+    dependencies,
+    body: {
+      credential: "same-google-credential",
+      loginEventId: "98ee6b87-2f9f-44ca-bc12-8ff4ba12ce1d",
+    },
+  });
+  await authController._test.waitForBackgroundTasks();
+  await runGoogleSignIn({
+    dependencies,
+    body: {
+      credential: "same-google-credential",
+      loginEventId: "91648e91-cbae-4bdb-bda3-c4da15acb92d",
+    },
+  });
+  await authController._test.waitForBackgroundTasks();
+  assert.equal(deliveries, 2);
 });

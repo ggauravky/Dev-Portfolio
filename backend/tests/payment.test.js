@@ -367,6 +367,7 @@ test("every frontend paid service has matching backend pricing", async () => {
 const withMockedFinalizer = async ({
   receiptEmail,
   adminEmail = async () => ({ sent: false, skipped: true, reason: "admin_email_not_configured" }),
+  maxAttempts = 1,
   run,
 }) => {
   const Booking = require("../models/Booking");
@@ -391,7 +392,7 @@ const withMockedFinalizer = async ({
   emailModule.sendAdminPaymentEmail = adminEmail;
   receiptModule.generatePaymentReceipt = async () => Buffer.from("%PDF-test");
   activityModule.recordActivityEvent = async () => ({});
-  process.env.PAYMENT_EMAIL_MAX_ATTEMPTS = "1";
+  process.env.PAYMENT_EMAIL_MAX_ATTEMPTS = String(maxAttempts);
   process.env.PAYMENT_EMAIL_RETRY_BASE_MS = "0";
   delete require.cache[finalizerPath];
 
@@ -531,6 +532,111 @@ test("verification and webhook retries do not duplicate customer or admin email"
 
       assert.equal(receiptSendCount, 1);
       assert.equal(adminSendCount, 1);
+    },
+  });
+});
+
+test("temporary payment email failure is released and retried", async () => {
+  let sendCount = 0;
+  await withMockedFinalizer({
+    maxAttempts: 3,
+    receiptEmail: async () => {
+      sendCount += 1;
+      if (sendCount === 1) {
+        return {
+          sent: false,
+          skipped: false,
+          reason: "smtp_error",
+          error: { code: "ETIMEDOUT", category: "SMTP_TEMPORARY_FAILURE", retryable: true },
+        };
+      }
+      return { sent: true, messageId: "receipt-after-retry" };
+    },
+    run: async ({ finalizer }) => {
+      const state = buildTransaction({ receiptEmailSentAt: null, receiptEmailClaimedAt: null });
+      PaymentTransaction.findOneAndUpdate = async (query, update) => {
+        const activeClaim = state.receiptEmailClaimedAt &&
+          state.receiptEmailClaimedAt >= query.$or?.[1]?.receiptEmailClaimedAt?.$lt;
+        if (query.receiptEmailSentAt === null && (state.receiptEmailSentAt || activeClaim)) return null;
+        Object.assign(state, update.$set || {});
+        return state;
+      };
+      PaymentTransaction.updateOne = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return { acknowledged: true };
+      };
+
+      const result = await finalizer._test.deliverEmailWithRetry({
+        transaction: state,
+        kind: "receipt",
+        deliver: finalizer.deliverReceiptEmailOnce,
+      });
+      assert.equal(result.sent, true);
+      assert.equal(sendCount, 2);
+      assert.ok(state.receiptEmailSentAt instanceof Date);
+      assert.equal(state.receiptEmailStatus, "sent");
+    },
+  });
+});
+
+test("permanent SMTP authentication failure is not retried repeatedly", async () => {
+  let sendCount = 0;
+  await withMockedFinalizer({
+    maxAttempts: 3,
+    receiptEmail: async () => {
+      sendCount += 1;
+      return {
+        sent: false,
+        skipped: false,
+        reason: "smtp_error",
+        error: { code: "EAUTH", category: "SMTP_AUTH_FAILED", retryable: false },
+      };
+    },
+    run: async ({ finalizer }) => {
+      const state = buildTransaction({ receiptEmailSentAt: null, receiptEmailClaimedAt: null });
+      PaymentTransaction.findOneAndUpdate = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return state;
+      };
+      PaymentTransaction.updateOne = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return { acknowledged: true };
+      };
+
+      const result = await finalizer._test.deliverEmailWithRetry({
+        transaction: state,
+        kind: "receipt",
+        deliver: finalizer.deliverReceiptEmailOnce,
+      });
+      assert.equal(result.sent, false);
+      assert.equal(sendCount, 1);
+      assert.equal(state.receiptEmailClaimedAt, null);
+      assert.equal(state.receiptEmailStatus, "failed");
+    },
+  });
+});
+
+test("stale payment email processing claim can be recovered", async () => {
+  await withMockedFinalizer({
+    receiptEmail: async () => ({ sent: true, messageId: "stale-recovery" }),
+    run: async ({ finalizer }) => {
+      const staleClaim = new Date(Date.now() - 10 * 60 * 1000);
+      const state = buildTransaction({ receiptEmailSentAt: null, receiptEmailClaimedAt: staleClaim });
+      let capturedQuery;
+      PaymentTransaction.findOneAndUpdate = async (query, update) => {
+        capturedQuery = query;
+        Object.assign(state, update.$set || {});
+        return state;
+      };
+      PaymentTransaction.updateOne = async (query, update) => {
+        Object.assign(state, update.$set || {});
+        return { acknowledged: true };
+      };
+
+      const result = await finalizer.deliverReceiptEmailOnce(state);
+      assert.equal(result.sent, true);
+      assert.ok(capturedQuery.$or[1].receiptEmailClaimedAt.$lt instanceof Date);
+      assert.ok(capturedQuery.$or[1].receiptEmailClaimedAt.$lt > staleClaim);
     },
   });
 });

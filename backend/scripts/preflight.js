@@ -3,6 +3,7 @@ const path = require("node:path");
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 const { validateEnvironment } = require("../config/env");
+const { getEmailDiagnostics } = require("../utils/email");
 
 const checks = [];
 const record = (label, passed, detail = "") => {
@@ -36,6 +37,7 @@ try {
 }
 
 const flags = report?.flags || {};
+const emailDiagnostics = getEmailDiagnostics();
 record("Google Auth config", Boolean(flags.authConfigured));
 record("Session config", Boolean(flags.authConfigured));
 record(
@@ -45,8 +47,19 @@ record(
 );
 record(
   "SMTP config",
-  !flags.emailEnabled || Boolean(flags.emailConfigured),
-  flags.emailEnabled ? "enabled" : "disabled"
+  !emailDiagnostics.enabled || emailDiagnostics.configured,
+  emailDiagnostics.enabled ? "enabled" : "disabled"
+);
+record("SMTP host", !emailDiagnostics.enabled || emailDiagnostics.hostConfigured);
+record("SMTP sender", !emailDiagnostics.enabled || emailDiagnostics.senderConfigured);
+record(
+  "Payment email notifications",
+  !emailDiagnostics.enabled || emailDiagnostics.paymentNotificationsEnabled,
+  emailDiagnostics.paymentNotificationsEnabled ? "enabled" : "disabled"
+);
+record(
+  "Payment admin recipient",
+  !emailDiagnostics.paymentNotificationsEnabled || emailDiagnostics.adminRecipientConfigured
 );
 record(
   "Cloudinary config",

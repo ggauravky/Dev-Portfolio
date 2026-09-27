@@ -10,7 +10,8 @@
         "test": "node --test",
         "test:razorpay": "node scripts/testRazorpayAuth.js",
         "test:email": "node scripts/testEmail.js",
-        "test:email:templates": "node scripts/testEmailTemplates.js"
+        "test:email:templates": "node scripts/testEmailTemplates.js",
+        "email:reconcile": "node scripts/reconcilePaymentEmails.js"
     },
     "keywords": [
         "portfolio",
