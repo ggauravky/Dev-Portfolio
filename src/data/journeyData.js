@@ -810,6 +810,61 @@ export const journeyData = [
     technologies: ['Google Gemini API', 'Swytchcode', 'React', 'Node.js', 'Express', 'MongoDB', 'Notion API', 'GitHub API', 'Jira API', 'Resend API'],
     certificateUrl: '',
     relatedBlogSlug: ''
+  },
+  {
+    id: 'lenovo-leap-hackathon-2026',
+    title: 'Lenovo LEAP Hackathon',
+    organization: 'Lenovo LEAP',
+    date: '2026-09-18',
+    dateLabel: 'September 18, 2026',
+    location: 'AKTU, Lucknow, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Hackathons',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended the Lenovo LEAP Hackathon at AKTU, Lucknow, where I presented TaskNexus, a service marketplace concept connecting clients with skilled freelancers while simplifying task assignment, quality checks, and delivery. The hands-on event focused on learning, building, exploring ideas, and collaborating in a strong developer environment, with supportive mentors throughout the experience.',
+    whatILearned: [
+      'Working and building effectively in a fast-paced hackathon environment',
+      'Exploring and refining ideas under limited time',
+      'Learning from mentors and other developers',
+      'Improving practical problem-solving and rapid prototyping skills',
+      'Communicating ideas and collaborating during a technical event',
+      'Networking with students, developers, mentors, and the local tech community',
+      'Understanding how hackathon ideas move from concept toward a working solution'
+    ],
+    skills: [
+      'Hackathons',
+      'Problem Solving',
+      'Rapid Prototyping',
+      'Team Collaboration',
+      'Innovation',
+      'Networking',
+      'Communication',
+      'Product Thinking',
+      'Technical Exploration'
+    ],
+    coverImage: '/images/journey/lenhack2.JPG',
+    images: [
+      '/images/journey/lenhack2.JPG',
+      '/images/journey/lenhack3.JPG',
+      '/images/journey/lenhack4.JPG',
+      '/images/journey/lenhack5.JPG',
+      '/images/journey/lenhack6.JPG',
+      '/images/journey/lenhack7.JPG',
+      '/images/journey/lenhack8.JPG'
+    ],
+    objectives: 'Participate in a real-world hackathon environment, explore new technical ideas, learn from mentors, collaborate with developers, and strengthen practical problem-solving and rapid-building skills.',
+    outcomes: 'Gained valuable hands-on hackathon experience, explored new ideas, learned from supportive mentors, connected with other developers, and strengthened practical development, collaboration, and problem-solving skills.',
+    technologies: [],
+    certificateUrl: '',
+    relatedBlogSlug: '',
+    metadata: {
+      'Event': 'Lenovo LEAP Hackathon',
+      'Venue': 'AKTU, Lucknow',
+      'Participation': 'Hackathon Participant',
+      'Project Presented': 'TaskNexus',
+      'Focus': 'Learning, Building & Innovation'
+    }
   }
 ];
 
