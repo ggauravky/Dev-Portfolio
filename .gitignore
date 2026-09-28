@@ -37,6 +37,20 @@ dist-ssr
 # Build stats
 dist/stats.html
 
+# Build-generated Journey image variants
+public/images/journey/*-480.png
+public/images/journey/*-480.jpg
+public/images/journey/*-480.webp
+public/images/journey/*-480.avif
+public/images/journey/*-768.png
+public/images/journey/*-768.jpg
+public/images/journey/*-768.webp
+public/images/journey/*-768.avif
+public/images/journey/*-1200.png
+public/images/journey/*-1200.jpg
+public/images/journey/*-1200.webp
+public/images/journey/*-1200.avif
+
 # Documentation (optional - uncomment to hide)
 # DEPLOYMENT_GUIDE.md
 # DEPLOYMENT_CHECKLIST.md

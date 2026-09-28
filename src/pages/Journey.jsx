@@ -4,13 +4,41 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { memo, useState, useMemo, useEffect, useRef, useCallback, useDeferredValue } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
+import { useHeaderHeight } from '../hooks/useHeaderHeight'
 import ScrollReveal from '../components/ScrollReveal'
 import LazyImage from '../components/LazyImage'
+import JourneyNavigator from '../components/journey/JourneyNavigator'
 import { journeyData, journeyCategories } from '../data/journeyData'
+
+const JOURNEY_SCROLL_GAP = 32
+const SORTED_JOURNEY = [...journeyData].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+)
+const JOURNEY_FILTER_INDEX = new Map(SORTED_JOURNEY.map((item) => {
+    const locationParts = item.location.split(',')
+    const normalizedLocation = locationParts.length > 1
+        ? locationParts[locationParts.length - 2].trim()
+        : item.location.trim()
+    const searchValues = [
+        item.title,
+        item.organization,
+        item.location,
+        item.description,
+        item.category,
+        ...(item.skills || []),
+        item.date,
+    ].map((value) => value.toLowerCase())
+
+    return [item.id, {
+        year: new Date(item.date).getFullYear().toString(),
+        location: normalizedLocation,
+        searchValues,
+    }]
+}))
 
 // Inline SVG Icon components for design consistency and zero bundle size bloat
 const CalendarIcon = () => (
@@ -206,6 +234,7 @@ function Journey() {
         keywords: 'Gaurav Kumar Yadav journey, AI ML learning timeline, web developer experiences Lucknow, certifications Gaurav Kumar, workshops hackathons Lucknow',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })
+    const headerHeight = useHeaderHeight()
 
     // 2. States for Filter, Search, ViewMode, SelectedCard, Lightbox, and Scroll Ref
     const [filters, setFilters] = useState({
@@ -218,43 +247,57 @@ function Journey() {
     })
     const [showFiltersPanel, setShowFiltersPanel] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const deferredSearchQuery = useDeferredValue(searchQuery)
     const [viewMode, setViewMode] = useState(() => {
         return localStorage.getItem('journey-view-mode') || 'timeline'
     })
     const [selectedJourneyId, setSelectedJourneyId] = useState(null)
     const [lightboxImageInfo, setLightboxImageInfo] = useState(null)
-    const [hoveredJourneyId, setHoveredJourneyId] = useState(null)
-    const [activeYear, setActiveYear] = useState('')
+    const [navigatorHoveredJourneyId, setNavigatorHoveredJourneyId] = useState(null)
 
     // Category Filter Horizontal Scroll Hooks & Fade States
     const filterScrollRef = useRef(null)
     const [showLeftFade, setShowLeftFade] = useState(false)
     const [showRightFade, setShowRightFade] = useState(true)
+    const filterFadeStateRef = useRef({ left: false, right: true })
 
-    const handleScroll = () => {
+    const updateFilterFades = useCallback(() => {
         const el = filterScrollRef.current
         if (!el) return
-        setShowLeftFade(el.scrollLeft > 5)
-        setShowRightFade(el.scrollLeft < el.scrollWidth - el.clientWidth - 5)
-    }
+        const nextLeft = el.scrollLeft > 5
+        const nextRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 5
+
+        if (nextLeft !== filterFadeStateRef.current.left) {
+            filterFadeStateRef.current.left = nextLeft
+            setShowLeftFade(nextLeft)
+        }
+        if (nextRight !== filterFadeStateRef.current.right) {
+            filterFadeStateRef.current.right = nextRight
+            setShowRightFade(nextRight)
+        }
+    }, [])
 
     useEffect(() => {
         const el = filterScrollRef.current
         if (!el) return
 
         const handleWheel = (e) => {
-            if (e.deltaY !== 0) {
-                e.preventDefault()
-                el.scrollLeft += e.deltaY * 0.8
-                handleScroll()
-            }
+            if (e.deltaY === 0) return
+
+            const maxScrollLeft = el.scrollWidth - el.clientWidth
+            const canScrollLeft = e.deltaY < 0 && el.scrollLeft > 1
+            const canScrollRight = e.deltaY > 0 && el.scrollLeft < maxScrollLeft - 1
+            if (!canScrollLeft && !canScrollRight) return
+
+            e.preventDefault()
+            el.scrollLeft += e.deltaY * 0.8
         }
 
         el.addEventListener('wheel', handleWheel, { passive: false })
-        handleScroll()
+        updateFilterFades()
 
         const resizeObserver = new ResizeObserver(() => {
-            handleScroll()
+            updateFilterFades()
         })
         resizeObserver.observe(el)
 
@@ -262,7 +305,7 @@ function Journey() {
             el.removeEventListener('wheel', handleWheel)
             resizeObserver.disconnect()
         }
-    }, [filters.category])
+    }, [updateFilterFades])
 
     // Timeline Scroll Progress Line Hooks
     const timelineContainerRef = useRef(null)
@@ -343,40 +386,25 @@ function Journey() {
 
     // 5. Filtering and sorting data (Sorted by date ascending - oldest first)
     const filteredJourney = useMemo(() => {
-        return [...journeyData]
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-            .filter((item) => {
+        const searchLower = deferredSearchQuery.toLowerCase()
+
+        return SORTED_JOURNEY.filter((item) => {
+                const index = JOURNEY_FILTER_INDEX.get(item.id)
                 const matchesCategory = filters.category === 'All' || item.category === filters.category
-                
-                const itemYear = new Date(item.date).getFullYear().toString()
-                const matchesYear = filters.year === 'All' || itemYear === filters.year
+                const matchesYear = filters.year === 'All' || index.year === filters.year
 
                 const matchesOrg = filters.organization === 'All' || item.organization === filters.organization
-
-                const cleanItemLocation = (() => {
-                    const parts = item.location.split(',')
-                    return parts.length > 1 ? parts[parts.length - 2].trim() : item.location.trim()
-                })()
-                const matchesLocation = filters.location === 'All' || cleanItemLocation === filters.location
+                const matchesLocation = filters.location === 'All' || index.location === filters.location
 
                 const matchesMode = filters.mode === 'All' || item.mode === filters.mode
 
                 const matchesTech = filters.technology === 'All' || (item.technologies && item.technologies.includes(filters.technology))
 
-                const searchLower = searchQuery.toLowerCase()
-                const matchesSearch = 
-                    searchQuery === '' ||
-                    item.title.toLowerCase().includes(searchLower) ||
-                    item.organization.toLowerCase().includes(searchLower) ||
-                    item.location.toLowerCase().includes(searchLower) ||
-                    item.description.toLowerCase().includes(searchLower) ||
-                    item.category.toLowerCase().includes(searchLower) ||
-                    (item.skills || []).some(skill => skill.toLowerCase().includes(searchLower)) ||
-                    item.date.includes(searchLower)
+                const matchesSearch = searchLower === '' || index.searchValues.some((value) => value.includes(searchLower))
 
                 return matchesCategory && matchesYear && matchesOrg && matchesLocation && matchesMode && matchesTech && matchesSearch
             })
-    }, [filters, searchQuery])
+    }, [deferredSearchQuery, filters])
 
     // Grouping by Year for Timeline view (Ascending order)
     const groupedByYear = useMemo(() => {
@@ -397,97 +425,47 @@ function Journey() {
             }, {})
     }, [filteredJourney])
 
-    // List of active visible years from filtered content
-    const activeYearsList = useMemo(() => {
-        return Object.keys(groupedByYear).sort((a, b) => a - b)
-    }, [groupedByYear])
+    const scrollToJourneyItem = useCallback((id, { updateHash = true } = {}) => {
+        const element = document.getElementById(`journey-${id}`)
+        if (!element) return
 
-    // IntersectionObserver to set current visible year for navigation
-    useEffect(() => {
-        if (viewMode !== 'timeline') return
+        const siteHeader = document.getElementById('site-header')
+        const liveHeaderHeight = siteHeader?.getBoundingClientRect().height || headerHeight
+        const mobileIndex = document.querySelector('[data-journey-mobile-index]')
+        const mobileIndexHeight = mobileIndex && window.getComputedStyle(mobileIndex).display !== 'none'
+            ? mobileIndex.getBoundingClientRect().height
+            : 0
+        const targetOffset = liveHeaderHeight + mobileIndexHeight + JOURNEY_SCROLL_GAP
+        const targetY = element.getBoundingClientRect().top + window.scrollY - targetOffset
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-        const observerOptions = {
-            root: null,
-            rootMargin: '-20% 0px -65% 0px',
-            threshold: 0
+        window.scrollTo({
+            top: Math.max(0, targetY),
+            behavior: reduceMotion ? 'auto' : 'smooth'
+        })
+
+        if (updateHash) {
+            const nextUrl = `${window.location.pathname}${window.location.search}#${encodeURIComponent(id)}`
+            window.history.replaceState(window.history.state, '', nextUrl)
         }
-
-        const handleIntersect = (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const year = entry.target.getAttribute('data-year-section')
-                    if (year) {
-                        setActiveYear(year)
-                    }
-                }
-            })
-        }
-
-        const observer = new IntersectionObserver(handleIntersect, observerOptions)
-        const elements = document.querySelectorAll('[data-year-section]')
-        elements.forEach(el => observer.observe(el))
-
-        return () => {
-            elements.forEach(el => observer.unobserve(el))
-            observer.disconnect()
-        }
-    }, [filteredJourney, viewMode])
+    }, [headerHeight])
 
     // Get the selected journey detail
     const selectedJourney = useMemo(() => {
         return journeyData.find((item) => item.id === selectedJourneyId) || null
     }, [selectedJourneyId])
 
-    // Lock body scroll when drawer/modal is open
-    const scrollToYear = (year) => {
-        const el = document.getElementById(`year-sec-${year}`)
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-    }
-
     return (
-        <main className="relative min-h-screen overflow-hidden bg-[#070708] px-4 py-20 sm:px-6 lg:px-8 lg:py-24 w-full">
-            {/* Sticky Year Navigation (Desktop) */}
-            {activeYearsList.length > 1 && viewMode === 'timeline' && (
-                <div className="desktop-year-nav fixed right-8 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col gap-2 p-2 bg-[#0e0e11]/85 backdrop-blur-md border border-obsidian-border rounded-xl shadow-2xl">
-                    <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest text-center mb-1 block">Years</span>
-                    {activeYearsList.map((year) => (
-                        <button
-                            key={year}
-                            onClick={() => scrollToYear(year)}
-                            className={`px-3 py-2 rounded-lg font-mono text-xs font-bold uppercase transition-all duration-300 ${
-                                activeYear === year
-                                    ? 'bg-toxic text-black shadow-lg shadow-toxic/15 scale-105'
-                                    : 'text-zinc-500 hover:text-white hover:bg-zinc-900/35'
-                            }`}
-                        >
-                            {year}
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {/* Sticky Year Navigation (Mobile/Tablet) */}
-            {activeYearsList.length > 1 && viewMode === 'timeline' && (
-                <div className="mobile-year-nav sticky top-[72px] sm:top-[80px] z-30 lg:hidden w-full flex justify-center py-2 bg-[#070708]/90 backdrop-blur-md border-b border-obsidian-border/50 mb-6">
-                    <div className="flex gap-2 p-1 bg-obsidian-card border border-obsidian-border rounded-xl">
-                        {activeYearsList.map((year) => (
-                            <button
-                                key={year}
-                                onClick={() => scrollToYear(year)}
-                                className={`px-4 py-1.5 rounded-lg font-mono text-xs font-bold transition-all duration-300 ${
-                                    activeYear === year
-                                        ? 'bg-toxic text-black font-extrabold shadow-md shadow-toxic/10'
-                                        : 'text-zinc-500 hover:text-white'
-                                }`}
-                            >
-                                {year}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
+        <main className="relative min-h-screen bg-[#070708] px-4 py-20 sm:px-6 lg:px-8 lg:py-24 w-full">
+            <JourneyNavigator
+                items={filteredJourney}
+                onSelect={scrollToJourneyItem}
+                onHoverItem={setNavigatorHoveredJourneyId}
+                progress={scrollYProgress}
+                headerHeight={headerHeight}
+                isObscured={Boolean(selectedJourney || lightboxImageInfo)}
+                viewMode={viewMode}
+            />
 
             {/* Ambient Background Elements */}
             <div className="pointer-events-none absolute -right-20 top-24 h-96 w-96 rounded-full bg-toxic/5 blur-[120px]" />
@@ -758,23 +736,6 @@ function Journey() {
                                 scrollbar-width: none !important;
                             }
                             
-                            @media (max-width: 1023px) {
-                                .desktop-year-nav {
-                                    display: none !important;
-                                }
-                                .mobile-year-nav {
-                                    display: flex !important;
-                                }
-                            }
-                            @media (min-width: 1024px) {
-                                .desktop-year-nav {
-                                    display: flex !important;
-                                }
-                                .mobile-year-nav {
-                                    display: none !important;
-                                }
-                            }
-
                             /* Premium Sequential Timeline Reveal */
                             .timeline-item-reveal {
                                 opacity: 1 !important;
@@ -839,7 +800,7 @@ function Journey() {
                         {/* Scrollable Chip Row */}
                         <div
                             ref={filterScrollRef}
-                            onScroll={handleScroll}
+                            onScroll={updateFilterFades}
                             className="w-full overflow-x-auto pb-1 no-scrollbar scroll-smooth"
                             style={{ scrollBehavior: 'smooth' }}
                         >
@@ -892,10 +853,10 @@ function Journey() {
                         </button>
                     </ScrollReveal>
                 ) : (
-                    <>
+                    <div ref={timelineContainerRef}>
                         {/* ── TIMELINE VIEW ── */}
                         {viewMode === 'timeline' && (
-                            <div ref={timelineContainerRef} className="relative">
+                            <div className="relative">
                                 {/* Static background timeline line */}
                                 <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-[2px] bg-[#1a1a22]/60 -translate-x-[1px]" />
                                 
@@ -921,55 +882,14 @@ function Journey() {
                                             {/* Cards for the Year */}
                                             <div className="space-y-12">
                                                 {items.map((item, idx) => {
-                                                    const isEven = idx % 2 === 0
                                                     return (
-                                                        <ScrollReveal
+                                                        <JourneyTimelineItem
                                                             key={item.id}
-                                                            className={`relative flex flex-col lg:flex-row lg:items-center justify-between gap-3 lg:gap-0 timeline-item-reveal ${
-                                                                isEven ? 'lg:flex-row-reverse is-even-line' : ''
-                                                            }`}
-                                                        >
-                                                            {/* Experience Card */}
-                                                            <div className="w-full lg:w-[calc(50%-3rem)] pl-12 lg:pl-0 lg:px-6 timeline-card-container">
-                                                                <JourneyCard
-                                                                    item={item}
-                                                                    onOpenLightbox={setLightboxImageInfo}
-                                                                    onHoverCard={setHoveredJourneyId}
-                                                                />
-                                                            </div>
-
-                                                            {/* Central Timeline Dot */}
-                                                            <div className={`absolute left-4 lg:left-1/2 -translate-x-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#070708] border transition-all duration-300 timeline-dot-glow ${
-                                                                hoveredJourneyId === item.id 
-                                                                    ? 'border-toxic shadow-[0_0_15px_rgba(197,248,42,0.4)] scale-110' 
-                                                                    : 'border-obsidian-border'
-                                                            }`}>
-                                                                <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-                                                                    hoveredJourneyId === item.id ? 'bg-toxic scale-125' : 'bg-zinc-700 animate-pulse'
-                                                                }`} />
-                                                            </div>
-
-                                                            {/* Horizontal Connector Line (desktop only) */}
-                                                            <div className={`hidden lg:block absolute top-1/2 -translate-y-1/2 h-px border-t border-dashed border-[#1a1a22]/80 transition-colors duration-300 timeline-connector-line ${
-                                                                isEven 
-                                                                    ? 'left-[calc(50%+1.5rem)] right-[calc(50%-2.5rem)]' 
-                                                                    : 'right-[calc(50%+1.5rem)] left-[calc(50%-2.5rem)]'
-                                                            } ${hoveredJourneyId === item.id ? 'border-toxic/30' : ''}`} />
-
-                                                            {/* Date Badge on Timeline */}
-                                                            <div className={`w-full lg:w-[calc(50%-3rem)] pl-12 lg:pl-0 lg:px-6 flex ${
-                                                                isEven ? 'lg:justify-start' : 'lg:justify-end'
-                                                            }`}>
-                                                                <div className={`inline-flex items-center gap-2 bg-[#0e0e11]/80 backdrop-blur-sm border px-3 py-1.5 rounded-xl transition-all duration-300 font-mono text-xs uppercase tracking-wider ${
-                                                                    hoveredJourneyId === item.id
-                                                                        ? 'border-toxic/40 text-toxic shadow-lg shadow-toxic/5 scale-102'
-                                                                        : 'border-[#1a1a22] text-zinc-500'
-                                                                }`}>
-                                                                    <CalendarIcon />
-                                                                    <span>{item.dateLabel}</span>
-                                                                </div>
-                                                            </div>
-                                                        </ScrollReveal>
+                                                            item={item}
+                                                            index={idx}
+                                                            onOpenLightbox={setLightboxImageInfo}
+                                                            isNavigatorHighlighted={navigatorHoveredJourneyId === item.id}
+                                                        />
                                                     )
                                                 })}
                                             </div>
@@ -987,13 +907,13 @@ function Journey() {
                                         <JourneyCard
                                             item={item}
                                             onOpenLightbox={setLightboxImageInfo}
-                                            onHoverCard={setHoveredJourneyId}
+                                            isNavigatorHighlighted={navigatorHoveredJourneyId === item.id}
                                         />
                                     </ScrollReveal>
                                 ))}
                             </div>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
 
@@ -1013,7 +933,64 @@ function Journey() {
 // ────────────────────────────────────────────────────────
 // SUB-COMPONENT: JOURNEY CARD
 // ────────────────────────────────────────────────────────
-function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
+const JourneyTimelineItem = memo(function JourneyTimelineItem({
+    item,
+    index,
+    onOpenLightbox,
+    isNavigatorHighlighted,
+}) {
+    const [isHovered, setIsHovered] = useState(false)
+    const isEven = index % 2 === 0
+    const isHighlighted = isHovered || isNavigatorHighlighted
+
+    return (
+        <ScrollReveal
+            className={`relative flex flex-col lg:flex-row lg:items-center justify-between gap-3 lg:gap-0 timeline-item-reveal ${
+                isEven ? 'lg:flex-row-reverse is-even-line' : ''
+            }`}
+        >
+            <div className="w-full lg:w-[calc(50%-3rem)] pl-12 lg:pl-0 lg:px-6 timeline-card-container">
+                <JourneyCard
+                    item={item}
+                    onOpenLightbox={onOpenLightbox}
+                    onHoverCard={setIsHovered}
+                    isNavigatorHighlighted={isNavigatorHighlighted}
+                />
+            </div>
+
+            <div className={`absolute left-4 lg:left-1/2 -translate-x-1/2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#070708] border transition-all duration-300 timeline-dot-glow ${
+                isHighlighted
+                    ? 'border-toxic shadow-[0_0_15px_rgba(197,248,42,0.4)] scale-110'
+                    : 'border-obsidian-border'
+            }`}>
+                <span className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+                    isHighlighted ? 'bg-toxic scale-125' : 'bg-zinc-700 animate-pulse'
+                }`} />
+            </div>
+
+            <div className={`hidden lg:block absolute top-1/2 -translate-y-1/2 h-px border-t border-dashed border-[#1a1a22]/80 transition-colors duration-300 timeline-connector-line ${
+                isEven
+                    ? 'left-[calc(50%+1.5rem)] right-[calc(50%-2.5rem)]'
+                    : 'right-[calc(50%+1.5rem)] left-[calc(50%-2.5rem)]'
+            } ${isHighlighted ? 'border-toxic/30' : ''}`} />
+
+            <div className={`w-full lg:w-[calc(50%-3rem)] pl-12 lg:pl-0 lg:px-6 flex ${
+                isEven ? 'lg:justify-start' : 'lg:justify-end'
+            }`}>
+                <div className={`inline-flex items-center gap-2 bg-[#0e0e11]/80 backdrop-blur-sm border px-3 py-1.5 rounded-xl transition-all duration-300 font-mono text-xs uppercase tracking-wider ${
+                    isHighlighted
+                        ? 'border-toxic/40 text-toxic shadow-lg shadow-toxic/5 scale-102'
+                        : 'border-[#1a1a22] text-zinc-500'
+                }`}>
+                    <CalendarIcon />
+                    <span>{item.dateLabel}</span>
+                </div>
+            </div>
+        </ScrollReveal>
+    )
+})
+
+function JourneyCardComponent({ item, onOpenLightbox, onHoverCard, isNavigatorHighlighted = false }) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [hoveringThumbnail, setHoveringThumbnail] = useState(false)
 
@@ -1034,9 +1011,15 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
 
     return (
         <article 
+            id={`journey-${item.id}`}
+            data-journey-id={item.id}
             onMouseEnter={() => onHoverCard && onHoverCard(item.id)}
             onMouseLeave={() => onHoverCard && onHoverCard(null)}
-            className="group bg-[#0e0e11] border border-[#1a1a22] rounded-xl overflow-hidden hover:border-toxic/30 transition-all duration-300 shadow-xl flex flex-col h-full font-sans"
+            className={`group bg-[#0e0e11] border rounded-xl overflow-hidden hover:border-toxic/30 transition-all duration-300 shadow-xl flex flex-col h-full font-sans scroll-mt-32 ${
+                isNavigatorHighlighted
+                    ? 'border-toxic/30 ring-1 ring-toxic/10'
+                    : 'border-[#1a1a22]'
+            }`}
         >
             {/* Top portion: Large Cover Image or Custom Tech Gradient Area */}
             <div className="relative w-full aspect-video sm:aspect-[16/10] bg-obsidian-dark overflow-hidden border-b border-[#1a1a22] group/cover">
@@ -1045,7 +1028,7 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
                         <LazyImage
                             src={item.coverImage}
                             alt={item.title}
-                            responsive={false}
+                            sizes="(min-width: 1280px) 38vw, (min-width: 768px) 50vw, 100vw"
                             className={`transition-transform duration-500 group-hover/cover:scale-[1.03] ${
                                 isLogo ? 'max-w-full max-h-full object-contain' : 'w-full h-full object-cover'
                             }`}
@@ -1232,7 +1215,7 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
                                                 <LazyImage
                                                     src={imgSrc}
                                                     alt="gallery preview"
-                                                    responsive={false}
+                                                    sizes="80px"
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
@@ -1348,6 +1331,8 @@ function JourneyCard({ item, onOpenLightbox, onHoverCard }) {
         </article>
     )
 }
+
+const JourneyCard = memo(JourneyCardComponent)
 
 // ────────────────────────────────────────────────────────
 // SUB-COMPONENT: LIGHTBOX MODAL

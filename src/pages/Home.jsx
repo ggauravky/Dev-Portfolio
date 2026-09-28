@@ -5,14 +5,13 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { Link } from 'react-router-dom'
-import { useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import { use3DTilt } from '../hooks/use3DTilt'
 import { blogsData } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { journeyData } from '../data/journeyData'
-import { pingBackend } from '../utils/backendPing'
 import LazyImage from '../components/LazyImage'
 import ScrollReveal from '../components/ScrollReveal'
 import TechIcon from '../components/TechIcon'
@@ -47,12 +46,6 @@ function Home() {
             })
         )
     }
-
-    // Wake up backend server on component mount
-    useEffect(() => {
-        // Ping backend silently to prevent cold start
-        pingBackend()
-    }, [])
 
     // SEO Optimization
     useSEO({

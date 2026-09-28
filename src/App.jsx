@@ -11,6 +11,7 @@ import PropTypes from 'prop-types'
 
 import { Toaster } from 'react-hot-toast'
 import './App.css'
+import './components/journey/JourneyNavigator.css'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import BackToTop from './components/BackToTop'

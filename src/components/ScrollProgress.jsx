@@ -12,8 +12,8 @@ export default function ScrollProgress() {
         const update = () => {
             const scrollTop = window.scrollY
             const docHeight = document.documentElement.scrollHeight - window.innerHeight
-            const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
-            bar.style.width = `${pct}%`
+            const progress = docHeight > 0 ? Math.min(Math.max(scrollTop / docHeight, 0), 1) : 0
+            bar.style.transform = `scaleX(${progress})`
             rafId = null
         }
 
@@ -33,7 +33,7 @@ export default function ScrollProgress() {
         <div className="fixed top-0 left-0 right-0 h-[3px] z-[999] pointer-events-none">
             <div
                 ref={barRef}
-                style={{ width: '0%', willChange: 'width', transform: 'translateZ(0)' }}
+                style={{ width: '100%', transform: 'scaleX(0)', transformOrigin: 'left center', willChange: 'transform' }}
                 className="h-full bg-gradient-to-r from-toxic via-cyber to-purple-500 transition-none"
             />
         </div>

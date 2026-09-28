@@ -4,9 +4,59 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useEffect } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import './LazyImage.css'
+
+const lazyImageCallbacks = new Map()
+let sharedImageObserver = null
+
+const getImageObserver = () => {
+    if (sharedImageObserver || typeof IntersectionObserver === 'undefined') {
+        return sharedImageObserver
+    }
+
+    sharedImageObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting && entry.intersectionRatio <= 0) return
+            const loadImage = lazyImageCallbacks.get(entry.target)
+            lazyImageCallbacks.delete(entry.target)
+            sharedImageObserver.unobserve(entry.target)
+            loadImage?.()
+        })
+    }, {
+        threshold: 0.01,
+        rootMargin: '100px',
+    })
+
+    return sharedImageObserver
+}
+
+const observeLazyImage = (element, loadImage) => {
+    const observer = getImageObserver()
+    if (!observer) {
+        loadImage()
+        return () => {}
+    }
+
+    lazyImageCallbacks.set(element, loadImage)
+    observer.observe(element)
+
+    return () => {
+        lazyImageCallbacks.delete(element)
+        observer.unobserve(element)
+    }
+}
+
+const buildVariantSet = (src, responsive, format) => {
+    if (!responsive || !src?.startsWith('/')) return ''
+
+    const match = src.match(/^(.*)\.(png|jpg|jpeg)$/i)
+    if (!match) return ''
+
+    const base = match[1]
+    return [480, 768, 1200].map((width) => `${base}-${width}.${format} ${width}w`).join(', ')
+}
 
 function LazyImage({
     src,
@@ -23,108 +73,81 @@ function LazyImage({
 }) {
     const isEager = priority || fetchPriority === 'high'
     const [imageSrc, setImageSrc] = useState(isEager ? src : placeholderSrc)
-    const [imageRef, setImageRef] = useState()
     const [isLoaded, setIsLoaded] = useState(false)
     const [isInView, setIsInView] = useState(isEager)
+    const [isFallback, setIsFallback] = useState(false)
+    const imageRef = useRef(null)
+    const fallbackAttemptedRef = useRef(false)
+    const sourceFallbackAttemptedRef = useRef(false)
 
     const effectiveFetchPriority = isEager ? 'high' : fetchPriority
 
-    const buildVariantSet = (format) => {
-        if (!responsive || !src?.startsWith('/')) return ''
-
-        const match = src.match(/^(.*)\.(png|jpg|jpeg)$/i)
-        if (!match) return ''
-
-        const base = match[1]
-        const widths = [480, 768, 1200]
-        return widths.map(w => `${base}-${w}.${format} ${w}w`).join(', ')
-    }
-
-    const buildOriginalVariantSet = () => {
-        if (!responsive || !src?.startsWith('/')) return ''
-
-        const match = src.match(/^(.*)\.(png|jpg|jpeg)$/i)
-        if (!match) return ''
-
-        const base = match[1]
-        const ext = match[2].toLowerCase() === 'jpeg' ? 'jpg' : match[2].toLowerCase()
-        const widths = [480, 768, 1200]
-        return widths.map(w => `${base}-${w}.${ext} ${w}w`).join(', ')
-    }
-
-    const avifSrcSet = buildVariantSet('avif')
-    const webpSrcSet = buildVariantSet('webp')
-    const originalSrcSet = buildOriginalVariantSet()
+    const sourceExtension = src.match(/\.(png|jpg|jpeg)$/i)?.[1]?.toLowerCase()
+    const originalFormat = sourceExtension === 'jpeg' ? 'jpg' : sourceExtension
+    const avifSrcSet = buildVariantSet(src, responsive, 'avif')
+    const webpSrcSet = buildVariantSet(src, responsive, 'webp')
+    const originalSrcSet = originalFormat ? buildVariantSet(src, responsive, originalFormat) : ''
 
     useEffect(() => {
+        const element = imageRef.current
+        fallbackAttemptedRef.current = false
+        sourceFallbackAttemptedRef.current = false
+        setIsFallback(false)
+        setIsLoaded(false)
+
         if (isEager) {
             setIsInView(true)
             setImageSrc(src)
-            return
+            return undefined
         }
 
-        let observer
-        let didCancel = false
+        setIsInView(false)
+        setImageSrc(placeholderSrc)
+        if (!element) return undefined
 
-        if (imageRef && imageSrc === placeholderSrc) {
-            if (typeof IntersectionObserver !== 'undefined') {
-                observer = new IntersectionObserver(
-                    entries => {
-                        entries.forEach(entry => {
-                            if (
-                                !didCancel &&
-                                (entry.intersectionRatio > 0 || entry.isIntersecting)
-                            ) {
-                                setIsInView(true)
-                                setImageSrc(src)
-                                if (imageRef && observer.unobserve) {
-                                    observer.unobserve(imageRef)
-                                }
-                            }
-                        })
-                    },
-                    {
-                        threshold: 0.01,
-                        rootMargin: '100px',
-                    }
-                )
-                observer.observe(imageRef)
-            } else {
-                setImageSrc(src)
-            }
-        }
-
-        return () => {
-            didCancel = true
-            if (observer?.unobserve && imageRef) {
-                observer.unobserve(imageRef)
-            }
-        }
-    }, [src, imageSrc, imageRef, placeholderSrc, isEager])
+        return observeLazyImage(element, () => {
+            setIsLoaded(false)
+            setIsInView(true)
+            setImageSrc(src)
+        })
+    }, [src, placeholderSrc, isEager])
 
     const handleLoad = (event) => {
-        setIsLoaded(true)
+        if (isInView) setIsLoaded((loaded) => loaded ? loaded : true)
         if (onLoad) {
             onLoad(event)
         }
     }
 
     const handleError = (event) => {
-        setImageSrc(
-            `https://via.placeholder.com/400x300/0f172a/64748b?text=${encodeURIComponent(alt || 'Media')}`
-        )
+        if (responsive && !isFallback && !sourceFallbackAttemptedRef.current) {
+            sourceFallbackAttemptedRef.current = true
+            setIsFallback(true)
+            setIsLoaded(false)
+            setImageSrc(src)
+            return
+        }
+
+        if (!fallbackAttemptedRef.current) {
+            fallbackAttemptedRef.current = true
+            setIsFallback(true)
+            setIsLoaded(false)
+            setImageSrc(
+                `https://via.placeholder.com/400x300/0f172a/64748b?text=${encodeURIComponent(alt || 'Media')}`
+            )
+        }
         if (onError) {
             onError(event)
         }
     }
 
     return (
-        <picture ref={setImageRef} className="lazy-image-picture-wrapper">
-            {isInView && avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />}
-            {isInView && webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />}
+        <picture ref={imageRef} className="lazy-image-picture-wrapper">
+            {isInView && !isFallback && avifSrcSet && <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />}
+            {isInView && !isFallback && webpSrcSet && <source type="image/webp" srcSet={webpSrcSet} sizes={sizes} />}
             <img
                 src={imageSrc}
-                srcSet={isInView && originalSrcSet ? originalSrcSet : undefined}
+                srcSet={isInView && !isFallback && originalSrcSet ? originalSrcSet : undefined}
                 sizes={sizes}
                 alt={alt || ''}
                 className={`${className} ${isLoaded && isInView ? 'lazy-image-loaded' : 'lazy-image-loading'}`}
@@ -152,4 +175,4 @@ LazyImage.propTypes = {
     onError: PropTypes.func,
 }
 
-export default LazyImage
+export default memo(LazyImage)

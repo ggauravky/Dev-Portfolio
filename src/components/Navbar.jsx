@@ -117,6 +117,7 @@ const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
 function Navbar({ navReady = true, logoRef }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [scrolled, setScrolled] = useState(false)
+    const scrolledRef = useRef(false)
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
     const profileMenuRef = useRef(null)
     const location = useLocation()
@@ -137,7 +138,12 @@ function Navbar({ navReady = true, logoRef }) {
     const closeMenu = useCallback(() => setIsMenuOpen(false), [])
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 12)
+        const handleScroll = () => {
+            const nextScrolled = window.scrollY > 12
+            if (nextScrolled === scrolledRef.current) return
+            scrolledRef.current = nextScrolled
+            setScrolled(nextScrolled)
+        }
         handleScroll()
         window.addEventListener('scroll', handleScroll, { passive: true })
         return () => window.removeEventListener('scroll', handleScroll)

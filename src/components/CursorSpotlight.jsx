@@ -24,6 +24,9 @@ export default function CursorSpotlight() {
         const dot = dotRef.current
         if (!glow || !ring || !dot) return
 
+        const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+        if (!finePointerQuery.matches) return
+
         // Target coordinates
         let tx = window.innerWidth / 2
         let ty = window.innerHeight / 2
@@ -35,10 +38,61 @@ export default function CursorSpotlight() {
 
         let rafId = null
         let hasMoved = false
+        let isPointerInside = true
 
         const LERP_GLOW = 0.05
         const LERP_RING = 0.08
         const LERP_DOT = 0.25
+        const SETTLE_EPSILON = 0.1
+
+        const isSettled = () => (
+            Math.abs(tx - gx) < SETTLE_EPSILON &&
+            Math.abs(ty - gy) < SETTLE_EPSILON &&
+            Math.abs(tx - rx) < SETTLE_EPSILON &&
+            Math.abs(ty - ry) < SETTLE_EPSILON &&
+            Math.abs(tx - dx) < SETTLE_EPSILON &&
+            Math.abs(ty - dy) < SETTLE_EPSILON
+        )
+
+        const stopAnimation = () => {
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId)
+                rafId = null
+            }
+        }
+
+        const tick = () => {
+            rafId = null
+            if (!hasMoved || document.hidden) return
+
+            // Lerp each element at different rates without any layout reads.
+            gx += (tx - gx) * LERP_GLOW
+            gy += (ty - gy) * LERP_GLOW
+
+            rx += (tx - rx) * LERP_RING
+            ry += (ty - ry) * LERP_RING
+
+            dx += (tx - dx) * LERP_DOT
+            dy += (ty - dy) * LERP_DOT
+
+            glow.style.transform = `translate3d(${gx}px, ${gy}px, 0) translate(-50%, -50%)`
+            ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
+            dot.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`
+
+            if (isSettled()) {
+                gx = rx = dx = tx
+                gy = ry = dy = ty
+                return
+            }
+
+            rafId = window.requestAnimationFrame(tick)
+        }
+
+        const startAnimation = () => {
+            if (rafId === null && !document.hidden) {
+                rafId = window.requestAnimationFrame(tick)
+            }
+        }
 
         const onMove = (e) => {
             tx = e.clientX
@@ -52,35 +106,18 @@ export default function CursorSpotlight() {
                 ring.style.opacity = '1'
                 dot.style.opacity = '1'
             }
-        }
-
-        const tick = () => {
-            if (hasMoved) {
-                // Lerp each element at different rates
-                gx += (tx - gx) * LERP_GLOW
-                gy += (ty - gy) * LERP_GLOW
-
-                rx += (tx - rx) * LERP_RING
-                ry += (ty - ry) * LERP_RING
-
-                dx += (tx - dx) * LERP_DOT
-                dy += (ty - dy) * LERP_DOT
-
-                glow.style.transform = `translate3d(${gx}px, ${gy}px, 0) translate(-50%, -50%)`
-                ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`
-                dot.style.transform = `translate3d(${dx}px, ${dy}px, 0) translate(-50%, -50%)`
-            }
-
-            rafId = requestAnimationFrame(tick)
+            startAnimation()
         }
 
         const onLeave = () => {
+            isPointerInside = false
             glow.style.opacity = '0'
             ring.style.opacity = '0'
             dot.style.opacity = '0'
         }
 
         const onEnter = () => {
+            isPointerInside = true
             if (hasMoved) {
                 glow.style.opacity = '1'
                 ring.style.opacity = '1'
@@ -88,16 +125,26 @@ export default function CursorSpotlight() {
             }
         }
 
-        window.addEventListener('mousemove', onMove, { passive: true })
+        const onVisibilityChange = () => {
+            if (document.hidden) {
+                stopAnimation()
+                return
+            }
+
+            if (hasMoved && isPointerInside && !isSettled()) startAnimation()
+        }
+
+        window.addEventListener('pointermove', onMove, { passive: true })
         document.documentElement.addEventListener('mouseleave', onLeave)
         document.documentElement.addEventListener('mouseenter', onEnter)
-        rafId = requestAnimationFrame(tick)
+        document.addEventListener('visibilitychange', onVisibilityChange)
 
         return () => {
-            window.removeEventListener('mousemove', onMove)
+            window.removeEventListener('pointermove', onMove)
             document.documentElement.removeEventListener('mouseleave', onLeave)
             document.documentElement.removeEventListener('mouseenter', onEnter)
-            cancelAnimationFrame(rafId)
+            document.removeEventListener('visibilitychange', onVisibilityChange)
+            stopAnimation()
         }
     }, [])
 

@@ -24,9 +24,9 @@ export function useHeaderHeight() {
             if (el) {
                 const rect = el.getBoundingClientRect()
                 const height = Math.round(rect.height || el.offsetHeight || 0)
-                setHeaderHeight(height)
+                setHeaderHeight((currentHeight) => currentHeight === height ? currentHeight : height)
             } else {
-                setHeaderHeight(0)
+                setHeaderHeight((currentHeight) => currentHeight === 0 ? currentHeight : 0)
             }
         }
 
@@ -44,25 +44,12 @@ export function useHeaderHeight() {
             resizeObserver.observe(headerEl)
         }
 
-        // Listen for window resize and scroll events
+        // ResizeObserver covers banner/nav height changes; resize is a safe fallback.
         window.addEventListener('resize', updateHeight, { passive: true })
-        window.addEventListener('scroll', updateHeight, { passive: true })
-
-        // Setup MutationObserver to detect DOM additions/removals inside body/header (e.g. banner dismiss)
-        const mutationObserver = new MutationObserver(() => {
-            updateHeight()
-        })
-        mutationObserver.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true
-        })
 
         return () => {
             if (resizeObserver) resizeObserver.disconnect()
-            mutationObserver.disconnect()
             window.removeEventListener('resize', updateHeight)
-            window.removeEventListener('scroll', updateHeight)
         }
     }, [])
 

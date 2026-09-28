@@ -69,7 +69,15 @@ export default function NeuralNetworkCanvas({ lightweight = false }) {
         }
 
         resizeCanvas()
-        window.addEventListener('resize', resizeCanvas)
+        let resizeFrame = null
+        const queueResize = () => {
+            if (resizeFrame !== null) return
+            resizeFrame = window.requestAnimationFrame(() => {
+                resizeFrame = null
+                resizeCanvas()
+            })
+        }
+        window.addEventListener('resize', queueResize, { passive: true })
 
         // Mouse listeners
         const handleMouseMove = (e) => {
@@ -85,8 +93,9 @@ export default function NeuralNetworkCanvas({ lightweight = false }) {
 
         // Parent container mouse listeners
         const parent = canvas.parentElement
-        if (parent) {
-            parent.addEventListener('mousemove', handleMouseMove)
+        const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)')
+        if (parent && finePointerQuery.matches) {
+            parent.addEventListener('pointermove', handleMouseMove, { passive: true })
             parent.addEventListener('mouseleave', handleMouseLeave)
         }
 
@@ -105,17 +114,36 @@ export default function NeuralNetworkCanvas({ lightweight = false }) {
 
         window.addEventListener('neural-cta-hover', handleCtaHover)
 
-        // Tab hidden tracking to pause drawing loop
-        const handleVisibilityChange = () => {
-            isActiveRef.current = !document.hidden
+        let isInViewport = true
+
+        const stopRendering = () => {
+            if (animationFrameId.current !== null) {
+                window.cancelAnimationFrame(animationFrameId.current)
+                animationFrameId.current = null
+            }
         }
+
+        const startRendering = () => {
+            if (isActiveRef.current && animationFrameId.current === null) {
+                animationFrameId.current = window.requestAnimationFrame(render)
+            }
+        }
+
+        const syncActivity = () => {
+            isActiveRef.current = isInViewport && !document.hidden
+            if (isActiveRef.current) startRendering()
+            else stopRendering()
+        }
+
+        const handleVisibilityChange = () => syncActivity()
         document.addEventListener('visibilitychange', handleVisibilityChange)
 
         // Intersection observer to cull when not visible on screen
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    isActiveRef.current = entry.isIntersecting && !document.hidden
+                    isInViewport = entry.isIntersecting
+                    syncActivity()
                 })
             },
             { threshold: 0.05 }
@@ -124,8 +152,8 @@ export default function NeuralNetworkCanvas({ lightweight = false }) {
 
         // Render loop
         const render = () => {
+            animationFrameId.current = null
             if (!isActiveRef.current) {
-                animationFrameId.current = requestAnimationFrame(render)
                 return
             }
 
@@ -270,20 +298,21 @@ export default function NeuralNetworkCanvas({ lightweight = false }) {
                 }
             })
 
-            animationFrameId.current = requestAnimationFrame(render)
+            animationFrameId.current = window.requestAnimationFrame(render)
         }
 
-        render()
+        syncActivity()
 
         // Cleanups
         return () => {
-            cancelAnimationFrame(animationFrameId.current)
-            window.removeEventListener('resize', resizeCanvas)
+            stopRendering()
+            if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame)
+            window.removeEventListener('resize', queueResize)
             window.removeEventListener('neural-cta-hover', handleCtaHover)
             document.removeEventListener('visibilitychange', handleVisibilityChange)
             observer.disconnect()
-            if (parent) {
-                parent.removeEventListener('mousemove', handleMouseMove)
+            if (parent && finePointerQuery.matches) {
+                parent.removeEventListener('pointermove', handleMouseMove)
                 parent.removeEventListener('mouseleave', handleMouseLeave)
             }
         }

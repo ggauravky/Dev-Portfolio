@@ -4,7 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './BackToTop.css'
 
 const RADIUS = 24
@@ -12,33 +12,56 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS  // ≈ 150.8
 
 function BackToTop() {
     const [isVisible, setIsVisible] = useState(false)
-    const [scrollPct, setScrollPct] = useState(0)
+    const isVisibleRef = useRef(false)
+    const scrollPctRef = useRef(0)
+    const buttonRef = useRef(null)
+    const progressCircleRef = useRef(null)
 
     useEffect(() => {
-        const onScroll = () => {
+        let rafId = null
+
+        const update = () => {
             const scrollY = window.scrollY || window.pageYOffset
             const docH = document.documentElement.scrollHeight - document.documentElement.clientHeight
             const pct = docH > 0 ? Math.min(scrollY / docH, 1) : 0
-            setScrollPct(pct)
-            setIsVisible(scrollY > 300)
+            const nextVisible = scrollY > 300
+
+            scrollPctRef.current = pct
+            if (progressCircleRef.current) {
+                progressCircleRef.current.style.strokeDashoffset = String(CIRCUMFERENCE * (1 - pct))
+            }
+            buttonRef.current?.setAttribute('aria-label', `Back to top — ${Math.round(pct * 100)}% scrolled`)
+
+            if (nextVisible !== isVisibleRef.current) {
+                isVisibleRef.current = nextVisible
+                setIsVisible(nextVisible)
+            }
+
+            rafId = null
+        }
+
+        const onScroll = () => {
+            if (rafId === null) rafId = window.requestAnimationFrame(update)
         }
 
         window.addEventListener('scroll', onScroll, { passive: true })
-        return () => window.removeEventListener('scroll', onScroll)
+        update()
+        return () => {
+            window.removeEventListener('scroll', onScroll)
+            if (rafId !== null) window.cancelAnimationFrame(rafId)
+        }
     }, [])
 
     const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
-
-    // offset: full circumference (empty) → 0 (full ring)
-    const dashOffset = CIRCUMFERENCE * (1 - scrollPct)
 
     if (!isVisible) return null
 
     return (
         <button
+            ref={buttonRef}
             onClick={scrollToTop}
             className="back-to-top-button"
-            aria-label={`Back to top — ${Math.round(scrollPct * 100)}% scrolled`}
+            aria-label={`Back to top — ${Math.round(scrollPctRef.current * 100)}% scrolled`}
         >
             {/* Circular progress ring */}
             <svg className="btt-ring" viewBox="0 0 56 56" aria-hidden="true">
@@ -51,13 +74,14 @@ function BackToTop() {
                 />
                 {/* Progress */}
                 <circle
+                    ref={progressCircleRef}
                     cx="28" cy="28" r={RADIUS}
                     fill="none"
                     stroke="url(#btt-grad)"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeDasharray={CIRCUMFERENCE}
-                    strokeDashoffset={dashOffset}
+                    strokeDashoffset={CIRCUMFERENCE * (1 - scrollPctRef.current)}
                     style={{ transition: 'stroke-dashoffset 0.15s linear' }}
                     transform="rotate(-90 28 28)"
                 />
