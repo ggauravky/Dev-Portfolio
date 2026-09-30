@@ -181,10 +181,6 @@ function AnimatedRoutes() {
                 <Route path="/support"                    element={<R><Support /></R>} />
                 <Route path="/payment-success/:transactionId" element={<R><PaymentSuccess /></R>} />
                 <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
-                <Route path="/mentorship"                 element={<R><ServiceDetail forcedSlug="mentorship" /></R>} />
-                <Route path="/resume-review"              element={<R><ServiceDetail forcedSlug="resume-review" /></R>} />
-                <Route path="/debugging-help"             element={<R><ServiceDetail forcedSlug="debugging-help" /></R>} />
-                <Route path="/portfolio-review"           element={<R><ServiceDetail forcedSlug="portfolio-review" /></R>} />
                 <Route path="/frontend-development"       element={<R><ServiceDetail forcedSlug="frontend-development" /></R>} />
                 <Route path="/backend-development"        element={<R><ServiceDetail forcedSlug="backend-development" /></R>} />
                 <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />

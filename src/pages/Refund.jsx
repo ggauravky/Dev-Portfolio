@@ -10,7 +10,7 @@ import './Legal.css'
 function Refund() {
     useSEO({
         title: 'Refund Policy - Gaurav Kumar Yadav Services',
-        description: 'Refund policy for mentorship, review, debugging, and development services booked through this portfolio.',
+        description: 'Refund policy for development and AI or data science services booked through this portfolio.',
         keywords: 'refund policy, cancellation policy, developer services, payment policy',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
     })

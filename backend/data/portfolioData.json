@@ -184,7 +184,7 @@
       "problem": "Visitors to portfolio sites don't want to scroll through entire portfolios to understand skills and projects. Static FAQs are outdated. Chatbots hallucinate or give inaccurate information.",
       "solution": "Built a RAG-based chatbot that:\n- Retrieves answers only from structured JSON knowledge base\n- Uses keyword matching + semantic scoring for relevance\n- Integrates DeepSeek API for conversational responses\n- Stores all conversations in MongoDB for analytics\n- Implements guardrails to prevent off-topic answers\n- Caches responses to reduce API calls",
       "impact": "- Instant answers to portfolio questions (projects, skills, services)\n- Improves user engagement and time-on-site\n- Reduces support inquiries by answering common questions\n- Provides analytics on what visitors care about\n- No hallucination - answers only from verified data",
-      "realWorldUsage": "Live on portfolio at /lab/gaurav-chatbot. Visitors ask: 'What projects have you built?', 'What technologies do you use?', 'Can you help with debugging?', 'What's your experience?'",
+      "realWorldUsage": "Live on portfolio at /lab/gaurav-chatbot. Visitors ask: 'What projects have you built?', 'What technologies do you use?', 'What development services do you offer?', 'What's your experience?'",
       "highlights": [
         "RAG retrieval from JSON knowledge base",
         "Keyword + semantic similarity scoring",
@@ -521,74 +521,6 @@
       ]
     },
     {
-      "slug": "mentorship",
-      "title": "Mentorship",
-      "category": "Career and Growth",
-      "priceLabel": "INR 49",
-      "summary": "One-to-one mentorship for roadmap clarity, focused execution, and role-aligned growth.",
-      "deliverables": "1-hour mentorship session, personalized roadmap, technical guidance, growth strategy",
-      "timeline": "Session within 24-48 hours after booking; roadmap shared the same day.",
-      "idealFor": ["Beginners in CS", "Self-taught developers", "Students preparing for internships"],
-      "includes": ["Strategy call", "Custom roadmap", "Technical Q&A", "Follow-up notes"],
-      "successMetrics": ["Clear direction", "Actionable steps", "Confidence boost"],
-      "bestFor": [
-        "Beginners in CS or self-taught developers",
-        "Students preparing for internships",
-        "Developers stuck in tutorial loops"
-      ]
-    },
-    {
-      "slug": "resume-review",
-      "title": "Resume Review",
-      "category": "Career and Growth",
-      "priceLabel": "INR 99",
-      "summary": "ATS-aware resume feedback focused on sharper project impact and better interview conversion.",
-      "deliverables": "Detailed written feedback, ATS optimization, project bullet improvement, LinkedIn profile audit",
-      "timeline": "Detailed review within 24 hours.",
-      "idealFor": ["Students and freshers", "Low callback rates", "Career switchers"],
-      "includes": ["Written feedback document", "ATS optimization", "LinkedIn audit", "1 revision round"],
-      "successMetrics": ["Increased callbacks", "Better presentation", "ATS score improvement"],
-      "bestFor": [
-        "Students and freshers applying for roles",
-        "Developers with low callback rates",
-        "Candidates needing stronger project bullets"
-      ]
-    },
-    {
-      "slug": "debugging-help",
-      "title": "Debugging Help",
-      "category": "Code and Engineering",
-      "priceLabel": "INR 99",
-      "summary": "Root-cause analysis and practical fix guidance for bugs in React, MERN, deployment, or integrations.",
-      "deliverables": "Root-cause analysis, fix implementation guidance, prevention strategies, code review",
-      "timeline": "Same-day support in most cases after intake review.",
-      "idealFor": ["MERN and React developers", "Deployment issues", "Students under deadline"],
-      "includes": ["Problem analysis", "Solution path", "Implementation help", "Prevention tips"],
-      "successMetrics": ["Bug fixed", "Prevention learned", "No recurrence"],
-      "bestFor": [
-        "MERN and React issues",
-        "API and deployment bugs",
-        "Students under project deadlines"
-      ]
-    },
-    {
-      "slug": "portfolio-review",
-      "title": "Portfolio Review",
-      "category": "Career and Growth",
-      "priceLabel": "INR 99",
-      "summary": "A portfolio audit focused on narrative, trust signals, readability, and recruiter-facing clarity.",
-      "deliverables": "Detailed portfolio audit, narrative feedback, trust signal recommendations, redesign suggestions",
-      "timeline": "Detailed review within 24-48 hours.",
-      "idealFor": ["Fresher portfolios", "Low engagement", "Career switchers"],
-      "includes": ["Full audit", "Feedback document", "Redesign suggestions", "Content guidance"],
-      "successMetrics": ["Better engagement", "Clearer narrative", "Improved recruiter response"],
-      "bestFor": [
-        "Fresher portfolios with low engagement",
-        "Developers preparing for internships or job switches",
-        "Freelancers building online credibility"
-      ]
-    },
-    {
       "slug": "frontend-development",
       "title": "Frontend Development",
       "category": "Build Services",
@@ -822,7 +754,7 @@
     },
     {
       "question": "Are you available for internships or freelance work?",
-      "answer": "Yes, I'm actively open to internships, entry-level developer roles, freelance projects, remote work, and collaborations. I'm flexible with remote, hybrid, or on-site setups. You can reach out through the contact page or book a mentorship session to discuss opportunities.",
+      "answer": "Yes, I'm actively open to internships, entry-level developer roles, freelance projects, remote work, and collaborations. I'm flexible with remote, hybrid, or on-site setups. You can reach out through the contact page to discuss opportunities.",
       "category": "availability",
       "priority": "high"
     },
@@ -834,13 +766,13 @@
     },
     {
       "question": "Can you help beginners with web development?",
-      "answer": "Yes, absolutely. I offer mentorship, debugging help, resume reviews, and guidance for beginners getting into web development. My approach is practical and build-first - I believe in learning by shipping real projects rather than staying in tutorials. I'm open to helping students with project guidance and concepts.",
+      "answer": "I offer practical AI and data science guidance alongside frontend, backend, and full-stack development services. My approach is build-first and focused on turning a clear project scope into working software.",
       "category": "services",
       "priority": "medium"
     },
     {
       "question": "How can I contact you or book your services?",
-      "answer": "You can reach me through several ways: 1) Visit the contact page on my portfolio for direct messaging, 2) Book services like mentorship, debugging, or resume review directly on the portfolio, 3) Connect with me on LinkedIn at linkedin.com/in/ggauravky, 4) Check out my GitHub at github.com/ggauravky, or 5) Email me at kumar.gaurav.yadav2007@gmail.com.",
+      "answer": "You can reach me through several ways: 1) Visit the contact page on my portfolio for direct messaging, 2) Book frontend, backend, full-stack, or AI and data science services on the portfolio, 3) Connect with me on LinkedIn at linkedin.com/in/ggauravky, 4) Check out my GitHub at github.com/ggauravky, or 5) Email me at kumar.gaurav.yadav2007@gmail.com.",
       "category": "contact",
       "priority": "high"
     },

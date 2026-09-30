@@ -76,7 +76,7 @@ function ServiceDetail({ forcedSlug = '' }) {
         : 'Services | Gaurav Kumar Yadav | AI/ML & Web Developer'
     const seoDescription = service
         ? `${service.summary} ${service.outcomePromise} Offered by Gaurav Kumar Yadav, BCA student at BBDU Lucknow. Pricing: ${service.priceLabel}. Secure Razorpay checkout uses server-verified pricing.`
-        : 'Work with Gaurav Kumar Yadav — BCA student at BBDU Lucknow — for mentorship, debugging, portfolio reviews, and full-stack delivery with secure Razorpay checkout.'
+        : 'Work with Gaurav Kumar Yadav for frontend, backend, full-stack, and AI or data science delivery with secure Razorpay checkout.'
     const seoKeywords = service
         ? `${service.title} Gaurav Kumar Yadav, ${service.category} developer service Lucknow, Gaurav Kumar Yadav services, AI ML developer services India, web developer booking BBDU`
         : 'Gaurav Kumar Yadav developer services, AI ML developer Lucknow, web developer booking India, BBDU student developer'

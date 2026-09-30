@@ -14,6 +14,13 @@ const paymentController = require("../controllers/paymentController");
 
 const validUserId = "507f1f77bcf86cd799439011";
 const validTransactionId = "507f191e810c19729de860ea";
+const activeServices = [
+  ["frontend-development", 1499],
+  ["backend-development", 1499],
+  ["fullstack-development", 3499],
+  ["ai-data-guidance", 499],
+];
+const retiredServiceSlugs = ["mentorship", "resume-review", "debugging-help", "portfolio-review"];
 
 const buildRequest = (overrides = {}) => ({
   ip: "127.0.0.1",
@@ -22,13 +29,13 @@ const buildRequest = (overrides = {}) => ({
 });
 
 const buildBookingBody = (overrides = {}) => ({
-  serviceSlug: "mentorship",
+  serviceSlug: "frontend-development",
   name: "Test User",
   email: "spoofed@example.com",
   phone: "9876543210",
   preferredDate: "2026-10-10",
   preferredTime: "10:00",
-  projectBrief: "Need a focused roadmap.",
+  projectBrief: "Need a responsive frontend build.",
   ...overrides,
 });
 
@@ -60,8 +67,8 @@ const buildTransaction = (overrides = {}) => ({
   ...overrides,
 });
 
-test("catalogue contains all eight active paid services", () => {
-  assert.equal(listPaidServices().length, 8);
+test("catalogue contains exactly the four active paid services", () => {
+  assert.deepEqual(listPaidServices().map((service) => service.slug), activeServices.map(([slug]) => slug));
   assert.ok(listPaidServices().every((service) => service.enabled && service.currency === "INR"));
 });
 
@@ -74,15 +81,43 @@ test("invalid service slug is rejected", () => {
   assert.equal(getServiceBySlug("not-a-service"), null);
 });
 
+test("retired services remain historical catalogue records but reject new orders", () => {
+  retiredServiceSlugs.forEach((serviceSlug) => {
+    assert.equal(getServiceBySlug(serviceSlug), null);
+    assert.equal(getServiceBySlug(serviceSlug, { includeDisabled: true }).enabled, false);
+    assert.throws(
+      () => paymentController._test.buildTransactionInput({
+        body: buildBookingBody({ serviceSlug }),
+        authUser: { id: validUserId, email: "test@example.com" },
+        req: buildRequest(),
+      }),
+      { code: "INVALID_SERVICE", status: 400 }
+    );
+  });
+});
+
+test("all active services still create server-priced transaction input", () => {
+  activeServices.forEach(([serviceSlug, amount]) => {
+    const input = paymentController._test.buildTransactionInput({
+      body: buildBookingBody({ serviceSlug }),
+      authUser: { id: validUserId, email: "test@example.com" },
+      req: buildRequest(),
+    });
+    assert.equal(input.serviceSlug, serviceSlug);
+    assert.equal(input.amount, amount);
+    assert.equal(input.amountPaise, amount * 100);
+  });
+});
+
 test("valid service creates trusted transaction input", () => {
   const input = paymentController._test.buildTransactionInput({
     body: buildBookingBody(),
     authUser: { id: validUserId, email: "test@example.com" },
     req: buildRequest(),
   });
-  assert.equal(input.serviceSlug, "mentorship");
-  assert.equal(input.amount, 49);
-  assert.equal(input.amountPaise, 4900);
+  assert.equal(input.serviceSlug, "frontend-development");
+  assert.equal(input.amount, 1499);
+  assert.equal(input.amountPaise, 149900);
 });
 
 test("frontend supplied amount cannot change server price", () => {
@@ -91,8 +126,8 @@ test("frontend supplied amount cannot change server price", () => {
     authUser: { id: validUserId, email: "test@example.com" },
     req: buildRequest(),
   });
-  assert.equal(input.amount, 49);
-  assert.equal(input.amountPaise, 4900);
+  assert.equal(input.amount, 1499);
+  assert.equal(input.amountPaise, 149900);
 });
 
 test("authenticated email is authoritative", () => {

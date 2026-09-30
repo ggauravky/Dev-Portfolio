@@ -18,6 +18,8 @@ import TechIcon from '../components/TechIcon'
 import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
 import { useOpeningState } from '../context/OpeningContext'
 
+const HERO_PROFILE_WIDTHS = [480, 768, 1122]
+
 function Home() {
     const profileTilt = use3DTilt({ maxTilt: 10, glint: true })
     const openingState = useOpeningState()
@@ -279,10 +281,11 @@ function Home() {
                                 <div className="relative">
                                     <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-72 md:h-72 lg:w-[380px] lg:h-[380px] xl:w-[400px] xl:h-[400px] overflow-hidden rounded-full border-2 border-toxic bg-obsidian-card p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-[18px] shadow-2xl shadow-toxic/10 transition-all duration-700 ring-1 ring-toxic/20 ring-offset-4 ring-offset-obsidian">
                                         <LazyImage
-                                            src="/images/profile-768.webp"
+                                            src="/images/profile.jpg"
                                             alt="Gaurav Kumar Yadav portfolio - AI ML developer and web developer in Lucknow India"
                                             priority={true}
-                                            responsive={false}
+                                            responsiveWidths={HERO_PROFILE_WIDTHS}
+                                            sizes="(min-width: 1280px) 364px, (min-width: 1024px) 348px, (min-width: 768px) 264px, (min-width: 640px) 220px, 192px"
                                             className="w-full h-full rounded-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
                                         />
 

@@ -63,9 +63,12 @@ const generateForSource = async (sourcePath) => {
   const ext = path.extname(sourcePath).slice(1).toLowerCase();
   const sourceModifiedAt = fs.statSync(sourcePath).mtimeMs;
   const isJourneyImage = path.dirname(sourcePath) === path.join(PUBLIC_IMAGES_DIR, "journey");
-  const widths = isJourneyImage
-    ? WIDTHS
-    : WIDTHS.filter((width) => !originalWidth || width <= originalWidth);
+  const isProfileImage = sourcePath === path.join(PUBLIC_IMAGES_DIR, "profile.jpg");
+  const widths = isProfileImage && originalWidth
+    ? [...new Set([...WIDTHS.filter((width) => width < originalWidth), originalWidth])]
+    : isJourneyImage
+      ? WIDTHS
+      : WIDTHS.filter((width) => !originalWidth || width <= originalWidth);
 
   if (!widths.length && originalWidth) widths.push(originalWidth);
 
@@ -89,8 +92,12 @@ const generateForSource = async (sourcePath) => {
     });
 
     if (staleOutputs.includes(originalOut)) await pipeline.clone().toFile(originalOut);
-    if (staleOutputs.includes(webpOut)) await pipeline.clone().webp({ quality: 80 }).toFile(webpOut);
-    if (staleOutputs.includes(avifOut)) await pipeline.clone().avif({ quality: 50 }).toFile(avifOut);
+    if (staleOutputs.includes(webpOut)) {
+      await pipeline.clone().webp({ quality: isProfileImage ? 88 : 80 }).toFile(webpOut);
+    }
+    if (staleOutputs.includes(avifOut)) {
+      await pipeline.clone().avif({ quality: isProfileImage ? 65 : 50 }).toFile(avifOut);
+    }
     created += staleOutputs.length;
   }
 

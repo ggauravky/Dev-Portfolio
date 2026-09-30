@@ -16,9 +16,9 @@ import { servicesData } from '../data/servicesData'
 
 function Services() {
     useSEO({
-        title: 'Services | Gaurav Kumar Yadav | AI/ML and Web Development Support',
-        description: 'Work with Gaurav Kumar Yadav for mentorship, debugging, portfolio reviews, and full-stack delivery support. AI/ML and web development guidance from a BCA student developer in Lucknow, India.',
-        keywords: 'Gaurav Kumar Yadav services, AI ML developer Lucknow, web developer India, mentorship for developers, MERN stack developer student, portfolio review service, debugging help',
+        title: 'Services | Gaurav Kumar Yadav | Web Development and AI Guidance',
+        description: 'Work with Gaurav Kumar Yadav on frontend, backend, full-stack, and AI or data science projects. Practical remote development services from Lucknow, India.',
+        keywords: 'Gaurav Kumar Yadav services, frontend developer Lucknow, backend developer India, full stack development, AI data science guidance, MERN stack developer',
         ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
         additionalJsonLd: {
             '@type': 'FAQPage',
@@ -28,7 +28,7 @@ function Services() {
                     name: 'What services does Gaurav Kumar Yadav offer?',
                     acceptedAnswer: {
                         '@type': 'Answer',
-                        text: 'Gaurav Kumar Yadav offers 8 developer services: Mentorship (1:1 career roadmaps), Resume Review (ATS optimisation), Debugging Help (root-cause code fixes), Portfolio Review, Frontend Development, Backend Development, Full Stack Development, and AI & Data Science Guidance. Payments use server-verified Razorpay checkout.'
+                        text: 'Gaurav Kumar Yadav offers four services: Frontend Development, Backend Development, Full Stack Development, and AI & Data Science Guidance. Payments use server-verified Razorpay checkout.'
                     }
                 },
                 {
@@ -41,10 +41,10 @@ function Services() {
                 },
                 {
                     '@type': 'Question',
-                    name: 'What is the price for mentorship with Gaurav Kumar Yadav?',
+                    name: 'What do Gaurav Kumar Yadav services cost?',
                     acceptedAnswer: {
                         '@type': 'Answer',
-                        text: 'Mentorship and Resume Review sessions are priced at INR 49. Debugging Help and Portfolio Review are INR 99. Build services (Frontend, Backend, Full Stack) are priced based on project scope. All prices are in Indian Rupees (INR).'
+                        text: 'Frontend and Backend Development start at INR 1499, Full Stack Development starts at INR 3499, and AI & Data Science Guidance starts at INR 499. Final project pricing depends on the agreed scope. All prices are in Indian Rupees (INR).'
                     }
                 },
                 {
@@ -68,46 +68,16 @@ function Services() {
     })
 
 
-    const allServices = useMemo(() => servicesData, [])
-    const coreServices = useMemo(() => allServices.filter((service) => service.category === 'Career and Growth' || service.category === 'Code and Engineering'), [allServices])
-    const buildServices = useMemo(() => allServices.filter((service) => service.category === 'Build Services' || service.category === 'Specialized Guidance'), [allServices])
-    const comparisonServices = useMemo(() => allServices, [allServices])
+    const allServices = servicesData
+    const buildServices = allServices
     
     const testimonials = useMemo(() => [
-        {
-            quote: 'The resume review removed generic lines and improved ATS readability. I started receiving shortlist calls in the next application cycle.',
-            name: 'Aayush Verma',
-            role: 'Final Year CSE Student',
-            city: 'Noida',
-            result: '5 interview shortlists in 3 weeks',
-        },
-        {
-            quote: 'Debugging support was practical. I got the root cause quickly and fixed production behavior with clear validation steps.',
-            name: 'Priya Nair',
-            role: 'React Developer',
-            city: 'Bengaluru',
-            result: 'Critical issue resolved same day',
-        },
-        {
-            quote: 'Portfolio recommendations made the project narrative clearer. Recruiter conversations improved after the updates.',
-            name: 'Ritwik Sharma',
-            role: 'Fresher Developer',
-            city: 'Pune',
-            result: '2 recruiter callbacks in 10 days',
-        },
         {
             quote: 'Full stack delivery followed clear milestones with transparent communication. The MVP launch timeline stayed realistic.',
             name: 'Neha Khanna',
             role: 'Startup Founder',
             city: 'Pune',
             result: 'MVP scope delivered in planned phases',
-        },
-        {
-            quote: 'Mentorship gave me practical direction instead of random tutorials. I started following a weekly plan consistently.',
-            name: 'Harsh Mehta',
-            role: 'B.Tech CSE Student',
-            city: 'Jaipur',
-            result: '30-day roadmap with execution checklist',
         },
     ], [])
 
@@ -193,11 +163,11 @@ function Services() {
                                 </div>
                                 <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
                                     <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Secure Checkout</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Upgrading</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Razorpay</p>
                                 </div>
                                 <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
                                     <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">View Details</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">8 Detailed</p>
+                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">{allServices.length} Detailed</p>
                                 </div>
                             </div>
                             <p className="mt-4 text-xs font-mono uppercase tracking-wider text-zinc-500 relative z-10">
@@ -212,20 +182,6 @@ function Services() {
                 <TrustStrip variant="services" />
             </section>
 
-            <section id="core-services" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <ScrollReveal>
-                    <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Career and Debug Services</span>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold uppercase text-white mb-8">Affordable Support</h2>
-                </ScrollReveal>
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-                    {coreServices.map((service, index) => (
-                        <ScrollReveal key={service.slug} delay={index * 70}>
-                            <ServiceCard service={service} />
-                        </ScrollReveal>
-                    ))}
-                </div>
-            </section>
-
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
                 <ScrollReveal>
                     <span className="inline-block text-cyber text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyber/5 rounded-full border border-cyber/15">Build and Delivery Services</span>
@@ -238,50 +194,6 @@ function Services() {
                         </ScrollReveal>
                     ))}
                 </div>
-            </section>
-
-            {/* Comparison section */}
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <ScrollReveal>
-                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
-                        <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
-                        <div className="relative z-10">
-                            <h3 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white mb-2">Service Comparison</h3>
-                            <p className="text-zinc-500 font-mono text-xs uppercase tracking-wider mb-6">// Price, timeline, deliverables, and support comparison</p>
-
-                            <div className="overflow-x-auto rounded border border-obsidian-border">
-                                <table className="min-w-[880px] w-full text-left text-xs font-mono">
-                                    <thead className="bg-obsidian">
-                                        <tr className="text-zinc-500 uppercase border-b border-obsidian-border font-bold">
-                                            <th className="px-4 py-4.5">Service</th>
-                                            <th className="px-4 py-4.5">Price</th>
-                                            <th className="px-4 py-4.5">Delivery Time</th>
-                                            <th className="px-4 py-4.5">Best For</th>
-                                            <th className="px-4 py-4.5">Deliverable</th>
-                                            <th className="px-4 py-4.5">Support Level</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {comparisonServices.map((service) => (
-                                            <tr key={service.slug} className="border-t border-obsidian-border bg-obsidian-card/40 text-zinc-300 align-top hover:bg-obsidian-card/75 transition-colors">
-                                                <td className="px-4 py-4">
-                                                    <Link to={service.path} className="font-display font-bold uppercase text-toxic hover:text-white transition-colors">
-                                                        {service.title}
-                                                    </Link>
-                                                </td>
-                                                <td className="px-4 py-4 font-bold text-white">{service.priceLabel}</td>
-                                                <td className="px-4 py-4">{service.deliveryWindow || service.timeline}</td>
-                                                <td className="px-4 py-4 text-zinc-400">{(service.whoThisIsFor || service.bestFor || [])[0]}</td>
-                                                <td className="px-4 py-4 text-zinc-400">{service.comparisonDeliverable || (service.exactDeliverables || [])[0] || 'Defined in detail page'}</td>
-                                                <td className="px-4 py-4">{service.supportLevel || 'Standard support'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </ScrollReveal>
             </section>
 
             {/* Why choose me */}

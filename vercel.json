@@ -74,22 +74,6 @@
             "destination": "/index.html"
         },
         {
-            "source": "/mentorship",
-            "destination": "/index.html"
-        },
-        {
-            "source": "/resume-review",
-            "destination": "/index.html"
-        },
-        {
-            "source": "/debugging-help",
-            "destination": "/index.html"
-        },
-        {
-            "source": "/portfolio-review",
-            "destination": "/index.html"
-        },
-        {
             "source": "/frontend-development",
             "destination": "/index.html"
         },

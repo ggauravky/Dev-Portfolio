@@ -1,8 +1,8 @@
 [
-  { "slug": "mentorship", "name": "Mentorship", "amount": 49, "currency": "INR", "enabled": true },
-  { "slug": "resume-review", "name": "Resume Review", "amount": 99, "currency": "INR", "enabled": true },
-  { "slug": "debugging-help", "name": "Debugging Help", "amount": 99, "currency": "INR", "enabled": true },
-  { "slug": "portfolio-review", "name": "Portfolio Review", "amount": 99, "currency": "INR", "enabled": true },
+  { "slug": "mentorship", "name": "Mentorship", "amount": 49, "currency": "INR", "enabled": false },
+  { "slug": "resume-review", "name": "Resume Review", "amount": 99, "currency": "INR", "enabled": false },
+  { "slug": "debugging-help", "name": "Debugging Help", "amount": 99, "currency": "INR", "enabled": false },
+  { "slug": "portfolio-review", "name": "Portfolio Review", "amount": 99, "currency": "INR", "enabled": false },
   { "slug": "frontend-development", "name": "Frontend Development", "amount": 1499, "currency": "INR", "enabled": true },
   { "slug": "backend-development", "name": "Backend Development", "amount": 1499, "currency": "INR", "enabled": true },
   { "slug": "fullstack-development", "name": "Full Stack Development", "amount": 3499, "currency": "INR", "enabled": true },

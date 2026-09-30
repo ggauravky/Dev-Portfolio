@@ -48,14 +48,16 @@ const observeLazyImage = (element, loadImage) => {
     }
 }
 
-const buildVariantSet = (src, responsive, format) => {
+const DEFAULT_RESPONSIVE_WIDTHS = [480, 768, 1200]
+
+const buildVariantSet = (src, responsive, format, responsiveWidths) => {
     if (!responsive || !src?.startsWith('/')) return ''
 
     const match = src.match(/^(.*)\.(png|jpg|jpeg)$/i)
     if (!match) return ''
 
     const base = match[1]
-    return [480, 768, 1200].map((width) => `${base}-${width}.${format} ${width}w`).join(', ')
+    return responsiveWidths.map((width) => `${base}-${width}.${format} ${width}w`).join(', ')
 }
 
 function LazyImage({
@@ -64,6 +66,7 @@ function LazyImage({
     className = '',
     sizes = '100vw',
     responsive = true,
+    responsiveWidths = DEFAULT_RESPONSIVE_WIDTHS,
     fetchPriority = 'auto',
     priority = false,
     placeholderSrc = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%230f172a" width="400" height="300"/%3E%3C/svg%3E',
@@ -84,9 +87,9 @@ function LazyImage({
 
     const sourceExtension = src.match(/\.(png|jpg|jpeg)$/i)?.[1]?.toLowerCase()
     const originalFormat = sourceExtension === 'jpeg' ? 'jpg' : sourceExtension
-    const avifSrcSet = buildVariantSet(src, responsive, 'avif')
-    const webpSrcSet = buildVariantSet(src, responsive, 'webp')
-    const originalSrcSet = originalFormat ? buildVariantSet(src, responsive, originalFormat) : ''
+    const avifSrcSet = buildVariantSet(src, responsive, 'avif', responsiveWidths)
+    const webpSrcSet = buildVariantSet(src, responsive, 'webp', responsiveWidths)
+    const originalSrcSet = originalFormat ? buildVariantSet(src, responsive, originalFormat, responsiveWidths) : ''
 
     useEffect(() => {
         const element = imageRef.current
@@ -150,7 +153,7 @@ function LazyImage({
                 srcSet={isInView && !isFallback && originalSrcSet ? originalSrcSet : undefined}
                 sizes={sizes}
                 alt={alt || ''}
-                className={`${className} ${isLoaded && isInView ? 'lazy-image-loaded' : 'lazy-image-loading'}`}
+                className={`${className} ${isEager || (isLoaded && isInView) ? 'lazy-image-loaded' : 'lazy-image-loading'}`}
                 onLoad={handleLoad}
                 onError={handleError}
                 loading={isEager ? 'eager' : 'lazy'}
@@ -168,6 +171,7 @@ LazyImage.propTypes = {
     className: PropTypes.string,
     sizes: PropTypes.string,
     responsive: PropTypes.bool,
+    responsiveWidths: PropTypes.arrayOf(PropTypes.number),
     fetchPriority: PropTypes.oneOf(['auto', 'high', 'low']),
     priority: PropTypes.bool,
     placeholderSrc: PropTypes.string,

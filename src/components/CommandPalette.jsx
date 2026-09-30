@@ -44,7 +44,7 @@ const EXPLORE_SUGGESTIONS = [
 function getEmptyHint(q) {
     if (q.includes('git')) return ['GitHub', 'Projects', 'Source Code']
     if (q.includes('mail') || q.includes('contact')) return ['Contact', 'Send Email', 'Copy Email']
-    if (q.includes('res') || q.includes('cv')) return ['Download Resume', 'Resume Review']
+    if (q.includes('res') || q.includes('cv')) return ['Download Resume', 'Services']
     if (q.includes('ai') || q.includes('ml')) return ['Python', 'AI Guidance', 'Skills']
     if (q.includes('link')) return ['LinkedIn', 'Social']
     if (q.includes('proj')) return ['Projects', 'SmartMess', 'AIReel Studio']
