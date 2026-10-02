@@ -812,6 +812,53 @@ export const journeyData = [
     relatedBlogSlug: ''
   },
   {
+    id: 'osci-uttar-pradesh-state-lead-2026',
+    title: 'Uttar Pradesh State Lead',
+    organization: 'Open Source Connect India (OSCI)',
+    date: '2026-09-07',
+    dateLabel: 'September 7, 2026 - Present',
+    location: 'Uttar Pradesh, India',
+    duration: 'Ongoing',
+    category: 'Open Source',
+    mode: 'Community',
+    status: 'In Progress',
+    description: 'Selected as the Uttar Pradesh State Lead for Open Source Connect India (OSCI), alongside Vaishnavi Mishra. The role focuses on growing the state\'s open-source ecosystem by connecting developers, students, contributors, colleges, and technology communities while promoting collaboration and open-source participation.',
+    whatILearned: [
+      'Representing Open Source Connect India across Uttar Pradesh',
+      'Growing and strengthening the regional open-source community',
+      'Encouraging students and developers to contribute to open source',
+      'Connecting developers, contributors, colleges, and technology communities',
+      'Supporting community events, workshops, meetups, and technical initiatives',
+      'Promoting collaborative development and knowledge sharing',
+      'Creating opportunities for new open-source contributors',
+      'Working alongside community leaders and contributors'
+    ],
+    skills: [
+      'Open Source',
+      'Community Leadership',
+      'Developer Relations',
+      'Community Building',
+      'Collaboration',
+      'GitHub',
+      'Technology Communities',
+      'Networking',
+      'Leadership'
+    ],
+    coverImage: '/images/journey/opens.png',
+    images: ['/images/journey/opens.png'],
+    objectives: 'Support and grow the open-source ecosystem across Uttar Pradesh by helping developers discover projects, collaborate, participate in community initiatives, and connect with technology communities.',
+    outcomes: 'Taking responsibility for regional community building, developer engagement, open-source awareness, collaborations, and technical initiatives across Uttar Pradesh.',
+    technologies: ['GitHub', 'Git', 'Open Source Collaboration'],
+    certificateUrl: '',
+    relatedBlogSlug: '',
+    metadata: {
+      'Role': 'State Lead - Uttar Pradesh',
+      'Region': 'Uttar Pradesh, India',
+      'Co-State Lead': 'Vaishnavi Mishra',
+      'Focus': 'Open Source, Leadership & Community Building'
+    }
+  },
+  {
     id: 'lenovo-leap-hackathon-2026',
     title: 'Lenovo LEAP Hackathon',
     organization: 'Lenovo LEAP',
@@ -864,6 +911,140 @@ export const journeyData = [
       'Participation': 'Hackathon Participant',
       'Project Presented': 'TaskNexus',
       'Focus': 'Learning, Building & Innovation'
+    }
+  },
+  {
+    id: 'heygen-community-event-lucknow-2026',
+    title: 'HeyGen Community Event - Lucknow',
+    organization: 'HeyGen Community',
+    date: '2026-09-27',
+    dateLabel: 'September 27, 2026',
+    location: 'Edubuk Technologies Private Limited, Gomti Nagar, Lucknow, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Community Events',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended the HeyGen Community Event in Lucknow, a community-focused session on AI-powered video creation and digital storytelling. Explored how AI avatars, synthetic voices, multilingual content, and automated video generation can simplify professional content workflows for creators, developers, educators, marketers, and businesses.',
+    whatILearned: [
+      'AI-powered video generation using HeyGen',
+      'Working with AI avatars and digital presenters',
+      'AI voice generation and multilingual video creation',
+      'Generative AI applications in content creation',
+      'Practical use cases for creators, businesses, and developers',
+      'Networking with the local AI and technology community'
+    ],
+    skills: [
+      'Generative AI',
+      'AI Video Generation',
+      'AI Avatars',
+      'Voice AI',
+      'Digital Storytelling',
+      'Networking'
+    ],
+    coverImage: '/images/journey/hey1.jpg',
+    images: ['/images/journey/hey1.jpg',
+      '/images/journey/hey2.jpg'
+    ],
+    objectives: 'Explore practical AI video-generation workflows and understand how generative AI is changing digital content creation.',
+    outcomes: 'Gained practical insight into HeyGen, AI avatars, synthetic voice workflows, multilingual video creation, and real-world generative AI use cases.',
+    technologies: ['HeyGen', 'Generative AI', 'AI Video', 'AI Avatars', 'Voice AI', 'Multilingual AI'],
+    certificateUrl: '',
+    relatedBlogSlug: '',
+    metadata: {
+      'Event Type': 'AI Community Event / Generative AI',
+      'Venue': 'Edubuk Technologies, Gomti Nagar, Lucknow',
+      'Focus': 'AI Video, Avatars, Voice AI & Digital Storytelling'
+    }
+  },
+  {
+    id: 'qualcomm-ai-hub-meetup-lucknow-2026',
+    title: 'Qualcomm AI Hub Developer Meetup - Lucknow',
+    organization: 'Qualcomm AI Hub',
+    date: '2026-09-27',
+    dateLabel: 'September 27, 2026',
+    location: 'Edubuk Technologies Private Limited, Gomti Nagar, Lucknow, Uttar Pradesh',
+    duration: '1 Day',
+    category: 'Community Events',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended the Qualcomm AI Hub Developer Meetup in Lucknow, a developer-focused event exploring on-device artificial intelligence and optimized AI deployment. The sessions covered the Qualcomm AI Hub ecosystem, generative AI, model optimization, and practical deployment approaches for supported hardware, with demonstrations highlighting latency, privacy, efficiency, and real-time performance.',
+    whatILearned: [
+      'Introduction to the Qualcomm AI Hub ecosystem',
+      'Understanding on-device AI workflows',
+      'AI model optimization and deployment techniques',
+      'Generative AI use cases on edge devices',
+      'Benefits of reduced latency and improved privacy',
+      'Practical demonstrations of AI deployment workflows',
+      'Networking with AI and machine learning developers'
+    ],
+    skills: [
+      'On-Device AI',
+      'Machine Learning',
+      'Model Optimization',
+      'Edge AI',
+      'AI Deployment',
+      'Generative AI',
+      'Networking'
+    ],
+    coverImage: '/images/journey/qua1.jpg',
+    images: ['/images/journey/qua1.jpg',
+      '/images/journey/qua2.jpg'
+    ],
+    objectives: 'Understand how optimized AI models can run directly on devices and explore practical deployment workflows through Qualcomm AI Hub.',
+    outcomes: 'Developed a clearer understanding of on-device AI, edge deployment, model optimization, and the performance and privacy benefits of reducing cloud dependence.',
+    technologies: ['Qualcomm AI Hub', 'On-Device AI', 'Generative AI', 'Machine Learning', 'Model Optimization', 'Edge AI'],
+    certificateUrl: '',
+    relatedBlogSlug: '',
+    metadata: {
+      'Event Type': 'Developer Meetup / AI & Machine Learning',
+      'Venue': 'Edubuk Technologies, Gomti Nagar, Lucknow',
+      'Focus': 'On-Device AI, Model Optimization & AI Deployment'
+    }
+  },
+  {
+    id: 'osen-lucknow-copilot-dev-days-2026',
+    title: 'OSEN Lucknow: Copilot Dev Days',
+    organization: 'OSEN Lucknow',
+    date: '2026-10-01',
+    dateLabel: 'October 1, 2026',
+    location: 'Shri Ramswaroop College of Engineering and Management, Lucknow, Uttar Pradesh',
+    duration: '4 Hours',
+    category: 'Workshops',
+    mode: 'Offline',
+    status: 'Completed',
+    description: 'Attended OSEN Lucknow: Copilot Dev Days, part of the GitHub Dev Days 2026 community initiative. The hands-on event focused on using GitHub Copilot in real software-development workflows for writing code, understanding existing codebases, accelerating everyday tasks, and improving developer productivity.',
+    whatILearned: [
+      'Hands-on experience with GitHub Copilot',
+      'AI-assisted coding workflows',
+      'Using Copilot for real-world development tasks',
+      'Improving development speed and productivity',
+      'Practical use cases for modern coding assistants',
+      'Developer and open-source community networking',
+      'Exposure to modern AI-powered development workflows'
+    ],
+    skills: [
+      'GitHub Copilot',
+      'AI-Assisted Development',
+      'Software Development',
+      'Developer Productivity',
+      'Open Source',
+      'Networking'
+    ],
+    coverImage: '/images/journey/ram1.jpeg',
+    images: ['/images/journey/ram1.jpeg',
+      "/images/journey/ram2.jpeg",
+      "/images/journey/ram3.jpeg"
+    ],
+    objectives: 'Gain practical experience using GitHub Copilot in modern development workflows and learn how AI coding tools can improve everyday engineering tasks.',
+    outcomes: 'Gained hands-on exposure to GitHub Copilot, AI-assisted coding, codebase understanding, productivity workflows, and the local developer and open-source community.',
+    technologies: ['GitHub', 'GitHub Copilot', 'AI-Assisted Development', 'Developer Tools', 'Open Source', 'Generative AI'],
+    certificateUrl: '',
+    relatedBlogSlug: '',
+    metadata: {
+      'Event Type': 'Developer Workshop / GitHub Community Event',
+      'Venue': 'Seminar Hall, Block A, SRMCEM Lucknow',
+      'Time': '11:00 AM - 3:00 PM',
+      'Focus': 'GitHub Copilot, AI-Assisted Development & Developer Productivity'
     }
   }
 ];
