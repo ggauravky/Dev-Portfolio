@@ -16,7 +16,16 @@ const PUBLIC_IMAGES_DIR = path.join(__dirname, "../public/images");
 const TARGET_DIRS = ["projects", "blogs", "journey"];
 const STANDALONE_FILES = ["profile.jpg"];
 const WIDTHS = [480, 768, 1200];
-const SUPPORTED_EXT = new Set([".png", ".jpg", ".jpeg"]);
+const SUPPORTED_EXT = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif"]);
+const ORIGINAL_ONLY_BLOG_IMAGES = new Set([
+  "cover.webp",
+  "capacity.png",
+  "client.png",
+  "geospatial.png",
+  "matchingengine.png",
+  "kringsearch.png",
+  "dynamicpricing.png",
+]);
 
 const isVariantFile = (fileName) => /-\d+\.(png|jpe?g|webp|avif)$/i.test(fileName);
 
@@ -35,6 +44,7 @@ const getSourceFiles = () => {
 
     for (const fileName of fs.readdirSync(fullDir)) {
       const ext = path.extname(fileName).toLowerCase();
+      if (dir === "blogs" && ORIGINAL_ONLY_BLOG_IMAGES.has(fileName)) continue;
       if (!SUPPORTED_EXT.has(ext) || isVariantFile(fileName)) continue;
       sources.push(path.join(fullDir, fileName));
     }

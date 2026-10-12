@@ -9,10 +9,11 @@ import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import { use3DTilt } from '../hooks/use3DTilt'
-import { blogsData } from '../data/blogsData'
+import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { journeyData } from '../data/journeyData'
 import LazyImage from '../components/LazyImage'
+import EditorialImage from '../components/blog/EditorialImage'
 import ScrollReveal from '../components/ScrollReveal'
 import TechIcon from '../components/TechIcon'
 import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
@@ -72,7 +73,7 @@ function Home() {
     }), [])
 
     // Dynamically get featured blogs from the shared data
-    const featuredBlogs = useMemo(() => blogsData.filter(blog => blog.featured), [])
+    const featuredBlogs = useMemo(() => getFeaturedBlogs(), [])
 
     // Get latest 3 experiences for Home page section
     const featuredJourney = useMemo(() => {
@@ -658,38 +659,45 @@ function Home() {
 
                 <ScrollReveal className="max-w-7xl mx-auto" delay={60}>
                     <div className="text-center mb-16">
-                        <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Latest from blog</span>
+                        <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Engineering notes</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
                             <span className="text-white">
-                                Recent Blog Posts
+                                Latest from the notebook
                             </span>
                         </h2>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {featuredBlogs.map((blog, index) => (
+                    <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)] gap-6 max-w-5xl mx-auto">
+                        {featuredBlogs.map((blog) => (
                             <div key={blog.id} className="group bg-obsidian-card border border-obsidian-border rounded-lg overflow-hidden hover:border-toxic/30 transition-all duration-300 flex flex-col h-full">
                                 {/* Blog Image */}
                                 <div className="card-img-wrap relative h-44 bg-obsidian overflow-hidden">
-                                    <LazyImage
-                                        src={blog.image}
-                                        alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer projects and insights`}
-                                        className="w-full h-full object-cover card-img-zoom"
-                                    />
+                                    {blog.contentType === 'structured' ? (
+                                        <EditorialImage
+                                            image={blog.images.find((image) => image.id === blog.coverImageId)}
+                                            className="w-full h-full object-contain card-img-zoom"
+                                        />
+                                    ) : (
+                                        <LazyImage
+                                            src={blog.image}
+                                            alt={`${blog.title} by Gaurav Kumar Yadav - AI ML developer projects and insights`}
+                                            className="w-full h-full object-cover card-img-zoom"
+                                        />
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent opacity-80"></div>
                                 </div>
 
                                 {/* Blog Content */}
                                 <div className="p-5 flex flex-col flex-grow">
                                     <div className="flex items-center gap-2 mb-2 text-xs font-mono text-zinc-500 uppercase">
-                                        <span>{blog.date}</span>
+                                        <span>{blog.category}</span>
                                         <span>•</span>
-                                        <span>{blog.readTime}</span>
+                                        <span>{blog.status === 'preview' ? 'Preview' : blog.readTime}</span>
                                     </div>
                                     <h3 className="text-lg font-display font-bold uppercase text-white mb-2 group-hover:text-toxic transition-colors line-clamp-2">{blog.title}</h3>
                                     <p className="text-zinc-400 text-xs mb-4 line-clamp-2 leading-relaxed flex-grow">{blog.excerpt}</p>
                                     <span className="inline-block bg-toxic/5 text-toxic border border-toxic/15 px-3 py-1 rounded font-mono text-[10px] mb-5 w-fit">
-                                        {blog.category}
+                                        {blog.status === 'preview' ? 'In progress' : blog.category}
                                     </span>
 
                                     {/* Read More Button */}
@@ -697,7 +705,7 @@ function Home() {
                                         to={`/blog/${blog.slug}`}
                                         className="w-full inline-flex items-center justify-center border border-zinc-800 hover:border-toxic text-zinc-300 hover:text-toxic font-bold px-3 py-2.5 rounded-full transition-all duration-300 hover:scale-[1.02] text-xs uppercase tracking-wider font-mono mt-auto"
                                     >
-                                        Read More →
+                                        {blog.status === 'preview' ? 'Read Preview →' : 'Read More →'}
                                     </Link>
                                 </div>
                             </div>

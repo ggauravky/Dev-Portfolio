@@ -3,7 +3,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { projectsData } from './projectsData'
-import { blogsData } from './blogsData'
+import { getPublicBlogs } from './blogsData'
 import { servicesData } from './servicesData'
 
 // ─── CATEGORY CONSTANTS ───────────────────────────────────────────────────────
@@ -638,7 +638,7 @@ export const getProjectCommands = () => {
 
 /** Generate command items for blog articles */
 export const getBlogCommands = () => {
-    return blogsData.map((post) => ({
+    return getPublicBlogs().map((post) => ({
         id: `blog-${post.slug}`,
         title: post.title,
         category: CATEGORIES.BLOG,
@@ -647,7 +647,7 @@ export const getBlogCommands = () => {
             : `Blog article by Gaurav Kumar Yadav`,
         type: 'internal',
         url: `/blog/${post.slug}`,
-        badge: 'Article',
+        badge: post.status === 'preview' ? 'Preview' : 'Article',
         priority: 50,
         aliases: [],
         keywords: [

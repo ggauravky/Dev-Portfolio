@@ -7,23 +7,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getPublishedBlogs } from "../src/data/blogsData.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Import blog data
-const blogsDataPath = path.join(__dirname, "../src/data/blogsData.js");
-const blogsDataContent = fs.readFileSync(blogsDataPath, "utf-8");
 
 // Import project data
 const projectsDataPath = path.join(__dirname, "../src/data/projectsData.js");
 const projectsDataContent = fs.readFileSync(projectsDataPath, "utf-8");
 
-// Extract blog slugs from the file
-const slugMatches = blogsDataContent.match(/slug:\s*["']([^"']+)["']/g);
-const blogSlugs = slugMatches
-  ? slugMatches.map((match) => match.match(/["']([^"']+)["']/)[1])
-  : [];
+// Keep previews and archived routes out of the sitemap while preserving their URLs.
+const blogSlugs = getPublishedBlogs().map(({ slug }) => slug);
 
 // Extract project slugs from the file
 const projectSlugMatches = projectsDataContent.match(/slug:\s*["']([^"']+)["']/g);

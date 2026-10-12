@@ -15,6 +15,7 @@ const useSEO = ({
     type = 'website',
     author,
     publishedTime,
+    modifiedTime,
     tags,
     noindex = false,
     additionalJsonLd = null
@@ -93,8 +94,13 @@ const useSEO = ({
         // Set article-specific tags for blog posts
         if (type === 'article') {
             if (author) updateOrCreateMeta('article:author', author)
-            if (publishedTime) updateOrCreateMeta('article:published_time', publishedTime)
-            updateOrCreateMeta('article:modified_time', new Date().toISOString())
+            if (publishedTime) {
+                updateOrCreateMeta('article:published_time', publishedTime)
+            } else {
+                document.querySelector('meta[property="article:published_time"]')?.remove()
+            }
+            if (modifiedTime) updateOrCreateMeta('article:modified_time', modifiedTime)
+            else document.querySelector('meta[property="article:modified_time"]')?.remove()
             if (tags && tags.length > 0) {
                 tags.forEach(tag => {
                     const tagMeta = document.createElement('meta')
@@ -204,8 +210,6 @@ const useSEO = ({
                     width: 1200,
                     height: 630
                 },
-                datePublished: publishedTime || new Date().toISOString(),
-                dateModified: publishedTime || new Date().toISOString(),
                 author: {
                     '@type': 'Person',
                     name: author || 'Gaurav Kumar Yadav',
@@ -232,6 +236,10 @@ const useSEO = ({
             if (keywords) {
                 structuredData.keywords = keywords
             }
+            if (publishedTime) {
+                structuredData.datePublished = publishedTime
+            }
+            if (modifiedTime) structuredData.dateModified = modifiedTime
         } else {
             // Portfolio website with comprehensive schemas
             structuredData = {
@@ -342,7 +350,7 @@ const useSEO = ({
                 document.querySelectorAll('meta[property="article:tag"]').forEach(tag => tag.remove())
             }
         }
-    }, [title, description, keywords, ogImage, location, type, author, publishedTime, tags, fullUrl, siteUrl, noindex, additionalJsonLd])
+    }, [title, description, keywords, ogImage, location, type, author, publishedTime, modifiedTime, tags, fullUrl, siteUrl, noindex, additionalJsonLd])
 }
 
 export default useSEO
