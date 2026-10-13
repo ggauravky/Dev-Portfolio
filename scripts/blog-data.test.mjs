@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import test from 'node:test'
 
 import {
@@ -87,4 +88,13 @@ test('published Uber article is indexable and retains author-supplied source met
 
 test('unknown slugs do not resolve', () => {
   assert.equal(getBlogBySlug('does-not-exist'), undefined)
+})
+
+test('sitemap uses real blog dates without fabricating static-page dates', () => {
+  const sitemap = fs.readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8')
+  const articleEntry = sitemap.match(/<url>\s*<loc>https:\/\/ggauravky\.vercel\.app\/blog\/uber-system-design<\/loc>[\s\S]*?<\/url>/)?.[0]
+  const aboutEntry = sitemap.match(/<url>\s*<loc>https:\/\/ggauravky\.vercel\.app\/about<\/loc>[\s\S]*?<\/url>/)?.[0]
+
+  assert.match(articleEntry || '', /<lastmod>2026-10-13<\/lastmod>/)
+  assert.doesNotMatch(aboutEntry || '', /<lastmod>/)
 })

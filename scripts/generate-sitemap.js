@@ -17,7 +17,12 @@ const projectsDataPath = path.join(__dirname, "../src/data/projectsData.js");
 const projectsDataContent = fs.readFileSync(projectsDataPath, "utf-8");
 
 // Keep previews and archived routes out of the sitemap while preserving their URLs.
-const blogSlugs = getPublishedBlogs().map(({ slug }) => slug);
+const publishedBlogs = getPublishedBlogs();
+const latestBlogDate = publishedBlogs
+  .map(({ updatedDate, publishedDate }) => updatedDate || publishedDate)
+  .filter(Boolean)
+  .sort()
+  .at(-1);
 
 // Extract project slugs from the file
 const projectSlugMatches = projectsDataContent.match(/slug:\s*["']([^"']+)["']/g);
@@ -40,7 +45,7 @@ const staticPages = [
   { path: "/full-stack-development", priority: "0.8", changefreq: "weekly" },
   { path: "/ai-data-science-guidance", priority: "0.8", changefreq: "weekly" },
   { path: "/booknow", priority: "0.8", changefreq: "weekly" },
-  { path: "/blog", priority: "0.9", changefreq: "daily" },
+  { path: "/blog", priority: "0.9", changefreq: "daily", lastmod: latestBlogDate },
   { path: "/contact", priority: "0.8", changefreq: "monthly" },
   { path: "/updates", priority: "0.6", changefreq: "weekly" },
   { path: "/support", priority: "0.6", changefreq: "monthly" },
@@ -50,10 +55,11 @@ const staticPages = [
 ];
 
 // Generate blog post URLs
-const blogPages = blogSlugs.map((slug) => ({
+const blogPages = publishedBlogs.map(({ slug, publishedDate, updatedDate }) => ({
   path: `/blog/${slug}`,
   priority: "0.7",
   changefreq: "monthly",
+  lastmod: updatedDate || publishedDate,
 }));
 
 // Generate project detail URLs
@@ -68,8 +74,6 @@ const allPages = [...staticPages, ...blogPages, ...projectPages];
 
 // Generate sitemap XML
 const generateSitemap = () => {
-  const today = new Date().toISOString().split("T")[0];
-
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Sitemap for https://ggauravky.vercel.app
@@ -86,8 +90,7 @@ ${allPages
   .map(
     (page) => `    <url>
         <loc>${SITE_URL}${page.path}</loc>
-        <lastmod>${today}</lastmod>
-        <changefreq>${page.changefreq}</changefreq>
+${page.lastmod ? `        <lastmod>${page.lastmod}</lastmod>\n` : ""}        <changefreq>${page.changefreq}</changefreq>
         <priority>${page.priority}</priority>
     </url>`
   )
