@@ -24,17 +24,18 @@ const archivedSlugs = [
 ]
 
 test('active collection publishes the complete structured Uber article', () => {
-  assert.equal(blogsData.length, 1)
-  assert.equal(blogsData[0].slug, 'uber-system-design')
-  assert.equal(blogsData[0].status, 'published')
-  assert.equal(blogsData[0].contentType, 'structured')
-  assert.equal(blogsData[0].publishedDate, '2026-10-13')
-  assert.equal(blogsData[0].sections.length, 12)
-  assert.equal(blogsData[0].images.length, 7)
-  assert.equal(blogsData[0].references.length, 8)
-  assert.equal(blogsData[0].coverImage, '/images/blogs/cover.webp')
-  assert.match(blogsData[0].readTime, /^\d+ min read$/)
-  assert.ok(blogsData[0].wordCount > 1700)
+  const article = getBlogBySlug('uber-system-design')
+
+  assert.equal(blogsData.length, 2)
+  assert.equal(article.status, 'published')
+  assert.equal(article.contentType, 'structured')
+  assert.equal(article.publishedDate, '2026-10-13')
+  assert.equal(article.sections.length, 12)
+  assert.equal(article.images.length, 7)
+  assert.equal(article.references.length, 8)
+  assert.equal(article.coverImage, '/images/blogs/cover.webp')
+  assert.match(article.readTime, /^\d+ min read$/)
+  assert.ok(article.wordCount > 1700)
 })
 
 test('structured article image references resolve uniquely and omit the cover from body blocks', () => {
@@ -62,15 +63,62 @@ test('all archived slugs remain resolvable without entering public discovery', (
 })
 
 test('published and featured selectors respect publishing state', () => {
-  assert.deepEqual(getPublishedBlogs().map((blog) => blog.slug), ['uber-system-design'])
+  assert.deepEqual(getPublishedBlogs().map((blog) => blog.slug), ['uber-system-design', 'what-is-mcp'])
   assert.deepEqual(getFeaturedBlogs().map((blog) => blog.slug), ['uber-system-design'])
 })
 
 test('category filtering controls the featured article', () => {
-  assert.deepEqual(getBlogsByCategory('All').map((blog) => blog.slug), ['uber-system-design'])
+  assert.deepEqual(getBlogsByCategory('All').map((blog) => blog.slug), ['uber-system-design', 'what-is-mcp'])
   assert.deepEqual(getBlogsByCategory(BLOG_CATEGORIES.SYSTEM_DESIGN).map((blog) => blog.slug), ['uber-system-design'])
-  assert.deepEqual(getBlogsByCategory(BLOG_CATEGORIES.ENGINEERING_DEEP_DIVES), [])
+  assert.deepEqual(
+    getBlogsByCategory(BLOG_CATEGORIES.ENGINEERING_DEEP_DIVES).map((blog) => blog.slug),
+    ['what-is-mcp'],
+  )
   assert.deepEqual(getBlogsByCategory(BLOG_CATEGORIES.HOW_I_BUILT_IT), [])
+})
+
+test('MCP guide is a concise seven-section structured article', () => {
+  const article = getBlogBySlug('what-is-mcp')
+
+  assert.ok(article)
+  assert.equal(article.title, 'What is MCP? A Simple Guide to the Model Context Protocol')
+  assert.equal(article.category, BLOG_CATEGORIES.ENGINEERING_DEEP_DIVES)
+  assert.equal(article.status, 'published')
+  assert.equal(article.featured, false)
+  assert.equal(article.publishedDate, '2026-10-14')
+  assert.equal(article.sections.length, 7)
+  assert.equal(article.images.length, 5)
+  assert.ok(article.wordCount >= 650 && article.wordCount <= 900, `unexpected word count ${article.wordCount}`)
+  assert.deepEqual(article.tags, [
+    'MCP',
+    'Model Context Protocol',
+    'AI Engineering',
+    'AI Tools',
+    'Developer Tools',
+  ])
+})
+
+test('MCP guide references five original local illustrations', () => {
+  const article = getBlogBySlug('what-is-mcp')
+  const cover = article.images.find((image) => image.id === article.coverImageId)
+  const imageIds = article.images.map((image) => image.id)
+  const bodyImageIds = article.sections.flatMap((section) => (
+    section.blocks.filter((block) => block.type === 'image').map((block) => block.imageId)
+  ))
+
+  assert.equal(new Set(imageIds).size, 5)
+  assert.deepEqual(bodyImageIds, ['architecture', 'primitives', 'transports', 'example-flow'])
+  assert.equal(bodyImageIds.includes(article.coverImageId), false)
+
+  for (const image of article.images) {
+    assert.ok(image.alt && image.caption && image.credit && image.sourceUrl)
+    assert.equal(image.usageRights, 'original')
+    assert.equal(image.src.startsWith('/images/blogs/mcp/'), true)
+    assert.equal(image.id === article.coverImageId || image.src.endsWith('.svg'), true)
+    assert.equal(fs.existsSync(new URL(`../public${image.src}`, import.meta.url)), true, `missing ${image.src}`)
+  }
+
+  assert.equal(cover.src.endsWith('.png'), true)
 })
 
 test('related articles contain only other published public records', () => {
@@ -93,8 +141,10 @@ test('unknown slugs do not resolve', () => {
 test('sitemap uses real blog dates without fabricating static-page dates', () => {
   const sitemap = fs.readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8')
   const articleEntry = sitemap.match(/<url>\s*<loc>https:\/\/ggauravky\.vercel\.app\/blog\/uber-system-design<\/loc>[\s\S]*?<\/url>/)?.[0]
+  const mcpEntry = sitemap.match(/<url>\s*<loc>https:\/\/ggauravky\.vercel\.app\/blog\/what-is-mcp<\/loc>[\s\S]*?<\/url>/)?.[0]
   const aboutEntry = sitemap.match(/<url>\s*<loc>https:\/\/ggauravky\.vercel\.app\/about<\/loc>[\s\S]*?<\/url>/)?.[0]
 
   assert.match(articleEntry || '', /<lastmod>2026-10-13<\/lastmod>/)
+  assert.match(mcpEntry || '', /<lastmod>2026-10-14<\/lastmod>/)
   assert.doesNotMatch(aboutEntry || '', /<lastmod>/)
 })

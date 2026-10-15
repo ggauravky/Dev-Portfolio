@@ -1,5 +1,6 @@
 import { archivedBlogsData } from './archivedBlogsData.js'
 import uberSystemDesign from './blogs/uber-system-design.json' with { type: 'json' }
+import whatIsMcp from './blogs/what-is-mcp.json' with { type: 'json' }
 
 export const BLOG_CATEGORIES = Object.freeze({
   SYSTEM_DESIGN: 'System Design',
@@ -66,7 +67,10 @@ const normalizeStructuredArticle = (article) => {
   })
 }
 
-export const blogsData = [normalizeStructuredArticle(uberSystemDesign)]
+export const blogsData = [
+  normalizeStructuredArticle(uberSystemDesign),
+  normalizeStructuredArticle(whatIsMcp),
+]
 
 export const getPublicBlogs = () => blogsData.filter((blog) => blog.status === 'published' || blog.status === 'preview')
 

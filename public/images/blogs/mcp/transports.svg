@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">MCP transport comparison</title>
+  <desc id="desc">stdio connects a client and local server through process streams, while Streamable HTTP connects a client and server through an HTTP endpoint.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0l10 5-10 5z" fill="#C5F82A"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="620" fill="#0b0b0b"/>
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="56" y="58" fill="#F5F5F5" font-size="30" font-weight="700">How MCP messages travel</text>
+    <path d="M56 92H1144M600 126V492" stroke="#2a2a2a"/>
+
+    <g transform="translate(56 132)">
+      <text x="0" y="30" fill="#C5F82A" font-size="34" font-weight="750">stdio</text>
+      <text x="0" y="66" fill="#A1A1AA" font-size="20">Local process communication</text>
+
+      <rect x="0" y="108" width="488" height="218" rx="8" fill="#101010" stroke="#343434" stroke-width="2"/>
+      <text x="24" y="143" fill="#71717a" font-size="16" letter-spacing="1">SAME COMPUTER</text>
+      <rect x="28" y="178" width="150" height="96" rx="6" fill="#171717" stroke="#4a4a4a"/>
+      <text x="103" y="235" fill="#F5F5F5" font-size="24" font-weight="650" text-anchor="middle">MCP Client</text>
+      <rect x="310" y="178" width="150" height="96" rx="6" fill="#171717" stroke="#4a4a4a"/>
+      <text x="385" y="235" fill="#F5F5F5" font-size="24" font-weight="650" text-anchor="middle">Local Server</text>
+      <path d="M184 210H302M302 242H184" stroke="#C5F82A" stroke-width="3" marker-end="url(#arrow)"/>
+      <text x="243" y="196" fill="#71717a" font-size="15" text-anchor="middle">input / output</text>
+    </g>
+
+    <g transform="translate(656 132)">
+      <text x="0" y="30" fill="#C5F82A" font-size="34" font-weight="750">Streamable HTTP</text>
+      <text x="0" y="66" fill="#A1A1AA" font-size="20">HTTP-based communication</text>
+
+      <rect x="0" y="108" width="488" height="218" rx="8" fill="#101010" stroke="#343434" stroke-width="2"/>
+      <text x="24" y="143" fill="#71717a" font-size="16" letter-spacing="1">NETWORK CONNECTION</text>
+      <rect x="28" y="178" width="150" height="96" rx="6" fill="#171717" stroke="#4a4a4a"/>
+      <text x="103" y="235" fill="#F5F5F5" font-size="24" font-weight="650" text-anchor="middle">MCP Client</text>
+      <rect x="310" y="178" width="150" height="96" rx="6" fill="#171717" stroke="#4a4a4a"/>
+      <text x="385" y="220" fill="#F5F5F5" font-size="24" font-weight="650" text-anchor="middle">HTTP Server</text>
+      <text x="385" y="250" fill="#71717a" font-size="16" text-anchor="middle">local or remote</text>
+      <path d="M184 210H302M302 242H184" stroke="#C5F82A" stroke-width="3" marker-end="url(#arrow)"/>
+      <text x="243" y="196" fill="#71717a" font-size="15" text-anchor="middle">HTTP POST</text>
+    </g>
+
+    <rect x="56" y="520" width="1088" height="58" rx="6" fill="#151515" stroke="#343434"/>
+    <circle cx="88" cy="549" r="7" fill="#C5F82A"/>
+    <text x="112" y="557" fill="#F5F5F5" font-size="21">Both carry the same JSON-RPC message format.</text>
+  </g>
+</svg>

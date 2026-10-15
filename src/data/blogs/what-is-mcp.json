@@ -1,0 +1,272 @@
+{
+  "id": "what-is-mcp",
+  "slug": "what-is-mcp",
+  "title": "What is MCP? A Simple Guide to the Model Context Protocol",
+  "subtitle": "How AI assistants connect to tools, data, and workflows — explained simply.",
+  "excerpt": "A beginner-friendly guide to MCP, the open protocol that helps AI assistants connect to tools, data, and useful developer workflows.",
+  "category": "Engineering Deep Dives",
+  "status": "published",
+  "featured": false,
+  "author": "Gaurav Kumar Yadav",
+  "publishedDate": "2026-10-14",
+  "updatedDate": null,
+  "tags": [
+    "MCP",
+    "Model Context Protocol",
+    "AI Engineering",
+    "AI Tools",
+    "Developer Tools"
+  ],
+  "coverImageId": "cover",
+  "images": [
+    {
+      "id": "cover",
+      "src": "/images/blogs/mcp/cover.png",
+      "alt": "Model Context Protocol hub connecting an AI application to GitHub, a database, and local files.",
+      "caption": "MCP gives AI applications a standard way to connect to external tools and data.",
+      "credit": "Original illustration by Gaurav Kumar Yadav",
+      "sourceUrl": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro",
+      "usageRights": "original"
+    },
+    {
+      "id": "architecture",
+      "src": "/images/blogs/mcp/architecture.svg",
+      "alt": "MCP architecture diagram showing a host containing an MCP client connected to an MCP server, which connects to files, a database, and an external API.",
+      "caption": "The host manages an MCP client for each server connection; the server makes permitted capabilities available.",
+      "credit": "Original illustration by Gaurav Kumar Yadav",
+      "sourceUrl": "https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture",
+      "usageRights": "original"
+    },
+    {
+      "id": "primitives",
+      "src": "/images/blogs/mcp/primitives.svg",
+      "alt": "Three-column comparison of MCP tools, resources, and prompts with a simple example for each.",
+      "caption": "Tools perform actions, resources provide context, and prompts offer reusable instructions.",
+      "credit": "Original illustration by Gaurav Kumar Yadav",
+      "sourceUrl": "https://modelcontextprotocol.io/specification/2026-07-28/server/index",
+      "usageRights": "original"
+    },
+    {
+      "id": "transports",
+      "src": "/images/blogs/mcp/transports.svg",
+      "alt": "Side-by-side comparison of local stdio communication and HTTP-based Streamable HTTP communication.",
+      "caption": "A transport defines how the same MCP messages travel between a client and server.",
+      "credit": "Original illustration by Gaurav Kumar Yadav",
+      "sourceUrl": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports",
+      "usageRights": "original"
+    },
+    {
+      "id": "example-flow",
+      "src": "/images/blogs/mcp/example-flow.svg",
+      "alt": "Illustrative MCP workflow from a user question through an AI host, MCP client, MCP server, and read-only PostgreSQL tool, then back with project data.",
+      "caption": "An illustrative MCP workflow for retrieving project information from a database.",
+      "credit": "Original illustration by Gaurav Kumar Yadav",
+      "sourceUrl": "https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture",
+      "usageRights": "original"
+    }
+  ],
+  "sections": [
+    {
+      "id": "what-is-mcp",
+      "title": "1. What is MCP?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "MCP stands for Model Context Protocol. It is an open standard that helps AI applications connect to external tools and data in a consistent way. An assistant can use an MCP connection to search a repository, read approved information, or ask another system to perform a permitted action."
+        },
+        {
+          "type": "paragraph",
+          "text": "Think of MCP like USB-C for AI applications. USB-C gives many devices a common way to connect; MCP gives software a common way to describe and use integrations. MCP is not a physical connector, but the analogy explains its purpose: fewer one-off connections and one shared approach."
+        }
+      ]
+    },
+    {
+      "id": "why-mcp-was-needed",
+      "title": "2. Why Was MCP Needed?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Imagine an AI assistant that needs to work with GitHub, a PostgreSQL database, and local files. Without a shared standard, each connection may use different commands, data shapes, authentication rules, and custom glue code. Adding another system means learning and maintaining another integration."
+        },
+        {
+          "type": "paragraph",
+          "text": "MCP gives hosts and servers a common language for describing available capabilities and exchanging messages. A developer can build an MCP server once, then connect it to compatible AI applications with less custom wiring."
+        },
+        {
+          "type": "note",
+          "title": "MCP works with existing systems",
+          "text": "MCP does not replace APIs. An MCP server often calls an existing API or database behind the scenes. Application-specific logic, credentials, validation, and error handling are still necessary."
+        }
+      ]
+    },
+    {
+      "id": "how-mcp-works",
+      "title": "3. How Does MCP Work?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "MCP uses a client-server design with three important parts. The MCP host is the AI application, such as an editor or assistant. Inside the host, an MCP client maintains communication with one MCP server. The MCP server is a program that makes particular tools or data available."
+        },
+        {
+          "type": "image",
+          "imageId": "architecture"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "A user asks the AI assistant to perform a task.",
+            "The assistant identifies a suitable capability that is available to it.",
+            "The host communicates with the MCP server through its MCP client.",
+            "The server performs the permitted operation, sometimes by calling another API.",
+            "The result returns through the client so the assistant can respond."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "The host remains in control of the connection. Authentication may be required, and a sensitive action may need user confirmation. Simply connecting a server does not give an AI unrestricted access to every file, application, or private record."
+        }
+      ]
+    },
+    {
+      "id": "core-parts",
+      "title": "4. The 3 Core Parts: Tools, Resources, and Prompts",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "An MCP server can expose three main kinds of building blocks. Their names sound similar at first, but each has a different job."
+        },
+        {
+          "type": "image",
+          "imageId": "primitives"
+        },
+        {
+          "type": "list",
+          "ordered": false,
+          "items": [
+            "Tools — do something. A tool might search a repository, create an issue, or run a read-only database query.",
+            "Resources — provide information. A resource might contain a file, documentation, or a database schema that gives the assistant useful context.",
+            "Prompts — provide reusable instructions. A prompt might define a consistent way to review code or summarize an incident."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "A server can offer one or more of these parts. The host decides how to present and use them, based on its own interface, safety rules, and the user’s request."
+        }
+      ]
+    },
+    {
+      "id": "message-transports",
+      "title": "5. How Does MCP Send Messages?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "A transport is simply the communication path used to carry messages between an MCP client and server. MCP defines two common standard transports."
+        },
+        {
+          "type": "image",
+          "imageId": "transports"
+        },
+        {
+          "type": "list",
+          "ordered": false,
+          "items": [
+            "stdio uses a program’s standard input and output streams. It is common when the host starts a local MCP server on the same computer.",
+            "Streamable HTTP sends messages through an HTTP endpoint. It supports remote servers and can stream responses when needed."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Both transports carry MCP messages encoded with JSON-RPC. You do not need to understand JSON-RPC internals to use MCP; it is the structured message format underneath the connection."
+        }
+      ]
+    },
+    {
+      "id": "real-world-example",
+      "title": "6. A Simple Real-World Example",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Suppose a user asks an AI assistant, “Show me my latest five projects from the database.” Here is one way that request could work with PostgreSQL."
+        },
+        {
+          "type": "image",
+          "imageId": "example-flow"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "The assistant receives the request.",
+            "A configured MCP client communicates with a trusted MCP server.",
+            "The server exposes a read-only tool for approved PostgreSQL queries.",
+            "The tool retrieves the five requested project records.",
+            "The result travels back through the MCP client to the host.",
+            "The assistant explains the project information to the user."
+          ]
+        },
+        {
+          "type": "note",
+          "title": "Illustrative example",
+          "text": "This flow is a learning example, not a description of this portfolio’s deployed architecture. A real implementation would also validate inputs, protect credentials, restrict database permissions, and handle failures safely."
+        }
+      ]
+    },
+    {
+      "id": "why-mcp-matters",
+      "title": "7. Why Does MCP Matter?",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "MCP makes it easier to build AI applications that can work with useful systems outside the conversation. Its practical benefits are straightforward:"
+        },
+        {
+          "type": "list",
+          "ordered": false,
+          "items": [
+            "AI applications can integrate with tools and data through a shared protocol.",
+            "Teams can reuse server connections across compatible hosts instead of rebuilding every integration from scratch.",
+            "Assistants can do more useful work while the host keeps control of how capabilities are exposed."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "That common connection model is the main idea behind MCP. It makes integrations more consistent, not automatically safe. Only connect trusted servers, use appropriate authentication, and review permissions carefully before allowing access to sensitive tools or data."
+        }
+      ]
+    }
+  ],
+  "references": [
+    {
+      "title": "What is the Model Context Protocol (MCP)?",
+      "url": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro",
+      "publisher": "Model Context Protocol"
+    },
+    {
+      "title": "Architecture overview",
+      "url": "https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture",
+      "publisher": "Model Context Protocol"
+    },
+    {
+      "title": "MCP specification — 2026-07-28",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28",
+      "publisher": "Model Context Protocol"
+    },
+    {
+      "title": "Server features",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28/server/index",
+      "publisher": "Model Context Protocol"
+    },
+    {
+      "title": "Standard transports",
+      "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports",
+      "publisher": "Model Context Protocol"
+    },
+    {
+      "title": "Official MCP TypeScript SDK",
+      "url": "https://ts.sdk.modelcontextprotocol.io/v2/",
+      "publisher": "Model Context Protocol"
+    }
+  ],
+  "disclaimer": "Beginner-friendly overview based on the MCP 2026-07-28 documentation. The database workflow is illustrative and does not describe this portfolio’s deployed architecture."
+}

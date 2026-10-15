@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative MCP PostgreSQL workflow</title>
+  <desc id="desc">A user asks for five projects. The request passes through an AI host, MCP client, MCP server, and read-only PostgreSQL tool before project data returns.</desc>
+  <defs>
+    <marker id="down" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0l10 5-10 5z" fill="#C5F82A"/>
+    </marker>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#191919"/>
+    </pattern>
+  </defs>
+  <rect width="900" height="1200" fill="#0b0b0b"/>
+  <rect width="900" height="1200" fill="url(#grid)"/>
+
+  <g font-family="Inter, Arial, sans-serif">
+    <text x="54" y="58" fill="#F5F5F5" font-size="30" font-weight="700">From a question to project data</text>
+    <text x="846" y="58" fill="#71717a" font-size="17" text-anchor="end">ILLUSTRATIVE FLOW</text>
+
+    <g transform="translate(110 102)">
+      <rect width="680" height="116" rx="8" fill="#151515" stroke="#424242" stroke-width="2"/>
+      <text x="34" y="42" fill="#71717a" font-size="18">USER QUESTION</text>
+      <text x="34" y="82" fill="#F5F5F5" font-size="27" font-weight="650">“Show me my latest five projects.”</text>
+    </g>
+    <path d="M450 218V270" stroke="#C5F82A" stroke-width="4" marker-end="url(#down)"/>
+
+    <g transform="translate(180 282)">
+      <rect width="540" height="126" rx="8" fill="#101010" stroke="#C5F82A" stroke-width="2"/>
+      <rect width="12" height="126" rx="6" fill="#C5F82A"/>
+      <text x="48" y="52" fill="#F5F5F5" font-size="32" font-weight="750">AI Assistant / Host</text>
+      <text x="48" y="88" fill="#A1A1AA" font-size="20">Understands the request and selects a capability</text>
+    </g>
+    <path d="M450 408V460" stroke="#C5F82A" stroke-width="4" marker-end="url(#down)"/>
+
+    <g transform="translate(230 472)">
+      <rect width="440" height="116" rx="58" fill="#151515" stroke="#4a4a4a" stroke-width="2"/>
+      <text x="220" y="51" fill="#F5F5F5" font-size="31" font-weight="750" text-anchor="middle">MCP Client</text>
+      <text x="220" y="83" fill="#A1A1AA" font-size="19" text-anchor="middle">Carries the structured request</text>
+    </g>
+    <path d="M450 588V640" stroke="#C5F82A" stroke-width="4" marker-end="url(#down)"/>
+
+    <g transform="translate(230 652)">
+      <rect width="440" height="116" rx="58" fill="#151515" stroke="#4a4a4a" stroke-width="2"/>
+      <text x="220" y="51" fill="#F5F5F5" font-size="31" font-weight="750" text-anchor="middle">Trusted MCP Server</text>
+      <text x="220" y="83" fill="#A1A1AA" font-size="19" text-anchor="middle">Exposes an approved read-only tool</text>
+    </g>
+    <path d="M450 768V820" stroke="#C5F82A" stroke-width="4" marker-end="url(#down)"/>
+
+    <g transform="translate(180 832)">
+      <rect width="540" height="136" rx="8" fill="#101010" stroke="#C5F82A" stroke-width="2"/>
+      <ellipse cx="74" cy="52" rx="32" ry="14" fill="none" stroke="#C5F82A" stroke-width="3"/>
+      <path d="M42 52v37c0 8 14 14 32 14s32-6 32-14V52M42 72c0 8 14 14 32 14s32-6 32-14" fill="none" stroke="#C5F82A" stroke-width="3"/>
+      <text x="132" y="58" fill="#F5F5F5" font-size="30" font-weight="750">Read-only PostgreSQL Tool</text>
+      <text x="132" y="94" fill="#A1A1AA" font-size="20">Returns only the requested project records</text>
+    </g>
+    <path d="M450 968V1020" stroke="#C5F82A" stroke-width="4" marker-end="url(#down)"/>
+
+    <g transform="translate(110 1032)">
+      <rect width="680" height="116" rx="8" fill="#C5F82A"/>
+      <text x="34" y="34" fill="#090909" font-size="18" font-weight="700">RESULT</text>
+      <text x="34" y="68" fill="#090909" font-size="25" font-weight="750">Five project records</text>
+      <text x="34" y="98" fill="#090909" font-size="25" font-weight="750">return to the assistant</text>
+    </g>
+
+    <path d="M826 922V334c0-22-18-40-40-40h-38" fill="none" stroke="#71717a" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#down)"/>
+    <text x="848" y="650" fill="#A1A1AA" font-size="17" text-anchor="middle" transform="rotate(-90 848 650)">result travels back through the same connection</text>
+  </g>
+</svg>
