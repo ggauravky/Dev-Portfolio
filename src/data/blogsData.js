@@ -76,6 +76,26 @@ export const getPublicBlogs = () => blogsData.filter((blog) => blog.status === '
 
 export const getPublishedBlogs = () => getPublicBlogs().filter((blog) => blog.status === 'published')
 
+const normalizeSearchValue = (value) => String(value || '').trim().toLowerCase()
+
+const getPublishedTime = (date) => {
+  const timestamp = Date.parse(`${date || ''}T00:00:00Z`)
+  return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp
+}
+
+export const getPublishedBlogArchive = ({ category = 'All', query = '' } = {}) => {
+  const normalizedQuery = normalizeSearchValue(query)
+
+  return getPublishedBlogs()
+    .filter((blog) => category === 'All' || blog.category === category)
+    .filter((blog) => !normalizedQuery || [blog.title, blog.excerpt, blog.category, ...(blog.tags || [])]
+      .some((value) => normalizeSearchValue(value).includes(normalizedQuery)))
+    .sort((a, b) => (
+      getPublishedTime(b.publishedDate) - getPublishedTime(a.publishedDate)
+      || a.slug.localeCompare(b.slug)
+    ))
+}
+
 export const getFeaturedBlogs = () => getPublicBlogs().filter((blog) => blog.featured)
 
 export const getBlogsByCategory = (category = 'All') => {

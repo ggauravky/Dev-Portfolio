@@ -8,6 +8,7 @@ import {
   getBlogBySlug,
   getBlogsByCategory,
   getFeaturedBlogs,
+  getPublishedBlogArchive,
   getPublishedBlogs,
   getPublicBlogs,
   getRelatedBlogs,
@@ -65,6 +66,34 @@ test('all archived slugs remain resolvable without entering public discovery', (
 test('published and featured selectors respect publishing state', () => {
   assert.deepEqual(getPublishedBlogs().map((blog) => blog.slug), ['uber-system-design', 'what-is-mcp'])
   assert.deepEqual(getFeaturedBlogs().map((blog) => blog.slug), ['uber-system-design'])
+})
+
+test('editorial archive lists published articles newest first', () => {
+  const archive = getPublishedBlogArchive()
+
+  assert.deepEqual(archive?.map((blog) => blog.slug), ['what-is-mcp', 'uber-system-design'])
+})
+
+test('editorial archive filters by the selected category', () => {
+  const archive = getPublishedBlogArchive({
+    category: BLOG_CATEGORIES.SYSTEM_DESIGN,
+  })
+
+  assert.deepEqual(archive?.map((blog) => blog.slug), ['uber-system-design'])
+})
+
+test('editorial archive searches titles, excerpts, categories, and tags', () => {
+  const cases = [
+    ['model context', ['what-is-mcp']],
+    [' SCALE ', ['uber-system-design']],
+    ['engineering deep dives', ['what-is-mcp']],
+    ['developer tools', ['what-is-mcp']],
+  ]
+
+  for (const [query, expectedSlugs] of cases) {
+    const archive = getPublishedBlogArchive({ query })
+    assert.deepEqual(archive?.map((blog) => blog.slug), expectedSlugs)
+  }
 })
 
 test('category filtering controls the featured article', () => {

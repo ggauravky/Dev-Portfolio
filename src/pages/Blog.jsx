@@ -5,15 +5,11 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import BlogCategoryNav from '../components/blog/BlogCategoryNav'
-import FeaturedArticle from '../components/blog/FeaturedArticle'
-import TopicExplorer from '../components/blog/TopicExplorer'
+import EditorialArticleRow from '../components/blog/EditorialArticleRow'
 import useSEO from '../hooks/useSEO'
-import { categories, getBlogsByCategory, getPublicBlogs } from '../data/blogsData'
-
-const normalize = (value) => String(value || '').trim().toLowerCase()
+import { categories, getPublishedBlogArchive } from '../data/blogsData'
 
 function Blog() {
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -21,7 +17,7 @@ function Blog() {
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterLoading, setNewsletterLoading] = useState(false)
 
-  const publicBlogs = useMemo(() => getPublicBlogs(), [])
+  const publishedBlogs = useMemo(() => getPublishedBlogArchive(), [])
 
   useSEO({
     title: 'Engineering Notes | Gaurav Kumar Yadav',
@@ -31,7 +27,7 @@ function Blog() {
     additionalJsonLd: {
       '@type': 'ItemList',
       name: 'Engineering Notes',
-      itemListElement: publicBlogs.map((blog, index) => ({
+      itemListElement: publishedBlogs.map((blog, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         url: `https://ggauravky.vercel.app/blog/${blog.slug}`,
@@ -40,23 +36,14 @@ function Blog() {
     },
   })
 
-  const filteredBlogs = useMemo(() => {
-    const query = normalize(searchQuery)
-    return getBlogsByCategory(selectedCategory).filter((blog) => {
-      if (!query) return true
-      return [blog.title, blog.excerpt, blog.category, ...(blog.tags || [])]
-        .some((value) => normalize(value).includes(query))
-    })
-  }, [searchQuery, selectedCategory])
-
-  const featuredArticle = filteredBlogs.find((blog) => blog.featured) || filteredBlogs[0] || null
-  const publishedArticles = filteredBlogs
-    .filter((blog) => blog.status === 'published')
-    .sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime())
+  const filteredBlogs = useMemo(() => getPublishedBlogArchive({
+    category: selectedCategory,
+    query: searchQuery,
+  }), [searchQuery, selectedCategory])
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category)
-    document.querySelector('.blog-category-nav')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    document.querySelector('.blog-index-toolbar')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
   const handleNewsletterSubscribe = async (event) => {
@@ -88,14 +75,20 @@ function Blog() {
   }
 
   return (
-    <main className="blog-page">
+    <main className="blog-page blog-index">
       <div className="blog-shell">
-        <header className="blog-hero">
-          <p className="blog-kicker">Gaurav / Writing</p>
-          <h1>Engineering Notes.</h1>
-          <p className="blog-hero-lede">System design, software engineering, and the things I&apos;ve built.</p>
-          <p className="blog-hero-note">Exploring how software works, scales, and gets built.</p>
+        <header className="blog-index-masthead">
+          <div className="blog-index-heading">
+            <p className="blog-kicker">Gaurav / Writing</p>
+            <h1>Engineering Notes.</h1>
+          </div>
+          <div className="blog-index-intro">
+            <p className="blog-index-marker">Engineering / Journal</p>
+            <p>System design, software engineering, and the things I&apos;ve built.</p>
+          </div>
+        </header>
 
+        <section className="blog-index-toolbar" aria-label="Browse engineering notes">
           <BlogCategoryNav
             categories={categories}
             selectedCategory={selectedCategory}
@@ -112,51 +105,40 @@ function Blog() {
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search notes by title, topic, or tag"
+              placeholder="Search notes..."
             />
           </label>
-        </header>
+        </section>
 
-        <section className="blog-featured-section" aria-labelledby="featured-writing-title">
-          <div className="blog-section-heading">
-            <p className="blog-kicker">Selected note</p>
-            <h2 id="featured-writing-title">Featured article</h2>
+        <section className="blog-archive" aria-labelledby="writing-archive-title">
+          <div className="blog-archive-heading">
+            <div>
+              <p className="blog-kicker">Latest first</p>
+              <h2 id="writing-archive-title">The writing archive</h2>
+            </div>
+            <p className="blog-archive-count" aria-live="polite">
+              {String(filteredBlogs.length).padStart(2, '0')} {filteredBlogs.length === 1 ? 'note' : 'notes'}
+            </p>
           </div>
 
-          {featuredArticle ? (
-            <FeaturedArticle article={featuredArticle} />
+          {filteredBlogs.length > 0 ? (
+            <div className="blog-article-list">
+              {filteredBlogs.map((article, index) => (
+                <EditorialArticleRow key={article.id} article={article} index={index} />
+              ))}
+            </div>
           ) : (
             <div className="blog-empty" role="status">
-              <p>No notes match this topic yet.</p>
+              <p>No notes match your search.</p>
               <button type="button" onClick={() => { setSelectedCategory('All'); setSearchQuery('') }}>
-                View all writing
+                Reset archive
               </button>
             </div>
           )}
         </section>
 
-        <TopicExplorer onSelect={handleCategorySelect} />
-
-        {publishedArticles.length > 0 ? (
-          <section className="blog-latest" aria-labelledby="latest-writing-title">
-            <div className="blog-section-heading">
-              <p className="blog-kicker">Recently published</p>
-              <h2 id="latest-writing-title">Latest writing</h2>
-            </div>
-            <div className="blog-article-list">
-              {publishedArticles.map((article) => (
-                <Link key={article.id} to={`/blog/${article.slug}`} className="blog-article-row">
-                  <span>{article.category}</span>
-                  <strong>{article.title}</strong>
-                  <span aria-hidden="true">→</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className="blog-newsletter" aria-labelledby="newsletter-title">
-          <div>
+          <div className="blog-newsletter-copy">
             <p className="blog-kicker">Occasional updates</p>
             <h2 id="newsletter-title">Notes from the engineering desk.</h2>
             <p>Occasional updates when a new technical article is published.</p>
