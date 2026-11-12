@@ -4,7 +4,7 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { MotionConfig } from 'framer-motion'
 import PropTypes from 'prop-types'
@@ -44,11 +44,20 @@ const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 // Dev-only UI kit sheet; the DEV check removes it (and its chunk) from production builds.
 const Kit = import.meta.env.DEV ? lazy(() => import('./pages/_Kit')) : null
 
-// Per-route loading fallback: an empty page-height block (the route wipe
-// covers the swap), announced to screen readers.
+// Per-route loading fallback (P6): a quiet skeleton of the page head (rail,
+// h1, lede) in hairline blocks, announced to screen readers. The route wipe
+// usually covers it; it shows only on slow chunk loads.
 const PageLoader = () => (
-    <div className="min-h-screen" role="status">
+    <div className="pg-skel min-h-screen" role="status">
         <span className="sr-only">Loading page…</span>
+        <div className="pg-head page-wrap page-grid" aria-hidden="true">
+            <span className="pg-skel__bar pg-skel__bar--rail" />
+            <div className="page-main">
+                <span className="pg-skel__bar pg-skel__bar--h1" />
+                <span className="pg-skel__bar pg-skel__bar--lede" />
+                <span className="pg-skel__bar pg-skel__bar--lede pg-skel__bar--short" />
+            </div>
+        </div>
     </div>
 )
 
@@ -61,21 +70,69 @@ R.propTypes = {
     children: PropTypes.node.isRequired,
 }
 
-function ScrollToTop() {
-    const { pathname, hash } = useLocation()
+// Scroll restoration (P6): back/forward (POP) returns to the position saved for
+// that history entry; push/replace goes to the top, or to the #hash target.
+// Positions are keyed by location.key in sessionStorage, so a reload keeps them.
+const SCROLL_KEY = 'scroll-positions'
+const readPositions = () => {
+    try { return JSON.parse(sessionStorage.getItem(SCROLL_KEY)) || {} } catch { return {} }
+}
+
+function ScrollManager() {
+    const location = useLocation()
+    const navType = useNavigationType()
+    const { key, hash } = location
 
     useEffect(() => {
-        if (hash) {
-            setTimeout(() => {
-                const element = document.querySelector(hash)
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' })
-                }
-            }, 0)
-        } else {
-            window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+        if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual'
+    }, [])
+
+    // Remember this entry's position as the user scrolls (rAF-throttled).
+    useEffect(() => {
+        let frame = 0
+        const save = () => {
+            frame = 0
+            const positions = readPositions()
+            positions[key] = window.scrollY
+            try { sessionStorage.setItem(SCROLL_KEY, JSON.stringify(positions)) } catch { /* private mode */ }
         }
-    }, [pathname, hash])
+        const onScroll = () => { if (!frame) frame = requestAnimationFrame(save) }
+        window.addEventListener('scroll', onScroll, { passive: true })
+        return () => {
+            window.removeEventListener('scroll', onScroll)
+            if (frame) cancelAnimationFrame(frame)
+        }
+    }, [key])
+
+    useEffect(() => {
+        if (navType === 'POP') {
+            const target = readPositions()[key]
+            if (typeof target === 'number') {
+                // Lazy routes grow after first paint: retry until the page is
+                // tall enough to reach the saved position (max ~1 s).
+                let tries = 0
+                let frame = 0
+                const restore = () => {
+                    const reachable = document.documentElement.scrollHeight - window.innerHeight >= target
+                    if (reachable || tries++ > 60) {
+                        window.scrollTo({ top: target, left: 0, behavior: 'instant' })
+                        return
+                    }
+                    frame = requestAnimationFrame(restore)
+                }
+                restore()
+                return () => cancelAnimationFrame(frame)
+            }
+        }
+        if (hash) {
+            const timer = setTimeout(() => {
+                document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+            }, 0)
+            return () => clearTimeout(timer)
+        }
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+        return undefined
+    }, [key, hash, navType])
 
     return null
 }
@@ -211,7 +268,7 @@ function App() {
             <Router>
                 {/* framer-motion follows the OS reduced-motion setting everywhere */}
                 <MotionConfig reducedMotion="user">
-                <ScrollToTop />
+                <ScrollManager />
                 <AnalyticsRouteTracker />
                 {paletteMounted ? (
                     <Suspense fallback={null}>

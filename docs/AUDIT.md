@@ -103,3 +103,33 @@ Main mobile drags: render-blocking resources (~1.07 s, Google Fonts CSS), ~178 K
 - Obsidian base `#070708` and a (much rarer) lime accent.
 - Project case-study data model (`problem/solution/architecture/keyDecisions/lessonsLearned`) — the raw material for real case studies.
 - Cmd+K palette, structured blog JSON, solid a11y/SEO/best-practice baseline.
+
+## Final — Phase 0 baseline vs P6 (2026-11-13)
+
+### Lighthouse
+Baseline: live site, Lighthouse 12.8.2, single run. P6: local `vite preview`, Lighthouse 13.4.1, median of 3 (PROGRESS.md ¹⁰).
+
+| Page | Mobile Perf | Desktop Perf | A11y | BP | SEO | Mobile LCP | Mobile TBT |
+|---|---|---|---|---|---|---|---|
+| Home, baseline | 38 | 82 | 100 | 100 | 100 | 7.1 s | 1,140 ms |
+| Home, P6 | **98** | **100** | 100 | 100 | 100 | 2.0 s | 135 ms |
+| Projects, P6 | 98 | 100 | 100 | 100 | 100 | 2.0 s | 68 ms |
+| Case study (kanoon-mate), P6 | 99 | 100 | 100 | 100 | 100 | 2.0 s | 63 ms |
+| Blog, P6 | 95 | 100 | 100 | 100 | 100 | 2.7 s | 39 ms |
+| Article (what-is-mcp), P6 | 98 | 100 | 100 | 100 | 100 | 2.1 s | 100 ms |
+| Contact, P6 | 99 | 100 | 100 | 100 | 100 | 2.0 s | 39 ms |
+
+### "AI-look" tells
+| Tell (Phase 0) | Now |
+|---|---|
+| "WELCOME TO MY PORTFOLIO" pill, "AVAILABLE!" badge | Gone. Availability is one accent dot + sentence in the colophon. |
+| Giant ghost marquee text | Gone (banned; `check:design`). The name itself is the type (S2, S6). |
+| Rounded-full pills everywhere (182 lines / 31 files) | Pills only on the dock, buttons and the status dot; 0 violations. |
+| Lime→orange→purple gradients, gradient text, glow (81 + 55 lines) | 0. One shadow token, for dialogs; hairlines elsewhere. |
+| Particle network background | Deleted; static grain (S8) at ≤ 4 % only. |
+| "// COMMENT" mono labels | 0 (checked by `check:design`, incl. legal pages and changelog). |
+| Generic copy ("Innovator", "Let's Build Something Great") | Rewritten from repo facts; every change logged in COPY_REVIEW.md. |
+| Circular photo with neon ring | Portrait in the Lucknow arch (S3), also in the OG image and favicon. |
+| "Sign In" in the nav | Out of the nav (D-002); only booking/support/activity open it. |
+| Equal-weight card grids | Projects as an index (S7), case studies with rail facts. |
+| Off-system surfaces (legal, checkout, activity, changelog, offline, OG/favicon) | All on v2 in P6. |

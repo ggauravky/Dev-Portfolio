@@ -4,61 +4,17 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import {
-    Rocket,
-    Sparkles,
-    Wrench,
-    Pin,
-    LayoutGrid,
-    Search,
-    CreditCard,
-    FileText,
-    Lock,
-    BarChart3,
-    TrendingUp,
-    Target,
-    AlertTriangle,
-    CheckCircle2,
-    Zap,
-    Terminal,
-    Brain,
-    Sliders,
-    Compass,
-    Gauge,
-    Tag,
-    Calendar,
-    ShieldCheck
-} from 'lucide-react'
+// Updates (P6). The site changelog, newest release first. Each release is a
+// section: version, date, type and status in the margin rail, the headline as
+// a line-masked h2, the summary, then one hairline row per change group.
+// "Now" (the accent's job) = the latest release.
+// Motion moments: (1) line-masked release headings.
+
+import PropTypes from 'prop-types'
 import Reveal from '../components/Reveal'
+import PageHead from '../components/page/PageHead'
 import useSEO from '../hooks/useSEO'
-
-const iconMap = {
-    sparkles: Sparkles,
-    wrench: Wrench,
-    pin: Pin,
-    grid: LayoutGrid,
-    search: Search,
-    'credit-card': CreditCard,
-    'file-text': FileText,
-    lock: Lock,
-    'bar-chart': BarChart3,
-    'trending-up': TrendingUp,
-    target: Target,
-    alert: AlertTriangle,
-    check: CheckCircle2,
-    zap: Zap,
-    terminal: Terminal,
-    brain: Brain,
-    sliders: Sliders,
-    compass: Compass,
-    gauge: Gauge,
-    rocket: Rocket,
-}
-
-function SectionIcon({ name, className = "w-4 h-4" }) {
-    const IconComponent = iconMap[name] || Sparkles
-    return <IconComponent className={className} />
-}
+import '../styles/updates.css'
 
 const updates = [
     {
@@ -311,7 +267,7 @@ const updates = [
                 items: [
                     'Removed generic logo icons to align name branding clearly on desktop and mobile views.',
                     'Shifted top relative offsets to site-header padding, resolving overlap issues and ensuring layout height calculation matches actual viewport render space.',
-                    'Refined desktop floating bar and mobile full-screen slide-down drawer with backdrop-blur effects.',
+                    'Refined desktop floating bar and mobile full-screen slide-down drawer with backdrop-blur effects.', // design-allow: historical changelog text, not a style
                 ],
             },
             {
@@ -465,49 +421,70 @@ const updates = [
     },
 ]
 
-const sectionToneClasses = {
-    emerald: {
-        border: 'border-[#c5f82a]/20',
-        bg: 'bg-[#c5f82a]/5',
-        title: 'text-[#c5f82a]',
-        bullet: 'text-[#c5f82a]',
-    },
-    blue: {
-        border: 'border-[#1a1a22]',
-        bg: 'bg-[#16161a]',
-        title: 'text-white',
-        bullet: 'text-[#c5f82a]',
-    },
-    rose: {
-        border: 'border-[#ff5d00]/20',
-        bg: 'bg-[#ff5d00]/5',
-        title: 'text-[#ff5d00]',
-        bullet: 'text-[#ff5d00]',
-    },
-    cyan: {
-        border: 'border-[#c5f82a]/20',
-        bg: 'bg-[#c5f82a]/5',
-        title: 'text-[#c5f82a]',
-        bullet: 'text-[#c5f82a]',
-    },
-    amber: {
-        border: 'border-[#ff5d00]/20',
-        bg: 'bg-[#ff5d00]/5',
-        title: 'text-[#ff5d00]',
-        bullet: 'text-[#ff5d00]',
-    },
-    violet: {
-        border: 'border-[#1a1a22]',
-        bg: 'bg-[#16161a]',
-        title: 'text-white',
-        bullet: 'text-[#c5f82a]',
-    },
-    slate: {
-        border: 'border-[#1a1a22]',
-        bg: 'bg-[#16161a]',
-        title: 'text-[#a1a1aa]',
-        bullet: 'text-[#a1a1aa]',
-    },
+const NEWEST_FIRST = [...updates].reverse()
+const monthYear = (date) => `${date.split(' ')[0]} ${date.slice(-4)}`
+const releaseId = (version) => `release-${version.replace(/\./g, '-')}`
+
+const HEAD = {
+    rail: [`${updates.length} releases`, `${monthYear(updates[0].date)} to ${monthYear(updates[updates.length - 1].date)}`],
+    title: 'Updates',
+    lede: 'Follow my journey of building, refining, and scaling this personal portfolio platform.',
+}
+
+function Release({ update, latest }) {
+    const id = releaseId(update.version)
+    const headingId = `${id}-title`
+    return (
+        <section id={id} className="pg-section" aria-labelledby={headingId}>
+            <Reveal className="page-wrap page-grid">
+                <dl className="page-rail up-rail">
+                    <div><dt className="sr-only">Version</dt><dd className="up-rail__version">{update.version}</dd></div>
+                    <div><dt className="sr-only">Released</dt><dd><time>{update.date}</time></dd></div>
+                    {update.type ? <div><dt className="sr-only">Type</dt><dd>{update.type}</dd></div> : null}
+                    {update.status ? <div><dt className="sr-only">Status</dt><dd>{update.status}</dd></div> : null}
+                    {latest ? (
+                        <div>
+                            <dt className="sr-only">Release</dt>
+                            <dd className="pg-now"><span className="pg-dot" aria-hidden="true" />Latest</dd>
+                        </div>
+                    ) : null}
+                </dl>
+                <div className="page-main">
+                    <h2 id={headingId} className="pg-h2 up-h2">
+                        <span className="line-mask"><span className="line-mask__line">{update.headline || `${update.version} - ${update.title}`}</span></span>
+                    </h2>
+                    <p className="pg-intro">{update.description}</p>
+                    <ul className="pg-rows">
+                        {update.sections.map((section) => (
+                            <li key={section.title} className="pg-row">
+                                <h3 className="pg-row__label up-group">{section.title}</h3>
+                                <ul className="pg-row__body up-items">
+                                    {section.items.map((item) => <li key={item}>{item}</li>)}
+                                </ul>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </Reveal>
+        </section>
+    )
+}
+
+Release.propTypes = {
+    update: PropTypes.shape({
+        version: PropTypes.string.isRequired,
+        date: PropTypes.string.isRequired,
+        title: PropTypes.string.isRequired,
+        headline: PropTypes.string,
+        type: PropTypes.string,
+        status: PropTypes.string,
+        description: PropTypes.string.isRequired,
+        sections: PropTypes.arrayOf(PropTypes.shape({
+            title: PropTypes.string.isRequired,
+            items: PropTypes.arrayOf(PropTypes.string).isRequired,
+        })).isRequired,
+    }).isRequired,
+    latest: PropTypes.bool,
 }
 
 function Updates() {
@@ -519,96 +496,17 @@ function Updates() {
     })
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-[#070708] px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-            <div className="pointer-events-none absolute -right-20 top-24 h-64 w-64 rounded-full bg-[#ff5d00]/5 blur-3xl" />
-            <div className="pointer-events-none absolute -left-20 bottom-12 h-72 w-72 rounded-full bg-[#c5f82a]/5 blur-3xl" />
-
-            <div className="relative z-10 mx-auto max-w-5xl">
-                <Reveal className="text-center mb-12 sm:mb-14">
-                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#c5f82a]/20 bg-[#c5f82a]/5 font-mono text-xs text-[#c5f82a] uppercase tracking-widest mb-4">
-                        <Rocket className="w-4 h-4 text-[#c5f82a]" />
-                        <span>System Changelog</span>
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-black mb-6 uppercase tracking-tight text-white">
-                        <span className="bg-gradient-to-r from-toxic via-white to-cyber bg-clip-text text-transparent">Updates</span>
-                    </h1>
-                    <p className="mx-auto max-w-3xl text-[#a1a1aa] text-base sm:text-lg leading-relaxed">
-                        Follow my journey of building, refining, and scaling this personal portfolio platform.
-                    </p>
-                </Reveal>
-
-                <section className="relative">
-                    <div className="pointer-events-none absolute left-3 top-0 bottom-0 hidden sm:block w-px bg-gradient-to-b from-[#ff5d00]/30 via-[#c5f82a]/20 to-transparent" />
-
-                    <div className="space-y-6 sm:space-y-8">
-                        {updates.map((update, index) => (
-                            <Reveal key={update.version} delay={index * 90}>
-                                <article className="group relative rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#c5f82a]/30 hover:shadow-2xl">
-                                    <span className="hidden sm:inline-block absolute left-0 top-9 -translate-x-[35px] h-2.5 w-2.5 rounded-full border border-[#c5f82a]/50 bg-[#c5f82a] shadow-[0_0_0_4px_rgba(7,7,8,0.9)]" />
-
-                                    <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <div className="inline-flex items-center gap-1.5 rounded-md border border-[#c5f82a]/30 bg-[#c5f82a]/10 px-3 py-1 text-xs font-mono uppercase tracking-widest text-[#c5f82a]">
-                                                <Tag className="w-3.5 h-3.5 text-[#c5f82a]" />
-                                                <span>{update.version}</span>
-                                            </div>
-                                            {update.type && (
-                                                <div className="inline-flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-cyan-400">
-                                                    <Sparkles className="w-3 h-3 text-cyan-400" />
-                                                    <span>{update.type}</span>
-                                                </div>
-                                            )}
-                                            {update.status && (
-                                                <div className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-emerald-400">
-                                                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                                                    <span>{update.status}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="inline-flex items-center gap-1.5 rounded-md border border-[#1a1a22] bg-[#16161a] px-3 py-1 text-xs font-mono text-[#a1a1aa]">
-                                            <Calendar className="w-3.5 h-3.5 text-[#a1a1aa]" />
-                                            <span>{update.date}</span>
-                                        </div>
-                                    </div>
-
-                                    <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-tight text-white mb-6">
-                                        {update.headline || `${update.version} - ${update.title}`}
-                                    </h2>
-
-                                    <p className="text-[#a1a1aa] text-sm sm:text-base leading-relaxed mb-6">
-                                        {update.description}
-                                    </p>
-
-                                    <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
-                                        {update.sections.map((section) => {
-                                            const tone = sectionToneClasses[section.tone] || sectionToneClasses.slate
-
-                                            return (
-                                                <section key={`${update.version}-${section.title}`} className={`rounded-md border ${tone.border} ${tone.bg} p-4 sm:p-5 flex flex-col justify-between`}>
-                                                    <div>
-                                                        <h3 className={`text-xs font-mono font-bold uppercase tracking-wider ${tone.title} mb-3 flex items-center gap-2`}>
-                                                            <SectionIcon name={section.icon} className="w-4 h-4 shrink-0" />
-                                                            <span>{section.title}</span>
-                                                        </h3>
-                                                        <ul className="space-y-2 text-xs font-mono text-[#a1a1aa] leading-relaxed">
-                                                            {section.items.map((item) => (
-                                                                <li key={`${section.title}-${item}`} className="flex items-start gap-2">
-                                                                    <span className={`mt-[2px] ${tone.bullet} shrink-0`}>→</span>
-                                                                    <span>{item}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                </section>
-                                            )
-                                        })}
-                                    </div>
-                                </article>
-                            </Reveal>
-                        ))}
+        <main className="pg updates">
+            <PageHead head={HEAD} />
+            {NEWEST_FIRST.length ? (
+                NEWEST_FIRST.map((update, i) => <Release key={update.version} update={update} latest={i === 0} />)
+            ) : (
+                <section className="pg-section">
+                    <div className="page-wrap page-grid">
+                        <p className="page-main pg-intro">No releases yet.</p>
                     </div>
                 </section>
-            </div>
+            )}
         </main>
     )
 }

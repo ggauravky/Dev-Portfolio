@@ -1,0 +1,842 @@
+[
+ {
+  "w": 390,
+  "r": "/",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/about",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/journey",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/skills",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/projects",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/projects/kanoon-mate",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/blog",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/blog/what-is-mcp",
+  "overflow": 0,
+  "small": [
+   "a[Original illustration by] 351x38",
+   "a.is-active[1. What is MCP?] 358x36",
+   "a[2. Why Was MCP Needed?] 358x36",
+   "a[3. How Does MCP Work?] 358x36",
+   "a[4. The 3 Core Parts: Too] 358x41",
+   "a[5. How Does MCP Send Mes] 358x36",
+   "a[6. A Simple Real-World E] 358x36",
+   "a[7. Why Does MCP Matter?] 358x36"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/updates",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/services",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/services/frontend-development",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/booknow",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/support",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/payment-success",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/contact",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/my-activity",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/privacy",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/terms",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/refund",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 390,
+  "r": "/no-such-page",
+  "overflow": 0,
+  "small": [
+   "a.text-link[About] 38x44",
+   "a.text-link[Skills] 35x44",
+   "a.text-link[Notes] 38x44",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/about",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/journey",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/skills",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/projects",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/projects/kanoon-mate",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/blog",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/blog/what-is-mcp",
+  "overflow": 0,
+  "small": [
+   "a[Original illustration by] 335x17",
+   "a.is-active[1. What is MCP?] 720x36",
+   "a[2. Why Was MCP Needed?] 720x36",
+   "a[3. How Does MCP Work?] 720x36",
+   "a[4. The 3 Core Parts: Too] 720x36",
+   "a[5. How Does MCP Send Mes] 720x36",
+   "a[6. A Simple Real-World E] 720x36",
+   "a[7. Why Does MCP Matter?] 720x36"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/updates",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/services",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/services/frontend-development",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/booknow",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/support",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/payment-success",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/contact",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/my-activity",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/privacy",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/terms",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/refund",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 768,
+  "r": "/no-such-page",
+  "overflow": 0,
+  "small": [
+   "a.text-link[About] 41x44",
+   "a.text-link[Skills] 37x44",
+   "a.text-link[Notes] 41x44",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/about",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/journey",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/skills",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/projects",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/projects/kanoon-mate",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/blog",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/blog/what-is-mcp",
+  "overflow": 0,
+  "small": [
+   "a[Original illustration by] 335x17",
+   "a.is-active[1. What is MCP?] 140x32",
+   "a[2. Why Was MCP Needed?] 140x35",
+   "a[3. How Does MCP Work?] 140x35",
+   "a[5. How Does MCP Send Mes] 140x35",
+   "a[6. A Simple Real-World E] 140x35",
+   "a[7. Why Does MCP Matter?] 140x35",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/updates",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/services",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/services/frontend-development",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/booknow",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/support",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/payment-success",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/contact",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/my-activity",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/privacy",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/terms",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/refund",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1024,
+  "r": "/no-such-page",
+  "overflow": 0,
+  "small": [
+   "a.text-link[About] 44x44",
+   "a.text-link[Skills] 39x44",
+   "a.text-link[Notes] 44x44",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/about",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/journey",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/skills",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/projects",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/projects/kanoon-mate",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/blog",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/blog/what-is-mcp",
+  "overflow": 0,
+  "small": [
+   "a[Original illustration by] 335x17",
+   "a.is-active[1. What is MCP?] 169x32",
+   "a[2. Why Was MCP Needed?] 169x35",
+   "a[3. How Does MCP Work?] 169x35",
+   "a[5. How Does MCP Send Mes] 169x35",
+   "a[6. A Simple Real-World E] 169x35",
+   "a[7. Why Does MCP Matter?] 169x35",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/updates",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/services",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/services/frontend-development",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/booknow",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/support",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/payment-success",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/contact",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/my-activity",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/privacy",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/terms",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/refund",
+  "overflow": 0,
+  "small": [
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ },
+ {
+  "w": 1440,
+  "r": "/no-such-page",
+  "overflow": 0,
+  "small": [
+   "a.text-link[About] 44x44",
+   "a.text-link[Skills] 39x44",
+   "a.text-link[Notes] 44x44",
+   "a.text-link[Gaurav Kumar Yadav] 132x18"
+  ],
+  "h1": 1,
+  "errors": []
+ }
+]

@@ -18,26 +18,19 @@ import { STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
 import { Button, Input, Textarea, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
-import { validateEmail } from '../lib/validate'
+import { validateEmail, validateRequired } from '../lib/validate'
 import './Contact.css'
 
 const MESSAGE_MAX = 2000
 const EMPTY = { name: '', email: '', subject: '', message: '' }
 
-const capital = (s) => `${s[0].toUpperCase()}${s.slice(1)}`
-const between = (label, min, max) => (value) => {
-    const v = String(value || '').trim()
-    if (!v) return `Enter ${label}.`
-    if (v.length < min) return `${capital(label)} needs at least ${min} characters.`
-    if (v.length > max) return `${capital(label)} can be at most ${max} characters.`
-    return ''
-}
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
 const RULES = {
-    name: between('your name', 2, 100),
+    name: validateRequired('your name', 2, 100),
     email: validateEmail,
-    subject: between('a subject', 5, 200),
-    message: between('a message', 10, MESSAGE_MAX),
+    subject: validateRequired('a subject', 5, 200),
+    message: validateRequired('a message', 10, MESSAGE_MAX),
 }
 
 const PLATFORMS = [
@@ -79,8 +72,7 @@ function ContactForm() {
         }
         setStatus('sending')
         try {
-            const api = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
-            const response = await fetch(`${api}/api/contact`, {
+            const response = await fetch(`${API_URL}/api/contact`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),

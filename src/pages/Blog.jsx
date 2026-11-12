@@ -22,7 +22,7 @@ import { categories, getPublishedBlogArchive } from '../data/blogsData'
 import { validateEmail } from '../lib/validate'
 import './Blog.css'
 
-const apiUrl = () => (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
 function Newsletter() {
     const [email, setEmail] = useState('')
@@ -37,7 +37,7 @@ function Newsletter() {
         }
         setState({ status: 'loading', message: '' })
         try {
-            const response = await fetch(`${apiUrl()}/api/newsletter/subscribe`, {
+            const response = await fetch(`${API_URL}/api/newsletter/subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: email.trim() }),

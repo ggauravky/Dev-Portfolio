@@ -110,3 +110,19 @@ Project facts (descriptions, problems, solutions, architecture, decisions, lesso
 | 35 | Contact form | Placeholders and toasts | Labels only; inline errors on the backend limits; "n / 2000" counter; success "Message sent. Thanks. I'll reply to the email you gave." | `backend/middleware/validator.js` | |
 | 36 | Contact platforms | Icon cards with subtitles; "Want my full resume?" | "Elsewhere" rows with the same handles and shorter subtitles; a resume row | Same links | ⚠ LinkedIn is `/in/gauravky` here and in the JSON-LD, but `siteStatus` (footer, ⌘K) says `/in/ggauravky`. Which is right? |
 | 37 | 404 (SPA + `public/404.html`) | Animated "404", jokes, countdown, gradient text; "🤖 Machine-Readable Resources" | "Not found"; "There's no page at <path>. It may have moved, or the link has a typo."; Home, Projects, Contact and the other pages; machine-readable links kept on the static page | | |
+
+## P6 — Polish and remaining surfaces (2026-11-13)
+
+| # | Where | Old | New | Source fact | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | Privacy / Terms / Refund ledes | *(none; "Last Updated: …" line)* | "What this site collects, why, who else handles it, and how to have it removed." / "The rules for using this site, its AI tools and its content." / "When a booked service can be refunded, when it can't, and how to ask." | Summaries of the existing sections | ⚠ |
+| 2 | Legal headings | Title Case ("Refund Eligibility", …), two "// …" lines | Sentence case; the two "//" lines are plain notes; body text word for word (two missing spaces fixed) | Same text | |
+| 3 | Updates | Eyebrow "System Changelog"; h1 upper-cased | Eyebrow dropped; rail "N releases · Jan 2026 to Jul 2026"; newest first; latest release marked "Latest" | Changelog data (unchanged) | ⚠ |
+| 4 | BookNow | "Book a Service", "Selected Service", "Booking Brief", Title Case labels, 4 step boxes + 3 icon rows | "Book a service", the service title, "Booking brief", sentence-case labels; one "How it works" list; rail "Booking · Razorpay checkout" | Same flow | |
+| 5 | Support | "Help Me Keep Building", 2 tags + "Support from ₹5", "Choose an amount", "A Direct Contribution", "Thank you for backing independent work." | "Help me keep building", rail "Support my work · From ₹5", "Amount", the contribution sentence as the section intro; the last two lines dropped | `SUPPORT_MIN_AMOUNT_INR` | ⚠ |
+| 6 | Trust strip (BookNow, Support) | TrustStrip claims incl. "within 24h" | *(removed)* | Unverified claim | ⚠ |
+| 7 | PaymentSuccess | "Payment Failed", "Payment Pending", "Download Receipt", "Server-Verified Payment" | Sentence case; rail "Payment · Server-verified" | Same states | |
+| 8 | My activity | Tab counts inline, upper-case statuses, icon-only buttons | Counts beside tab names; "Success"/"Failed"; buttons say "Refresh", "Download receipt", "Details"; new empty states ("No supported posts yet", "No {filter} payments", …) and a "Supported posts" block | Same data | ⚠ |
+| 9 | Error boundary | "Oops! Something went wrong" / "We're sorry for the inconvenience…" | "Something broke" / "This page hit an unexpected error. Reloading usually fixes it." | — | ⚠ |
+| 10 | Offline page | "You're Offline", 💡 note, "Go Home" | "You're offline", plain note, "Home" | — | |
+| 11 | OG image | *(missing file)* | Name in Fraunces, "AI/ML and web developer. BCA student at BBDU, Lucknow.", portrait in the arch | `index.html` og:description | ⚠ |

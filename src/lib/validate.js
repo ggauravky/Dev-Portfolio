@@ -12,8 +12,12 @@ export const validateEmail = (value) => {
     return EMAIL.test(v) ? '' : 'That email doesn’t look right. Check for a typo.'
 }
 
-export const validateRequired = (label, min = 1) => (value) => {
+const capital = (s) => `${s[0].toUpperCase()}${s.slice(1)}`
+
+export const validateRequired = (label, min = 1, max = Infinity) => (value) => {
     const v = String(value || '').trim()
     if (!v) return `Enter ${label}.`
-    return v.length < min ? `${label[0].toUpperCase()}${label.slice(1)} needs at least ${min} characters.` : ''
+    if (v.length < min) return `${capital(label)} needs at least ${min} characters.`
+    if (v.length > max) return `${capital(label)} can be at most ${max} characters.`
+    return ''
 }

@@ -36,6 +36,7 @@
 .sv-links .text-link {
   display: inline-flex;
   align-items: center;
+  min-width: 44px; /* P6 touch target */
   min-height: 44px;
 }
 

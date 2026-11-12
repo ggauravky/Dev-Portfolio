@@ -100,7 +100,8 @@
   transition: border-color var(--dur-fast) var(--ease-out);
 }
 
-.colophon__copy:hover { border-color: rgb(var(--muted)); }
+.colophon__copy:hover,
+.colophon__copy:focus-visible { border-color: rgb(var(--muted)); }
 .colophon__copy:active { transform: scale(.97); }
 
 .footer-heading {
@@ -176,4 +177,13 @@
   .colophon__col--pages { grid-column: 8 / span 3; }
 
   .colophon__mark { white-space: nowrap; }
+}
+
+/* P6 touch targets: page links and the fact links (GitHub, email) are
+   at least 44×44 even when the word is short. */
+.footer-link { min-width: 44px; }
+.colophon__facts dd > .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }

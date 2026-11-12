@@ -293,6 +293,9 @@
   .work-row:hover .work-row__title::after { transform: scaleX(1); }
   .work-row:hover .work-row__arrow { color: rgb(var(--paper)); transform: translate3d(4px, 0, 0); }
 }
+/* Keyboard parity (P6): focus shows the same underline and arrow as hover. */
+.work-row:focus-visible .work-row__title::after { transform: scaleX(1); }
+.work-row:focus-visible .work-row__arrow { color: rgb(var(--paper)); transform: translate3d(4px, 0, 0); }
 
 .work-row:focus-visible .work-row__title::after { transform: scaleX(1); }
 
@@ -371,6 +374,7 @@
 @media (hover: hover) {
   .note-row:hover .note-row__title::after { transform: scaleX(1); }
 }
+.note-row:focus-visible .note-row__title::after { transform: scaleX(1); }
 
 .note-row:focus-visible .note-row__title::after { transform: scaleX(1); }
 

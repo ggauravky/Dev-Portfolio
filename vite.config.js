@@ -127,13 +127,6 @@ export default defineConfig({
           // framer-motion has no manual chunk: Rollup keeps only what the
           // boot path imports (MotionConfig, LazyMotion, m) and leaves the
           // domMax features and page-only APIs in lazy chunks (D-056).
-          // Vercel edge analytics
-          if (
-            id.includes("@vercel/analytics") ||
-            id.includes("@vercel/speed-insights")
-          ) {
-            return "analytics";
-          }
         },
       },
     },

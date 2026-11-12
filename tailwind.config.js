@@ -16,26 +16,11 @@ export default {
         paper: token("paper"),
         muted: token("muted"),
         accent: token("accent"),
-
-        // LEGACY aliases — kept until their last user is restyled; delete in Phase G.
-        primary: "#3b82f6",
-        secondary: "#8b5cf6",
-        toxic: token("accent"),
-        cyber: "#ff5d00",
-        obsidian: {
-          DEFAULT: token("ink"),
-          card: token("ink-raised"),
-          light: "#16161a",
-          border: token("rule"),
-        },
       },
       fontFamily: {
         serif: ["var(--font-serif)"],
         sans: ["var(--font-sans)"],
         mono: ["var(--font-mono)"],
-        // LEGACY alias (was Syne). Maps to Geist so bold headings don't get a
-        // synthesized-bold serif; new display type uses `font-serif`. Delete in G.
-        display: ["var(--font-sans)"],
       },
       fontSize: {
         display: ["var(--text-display)", { lineHeight: "0.95", letterSpacing: "-0.02em" }],

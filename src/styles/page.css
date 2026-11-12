@@ -335,6 +335,7 @@
 
 .pj-seg__option:has(input:checked) { color: rgb(var(--paper)); }
 .pj-seg__option input:checked + span::after { transform: scaleX(1); }
+.pj-seg__option:has(input:focus-visible) { color: rgb(var(--paper)); }
 
 @media (hover: hover) {
   .pj-seg__option:hover { color: rgb(var(--paper)); }
@@ -418,5 +419,137 @@ details[open] > summary .pg-toggle::after { transform: rotate(0deg); }
 .nf-more .text-link {
   display: inline-flex;
   align-items: center;
+  min-width: 44px;
   min-height: 44px;
 }
+
+/* ── P6 legal pages (Privacy, Terms, Refund; components/page/LegalPage) ──
+   Numbered hairline sections: number in the rail, a serif h3-size heading,
+   running prose at reading width. Static, no motion moments. */
+.lg-sec {
+  padding-block: var(--space-4);
+  border-top: 1px solid rgb(var(--rule));
+}
+.lg-sec:last-child { padding-bottom: var(--space-6); }
+.lg-h2 {
+  margin: 0 0 var(--space-2);
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: var(--text-h3);
+  font-weight: 400;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.lg-prose {
+  max-width: 68ch;
+  color: rgb(var(--muted));
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+.lg-prose > * + * { margin-top: var(--space-2); }
+.lg-prose h3 {
+  color: rgb(var(--paper));
+  font: 400 13px/1.5 var(--font-mono);
+  letter-spacing: 0.02em;
+}
+.lg-prose h3:not(:first-child) { margin-top: var(--space-3); }
+.lg-prose ul { margin-left: 0; padding: 0; list-style: none; }
+.lg-prose li {
+  position: relative;
+  padding-left: var(--space-3);
+}
+.lg-prose li + li { margin-top: var(--space-1); }
+.lg-prose li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.8em;
+  width: 10px;
+  height: 1px;
+  background: rgb(var(--rule));
+}
+.lg-prose strong { color: rgb(var(--paper)); font-weight: 500; }
+.lg-prose a {
+  color: rgb(var(--paper));
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--rule));
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+  transition: text-decoration-color var(--dur-fast) var(--ease-out);
+}
+.lg-prose a:hover,
+.lg-prose a:focus-visible { text-decoration-color: rgb(var(--accent)); }
+.lg-note {
+  padding-left: var(--space-2);
+  border-left: 1px solid rgb(var(--rule));
+  color: rgb(var(--paper));
+}
+
+/* ── P6 route skeleton (App.jsx PageLoader): hairline-toned blocks in the
+   page-head layout, an opacity-only pulse, still under reduced motion. ── */
+.pg-skel__bar {
+  display: block;
+  height: 16px;
+  border-radius: 4px;
+  background: rgb(var(--rule));
+  animation: pg-skel-pulse 1.4s var(--ease-out) infinite alternate;
+}
+.pg-skel__bar--rail { width: 96px; height: 12px; }
+.pg-skel__bar--h1 { width: min(560px, 80%); height: clamp(3rem, 8vw, 6rem); }
+.pg-skel__bar--lede { width: min(46ch, 100%); margin-top: var(--space-3); }
+.pg-skel__bar--short { width: min(30ch, 70%); margin-top: var(--space-1); }
+@keyframes pg-skel-pulse {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pg-skel__bar { animation: none; }
+}
+
+/* === NETWORK BANNER (P6) === a quiet ink-raised toast above the dock; the
+   one dialog shadow; text says the state, no colour coding. */
+.net-banner {
+  position: fixed;
+  right: var(--space-2);
+  bottom: calc(var(--dock-space, 96px) + var(--space-1));
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: min(320px, calc(100vw - 2 * var(--space-2)));
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-2);
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-dialog);
+  background: rgb(var(--ink-raised));
+  box-shadow: var(--shadow-dialog);
+  color: rgb(var(--paper));
+  animation: net-banner-in var(--dur-base) var(--ease-out) both;
+}
+.net-banner__text { flex: 1; margin: 0; font-size: var(--text-small); line-height: 1.5; }
+.net-banner__text strong { display: block; font-weight: 500; }
+.net-banner__text span { color: rgb(var(--muted)); }
+.net-banner__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: var(--radius-control);
+  color: rgb(var(--muted));
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.net-banner__close:hover,
+.net-banner__close:focus-visible { color: rgb(var(--paper)); }
+@keyframes net-banner-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .net-banner { animation: none; }
+}
+
+/* ── P6 error boundary details (dev only) ── */
+.eb-details { margin-top: var(--space-5); color: rgb(var(--muted)); font: 400 13px/1.6 var(--font-mono); }
+.eb-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.eb-details pre { max-height: 256px; overflow: auto; padding: var(--space-2); border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background: rgb(var(--ink-raised)); white-space: pre-wrap; }

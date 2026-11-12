@@ -5,7 +5,7 @@
 
 'use strict';
 
-const CACHE_NAME = 'portfolio-offline-v6';
+const CACHE_NAME = 'portfolio-offline-v7';
 
 // Minimal critical assets required to show the offline page
 const PRECACHE_URLS = [
@@ -103,7 +103,7 @@ self.addEventListener('fetch', (event) => {
             return cachedOffline;
           }
           return new Response(
-            '<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>You\'re Offline</title></head><body style="background:#070708;color:#fff;font-family:sans-serif;padding:2rem;text-align:center"><h1>You\'re Offline</h1><p>Check your internet connection and <a href="/" style="color:#c5f82a">try again</a>.</p></body></html>',
+            '<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>You\'re Offline</title></head><body style="background:#0E0D0B;color:#EDEAE3;font-family:Georgia,serif;padding:2rem;text-align:center"><h1>You\'re Offline</h1><p>Check your internet connection and <a href="/" style="color:#EDEAE3">try again</a>.</p></body></html>',
             {
               status: 200,
               headers: { 'Content-Type': 'text/html; charset=utf-8' },

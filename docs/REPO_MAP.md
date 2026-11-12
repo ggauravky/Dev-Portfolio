@@ -2,6 +2,8 @@
 
 Snapshot of the frontend as it stands before the v2 redesign. Backend/payment/auth internals: see `docs/ARCHITECTURE.md`.
 
+> **Historical snapshot.** Since P6 (2026-11-13) the legacy Tailwind aliases, the `index.css` effect utilities and keyframes, `TrustStrip`, `StickyMobileCTA`, `SkeletonLoader`, `StatsCards`, `Legal.css` and the unused deps (`cobe`, `react-github-calendar`, `pino*`, `@vercel/analytics`, `@vercel/speed-insights`) named below are deleted; see DECISIONS D-066 to D-073.
+
 ## Stack (confirmed from `package.json`)
 - **Vite 5 + React 18 SPA**, React Router, Tailwind 3 (+ PostCSS/autoprefixer). Plain JSX, no TypeScript in `src/`.
 - Runtime deps: `framer-motion`, `cmdk` (Cmd/Ctrl+K palette), `lucide-react`, `react-github-calendar`, `react-hot-toast`, `@vercel/analytics`, `@vercel/speed-insights`, `prop-types`, `cobe` (**unused** — no import in `src/`), `pino*` (server logging libs listed in frontend deps).

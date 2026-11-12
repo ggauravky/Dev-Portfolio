@@ -8,7 +8,7 @@
 
 .App {
   min-height: 100vh;
-  background-color: #070708;
+  background-color: rgb(var(--ink));
   width: 100%;
   overflow-x: clip;
 }
@@ -50,34 +50,4 @@ button, a {
 /* Ensure consistent box-sizing */
 *, *::before, *::after {
   box-sizing: border-box;
-}
-
-/* GPU layer for fixed site header — backdrop-blur is composited once and
-   reused on each scroll tick instead of being recalculated */
-#site-header {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* Hide cursor spotlight on touch/mobile devices */
-@media (hover: none), (pointer: coarse) {
-  .hidden-on-touch {
-    display: none !important;
-  }
-}
-
-/* Custom scrollbar — palette-matched */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #818cf8, #a78bfa);
 }

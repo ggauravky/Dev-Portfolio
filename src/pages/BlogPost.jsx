@@ -12,7 +12,7 @@
 // (2) the TOC's current-section marker. The h1 paints statically.
 
 import { useParams, useNavigate } from 'react-router-dom'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import useSEO from '../hooks/useSEO'
 import { getBlogBySlug, getRelatedBlogs } from '../data/blogsData'
 import SupportButton from '../components/support/SupportButton'
@@ -32,7 +32,6 @@ function BlogPost() {
     const navigate = useNavigate()
     const blog = useMemo(() => getBlogBySlug(slug), [slug])
     const [headings, setHeadings] = useState([])
-    const handleHeadingsChange = useCallback((nextHeadings) => setHeadings(nextHeadings), [])
     const bodyRef = useRef(null)
 
     useEffect(() => {
@@ -124,9 +123,9 @@ function BlogPost() {
                     </div>
                     <div className="page-main ar-main">
                         {blog.contentType === 'structured' ? (
-                            <StructuredArticleContent article={blog} onHeadingsChange={handleHeadingsChange} />
+                            <StructuredArticleContent article={blog} onHeadingsChange={setHeadings} />
                         ) : (
-                            <ArticleContent content={blog.content} onHeadingsChange={handleHeadingsChange} />
+                            <ArticleContent content={blog.content} onHeadingsChange={setHeadings} />
                         )}
 
                         {showSupport ? (

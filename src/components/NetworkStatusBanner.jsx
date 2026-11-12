@@ -2,7 +2,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Wifi, WifiOff, X, CheckCircle } from 'lucide-react'
+import { X } from 'lucide-react'
 
 // Verify real connectivity by pinging a small known-static asset.
 // navigator.onLine alone is unreliable (captive portals, etc.).
@@ -93,96 +93,33 @@ export default function NetworkStatusBanner() {
 
     return (
         <aside
-            className="fixed bottom-20 right-4 z-[70] max-w-xs w-full select-none"
+            className="net-banner"
             aria-live="assertive"
             aria-atomic="true"
             aria-label={isOffline ? 'Network connection lost' : 'Network connection restored'}
             role="status"
         >
-            <div
-                className={[
-                    'rounded-xl p-3.5 shadow-2xl backdrop-blur-md',
-                    'flex items-center justify-between gap-3',
-                    'text-xs font-mono',
-                    'border',
-                    isBackOnline
-                        ? 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200'
-                        : 'bg-rose-950/90 border-rose-500/30 text-rose-200',
-                    // Slide-in animation via inline style
-                ].join(' ')}
-                style={{
-                    animation: 'sw-slide-in .25s ease-out both',
-                }}
-            >
-                {/* Icon + text */}
-                <div className="flex items-center gap-2.5">
-                    <div
-                        className={[
-                            'p-2 rounded-lg shrink-0',
-                            isBackOnline
-                                ? 'bg-emerald-900/60 text-emerald-300'
-                                : 'bg-rose-900/60 text-rose-300',
-                        ].join(' ')}
-                        aria-hidden="true"
-                    >
-                        {isBackOnline
-                            ? <CheckCircle className="w-4 h-4" />
-                            : <WifiOff className="w-4 h-4 animate-pulse" />
-                        }
-                    </div>
-
-                    <div>
-                        {isBackOnline ? (
-                            <>
-                                <h4 className="font-bold text-emerald-100">Back Online</h4>
-                                <p className="text-[11px] text-emerald-300/80 mt-0.5">
-                                    Connection restored.
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <h4 className="font-bold text-rose-100">
-                                    {state === STATE.CHECKING ? 'Checking…' : 'You\'re Offline'}
-                                </h4>
-                                <p className="text-[11px] text-rose-300/80 mt-0.5">
-                                    {state === STATE.CHECKING
-                                        ? 'Verifying connection…'
-                                        : 'Some features may be unavailable.'
-                                    }
-                                </p>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Dismiss button — hidden while checking */}
-                {state !== STATE.CHECKING && (
-                    <button
-                        type="button"
-                        onClick={() => setDismissed(true)}
-                        className={[
-                            'p-1 rounded-md transition-colors',
-                            isBackOnline
-                                ? 'text-emerald-400 hover:text-white hover:bg-emerald-900/60'
-                                : 'text-rose-400 hover:text-white hover:bg-rose-900/60',
-                        ].join(' ')}
-                        aria-label="Dismiss notification"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                )}
-            </div>
-
-            {/* Inline keyframe — avoids polluting global CSS */}
-            <style>{`
-                @keyframes sw-slide-in {
-                    from { opacity: 0; transform: translateY(12px) scale(.97); }
-                    to   { opacity: 1; transform: translateY(0)    scale(1);    }
-                }
-                @media (prefers-reduced-motion: reduce) {
-                    @keyframes sw-slide-in { from { opacity:0 } to { opacity:1 } }
-                }
-            `}</style>
+            <p className="net-banner__text">
+                <strong>
+                    {isBackOnline ? 'Back online' : state === STATE.CHECKING ? 'Checking…' : "You're offline"}
+                </strong>
+                <span>
+                    {isBackOnline
+                        ? 'Connection restored.'
+                        : state === STATE.CHECKING ? 'Verifying connection…' : 'Some features may be unavailable.'}
+                </span>
+            </p>
+            {/* Dismiss button — hidden while checking */}
+            {state !== STATE.CHECKING && (
+                <button
+                    type="button"
+                    onClick={() => setDismissed(true)}
+                    className="net-banner__close"
+                    aria-label="Dismiss notification"
+                >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                </button>
+            )}
         </aside>
     )
 }
