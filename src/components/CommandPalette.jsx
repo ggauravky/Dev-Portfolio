@@ -381,19 +381,7 @@ export default function CommandPalette({ isOpen, onClose }) {
         return () => { document.body.style.overflow = previousOverflow }
     }, [isOpen])
 
-    // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            const isK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'
-            if (isK) {
-                e.preventDefault()
-                if (isOpen) onClose()
-                else window.dispatchEvent(new CustomEvent('open-command-palette'))
-            }
-        }
-        window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [isOpen, onClose])
+    // ⌘/Ctrl+K is handled in App.jsx, so it works before this lazy chunk loads.
 
     // Reset state when closed
     useEffect(() => {

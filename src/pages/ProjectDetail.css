@@ -1,0 +1,419 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Unauthorized copying, modification, or distribution of this software,
+ * via any medium, is strictly prohibited without the express written
+ * consent of the author. See LICENSE for details.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* Case study — P4. Title page with an S3 arch frontispiece, a margin rail of
+   facts, numbered chapters separated by hairlines. Grid, rail, arch and
+   line-mask come from src/styles/page.css. */
+
+.case {
+  overflow-x: clip;
+}
+
+/* ── Title page ───────────────────────────────────────────── */
+.case-head {
+  padding-block: var(--space-5) var(--space-6);
+}
+
+.case-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: -10px;
+}
+
+.case-head__main {
+  min-width: 0;
+}
+
+.case-kicker {
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+}
+
+.case-title {
+  margin: var(--space-2) 0 0;
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  view-transition-name: project-title;
+}
+
+.case-lede {
+  max-width: 60ch;
+  margin-top: var(--space-3);
+  color: rgb(var(--paper));
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.case-frontis {
+  width: min(100%, 240px);
+  margin: var(--space-5) 0 0;
+}
+
+.case-frontis .arch {
+  view-transition-name: project-media;
+}
+
+.case-frontis__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+@media (min-width: 1024px) {
+  .case-head { padding-block: var(--space-6) var(--space-7); }
+  .case-head__main { grid-column: 3 / span 7; }
+  .case-frontis {
+    grid-column: 10 / span 3;
+    align-self: end;
+    width: 100%;
+    margin: 0;
+  }
+}
+
+/* ── Margin rail: facts ───────────────────────────────────── */
+.case-body {
+  border-top: 1px solid rgb(var(--rule));
+  padding-top: var(--space-5);
+}
+
+.case-meta dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2) var(--space-3);
+}
+
+.case-meta dt {
+  color: rgb(var(--muted));
+  font: 400 12px/1.6 var(--font-mono);
+}
+
+.case-meta dd {
+  margin: 4px 0 0;
+  color: rgb(var(--paper));
+  font: 400 13px/1.6 var(--font-mono);
+}
+
+.case-meta__stack li + li { margin-top: 2px; }
+
+.case-meta__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.case-meta__links .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+@media (min-width: 1024px) {
+  .case-body { padding-top: var(--space-6); }
+  .case-meta dl { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+  .case-meta { padding-top: 10px; }
+}
+
+/* ── Chapters ─────────────────────────────────────────────── */
+.case-chapters {
+  margin-top: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .case-chapters { margin-top: 0; }
+}
+
+.case-chapter + .case-chapter {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.case-h2 {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-3);
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.case-h2__no {
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+  letter-spacing: 0;
+}
+
+.case-prose {
+  max-width: 62ch;
+  color: rgb(var(--paper));
+  font-size: var(--text-body);
+  line-height: 1.65;
+}
+
+/* Architecture as a numbered flow (presentation of the data's "A ↔ B" string). */
+.case-flow {
+  max-width: 62ch;
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.case-flow__step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: var(--space-2);
+  padding-block: 12px;
+  border-bottom: 1px solid rgb(var(--rule));
+  color: rgb(var(--paper));
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.case-flow__no,
+.case-list__no {
+  color: rgb(var(--muted));
+  font: 400 13px/1.9 var(--font-mono);
+}
+
+/* Decisions and lessons */
+.case-list {
+  max-width: 62ch;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.case-list__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  color: rgb(var(--paper));
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+ol.case-list .case-list__item {
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+ul.case-list .case-list__item {
+  padding-left: var(--space-2);
+  border-left: 1px solid rgb(var(--rule));
+}
+
+.case-list__lead {
+  display: block;
+  margin-bottom: 4px;
+  color: rgb(var(--paper));
+  font-weight: 500;
+}
+
+.case-list__item p { color: rgb(var(--muted)); }
+.case-list__item p .case-list__lead { color: rgb(var(--paper)); }
+
+/* Team */
+.case-team {
+  max-width: 62ch;
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.case-team__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+  padding-block: 4px;
+  border-bottom: 1px solid rgb(var(--rule));
+}
+
+.case-team__name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: rgb(var(--paper));
+}
+
+.case-team__role {
+  color: rgb(var(--muted));
+  font: 400 13px/1.6 var(--font-mono);
+}
+
+/* Screens: full screenshots, uncropped, hairline frame */
+.case-screens {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.case-screen {
+  margin: 0;
+}
+
+.case-screen .lazy-image-picture-wrapper,
+.case-screen__img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.case-screen__img {
+  border: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink-raised));
+}
+
+.case-screen__cap {
+  margin-top: var(--space-1);
+  color: rgb(var(--muted));
+  font: 400 12px/1.5 var(--font-mono);
+}
+
+/* ── Next chapter ─────────────────────────────────────────── */
+.case-next {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.case-next__link {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 24px;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding-block: var(--space-2);
+  color: rgb(var(--paper));
+  text-decoration: none;
+}
+
+.case-next__no {
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+}
+
+.case-next__title {
+  position: relative;
+  justify-self: start;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.case-next__title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.case-next__arrow {
+  color: rgb(var(--muted));
+  font-size: 24px;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .case-next__link:hover .case-next__title::after { transform: scaleX(1); }
+  .case-next__link:hover .case-next__arrow { color: rgb(var(--paper)); transform: translate3d(4px, 0, 0); }
+}
+
+.case-next__link:focus-visible .case-next__title::after { transform: scaleX(1); }
+
+.case-next__all {
+  margin-top: var(--space-2);
+  font-size: 15px;
+}
+
+.case-next__all .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* ── Not found ────────────────────────────────────────────── */
+/* Full height so the footer doesn't jump when the redirect to /projects lands. */
+.case--missing {
+  min-height: 100vh;
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--space-2);
+  padding-block: var(--space-7);
+}
+
+.case-missing__title {
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.case-missing__text { color: rgb(var(--muted)); }
+
+.case-missing__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+/* ── Shared-element transition (S7, src/lib/viewTransition.js) ── */
+/* While the old page is captured its own names are off, so leaving one case
+   study for the next never has two elements with the same name. */
+.vt-leaving .case-title,
+.vt-leaving .case-frontis .arch {
+  view-transition-name: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-group(project-title),
+::view-transition-group(project-media) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-out);
+}
+
+/* Keep text snapshots in proportion and anchored left while they scale. */
+::view-transition-old(project-title),
+::view-transition-new(project-title) {
+  width: auto;
+  height: 100%;
+  left: 0;
+}
+
+::view-transition-old(project-media),
+::view-transition-new(project-media) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

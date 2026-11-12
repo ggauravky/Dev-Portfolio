@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { prefersReducedMotion } from '../../lib/motion'
+import { isViewTransitionNavigation } from '../../lib/viewTransition'
 import './RouteWipe.css'
 
 function RouteWipe() {
@@ -19,7 +20,9 @@ function RouteWipe() {
     useEffect(() => {
         if (previous.current === pathname) return
         previous.current = pathname
-        if (!prefersReducedMotion()) setRun((n) => n + 1)
+        // A shared-element view transition (S7) is the route change itself; a
+        // wipe over it would hide the morph.
+        if (!prefersReducedMotion() && !isViewTransitionNavigation()) setRun((n) => n + 1)
     }, [pathname])
 
     if (!run) return null

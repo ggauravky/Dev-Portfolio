@@ -5,6 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import './index.css'
+import './styles/page.css'
 // All CSS ships as one render-blocking file (cssCodeSplit: false, D-046), so the
 // Home hero shell in index.html is styled before the app boots (D-044).
 
@@ -61,9 +62,14 @@ const settledPaint = () => new Promise((resolve) => {
     timer = setTimeout(done, 300)
 })
 
+// A static shell is painted before any JS: the Home hero (D-044) or a
+// /projects route shell (D-057). Either way JS waits until it has settled, so
+// the page's first content never competes with the bundle for bandwidth.
+const homeShell = () => document.documentElement.classList.contains('route-home')
+const routeShell = () => Boolean(document.getElementById('route-shell'))
+
 const shellSettled = () => {
-    if (!document.documentElement.classList.contains('route-home')) return Promise.resolve()
-    const img = document.querySelector('#home-shell img')
+    const img = homeShell() ? document.querySelector('#home-shell img') : null
     const image = img?.decode ? img.decode().catch(() => {}) : Promise.resolve()
     const fonts = document.fonts
         ? Promise.all(SHELL_FONTS.map((font) => document.fonts.load(font).catch(() => {})))
@@ -72,13 +78,27 @@ const shellSettled = () => {
     return Promise.race([Promise.all([image, fonts]).then(settledPaint), cap])
 }
 
-if (document.visibilityState === 'hidden') boot()
+// A route with a shell also fetches its own chunk alongside boot, not after it
+// (D-056); App's route loader reuses the same module (src/lib/routeChunks.js).
+const ROUTE_CHUNKS = [
+    [/^\/projects\/?$/, () => import('./pages/Projects')],
+    [/^\/projects\/[^/]+\/?$/, () => import('./pages/ProjectDetail')],
+]
+
+const start = () => {
+    const route = ROUTE_CHUNKS.find(([re]) => re.test(location.pathname))
+    if (route) route[1]().catch(() => {})
+    boot()
+}
+
+if (!homeShell() && !routeShell()) start()
+else if (document.visibilityState === 'hidden') start()
 else {
     // If the tab is hidden mid-wait, rAF stops: boot straight away instead.
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') boot()
+        if (document.visibilityState === 'hidden') start()
     }, { once: true })
-    afterPaint(() => shellSettled().then(boot))
+    afterPaint(() => shellSettled().then(start))
 }
 
 // ── Service Worker registration ─────────────────────────────────────────────

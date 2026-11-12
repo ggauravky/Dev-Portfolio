@@ -39,3 +39,32 @@ Every copy change made during the redesign, page by page. Each one uses facts al
 | 31 | Portrait alt | "Gaurav Kumar Yadav portfolio - AI ML developer and web developer in Lucknow India" | "Portrait of Gaurav Kumar Yadav" | Keyword-stuffed alt | ⚠ SEO |
 
 `useSEO` title, description and keywords, the JSON-LD and all URLs are unchanged.
+
+## P4 — Projects index and case studies (2026-11-12)
+
+Project facts (descriptions, problems, solutions, architecture, decisions, lessons, stacks, team roles, links) are shown **verbatim** from `projectsData.js`; only headings, labels and connecting copy changed. The data's own claims are flagged below so the owner can check them before they ship more prominently.
+
+| # | Where | Old | New | Source fact | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | Index eyebrow | "My Portfolio" (caps pill) | *(removed)*; rail: "26 projects / 6 case studies" | Banned caps eyebrow; counts from the data | |
+| 2 | Index h1 | "Case Studies" | "Projects" | Matches the dock and SEO title | |
+| 3 | Index lede | "AI/ML and web development projects built with Python, React, Node.js, and MERN stack workflows." | "AI/ML and web development projects, built with Python, React, Node.js and the MERN stack. Ranked, with the case studies first." | Old lede + owner's ranking (D-049) | ⚠ |
+| 4 | Index controls | "// Sort Projects", "Featured First / Newest First / Alphabetical / Most Tech Stack Depth", placeholder "Search projects by name, tech stack, or description..." | "Show" (categories with counts), "Order": "Rank / Title / Stack size", label "Search by name, stack or description" | "Newest" sorted by internal id, not a date: dropped (D-050) | |
+| 5 | Index count | "// Showing N projects" | "N projects" / "N of 26 projects in X" | | |
+| 6 | Index empty state | "No Projects Found" / "// Try adjusting your search or filters" / "Clear All Filters" | "Nothing matches “q” in X." / "Try a technology, such as React or Python, or show all categories." / "Clear filters" | | |
+| 7 | Index groups | Card grid; "Recommended Projects" / "// Discovery" | "Case studies" (6) and "More projects" (20) ranked lists; recommendations removed (they repeated the list) | D-049 | |
+| 8 | Index rows | "Team Project" / "Solo Project", "View Case Study", "Code", "Demo" | "Team" / "Solo"; the whole row opens the case study; code and demo links live on the case study | `isCollaborative` | |
+| 9 | Index CTA | "Want Similar Delivery for Your Project?" / "Move from inspiration to execution with a focused, premium build plan." / "Book Service", "Start a Conversation" | "Book a service →", "Get in touch →" | Filler removed | ⚠ |
+| 10 | Case kicker | Category pills | "No. 01 of 26 · Case study" (rank; "Case study" only on the top 6) | D-049 | |
+| 11 | Case links | "View Code", "Live Demo" | "Source on GitHub", "Live demo" (hidden when `demo: '#'`) | | |
+| 12 | Case chapters | "Project Team", "Problem Statement", "My Solution", "Architecture Overview", "Key Technical Decisions", "Lessons Learned", "Screenshots" | "Team", "Problem", "What it does", "Architecture", "Key decisions", "What I learned", "Screens" (numbered; missing data hides the chapter) | Owner: solution + lessons, no "Outcome" heading (D-051) | |
+| 13 | Case rail | *(none)* | Type, Role (Gaurav's role from `team`, team projects only), Category, Stack, Links | `team[].role` | ⚠ role wording is the data's |
+| 14 | Case footer | "Related Projects" cards; "Like what you see?" / "// Let us discuss how I can bring this design standard to your project." / "Get In Touch", "← All Projects" | "Next" (next project by rank) and "All 26 projects →" | Filler removed | |
+| 15 | Not found | "Project Not Found" / "// Redirecting you back to Projects..." / "← Back to Projects" | "Project not found" / "Taking you back to all projects…" / "← All projects" (same 1.5 s redirect) | | |
+| 16 | Image alt | "{title} by Gaurav Kumar Yadav - web developer portfolio India", "{title} screenshot N - Gaurav Kumar Yadav portfolio" | Screens: "{title}, screen N of M"; the arch frontispiece is decorative (`alt=""`, same image as screen 1) | Keyword-stuffed alt | ⚠ SEO |
+| 17 | Data claim (unchanged) | kanoon-mate problem: "Over 85% of Indian citizens struggle to read legal notices…" | shown as is | `projectsData.js` | ⚠ source? |
+| 18 | Data claim (unchanged) | kanoon-mate lessons: "…reduced LLM inference costs by over 70%…" | shown as is | `projectsData.js` | ⚠ measured? |
+| 19 | Data claim (unchanged) | insightaudio problem: "$20–$50/seat/month", "hundreds of hours" | shown as is | `projectsData.js` | ⚠ |
+| 20 | Home "Selected work" | First 6 `featured` projects in data order | The 6 ranked case studies | D-049 | |
+
+`useSEO` titles, descriptions, keywords, OG images, the ItemList JSON-LD, URLs, `vercel.json`, the sitemap and `llms.txt` are unchanged.

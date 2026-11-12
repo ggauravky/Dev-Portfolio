@@ -48,8 +48,6 @@ const FINISHED = [
   'src/components/chrome/TopChrome.css',
   'src/components/chrome/Cursor.jsx',
   'src/components/chrome/Cursor.css',
-  'src/components/chrome/Preloader.jsx',
-  'src/components/chrome/Preloader.css',
   'src/components/chrome/RouteWipe.jsx',
   'src/components/chrome/RouteWipe.css',
   'src/App.jsx',
@@ -60,6 +58,18 @@ const FINISHED = [
   'src/components/home/HeroName.jsx',
   'src/main.jsx',
   'src/boot.jsx',
+  // P4 — Projects index + case studies
+  'src/styles/page.css',
+  'src/lib/projects.js',
+  'src/lib/viewTransition.js',
+  'src/pages/Projects.jsx',
+  'src/pages/Projects.css',
+  'src/pages/ProjectDetail.jsx',
+  'src/pages/ProjectDetail.css',
+  'src/components/projects/ProjectPreview.jsx',
+  'src/components/projects/ProjectPreview.css',
+  'src/lib/arch.js',
+  'src/lib/routeChunks.js',
 ];
 
 const RULES = [

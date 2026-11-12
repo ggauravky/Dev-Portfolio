@@ -14,6 +14,7 @@ import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
 import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
+import { RANKED_PROJECTS } from '../lib/projects'
 import { journeyData } from '../data/journeyData'
 import { siteStatus, isAvailable } from '../data/siteStatus'
 import LazyImage from '../components/LazyImage'
@@ -28,8 +29,8 @@ const PORTRAIT_WIDTHS = [480, 768]
 const SELECTED_WORK_LIMIT = 6
 
 // Module-level: the data is static, so compute once.
-const FEATURED_PROJECTS = projectsData.filter((project) => project.featured)
-const SELECTED_WORK = FEATURED_PROJECTS.slice(0, SELECTED_WORK_LIMIT)
+// The owner's ranked case studies (src/lib/projects.js, D-049), same as /projects.
+const SELECTED_WORK = RANKED_PROJECTS.slice(0, SELECTED_WORK_LIMIT)
 const NOTEBOOK = getFeaturedBlogs()
 const JOURNEY_BY_DATE = [...journeyData].sort((a, b) => new Date(b.date) - new Date(a.date))
 const LATEST_JOURNEY = JOURNEY_BY_DATE.slice(0, 3)
@@ -55,9 +56,9 @@ function Section({ id, index, title, children, footer }) {
     const headingId = `${id}-title`
     return (
         <section id={id} className="home-section" aria-labelledby={headingId}>
-            <Reveal className="home-wrap home-grid">
-                <p className="home-rail" aria-hidden="true">{pad(index)}</p>
-                <div className="home-main">
+            <Reveal className="page-wrap page-grid">
+                <p className="page-rail" aria-hidden="true">{pad(index)}</p>
+                <div className="page-main">
                     <h2 id={headingId} className="home-h2">
                         <span className="line-mask"><span className="line-mask__line">{title}</span></span>
                     </h2>
@@ -91,8 +92,8 @@ function Home() {
         <main className="home">
             {/* Title page */}
             <section className="home-hero" aria-labelledby="home-title">
-                <div className="home-wrap home-grid">
-                    <p className="home-rail home-hero__meta">
+                <div className="page-wrap page-grid">
+                    <p className="page-rail home-hero__meta">
                         <span>Lucknow, India</span>
                         <span>BCA, BBD University</span>
                     </p>

@@ -19,26 +19,28 @@ import ErrorBoundary from './components/ErrorBoundary'
 import TopChrome from './components/chrome/TopChrome'
 import Dock from './components/chrome/Dock'
 import Cursor from './components/chrome/Cursor'
-import Preloader from './components/chrome/Preloader'
 import RouteWipe from './components/chrome/RouteWipe'
-import CommandPalette from './components/CommandPalette'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
+import { Projects, ProjectDetail } from './lib/routeChunks'
 
 import Home from './pages/Home'
+
+const loadCommandPalette = () => import('./components/CommandPalette')
+const CommandPalette = lazy(loadCommandPalette)
 
 // Lazy load secondary routes for better performance
 const About = lazy(() => import('./pages/About'))
 const Skills = lazy(() => import('./pages/Skills'))
 
-// Pre-fetch Blog and Projects chunks immediately so they're ready before the
-// user navigates — eliminates the Suspense spinner + CSS-animation race that
+// Projects and ProjectDetail come from src/lib/routeChunks.js (static route
+// shells, D-057). Pre-fetch Blog and Projects chunks immediately so they're
+// ready before the user navigates — eliminates the Suspense spinner + CSS-animation race that
 // causes a blank page on first navigation to these pages.
 const _blogChunk     = import('./pages/Blog')
-const _projectsChunk = import('./pages/Projects')
+void Projects.preload()
 const Blog     = lazy(() => _blogChunk)
-const Projects = lazy(() => _projectsChunk)
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const Contact = lazy(() => import('./pages/Contact'))
 const Services = lazy(() => import('./pages/Services'))
@@ -54,7 +56,6 @@ const Terms = lazy(() => import('./pages/Terms'))
 const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
-const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 // Dev-only UI kit sheet; the DEV check removes it (and its chunk) from production builds.
 const Kit = import.meta.env.DEV ? lazy(() => import('./pages/_Kit')) : null
 
@@ -179,12 +180,39 @@ function AppRoutes() {
 
 function App() {
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
+    // The palette (and its search index over every data file) is a lazy chunk:
+    // mounted on first open, prefetched once the browser is idle (D-056).
+    const [paletteMounted, setPaletteMounted] = useState(false)
 
-    // Listen for custom event to trigger command palette from Navbar or other components
+    // ⌘/Ctrl+K toggles; the dock and other components open it with an event.
     useEffect(() => {
-        const handleOpenPalette = () => setIsPaletteOpen(true)
-        window.addEventListener('open-command-palette', handleOpenPalette)
-        return () => window.removeEventListener('open-command-palette', handleOpenPalette)
+        const open = () => {
+            setPaletteMounted(true)
+            setIsPaletteOpen(true)
+        }
+        const onKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault()
+                setPaletteMounted(true)
+                setIsPaletteOpen((wasOpen) => !wasOpen)
+            }
+        }
+        window.addEventListener('open-command-palette', open)
+        window.addEventListener('keydown', onKeyDown)
+        return () => {
+            window.removeEventListener('open-command-palette', open)
+            window.removeEventListener('keydown', onKeyDown)
+        }
+    }, [])
+
+    useEffect(() => {
+        const prefetch = () => { loadCommandPalette().catch(() => {}) }
+        if ('requestIdleCallback' in window) {
+            const id = window.requestIdleCallback(prefetch, { timeout: 4000 })
+            return () => window.cancelIdleCallback(id)
+        }
+        const timer = window.setTimeout(prefetch, 3000)
+        return () => window.clearTimeout(timer)
     }, [])
 
     // Ping backend & initialize analytics silently in the background
@@ -200,9 +228,12 @@ function App() {
                 <MotionConfig reducedMotion="user">
                 <ScrollToTop />
                 <AnalyticsRouteTracker />
-                <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+                {paletteMounted ? (
+                    <Suspense fallback={null}>
+                        <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+                    </Suspense>
+                ) : null}
                 <NetworkStatusBanner />
-                <Preloader />
                 <RouteWipe />
                 <Cursor />
                 <Toaster

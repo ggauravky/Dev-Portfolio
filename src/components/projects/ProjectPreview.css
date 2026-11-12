@@ -1,0 +1,43 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* S7 hover preview. The outer box is moved by the spring (transform only); the
+   frame fades and settles in. Hairline frame, radius 0, no shadow. Below the top
+   chrome (60) and the grain (90). */
+.pj-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.pj-preview__frame {
+  width: 320px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink-raised));
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: left center;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.pj-preview[data-visible='true'] .pj-preview__frame {
+  opacity: 1;
+  transform: none;
+}
+
+.pj-preview__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}

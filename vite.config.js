@@ -2,6 +2,23 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { viteObfuscateFile } from "vite-plugin-obfuscator";
+import routeShells from "./scripts/route-shells.js";
+
+// vite-plugin-obfuscator obfuscates every chunk in the bundle. Pass it a view of
+// the bundle without third-party chunks (it mutates the chunk objects in place).
+const THIRD_PARTY_CHUNK = /^assets\/vendor-/;
+function obfuscateOwnChunks(options) {
+  const plugin = viteObfuscateFile(options);
+  const transform = plugin.transformIndexHtml.transform;
+  plugin.transformIndexHtml.transform = (html, ctx) => {
+    if (!ctx?.bundle) return html;
+    const bundle = Object.fromEntries(
+      Object.entries(ctx.bundle).filter(([name]) => !THIRD_PARTY_CHUNK.test(name)),
+    );
+    return transform(html, { ...ctx, bundle });
+  };
+  return plugin;
+}
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
@@ -40,6 +57,8 @@ function copyrightBannerPlugin() {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    // Pre-JS header shells for /projects and /projects/:slug (D-057).
+    routeShells(),
     react(),
     visualizer({
       open: false,
@@ -50,9 +69,10 @@ export default defineConfig({
     // ── JavaScript obfuscation (production builds only) ──────────────────────
     // Transforms compiled JS chunks so variable names, strings, and control
     // flow become unreadable — making copy-paste of the built output useless.
-    // Scoped to OUR source chunks only (vendor/framer are excluded — obfuscating
-    // them wastes build time and can break tree-shaking assumptions).
-    viteObfuscateFile({
+    // Scoped to OUR source chunks only: the plugin has no exclude option, so
+    // obfuscateOwnChunks hides the third-party `vendor` chunk from it (it was
+    // being obfuscated too, ~2x its gzip size on the critical path, D-056).
+    obfuscateOwnChunks({
       compact: true,
       // Encode string literals
       stringArray: true,
@@ -98,18 +118,15 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React ecosystem shared across all routes
-          if (
-            id.includes("react") ||
-            id.includes("react-dom") ||
-            id.includes("react-router-dom")
-          ) {
+          // React core shared by every route. Only these packages: a loose
+          // `includes("react")` also swept lucide-react, radix and scroll-lock
+          // into the boot path (D-056).
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(id)) {
             return "vendor";
           }
-          // Framer Motion — large animation lib, isolate to its own chunk
-          if (id.includes("framer-motion")) {
-            return "framer";
-          }
+          // framer-motion has no manual chunk: Rollup keeps only what the
+          // boot path imports (MotionConfig, LazyMotion, m) and leaves the
+          // domMax features and page-only APIs in lazy chunks (D-056).
           // Vercel edge analytics
           if (
             id.includes("@vercel/analytics") ||
