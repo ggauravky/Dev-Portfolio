@@ -13,13 +13,13 @@ export const siteStatus = {
      * Availability shown as the dock's status dot and in the footer.
      * Fill in P3, e.g. { available: true, label: '…owner's words…' }.
      */
-    availability: null, // ⚠ PLACEHOLDER — owner to supply in P3
+    availability: { available: true, label: 'Open for internships & freelance' }, // owner, P3
 
     /**
      * "Currently building" line for the footer colophon.
      * Fill in P3, e.g. { title: '…', href: '/projects/…' }.
      */
-    currentlyBuilding: null, // ⚠ PLACEHOLDER — owner to supply in P3
+    currentlyBuilding: null, // ⚠ PLACEHOLDER — owner skipped in P3; hidden everywhere
 
     // Existing facts (from the contact page, ⌘K registry and footer).
     email: 'kumar.gaurav.yadav2007@gmail.com',

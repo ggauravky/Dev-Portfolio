@@ -53,6 +53,13 @@ const FINISHED = [
   'src/components/chrome/RouteWipe.jsx',
   'src/components/chrome/RouteWipe.css',
   'src/App.jsx',
+  // P3 — Home + colophon footer
+  'src/pages/Home.jsx',
+  'src/pages/Home.css',
+  'src/components/Arch.jsx',
+  'src/components/home/HeroName.jsx',
+  'src/main.jsx',
+  'src/boot.jsx',
 ];
 
 const RULES = [

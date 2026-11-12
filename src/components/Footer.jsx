@@ -4,8 +4,20 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
+// S4 — live colophon footer (DESIGN.md "Signature layer"), site-wide.
+// Lucknow time (ticks per minute, no rAF), availability and "currently building"
+// from siteStatus, last GitHub activity (fetched only once the footer is near the
+// viewport and the browser is idle), copy-email with a toast, a big wordmark and
+// back-to-top. It is also where signed-out visitors find "Sign in" (D-002).
+
+import { useEffect, useRef, useState } from 'react'
+import PropTypes from 'prop-types'
+import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import TextLink from './ui/TextLink'
+import { siteStatus, isAvailable } from '../data/siteStatus'
+import { fetchGitHubContributions } from '../utils/githubApi'
+import { prefersReducedMotion } from '../lib/motion'
 import './Footer.css'
 
 const PAGE_LINKS = [
@@ -26,9 +38,84 @@ const LEGAL_LINKS = [
     { name: 'Refund Policy', path: '/refund' },
 ]
 
-const scrollToTop = () => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+const timeFormat = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+})
+const dayFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+const numberFormat = new Intl.NumberFormat('en-IN')
+
+/** Lucknow (IST) wall-clock time, re-rendered on each minute boundary. */
+function useLucknowTime() {
+    const [now, setNow] = useState(() => new Date())
+    useEffect(() => {
+        let interval = 0
+        const tick = () => setNow(new Date())
+        const timeout = window.setTimeout(() => {
+            tick()
+            interval = window.setInterval(tick, 60_000)
+        }, 60_000 - (Date.now() % 60_000))
+        return () => {
+            window.clearTimeout(timeout)
+            window.clearInterval(interval)
+        }
+    }, [])
+    return now
+}
+
+/**
+ * Last-year contributions and the last active day, from the existing GitHub
+ * helper. Never blocks: it waits until the footer is within a screen of the
+ * viewport, then for idle time. Fallback numbers are not shown (they are not
+ * real data); on failure the row is just a profile link.
+ */
+function useGitHubActivity(targetRef) {
+    const [state, setState] = useState({ status: 'idle', data: null })
+
+    useEffect(() => {
+        const el = targetRef.current
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined
+        let cancelled = false
+        let idleId = 0
+        let timerId = 0
+
+        const load = () => {
+            setState({ status: 'loading', data: null })
+            fetchGitHubContributions()
+                .then((result) => {
+                    if (cancelled) return
+                    const days = result.contributionsArray || []
+                    const today = new Date().toISOString().slice(0, 10)
+                    const last = [...days].reverse().find((day) => day.count > 0 && day.date <= today)
+                    setState({
+                        status: 'ready',
+                        data: { total: result.totalContributions, lastActive: last?.date || null },
+                    })
+                })
+                .catch(() => {
+                    if (!cancelled) setState({ status: 'error', data: null })
+                })
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return
+            observer.disconnect()
+            if ('requestIdleCallback' in window) idleId = window.requestIdleCallback(load, { timeout: 3000 })
+            else timerId = window.setTimeout(load, 300)
+        }, { rootMargin: '0px 0px 100% 0px' })
+        observer.observe(el)
+
+        return () => {
+            cancelled = true
+            observer.disconnect()
+            if (idleId) window.cancelIdleCallback(idleId)
+            window.clearTimeout(timerId)
+        }
+    }, [targetRef])
+
+    return state
 }
 
 function LinkList({ links }) {
@@ -43,69 +130,150 @@ function LinkList({ links }) {
     )
 }
 
-// Colophon-style footer. It is also where signed-out visitors find "Sign in" (D-002).
+LinkList.propTypes = {
+    links: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string, path: PropTypes.string })).isRequired,
+}
+
+const copyEmail = async () => {
+    try {
+        await navigator.clipboard.writeText(siteStatus.email)
+        toast.success('Email copied')
+    } catch {
+        toast.error(`Couldn't copy. The address is ${siteStatus.email}`)
+    }
+}
+
+const backToTop = () => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+}
+
+// The stat line keeps its space while loading (and stays blank on failure), so
+// the data arriving never shifts the page.
+function GitHubLine({ state }) {
+    const data = state.status === 'ready' ? state.data : null
+    let stat = ' '
+    if (data) {
+        const last = data.lastActive ? `, last on ${dayFormat.format(new Date(`${data.lastActive}T00:00:00Z`))}` : ''
+        stat = `${numberFormat.format(data.total)} contributions in the last year${last}`
+    }
+    return (
+        <>
+            <span className="colophon__gh-stat">{stat}</span>
+            <TextLink href={siteStatus.links.github} external tone="muted">github.com/ggauravky</TextLink>
+        </>
+    )
+}
+
+GitHubLine.propTypes = {
+    state: PropTypes.shape({ status: PropTypes.string, data: PropTypes.object }).isRequired,
+}
+
 function Footer() {
     const { isAuthenticated, openAuthDialog } = useAuth()
+    const ref = useRef(null)
+    const now = useLucknowTime()
+    const github = useGitHubActivity(ref)
+    const available = isAvailable()
+    const building = siteStatus.currentlyBuilding
 
     return (
-        <footer className="border-t border-rule bg-ink">
-            <div className="mx-auto max-w-[1200px] px-4 pb-8 pt-16 sm:px-6 lg:px-8">
-                <div className="grid gap-12 md:grid-cols-12 md:gap-8">
-                    <section className="md:col-span-12 lg:col-span-5">
-                        <h2 className="font-serif text-[32px] leading-tight text-paper sm:text-[40px]">Gaurav Kumar Yadav</h2>
-                        <p className="mt-2 text-small text-paper">AI/ML &amp; Web Developer</p>
-                        <p className="mt-4 max-w-[44ch] text-small text-muted">
-                            Building practical, user-focused digital products with modern frontend, data, and machine learning workflows.
-                        </p>
-                    </section>
+        <footer ref={ref} className="colophon" aria-labelledby="colophon-title">
+            <div className="colophon__wrap">
+                <h2 id="colophon-title" className="sr-only">Colophon</h2>
 
-                    <nav aria-labelledby="footer-pages" className="md:col-span-6 lg:col-span-3">
+                <div className="colophon__grid">
+                    <dl className="colophon__facts">
+                        <div>
+                            <dt>Local time</dt>
+                            <dd>
+                                <time dateTime={now.toISOString()}>{timeFormat.format(now)}</time> in Lucknow (IST)
+                            </dd>
+                        </div>
+                        {siteStatus.availability ? (
+                            <div>
+                                <dt>Status</dt>
+                                <dd className="colophon__status">
+                                    <span className={`colophon__dot ${available ? 'is-live' : ''}`} aria-hidden="true" />
+                                    {siteStatus.availability.label}
+                                </dd>
+                            </div>
+                        ) : null}
+                        {building ? (
+                            <div>
+                                <dt>Building</dt>
+                                <dd>
+                                    {building.href
+                                        ? <TextLink to={building.href}>{building.title}</TextLink>
+                                        : building.title}
+                                </dd>
+                            </div>
+                        ) : null}
+                        <div>
+                            <dt>GitHub</dt>
+                            <dd aria-live="polite"><GitHubLine state={github} /></dd>
+                        </div>
+                        <div>
+                            <dt>Email</dt>
+                            <dd className="colophon__email">
+                                <TextLink href={`mailto:${siteStatus.email}`} translate="no">{siteStatus.email}</TextLink>
+                                <button type="button" className="colophon__copy" onClick={copyEmail} data-cursor="Copy" aria-label="Copy email address">
+                                    Copy
+                                </button>
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <nav aria-labelledby="footer-pages" className="colophon__col colophon__col--pages">
                         <h3 id="footer-pages" className="footer-heading">Pages</h3>
                         <div className="footer-pages">
                             <LinkList links={PAGE_LINKS} />
                         </div>
                     </nav>
 
-                    <section aria-labelledby="footer-legal" className="md:col-span-3 lg:col-span-2">
-                        <h3 id="footer-legal" className="footer-heading">Legal</h3>
-                        <LinkList links={LEGAL_LINKS} />
-                    </section>
-
-                    <section aria-labelledby="footer-account" className="md:col-span-3 lg:col-span-2">
-                        <h3 id="footer-account" className="footer-heading">Account</h3>
-                        <ul>
-                            <li>
-                                {isAuthenticated ? (
-                                    <TextLink to="/my-activity" tone="muted" className="footer-link">My activity</TextLink>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => openAuthDialog({ reason: 'navbar' })}
-                                        className="footer-link text-link text-link--muted"
-                                    >
-                                        <span className="text-link__label">Sign in</span>
-                                    </button>
-                                )}
-                            </li>
-                            <li>
-                                <TextLink href="/resume.pdf" external tone="muted" className="footer-link" aria-label="Resume (PDF, opens in a new tab)">
-                                    Resume
-                                </TextLink>
-                            </li>
-                        </ul>
-                    </section>
+                    <div className="colophon__col">
+                        <section aria-labelledby="footer-legal">
+                            <h3 id="footer-legal" className="footer-heading">Legal</h3>
+                            <LinkList links={LEGAL_LINKS} />
+                        </section>
+                        <section aria-labelledby="footer-account" className="colophon__account">
+                            <h3 id="footer-account" className="footer-heading">Account</h3>
+                            <ul>
+                                <li>
+                                    {isAuthenticated ? (
+                                        <TextLink to="/my-activity" tone="muted" className="footer-link">My activity</TextLink>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => openAuthDialog({ reason: 'navbar' })}
+                                            className="footer-link text-link text-link--muted"
+                                        >
+                                            <span className="text-link__label">Sign in</span>
+                                        </button>
+                                    )}
+                                </li>
+                                <li>
+                                    <TextLink href={siteStatus.resumeUrl} external tone="muted" className="footer-link" aria-label="Resume (PDF, opens in a new tab)">
+                                        Resume
+                                    </TextLink>
+                                </li>
+                            </ul>
+                        </section>
+                    </div>
                 </div>
 
-                <div className="mt-16 flex flex-col gap-4 border-t border-rule pt-6 text-small text-muted md:flex-row md:items-center md:justify-between">
-                    <div className="space-y-1">
+                <p className="colophon__mark" aria-hidden="true" translate="no">Gaurav Kumar Yadav</p>
+
+                <div className="colophon__base">
+                    <div>
                         <p>© 2026 Gaurav Kumar Yadav. All rights reserved.</p>
                         <p>
-                            Designed &amp; Developed by{' '}
+                            Designed &amp; developed by{' '}
                             <TextLink to="/admin" tone="muted">Gaurav Kumar Yadav</TextLink>
-                            {' '}| Student Developer Portfolio 2026
+                            . Set in Fraunces, Geist and Geist Mono.
                         </p>
                     </div>
-                    <button type="button" onClick={scrollToTop} className="footer-link text-link text-link--muted self-start md:self-auto">
+                    <button type="button" onClick={backToTop} className="footer-link text-link text-link--muted">
                         <span className="text-link__label">Back to top ↑</span>
                     </button>
                 </div>

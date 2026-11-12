@@ -15,13 +15,16 @@ const COUNT_MS = 880 // + DURATION.slow exit = 1.4 s
 
 function shouldShow() {
     if (typeof window === 'undefined' || prefersReducedMotion()) return false
+    // Landing on "/": the hero is already painted from index.html's shell, so a
+    // preloader would cover content that is already there (D-044).
     try {
         if (sessionStorage.getItem(STORAGE_KEY)) return false
         sessionStorage.setItem(STORAGE_KEY, '1')
     } catch {
         return false
     }
-    return true
+    // Still counts as this session's first visit, so it won't show later.
+    return !document.documentElement.classList.contains('route-home')
 }
 
 // Decided once per page load (not in render: StrictMode would run it twice).

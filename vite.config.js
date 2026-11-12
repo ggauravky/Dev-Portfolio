@@ -91,6 +91,10 @@ export default defineConfig({
     copyPublicDir: true,
     target: "es2020", // modern syntax → smaller transforms, smaller bundles
     reportCompressedSize: false, // skip per-file gzip calculation → faster builds
+    // One stylesheet, linked in <head>. The obfuscator strips Vite's preload map
+    // for dynamic imports, so per-chunk CSS (the app boot chunk, lazy routes)
+    // was never loaded; a single file also styles the Home hero shell (D-046).
+    cssCodeSplit: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
