@@ -58,6 +58,8 @@ const Refund = lazy(() => import('./pages/Refund'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AdminRedirect = lazy(() => import('./pages/AdminRedirect'))
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
+// Dev-only UI kit sheet; the DEV check removes it (and its chunk) from production builds.
+const Kit = import.meta.env.DEV ? lazy(() => import('./pages/_Kit')) : null
 
 // Per-route loading fallback — keeps loading state isolated per route
 const PageLoader = () => (
@@ -143,11 +145,9 @@ function AppLayout({ children, navReady, logoRef }) {
         <div className="App">
             <a href="#main-content" className="skip-link">Skip to content</a>
             {!isFullScreen && (
-                <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
-                    <div className="pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
-                        <Navbar navReady={navReady} logoRef={logoRef} />
-                    </div>
-                </div>
+                <header ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
+                    <Navbar navReady={navReady} logoRef={logoRef} />
+                </header>
             )}
             <div id="main-content" tabIndex={-1} style={isFullScreen ? {} : { paddingTop: headerHeight || 0 }}>
                 {children}
@@ -195,6 +195,7 @@ function AnimatedRoutes() {
                 <Route path="/privacy"                    element={<R><Privacy /></R>} />
                 <Route path="/terms"                      element={<R><Terms /></R>} />
                 <Route path="/refund"                     element={<R><Refund /></R>} />
+                {Kit ? <Route path="/_kit" element={<R><Kit /></R>} /> : null}
                 <Route path="*"                           element={<R><NotFound /></R>} />
             </Routes>
         </AnimatePresence>

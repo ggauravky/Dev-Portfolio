@@ -1,21 +1,21 @@
 // Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Universal Command Center (Cmd+K) — Premium portfolio search experience
+// Site search (Cmd/Ctrl+K) — v2 Monograph styling
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Command } from 'cmdk'
+import './CommandPalette.css'
 import {
     Search, X, Folder, Globe, Briefcase, Share2, Zap,
-    CornerDownLeft, ExternalLink, Copy, Check, Clock,
-    FileText, Code2, ChevronRight, ArrowUpRight, Compass,
-    Terminal
+    Copy, Check, Clock, FileText, Code2, Terminal
 } from 'lucide-react'
 import { getAllCommands, CATEGORIES } from '../data/commandRegistry'
 import { searchCommands } from '../utils/searchEngine'
 import { useHeaderHeight } from '../hooks/useHeaderHeight'
 import { useRecentSearches } from '../hooks/useRecentSearches'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -29,6 +29,18 @@ const FILTER_TABS = [
     { id: 'SERVICES', label: 'Services' },
     { id: 'BLOG', label: 'Blog' },
     { id: 'SOCIAL', label: 'Social' },
+]
+
+// Display order for grouped search results
+const CATEGORY_ORDER = [
+    CATEGORIES.QUICK_ACTIONS,
+    CATEGORIES.PAGES,
+    CATEGORIES.PROJECTS,
+    CATEGORIES.SKILLS,
+    CATEGORIES.SERVICES,
+    CATEGORIES.BLOG,
+    CATEGORIES.SOCIAL,
+    CATEGORIES.ACTIONS,
 ]
 
 // Suggested explore items shown when input is empty and no recents
@@ -52,40 +64,27 @@ function getEmptyHint(q) {
 }
 
 // ---------------------------------------------------------------------------
-// ICON MAP
+// ICONS + LABELS — one muted icon per category; colour is not used for meaning
 // ---------------------------------------------------------------------------
+const CATEGORY_ICON = {
+    [CATEGORIES.QUICK_ACTIONS]: Zap,
+    [CATEGORIES.PAGES]: Globe,
+    [CATEGORIES.PROJECTS]: Folder,
+    [CATEGORIES.SKILLS]: Terminal,
+    [CATEGORIES.SERVICES]: Briefcase,
+    [CATEGORIES.BLOG]: FileText,
+    [CATEGORIES.SOCIAL]: Share2,
+    [CATEGORIES.ACTIONS]: Copy,
+}
+
 function ItemIcon({ category, type }) {
-    const base = 'w-3.5 h-3.5 shrink-0'
-    if (type === 'action') return <Zap className={`${base} text-amber-400`} />
-    switch (category) {
-        case CATEGORIES.QUICK_ACTIONS: return <Zap className={`${base} text-amber-400`} />
-        case CATEGORIES.PAGES:        return <Globe className={`${base} text-emerald-400`} />
-        case CATEGORIES.PROJECTS:     return <Folder className={`${base} text-lime-400`} />
-        case CATEGORIES.SKILLS:       return <Terminal className={`${base} text-violet-400`} />
-        case CATEGORIES.SERVICES:     return <Briefcase className={`${base} text-cyan-400`} />
-        case CATEGORIES.BLOG:         return <FileText className={`${base} text-orange-400`} />
-        case CATEGORIES.SOCIAL:       return <Share2 className={`${base} text-sky-400`} />
-        case CATEGORIES.ACTIONS:      return <Copy className={`${base} text-amber-400`} />
-        default:                      return <Code2 className={`${base} text-zinc-400`} />
-    }
+    const Icon = type === 'action' ? Zap : CATEGORY_ICON[category] || Code2
+    return <Icon className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
 }
 ItemIcon.propTypes = { category: PropTypes.string, type: PropTypes.string }
 
-// Category heading icon for group headers
-function CategoryDot({ category }) {
-    const colorMap = {
-        [CATEGORIES.QUICK_ACTIONS]: 'bg-amber-400',
-        [CATEGORIES.PAGES]:         'bg-emerald-400',
-        [CATEGORIES.PROJECTS]:      'bg-lime-400',
-        [CATEGORIES.SKILLS]:        'bg-violet-400',
-        [CATEGORIES.SERVICES]:      'bg-cyan-400',
-        [CATEGORIES.BLOG]:          'bg-orange-400',
-        [CATEGORIES.SOCIAL]:        'bg-sky-400',
-        [CATEGORIES.ACTIONS]:       'bg-amber-400',
-    }
-    return <span className={`inline-block w-1.5 h-1.5 rounded-full mr-2 ${colorMap[category] || 'bg-zinc-500'}`} />
-}
-CategoryDot.propTypes = { category: PropTypes.string }
+// Registry categories are upper-case keys; show them in sentence case.
+const sentenceCase = (value = '') => value.charAt(0) + value.slice(1).toLowerCase()
 
 // ---------------------------------------------------------------------------
 // HIGHLIGHT TITLE
@@ -96,7 +95,7 @@ function HighlightedTitle({ segments }) {
         <span>
             {segments.map((seg, i) =>
                 seg.highlight ? (
-                    <mark key={i} className="bg-transparent font-bold not-italic text-toxic">
+                    <mark key={i} className="bg-transparent text-paper underline decoration-rule underline-offset-4">
                         {seg.text}
                     </mark>
                 ) : (
@@ -114,23 +113,12 @@ HighlightedTitle.propTypes = {
 // ACTION INDICATOR (shown on selected item)
 // ---------------------------------------------------------------------------
 function ActionIndicator({ type }) {
-    if (type === 'external') {
-        return (
-            <span className="hidden group-aria-selected:inline-flex items-center gap-1 text-toxic text-[10px] font-mono shrink-0 ml-2">
-                Visit <ArrowUpRight className="w-3 h-3" />
-            </span>
-        )
-    }
-    if (type === 'action') {
-        return (
-            <span className="hidden group-aria-selected:inline-flex items-center gap-1 text-amber-400 text-[10px] font-mono shrink-0 ml-2">
-                Run <Zap className="w-3 h-3" />
-            </span>
-        )
-    }
+    let label = 'Open'
+    if (type === 'external') label = 'Visit ↗'
+    else if (type === 'action') label = 'Run'
     return (
-        <span className="hidden group-aria-selected:inline-flex items-center gap-1 text-toxic text-[10px] font-mono shrink-0 ml-2">
-            Open <CornerDownLeft className="w-3 h-3" />
+        <span className="ml-2 hidden shrink-0 text-[13px] text-muted group-aria-selected:inline">
+            {label}
         </span>
     )
 }
@@ -141,44 +129,31 @@ ActionIndicator.propTypes = { type: PropTypes.string }
 // ---------------------------------------------------------------------------
 function CommandItem({ cmd, onSelect, titleSegments }) {
     const techStack = cmd._techStack && cmd._techStack.length > 0
-        ? cmd._techStack.slice(0, 4).join(' · ')
+        ? cmd._techStack.slice(0, 4).join(', ')
         : null
 
     return (
         <Command.Item
             value={cmd.id}
             onSelect={() => onSelect(cmd)}
-            className={[
-                'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer',
-                'border border-transparent',
-                'text-zinc-300 hover:text-white',
-                'hover:bg-white/[0.04] hover:border-white/[0.06]',
-                'aria-selected:bg-toxic/[0.08] aria-selected:border-toxic/20 aria-selected:text-white',
-                'transition-all duration-100 my-px',
-                'focus:outline-none',
-            ].join(' ')}
+            className="palette-item group"
         >
-            {/* Icon container */}
-            <div className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-obsidian border border-obsidian-border group-aria-selected:border-toxic/30 transition-colors duration-100">
-                <ItemIcon category={cmd.category} type={cmd.type} />
-            </div>
+            <ItemIcon category={cmd.category} type={cmd.type} />
 
-            {/* Text content */}
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-semibold text-zinc-100 truncate leading-snug">
+            <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center gap-2">
+                    <span className="truncate text-[15px] leading-snug text-paper">
                         {titleSegments ? <HighlightedTitle segments={titleSegments} /> : cmd.title}
                     </span>
                     {cmd.badge && (
-                        <span className="shrink-0 text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded bg-obsidian border border-obsidian-border text-zinc-500 leading-none">
+                        <span className="shrink-0 rounded-control border border-rule px-1.5 py-0.5 text-[12px] leading-none text-muted">
                             {cmd.badge}
                         </span>
                     )}
                     <ActionIndicator type={cmd.type} />
                 </div>
-                {/* Subtitle: prefer techStack for projects, else desc */}
                 {(techStack || cmd.desc) && (
-                    <p className="text-[11px] text-zinc-500 truncate mt-0.5 leading-snug">
+                    <p className="mt-0.5 truncate text-[13px] leading-snug text-muted">
                         {techStack || cmd.desc}
                     </p>
                 )}
@@ -197,11 +172,8 @@ CommandItem.propTypes = {
 // ---------------------------------------------------------------------------
 function GroupHeading({ category }) {
     return (
-        <div className="flex items-center px-3 pt-4 pb-1.5 first:pt-2">
-            <CategoryDot category={category} />
-            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-zinc-500">
-                {category}
-            </span>
+        <div className="px-3 pb-1 pt-4 text-[13px] text-muted first:pt-2">
+            {sentenceCase(category)}
         </div>
     )
 }
@@ -212,19 +184,13 @@ GroupHeading.propTypes = { category: PropTypes.string }
 // ---------------------------------------------------------------------------
 function FilterChips({ activeFilter, onFilterChange }) {
     return (
-        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-obsidian-border overflow-x-auto scrollbar-none shrink-0">
+        <div className="scrollbar-none flex shrink-0 items-center gap-4 overflow-x-auto border-b border-rule px-4" role="group" aria-label="Filter results">
             {FILTER_TABS.map((tab) => (
                 <button
                     key={tab.id}
                     type="button"
                     onClick={() => onFilterChange(tab.id)}
-                    className={[
-                        'shrink-0 px-2.5 py-1 rounded-full text-[11px] font-mono font-medium whitespace-nowrap',
-                        'transition-all duration-150 leading-none',
-                        activeFilter === tab.id
-                            ? 'bg-toxic text-obsidian'
-                            : 'bg-obsidian border border-obsidian-border text-zinc-400 hover:text-white hover:border-zinc-600',
-                    ].join(' ')}
+                    className="palette-filter"
                     aria-pressed={activeFilter === tab.id}
                 >
                     {tab.label}
@@ -246,79 +212,46 @@ function IdleState({ recents, onQuerySelect, onClearRecents, onRemoveRecent }) {
 
     return (
         <div className="p-2">
-            {/* Recent searches */}
             {hasRecents && (
-                <div className="mb-1">
-                    <div className="flex items-center justify-between px-3 pt-3 pb-1.5">
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-3 h-3 text-zinc-500" />
-                            <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-zinc-500">
-                                Recent
-                            </span>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onClearRecents}
-                            className="text-[9px] font-mono text-zinc-600 hover:text-zinc-400 transition-colors"
-                        >
+                <div className="mb-2">
+                    <div className="flex items-center justify-between px-3 pt-2">
+                        <span className="text-[13px] text-muted">Recent</span>
+                        <button type="button" onClick={onClearRecents} className="palette-text-button">
                             Clear all
                         </button>
                     </div>
-                    <div>
+                    <ul>
                         {recents.map((item) => (
-                            <div
-                                key={item.ts || item.query}
-                                className="group flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white/[0.04] cursor-pointer transition-colors duration-100"
-                                onClick={() => onQuerySelect(item.query)}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => e.key === 'Enter' && onQuerySelect(item.query)}
-                            >
-                                <Clock className="w-3.5 h-3.5 text-zinc-600 shrink-0" />
-                                <span className="text-sm text-zinc-400 flex-1 group-hover:text-zinc-200 transition-colors">
-                                    {item.query}
-                                </span>
+                            <li key={item.ts || item.query} className="flex items-center">
+                                <button type="button" className="palette-row flex-1" onClick={() => onQuerySelect(item.query)}>
+                                    <Clock className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
+                                    <span className="truncate">{item.query}</span>
+                                </button>
                                 <button
                                     type="button"
-                                    onClick={(e) => { e.stopPropagation(); onRemoveRecent(item.query) }}
-                                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-zinc-200 text-zinc-600 transition-all"
+                                    onClick={() => onRemoveRecent(item.query)}
+                                    className="palette-icon-button"
                                     aria-label={`Remove ${item.query} from recent searches`}
                                 >
-                                    <X className="w-3 h-3" />
+                                    <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                                 </button>
-                            </div>
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 </div>
             )}
 
-            {/* Explore / suggested */}
-            <div>
-                <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
-                    <Compass className="w-3 h-3 text-zinc-500" />
-                    <span className="text-[9px] font-mono font-semibold uppercase tracking-widest text-zinc-500">
-                        Explore
-                    </span>
-                </div>
-                <div>
-                    {EXPLORE_SUGGESTIONS.map((sug) => (
-                        <div
-                            key={sug.id}
-                            className="group flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] cursor-pointer transition-colors duration-100"
-                            onClick={() => onQuerySelect(sug.query)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => e.key === 'Enter' && onQuerySelect(sug.query)}
-                        >
-                            <span className="text-toxic text-xs leading-none shrink-0 select-none">✦</span>
-                            <span className="text-sm text-zinc-400 flex-1 group-hover:text-zinc-200 transition-colors">
-                                {sug.label}
-                            </span>
-                            <ChevronRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-500 transition-colors shrink-0" />
-                        </div>
-                    ))}
-                </div>
-            </div>
+            <div className="px-3 pt-2 text-[13px] text-muted">Try</div>
+            <ul>
+                {EXPLORE_SUGGESTIONS.map((sug) => (
+                    <li key={sug.id}>
+                        <button type="button" className="palette-row w-full" onClick={() => onQuerySelect(sug.query)}>
+                            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
+                            <span className="truncate">{sug.label}</span>
+                        </button>
+                    </li>
+                ))}
+            </ul>
         </div>
     )
 }
@@ -335,33 +268,19 @@ IdleState.propTypes = {
 function EmptyState({ query, onClear, onQuerySelect }) {
     const hints = getEmptyHint(query.toLowerCase())
     return (
-        <div className="py-10 px-6 text-center flex flex-col items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-obsidian border border-obsidian-border flex items-center justify-center">
-                <Search className="w-4 h-4 text-zinc-600" />
-            </div>
-            <div>
-                <p className="text-sm font-semibold text-zinc-300 mb-1">
-                    No results for &ldquo;{query}&rdquo;
-                </p>
-                <p className="text-xs text-zinc-600">Try a different search or explore below</p>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <div className="px-6 py-8">
+            <p className="text-[15px] text-paper">No results for &ldquo;{query}&rdquo;</p>
+            <p className="mt-1 text-small text-muted">Check the spelling, or try one of these:</p>
+            <ul className="mt-3 flex flex-wrap gap-x-4">
                 {hints.map((hint) => (
-                    <button
-                        key={hint}
-                        type="button"
-                        onClick={() => onQuerySelect(hint.toLowerCase())}
-                        className="px-2.5 py-1 bg-obsidian border border-obsidian-border rounded-full text-xs text-zinc-400 hover:text-white hover:border-zinc-600 transition-all font-mono"
-                    >
-                        {hint}
-                    </button>
+                    <li key={hint}>
+                        <button type="button" onClick={() => onQuerySelect(hint.toLowerCase())} className="palette-text-button text-paper">
+                            {hint}
+                        </button>
+                    </li>
                 ))}
-            </div>
-            <button
-                type="button"
-                onClick={onClear}
-                className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors font-mono underline underline-offset-2"
-            >
+            </ul>
+            <button type="button" onClick={onClear} className="palette-text-button mt-2 underline decoration-rule underline-offset-4">
                 Clear search
             </button>
         </div>
@@ -379,10 +298,10 @@ EmptyState.propTypes = {
 function ToastBadge({ message }) {
     if (!message) return null
     return (
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-toxic/20 border border-toxic/40 rounded-full text-toxic text-[10px] font-mono shrink-0 animate-in fade-in slide-in-from-right-2 duration-200">
-            <Check className="w-3 h-3 shrink-0" />
-            <span>{message}</span>
-        </div>
+        <span className="flex shrink-0 items-center gap-1.5 text-[13px] text-paper" role="status">
+            <Check className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+            {message}
+        </span>
     )
 }
 ToastBadge.propTypes = { message: PropTypes.string }
@@ -398,16 +317,11 @@ export default function CommandPalette({ isOpen, onClose }) {
     const headerHeight = useHeaderHeight()
     const listRef = useRef(null)
     const inputRef = useRef(null)
-    const triggerRef = useRef(null)
+    const surfaceRef = useRef(null)
     const { recents, addRecent, removeRecent, clearRecents } = useRecentSearches()
 
-    // Capture trigger for focus restoration
-    useEffect(() => {
-        if (isOpen) {
-            // Find the search button to restore focus on close
-            triggerRef.current = document.querySelector('[aria-label="Open Command Search"], [aria-label="Open Search Command Palette"]')
-        }
-    }, [isOpen])
+    // Tab stays inside the palette, Esc closes it, focus returns to the opener.
+    useFocusTrap(surfaceRef, isOpen, { onEscape: onClose, initialFocusRef: inputRef })
 
     // All commands memoized (built once)
     const allCommands = useMemo(() => {
@@ -430,26 +344,13 @@ export default function CommandPalette({ isOpen, onClose }) {
 
     // Group search results by category for display
     const groupedResults = useMemo(() => {
-        if (!isSearching) return {}
         const groups = {}
         for (const cmd of searchResults) {
             if (!groups[cmd.category]) groups[cmd.category] = []
             groups[cmd.category].push(cmd)
         }
         return groups
-    }, [searchResults, isSearching])
-
-    // Ordered category display
-    const categoryOrder = [
-        CATEGORIES.QUICK_ACTIONS,
-        CATEGORIES.PAGES,
-        CATEGORIES.PROJECTS,
-        CATEGORIES.SKILLS,
-        CATEGORIES.SERVICES,
-        CATEGORIES.BLOG,
-        CATEGORIES.SOCIAL,
-        CATEGORIES.ACTIONS,
-    ]
+    }, [searchResults])
 
     // Auto-scroll selected item into view
     useEffect(() => {
@@ -463,14 +364,12 @@ export default function CommandPalette({ isOpen, onClose }) {
         return () => cancelAnimationFrame(frame)
     }, [search, searchResults, isOpen])
 
-    // Body scroll lock
+    // Body scroll lock — restores the previous value (the drawer may hold its own lock)
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = ''
-        }
-        return () => { document.body.style.overflow = '' }
+        if (!isOpen) return undefined
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => { document.body.style.overflow = previousOverflow }
     }, [isOpen])
 
     // Keyboard shortcuts
@@ -481,61 +380,50 @@ export default function CommandPalette({ isOpen, onClose }) {
                 e.preventDefault()
                 if (isOpen) onClose()
                 else window.dispatchEvent(new CustomEvent('open-command-palette'))
-            } else if (e.key === 'Escape' && isOpen) {
-                e.preventDefault()
-                onClose()
             }
         }
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [isOpen, onClose])
 
-    // Reset state when closed; restore focus to trigger
+    // Reset state when closed
     useEffect(() => {
         if (!isOpen) {
             setSearch('')
             setToastMessage('')
             setActiveFilter('all')
-            // Restore focus to the trigger that opened the palette
-            if (triggerRef.current) {
-                setTimeout(() => {
-                    try { triggerRef.current?.focus() } catch (_) { /* noop */ }
-                }, 50)
-            }
         }
     }, [isOpen])
 
     // Handle selection
     const handleSelectCommand = useCallback((cmd) => {
+        // Show a confirmation, then close; a clipboard failure just closes.
+        const copy = (text, message) => {
+            try {
+                navigator.clipboard.writeText(text)
+                setToastMessage(message)
+                setTimeout(() => onClose(), 1000)
+            } catch (_) { onClose() }
+        }
+
         try {
-            if (cmd.type === 'internal') {
+            if (cmd.type === 'internal' || cmd.type === 'external') {
                 addRecent(search.trim() || cmd.title)
                 onClose()
                 setSearch('')
+            }
+
+            if (cmd.type === 'internal') {
                 navigate(cmd.url)
             } else if (cmd.type === 'external') {
-                addRecent(search.trim() || cmd.title)
-                onClose()
-                setSearch('')
                 if (cmd.url.startsWith('mailto:') || cmd.url.startsWith('tel:')) {
                     window.location.href = cmd.url
                 } else {
                     window.open(cmd.url, '_blank', 'noopener,noreferrer')
                 }
             } else if (cmd.type === 'action') {
-                if (cmd.actionId === 'copy-email') {
-                    try {
-                        navigator.clipboard.writeText('kumar.gaurav.yadav2007@gmail.com')
-                        setToastMessage('Email copied!')
-                        setTimeout(() => onClose(), 1000)
-                    } catch (_) { onClose() }
-                } else if (cmd.actionId === 'copy-url') {
-                    try {
-                        navigator.clipboard.writeText(window.location.href)
-                        setToastMessage('Link copied!')
-                        setTimeout(() => onClose(), 1000)
-                    } catch (_) { onClose() }
-                }
+                if (cmd.actionId === 'copy-email') copy('kumar.gaurav.yadav2007@gmail.com', 'Email copied!')
+                else if (cmd.actionId === 'copy-url') copy(window.location.href, 'Link copied!')
             }
         } catch (_) {
             // Any error during command execution — close gracefully
@@ -553,110 +441,68 @@ export default function CommandPalette({ isOpen, onClose }) {
 
     // Modal positioning
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
-    const computedPaddingTop = !isMobile
-        ? (headerHeight > 0 ? headerHeight + 12 : 24)
-        : 0
-    const computedMaxHeight = !isMobile
-        ? `calc(100vh - ${headerHeight > 0 ? headerHeight + 24 : 48}px)`
-        : '100dvh'
+    const hasHeader = headerHeight > 0
+    const desktopPaddingTop = hasHeader ? headerHeight + 12 : 24
+    const desktopMaxHeight = `calc(100vh - ${hasHeader ? headerHeight + 24 : 48}px)`
 
     return (
         <div
-            className={[
-                'fixed inset-0 z-[500] flex',
-                isMobile ? 'items-end sm:items-start' : 'items-start',
-                'justify-center',
-                // On mobile: full-width bottom sheet; on desktop: centered modal with px
-                'px-0 sm:px-4',
-                'bg-black/75 backdrop-blur-sm',
-            ].join(' ')}
-            style={!isMobile ? { paddingTop: `${computedPaddingTop}px` } : undefined}
+            className={`fixed inset-0 z-[500] flex justify-center bg-ink/80 sm:px-4 ${isMobile ? 'items-end' : 'items-start'}`}
+            style={isMobile ? undefined : { paddingTop: `${desktopPaddingTop}px` }}
             onClick={onClose}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Universal Portfolio Command Center"
         >
-            {/* Modal surface */}
             <div
-                className={[
-                    'w-full bg-[#0b0c10]/98 border border-[#1e1e28] flex flex-col',
-                    'shadow-2xl shadow-black/60 backdrop-blur-xl',
-                    // Mobile: bottom sheet style
-                    'sm:rounded-2xl rounded-t-2xl',
-                    // Animation
-                    'animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200',
-                ].join(' ')}
+                ref={surfaceRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Search the site"
+                className="flex w-full flex-col rounded-t-dialog border border-rule bg-ink-raised shadow-dialog sm:rounded-dialog"
                 style={{
-                    maxWidth: isMobile ? '100%' : '680px',
-                    maxHeight: computedMaxHeight,
-                    // Mobile: safe area bottom padding
+                    maxWidth: isMobile ? '100%' : '640px',
+                    maxHeight: isMobile ? '100dvh' : desktopMaxHeight,
                     paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 0px)' : undefined,
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <Command
-                    label="Universal Portfolio Command Center"
+                    label="Search the site"
                     shouldFilter={false}
-                    className="w-full flex flex-col overflow-hidden h-full max-h-full"
+                    className="flex h-full max-h-full w-full flex-col overflow-hidden"
                 >
-                    {/* ── Input Header ── */}
-                    <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#1e1e28] shrink-0 bg-[#0e0e16]">
-                        <Search className="w-4 h-4 text-toxic shrink-0" aria-hidden="true" />
+                    <div className="palette-search flex shrink-0 items-center gap-3 border-b border-rule pl-4 pr-2">
+                        <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
                         <Command.Input
                             ref={inputRef}
                             value={search}
                             onValueChange={setSearch}
-                            placeholder="Search portfolio…"
-                            className="flex-1 bg-transparent text-sm text-zinc-100 placeholder:text-zinc-600 outline-none border-none font-sans caret-toxic min-w-0"
-                            autoFocus
+                            placeholder="Search pages, projects, articles…"
+                            className="palette-input"
                             autoComplete="off"
                             spellCheck={false}
                             maxLength={120}
-                            aria-label="Search portfolio"
+                            aria-label="Search the site"
                         />
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex shrink-0 items-center gap-1">
                             <ToastBadge message={toastMessage} />
                             {search && !toastMessage && (
-                                <button
-                                    type="button"
-                                    onClick={() => setSearch('')}
-                                    className="p-1 rounded-lg text-zinc-600 hover:text-zinc-300 hover:bg-white/[0.06] transition-all duration-150"
-                                    aria-label="Clear search"
-                                >
-                                    <X className="w-3.5 h-3.5" />
+                                <button type="button" onClick={() => setSearch('')} className="palette-icon-button" aria-label="Clear search">
+                                    <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                                 </button>
                             )}
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="hidden sm:flex items-center justify-center px-2 py-1 text-[10px] font-mono text-zinc-600 bg-obsidian border border-obsidian-border rounded-md hover:text-zinc-300 hover:border-zinc-600 transition-all duration-150 leading-none"
-                                aria-label="Close search"
-                            >
-                                ESC
-                            </button>
-                            {/* Mobile close button */}
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="flex sm:hidden items-center justify-center w-7 h-7 rounded-full bg-obsidian border border-obsidian-border text-zinc-500 hover:text-zinc-300 transition-all duration-150"
-                                aria-label="Close search"
-                            >
-                                <X className="w-3.5 h-3.5" />
+                            <button type="button" onClick={onClose} className="palette-text-button px-2" aria-label="Close search">
+                                <span className="hidden font-mono text-[12px] sm:inline">Esc</span>
+                                <X className="h-4 w-4 sm:hidden" strokeWidth={1.5} aria-hidden="true" />
                             </button>
                         </div>
                     </div>
 
-                    {/* ── Filter Chips ── */}
                     <FilterChips activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 
-                    {/* ── Results List ── */}
                     <Command.List
                         ref={listRef}
-                        className="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+                        className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
                         aria-label="Search results"
-                        style={{ scrollbarWidth: 'thin', scrollbarColor: '#1a1a22 transparent' }}
                     >
-                        {/* Idle state — no query */}
                         {!isSearching && (
                             <IdleState
                                 recents={recents}
@@ -666,10 +512,9 @@ export default function CommandPalette({ isOpen, onClose }) {
                             />
                         )}
 
-                        {/* Search results — grouped by category */}
                         {isSearching && searchResults.length > 0 && (
                             <div className="p-2">
-                                {categoryOrder.map((cat) => {
+                                {CATEGORY_ORDER.map((cat) => {
                                     const items = groupedResults[cat]
                                     if (!items || items.length === 0) return null
                                     return (
@@ -689,7 +534,6 @@ export default function CommandPalette({ isOpen, onClose }) {
                             </div>
                         )}
 
-                        {/* Empty state */}
                         {isSearching && searchResults.length === 0 && (
                             <Command.Empty>
                                 <EmptyState
@@ -701,27 +545,14 @@ export default function CommandPalette({ isOpen, onClose }) {
                         )}
                     </Command.List>
 
-                    {/* ── Footer ── */}
-                    <div className="hidden sm:flex items-center justify-between px-4 py-2.5 border-t border-[#1e1e28] bg-[#090a0e] shrink-0">
-                        <div className="flex items-center gap-3 text-[10px] font-mono text-zinc-600">
-                            <span className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center w-5 h-5 bg-obsidian rounded border border-obsidian-border text-zinc-400 text-[9px]">↑</kbd>
-                                <kbd className="inline-flex items-center justify-center w-5 h-5 bg-obsidian rounded border border-obsidian-border text-zinc-400 text-[9px]">↓</kbd>
-                                Navigate
-                            </span>
-                            <span className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 bg-obsidian rounded border border-obsidian-border text-zinc-400 text-[9px]">↵</kbd>
-                                Open
-                            </span>
-                            <span className="flex items-center gap-1">
-                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 bg-obsidian rounded border border-obsidian-border text-zinc-400 text-[9px]">Esc</kbd>
-                                Close
-                            </span>
+                    <div className="hidden shrink-0 items-center justify-between border-t border-rule px-4 py-2 text-[13px] text-muted sm:flex">
+                        <div className="flex items-center gap-4">
+                            <span><kbd className="palette-kbd">↑</kbd> <kbd className="palette-kbd">↓</kbd> to move</span>
+                            <span><kbd className="palette-kbd">↵</kbd> to open</span>
+                            <span><kbd className="palette-kbd">Esc</kbd> to close</span>
                         </div>
-                        <span className="text-[10px] font-mono text-zinc-700">
-                            {isSearching
-                                ? `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}`
-                                : 'Universal Command Center'}
+                        <span aria-live="polite">
+                            {isSearching ? `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}` : ''}
                         </span>
                     </div>
                 </Command>

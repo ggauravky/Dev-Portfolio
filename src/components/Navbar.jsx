@@ -5,24 +5,61 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
+import { useFocusTrap } from '../hooks/useFocusTrap'
+import TextLink from './ui/TextLink'
+import './Navbar.css'
+
+// Desktop nav: six sections (D-002/D-018). Home is the wordmark; Skills, Updates
+// and the rest stay in the drawer, the footer and ⌘K.
+const PRIMARY_LINKS = [
+    { path: '/about', name: 'About' },
+    { path: '/projects', name: 'Projects' },
+    { path: '/journey', name: 'Journey' },
+    { path: '/services', name: 'Services' },
+    { path: '/blog', name: 'Blog' },
+    { path: '/contact', name: 'Contact' },
+]
+
+const DRAWER_LINKS = [
+    { path: '/', name: 'Home' },
+    { path: '/about', name: 'About' },
+    { path: '/projects', name: 'Projects' },
+    { path: '/journey', name: 'Journey' },
+    { path: '/skills', name: 'Skills' },
+    { path: '/services', name: 'Services' },
+    { path: '/blog', name: 'Blog' },
+    { path: '/contact', name: 'Contact' },
+]
+
+const SHORTCUT_LABEL = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent)
+    ? '⌘K'
+    : 'Ctrl K'
+
+const openPalette = () => window.dispatchEvent(new CustomEvent('open-command-palette'))
+
+// A section is current on its own path and on its children (/projects/:slug).
+const isCurrentPath = (pathname, path) =>
+    path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`)
 
 const getProfileInitial = (user) => String(user?.name || user?.email || 'U').slice(0, 1).toUpperCase()
 
-function ProfileAvatar({ user, sizeClass }) {
+function ProfileAvatar({ user, size }) {
     const [imageFailed, setImageFailed] = useState(false)
 
     useEffect(() => setImageFailed(false), [user?.picture])
+
+    const box = size === 'lg' ? 'h-10 w-10' : 'h-7 w-7'
 
     if (user?.picture && !imageFailed) {
         return (
             <img
                 src={user.picture}
-                alt={user.name || 'User'}
-                className={`${sizeClass} rounded-full border border-obsidian-border object-cover shrink-0`}
+                alt=""
+                className={`${box} shrink-0 rounded-control object-cover`}
                 referrerPolicy="no-referrer"
                 onError={() => setImageFailed(true)}
             />
@@ -30,440 +67,252 @@ function ProfileAvatar({ user, sizeClass }) {
     }
 
     return (
-        <span className={`${sizeClass} inline-flex items-center justify-center rounded-full border border-obsidian-border bg-obsidian-light text-xs font-bold uppercase text-toxic shrink-0`}>
+        <span className={`${box} inline-flex shrink-0 items-center justify-center rounded-control border border-rule text-small text-paper`} aria-hidden="true">
             {getProfileInitial(user)}
         </span>
     )
 }
 
-const renderDesktopProfileMenu = ({
-    user,
-    isProfileMenuOpen,
-    profileMenuRef,
-    setIsProfileMenuOpen,
-    handleLogout,
-}) => (
-    <div ref={profileMenuRef} className="relative hidden lg:block shrink-0 ml-1">
-        <button
-            type="button"
-            onClick={() => setIsProfileMenuOpen((previous) => !previous)}
-            className="group inline-flex items-center justify-center h-9 gap-1.5 rounded-full border border-obsidian-border bg-obsidian-card px-2.5 sm:px-3 text-zinc-300 hover:border-toxic/50 hover:text-white transition-colors leading-none shrink-0"
-            aria-label="Open profile menu"
-        >
-            <ProfileAvatar user={user} sizeClass="h-6 w-6" />
-            <svg className={`h-3.5 w-3.5 shrink-0 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-            </svg>
-        </button>
+ProfileAvatar.propTypes = {
+    user: PropTypes.object,
+    size: PropTypes.oneOf(['sm', 'lg']),
+}
 
-        {isProfileMenuOpen ? (
-            <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-obsidian-border bg-obsidian-card p-2 shadow-2xl shadow-black/85">
-                <div className="px-3 pb-2 pt-1 border-b border-obsidian-border/60 mb-2">
-                    <p className="text-sm font-semibold text-white truncate">{user.name || 'Google User'}</p>
-                    <p className="text-xs text-zinc-500 truncate">{user.email}</p>
-                </div>
-                <Link
-                    to="/my-activity"
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-zinc-300 hover:bg-obsidian-light hover:text-toxic transition-colors"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                >
-                    <span>❤️</span>
-                    <span>My Activity</span>
-                </Link>
-                <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-rose-400 hover:bg-rose-500/10 transition-colors"
-                >
-                    <span>↩</span>
-                    <span>Logout</span>
-                </button>
-            </div>
-        ) : null}
-    </div>
-)
+function ProfileMenu({ user, onLogout }) {
+    const [open, setOpen] = useState(false)
+    const rootRef = useRef(null)
+    const buttonRef = useRef(null)
+    const { pathname } = useLocation()
 
-const renderMobileProfileCard = ({ user, closeMenu, handleLogout }) => (
-    <div className="rounded-2xl border border-obsidian-border bg-obsidian-card p-3">
-        <div className="flex items-center gap-3">
-            <ProfileAvatar user={user} sizeClass="h-10 w-10" />
-            <div className="min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{user.name || 'Google User'}</p>
-                <p className="text-xs text-zinc-500 truncate">{user.email}</p>
-            </div>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-            <Link
-                to="/my-activity"
-                onClick={closeMenu}
-                className="inline-flex items-center justify-center rounded-xl border border-toxic/35 bg-toxic/10 px-3 py-2 text-xs font-semibold text-toxic"
-            >
-                My Activity
-            </Link>
+    useEffect(() => setOpen(false), [pathname])
+
+    useEffect(() => {
+        if (!open) return undefined
+        // Close on a click or keyboard focus outside the menu.
+        const closeIfOutside = (event) => {
+            if (!rootRef.current?.contains(event.target)) setOpen(false)
+        }
+        const handleKey = (event) => {
+            if (event.key === 'Escape') {
+                setOpen(false)
+                buttonRef.current?.focus()
+            }
+        }
+        document.addEventListener('mousedown', closeIfOutside)
+        document.addEventListener('keydown', handleKey)
+        document.addEventListener('focusin', closeIfOutside)
+        return () => {
+            document.removeEventListener('mousedown', closeIfOutside)
+            document.removeEventListener('keydown', handleKey)
+            document.removeEventListener('focusin', closeIfOutside)
+        }
+    }, [open])
+
+    return (
+        <div ref={rootRef} className="relative hidden lg:block">
             <button
+                ref={buttonRef}
                 type="button"
-                onClick={async () => {
-                    await handleLogout()
-                    closeMenu()
-                }}
-                className="inline-flex items-center justify-center rounded-xl border border-rose-400/35 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-400"
+                onClick={() => setOpen((previous) => !previous)}
+                className="nav-icon-button"
+                aria-label="Account menu"
+                aria-expanded={open}
+                aria-controls="nav-account-menu"
             >
-                Logout
+                <ProfileAvatar user={user} size="sm" />
             </button>
+
+            {open ? (
+                <div
+                    id="nav-account-menu"
+                    className="absolute right-0 top-full mt-2 w-64 rounded-dialog border border-rule bg-ink-raised py-2 shadow-dialog"
+                >
+                    <div className="border-b border-rule px-4 pb-3 pt-1">
+                        <p className="truncate text-small text-paper">{user.name || 'Google account'}</p>
+                        <p className="truncate text-small text-muted">{user.email}</p>
+                    </div>
+                    <Link to="/my-activity" className="nav-menu-item">My activity</Link>
+                    <button type="button" onClick={onLogout} className="nav-menu-item">Log out</button>
+                </div>
+            ) : null}
         </div>
-    </div>
-)
+    )
+}
+
+ProfileMenu.propTypes = {
+    user: PropTypes.object.isRequired,
+    onLogout: PropTypes.func.isRequired,
+}
 
 function Navbar({ navReady = true, logoRef }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
-    const [scrolled, setScrolled] = useState(false)
-    const scrolledRef = useRef(false)
-    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-    const profileMenuRef = useRef(null)
-    const location = useLocation()
-    const { user, isAuthenticated, openAuthDialog, signOut } = useAuth()
+    const drawerRef = useRef(null)
+    const { pathname } = useLocation()
+    const { user, isAuthenticated, signOut } = useAuth()
+    const signedIn = isAuthenticated && Boolean(user)
 
-    const navLinks = useMemo(() => [
-        { path: '/', name: 'Home', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg> },
-        { path: '/about', name: 'About', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg> },
-        { path: '/journey', name: 'Journey', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75h12m-12 5.25h12m-12 5.25h12M3 6.75h.008v.008H3V6.75zm0 5.25h.008v.008H3V12zm0 5.25h.008v.008H3v-.008z" /></svg> },
-        { path: '/skills', name: 'Skills', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg> },
-        { path: '/projects', name: 'Projects', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 14.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" /></svg> },
-        { path: '/services', name: 'Services', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75h19.5M2.25 12h19.5m-19.5 5.25h19.5" /></svg> },
-        { path: '/blog', name: 'Blog', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg> },
-        { path: '/contact', name: 'Contact', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg> },
-    ], [])
-
-    const isActive = useCallback((path) => location.pathname === path, [location.pathname])
     const closeMenu = useCallback(() => setIsMenuOpen(false), [])
 
-    useEffect(() => {
-        const handleScroll = () => {
-            const nextScrolled = window.scrollY > 12
-            if (nextScrolled === scrolledRef.current) return
-            scrolledRef.current = nextScrolled
-            setScrolled(nextScrolled)
-        }
-        handleScroll()
-        window.addEventListener('scroll', handleScroll, { passive: true })
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+    useFocusTrap(drawerRef, isMenuOpen, { onEscape: closeMenu })
 
-    // Lock body scroll when mobile menu is open
+    // Lock body scroll while the drawer is open.
     useEffect(() => {
-        document.body.style.overflow = isMenuOpen ? 'hidden' : ''
-        return () => { document.body.style.overflow = '' }
+        if (!isMenuOpen) return undefined
+        const previousOverflow = document.body.style.overflow
+        document.body.style.overflow = 'hidden'
+        return () => { document.body.style.overflow = previousOverflow }
     }, [isMenuOpen])
 
-    useEffect(() => {
-        closeMenu()
-        setIsProfileMenuOpen(false)
-    }, [location, closeMenu])
-
-    useEffect(() => {
-        if (!isProfileMenuOpen) {
-            return undefined
-        }
-
-        const handleClickOutside = (event) => {
-            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
-                setIsProfileMenuOpen(false)
-            }
-        }
-
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-    }, [isProfileMenuOpen])
+    useEffect(() => closeMenu(), [pathname, closeMenu])
 
     const handleLogout = useCallback(async () => {
         try {
             await signOut()
-            setIsProfileMenuOpen(false)
+            closeMenu()
             toast.success('Logged out successfully')
         } catch (error) {
             toast.error(error?.message || 'Unable to logout right now')
         }
-    }, [signOut])
+    }, [signOut, closeMenu])
 
     return (
         <>
             <nav
-                className={`w-[94%] max-w-7xl mx-auto z-50 transition-all duration-500`}
+                aria-label="Main"
+                className="nav-bar"
                 style={{
                     opacity: navReady ? 1 : 0,
                     pointerEvents: navReady ? undefined : 'none',
-                    transition: navReady ? 'opacity 0.35s cubic-bezier(0.22,1,0.36,1)' : 'none',
                 }}
             >
-                <div className={`px-3.5 sm:px-5 transition-all duration-300 rounded-full border backdrop-blur-md max-w-7xl mx-auto ${
-                    scrolled
-                        ? 'py-2 shadow-2xl shadow-black/80 bg-obsidian-card/95 border-obsidian-border/95'
-                        : 'py-3 shadow-xl shadow-black/20 bg-obsidian-card/75 border-obsidian-border/50'
-                }`}>
-                    <div className="flex items-center justify-between min-w-0">
+                <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+                    <Link to="/" className="nav-wordmark" aria-label="Gaurav Kumar Yadav, home">
+                        <span ref={logoRef}>Gaurav Kumar Yadav</span>
+                    </Link>
 
-                        {/* Priority 1: Logo */}
-                        <Link
-                            to="/"
-                            onClick={closeMenu}
-                            className="group inline-flex items-center h-9 text-base sm:text-lg md:text-xl font-display font-extrabold uppercase tracking-wider gap-1.5 sm:gap-2 relative shrink-0 mr-2 lg:mr-3 xl:mr-6 leading-none"
+                    <ul className="hidden items-center gap-6 lg:flex xl:gap-8">
+                        {PRIMARY_LINKS.map((link) => {
+                            const current = isCurrentPath(pathname, link.path)
+                            return (
+                                <li key={link.path}>
+                                    <TextLink
+                                        to={link.path}
+                                        tone="muted"
+                                        className="nav-link inline-flex"
+                                        aria-current={current ? 'page' : undefined}
+                                    >
+                                        {link.name}
+                                    </TextLink>
+                                </li>
+                            )
+                        })}
+                    </ul>
+
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <button type="button" onClick={openPalette} className="nav-search" aria-label="Search the site" aria-keyshortcuts="Control+K Meta+K">
+                            <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.2-5.2M17 10.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0Z" />
+                            </svg>
+                            <span className="hidden sm:inline lg:hidden xl:inline">Search</span>
+                            <kbd className="hidden font-mono text-[12px] text-muted sm:inline lg:hidden xl:inline">{SHORTCUT_LABEL}</kbd>
+                        </button>
+
+                        <TextLink href="/resume.pdf" external tone="muted" className="nav-link hidden lg:inline-flex" aria-label="Resume (PDF, opens in a new tab)">
+                            Resume
+                        </TextLink>
+
+                        {signedIn ? <ProfileMenu user={user} onLogout={handleLogout} /> : null}
+
+                        <button
+                            type="button"
+                            onClick={() => setIsMenuOpen((previous) => !previous)}
+                            className="nav-icon-button lg:hidden"
+                            aria-label="Open menu"
+                            aria-expanded={isMenuOpen}
+                            aria-controls="nav-drawer"
                         >
-                            <span
-                                ref={logoRef}
-                                className="text-white group-hover:text-toxic transition-colors duration-300 leading-none"
-                            >
-                                Gaurav
-                            </span>
-
-                            <AnimatePresence>
-                                {navReady && (
-                                    <motion.div
-                                        key="phosphor-glow"
-                                        className="absolute pointer-events-none"
-                                        style={{
-                                            inset: -40,
-                                            borderRadius: '50%',
-                                            background: 'radial-gradient(circle, rgba(197,248,42,0.11) 0%, transparent 70%)',
-                                        }}
-                                        initial={{ opacity: 0, scale: 0.6 }}
-                                        animate={{ opacity: [0, 0.7, 0], scale: [0.6, 1.1, 1.4] }}
-                                        transition={{ duration: 0.45, ease: 'easeOut' }}
-                                    />
-                                )}
-                            </AnimatePresence>
-
-                            <div className="absolute -inset-2 bg-toxic/5 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-                        </Link>
-
-                        {/* Priority 2: Desktop Navigation Links */}
-                        <div className={`hidden lg:flex items-center transition-all duration-300 min-w-0 ${
-                            scrolled ? 'gap-0.5 xl:gap-1' : 'gap-0.5 xl:gap-1.5'
-                        }`}>
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    className={`relative inline-flex items-center justify-center h-9 rounded-full font-medium transition-all duration-300 leading-none whitespace-nowrap group shrink-0 ${
-                                        scrolled
-                                            ? 'px-2 xl:px-3 text-[12.5px] xl:text-[13px]'
-                                            : 'px-2.5 xl:px-3.5 text-[13px] xl:text-[13.5px]'
-                                    } ${isActive(link.path)
-                                        ? 'text-obsidian font-bold'
-                                        : 'text-zinc-400 hover:text-white'
-                                    }`}
-                                >
-                                    {isActive(link.path) && (
-                                        <motion.span
-                                            layoutId="nav-active-pill"
-                                            className="absolute inset-0 rounded-full bg-toxic shadow-md shadow-toxic/25"
-                                            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10 leading-none">{link.name}</span>
-                                    {!isActive(link.path) && (
-                                        <>
-                                            <span className="absolute inset-x-3 bottom-1.5 h-0.5 bg-toxic transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-full"></span>
-                                            <div className="absolute inset-0 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-                                        </>
-                                    )}
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* Right Header Action Group */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                            {/* Search / Command Palette Trigger */}
-                            <button
-                                type="button"
-                                onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-                                className={`hidden sm:inline-flex items-center justify-center h-9 rounded-full border border-obsidian-border bg-obsidian-card text-zinc-300 hover:text-white hover:border-toxic/50 transition-all duration-200 text-xs font-mono leading-none ${
-                                    scrolled || isAuthenticated
-                                        ? 'px-2.5 gap-1.5'
-                                        : 'px-3.5 gap-2'
-                                }`}
-                                aria-label="Open Command Search"
-                            >
-                                <svg className="w-3.5 h-3.5 text-toxic shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <span className={`font-sans text-xs leading-none ${
-                                    scrolled || (isAuthenticated && 'lg:hidden xl:inline')
-                                        ? 'hidden 2xl:inline'
-                                        : 'inline'
-                                }`}>
-                                    Search
-                                </span>
-                                <kbd className="inline-flex items-center justify-center h-5 px-1.5 text-[10px] leading-none bg-obsidian border border-obsidian-border text-zinc-400 font-mono rounded">
-                                    ⌘K
-                                </kbd>
-                            </button>
-
-                            {/* Mobile Search Button */}
-                            <button
-                                type="button"
-                                onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-                                className="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light text-toxic active:scale-95 transition-all duration-200 shrink-0"
-                                aria-label="Open Search Command Palette"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
-
-                            {/* Desktop Resume button */}
-                            <a
-                                href="/resume.pdf"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label="Open resume PDF in a new tab"
-                                className={`hidden lg:inline-flex items-center justify-center h-9 min-h-0 border border-toxic bg-transparent text-toxic hover:bg-toxic hover:text-obsidian font-bold rounded-full transition-all duration-300 text-xs xl:text-sm cursor-pointer whitespace-nowrap leading-none group relative hover:shadow-lg hover:shadow-toxic/20 hover:scale-105 ${
-                                    scrolled ? 'px-3 xl:px-4 gap-1.5' : 'px-3.5 xl:px-4 gap-2'
-                                }`}
-                            >
-                                <svg className="w-3.5 h-3.5 shrink-0 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                <span className="relative z-10 leading-none">Resume</span>
-                            </a>
-
-                            {/* User Profile Menu */}
-                            {!isAuthenticated ? (
-                                <button
-                                    type="button"
-                                    onClick={() => openAuthDialog({ reason: 'navbar' })}
-                                    className="hidden lg:inline-flex h-9 items-center justify-center rounded-full border border-toxic/45 bg-toxic/10 px-3.5 text-xs font-bold text-toxic transition-colors hover:bg-toxic hover:text-obsidian focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
-                                >
-                                    Sign In
-                                </button>
-                            ) : null}
-                            {isAuthenticated && user
-                                ? renderDesktopProfileMenu({
-                                    user,
-                                    isProfileMenuOpen,
-                                    profileMenuRef,
-                                    setIsProfileMenuOpen,
-                                    handleLogout,
-                                })
-                                : null}
-
-                            {/* Hamburger — mobile only */}
-                            <button
-                                onClick={() => setIsMenuOpen(prev => !prev)}
-                                className="lg:hidden inline-flex flex-col items-center justify-center w-9 h-9 rounded-full border border-obsidian-border bg-obsidian-card hover:bg-obsidian-light active:scale-95 transition-all duration-200 shrink-0"
-                                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-                                aria-expanded={isMenuOpen}
-                            >
-                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[5px]' : '-translate-y-[4px]'}`}></span>
-                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? 'opacity-0 scale-x-0' : 'opacity-100'}`}></span>
-                                <span className={`block h-0.5 w-4 bg-zinc-300 rounded-full transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[5px]' : 'translate-y-[4px]'}`}></span>
-                            </button>
-                        </div>
+                            <span className="nav-burger" aria-hidden="true" />
+                        </button>
                     </div>
                 </div>
             </nav>
 
-            {/* Mobile drawer */}
-            <button
-                type="button"
-                aria-label="Close menu"
-                tabIndex={isMenuOpen ? 0 : -1}
-                className={`fixed inset-0 z-[190] lg:hidden w-full bg-black/60 backdrop-blur-sm transition-opacity duration-300 cursor-default ${
-                    isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-                }`}
-                onClick={closeMenu}
-                onKeyDown={(e) => e.key === 'Escape' && closeMenu()}
-            />
-
+            {/* Mobile drawer — a contents page. `inert` keeps it out of the tab order when closed. */}
             <div
-                style={{ height: '100dvh' }}
-                className={`fixed inset-y-0 right-0 z-[200] lg:hidden
-                    flex flex-col w-[85vw] max-w-sm
-                    bg-gradient-to-b from-obsidian via-obsidian-card to-obsidian
-                    border-l border-obsidian-border shadow-2xl shadow-black/90
-                    transition-transform duration-300 ease-out
-                    ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                className={`nav-scrim lg:hidden ${isMenuOpen ? 'is-open' : ''}`}
+                onClick={closeMenu}
+                aria-hidden="true"
+            />
+            <div
+                id="nav-drawer"
+                ref={drawerRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Site menu"
+                className={`nav-drawer lg:hidden ${isMenuOpen ? 'is-open' : ''}`}
+                {...(isMenuOpen ? {} : { inert: '' })}
             >
-                <div className="flex items-center justify-between px-5 py-4 border-b border-obsidian-border shrink-0">
-                    <Link to="/" onClick={closeMenu} className="flex items-center gap-2 min-w-0 font-display font-extrabold uppercase tracking-wider">
-                        <span className="text-white truncate">
-                            Gaurav
-                        </span>
-                    </Link>
-                    <button
-                        onClick={closeMenu}
-                        className="shrink-0 flex items-center justify-center w-9 h-9 rounded-full bg-obsidian-light hover:bg-obsidian border border-obsidian-border text-zinc-400 hover:text-white transition-all duration-200 active:scale-90"
-                        aria-label="Close menu"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                <div className="flex h-16 shrink-0 items-center justify-between border-b border-rule px-4 sm:px-6">
+                    <span className="font-serif text-[22px] leading-none text-paper">Contents</span>
+                    <button type="button" onClick={closeMenu} className="nav-icon-button" aria-label="Close menu">
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <nav className="flex-1 overflow-y-auto px-3 py-3" style={{ minHeight: 0 }}>
-                    <p className="text-zinc-600 text-[10px] font-display font-bold uppercase tracking-widest px-3.5 pb-2">
-                        Navigation
-                    </p>
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.path}
-                            to={link.path}
-                            onClick={closeMenu}
-                            className={`group flex items-center gap-3.5 px-4 py-3 rounded-full font-semibold transition-all duration-200 mb-1 ${
-                                isActive(link.path)
-                                    ? 'text-obsidian bg-toxic shadow-lg shadow-toxic/20'
-                                    : 'text-zinc-300 hover:text-white hover:bg-obsidian-light active:scale-[0.98]'
-                            }`}
-                        >
-                            <span className="text-lg shrink-0">{link.icon}</span>
-                            <span className="flex-1 text-[14px]">{link.name}</span>
-                            {isActive(link.path) ? (
-                                <span className="w-1.5 h-1.5 rounded-full bg-obsidian shrink-0" />
-                            ) : (
-                                <svg className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                                </svg>
-                            )}
-                        </Link>
-                    ))}
+                <nav aria-label="Site" className="min-h-0 flex-1 overflow-y-auto px-4 sm:px-6">
+                    <ol>
+                        {DRAWER_LINKS.map((link) => {
+                            const current = isCurrentPath(pathname, link.path)
+                            return (
+                                <li key={link.path} className="border-b border-rule">
+                                    <Link
+                                        to={link.path}
+                                        onClick={closeMenu}
+                                        className="nav-drawer-link"
+                                        aria-current={current ? 'page' : undefined}
+                                    >
+                                        {link.name}
+                                    </Link>
+                                </li>
+                            )
+                        })}
+                    </ol>
                 </nav>
 
-                <div className="shrink-0 px-4 pt-4 pb-8 border-t border-obsidian-border space-y-3">
-                    {isAuthenticated && user ? renderMobileProfileCard({ user, closeMenu, handleLogout }) : null}
-
-                    {!isAuthenticated ? (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                closeMenu()
-                                openAuthDialog({ reason: 'navbar' })
-                            }}
-                            className="flex w-full items-center justify-center rounded-full border border-toxic/45 bg-toxic/10 px-4 py-3 text-sm font-bold text-toxic transition-colors hover:bg-toxic hover:text-obsidian focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
-                        >
-                            Sign In with Google
-                        </button>
+                <div className="shrink-0 space-y-4 border-t border-rule px-4 pb-8 pt-4 sm:px-6">
+                    {signedIn ? (
+                        <div className="flex items-center gap-4">
+                            <ProfileAvatar user={user} size="lg" />
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-small text-paper">{user.name || 'Google account'}</p>
+                                <p className="truncate text-small text-muted">{user.email}</p>
+                            </div>
+                        </div>
                     ) : null}
-
-                    <a
-                        href="/resume.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Open resume PDF in a new tab"
-                        onClick={closeMenu}
-                        className="flex items-center justify-center gap-2.5 w-full py-3.5 border border-toxic bg-toxic text-obsidian font-bold text-sm rounded-full transition-all duration-300 shadow-lg shadow-toxic/15 active:scale-95"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        View Resume
-                    </a>
-                    <p className="text-zinc-600 text-xs text-center flex items-center justify-center gap-1.5 font-mono">
-                        Made with <svg className="w-3.5 h-3.5 text-toxic animate-pulse inline" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg> by Gaurav
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-6">
+                        <TextLink href="/resume.pdf" external className="nav-link inline-flex" onClick={closeMenu} aria-label="Resume (PDF, opens in a new tab)">
+                            Resume
+                        </TextLink>
+                        {signedIn ? (
+                            <>
+                                <TextLink to="/my-activity" tone="muted" className="nav-link inline-flex">My activity</TextLink>
+                                <button type="button" onClick={handleLogout} className="nav-link inline-flex text-link text-link--muted">
+                                    <span className="text-link__label">Log out</span>
+                                </button>
+                            </>
+                        ) : null}
+                    </div>
                 </div>
             </div>
         </>
     )
+}
+
+Navbar.propTypes = {
+    navReady: PropTypes.bool,
+    logoRef: PropTypes.shape({ current: PropTypes.object }),
 }
 
 export default Navbar

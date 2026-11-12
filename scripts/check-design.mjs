@@ -20,6 +20,24 @@ const SRC = join(ROOT, 'src');
 // these fail the check. Paths are relative to the repo root, with forward slashes.
 const FINISHED = [
   'src/styles/fonts.css', // Phase A
+  // Phase B
+  'src/components/ui/Button.jsx',
+  'src/components/ui/TextLink.jsx',
+  'src/components/ui/Input.jsx',
+  'src/components/ui/Tag.jsx',
+  'src/components/ui/Card.jsx',
+  'src/components/ui/Rule.jsx',
+  'src/components/ui/index.js',
+  'src/components/ui/ui.css',
+  'src/components/Navbar.jsx',
+  'src/components/Navbar.css',
+  'src/components/Footer.jsx',
+  'src/components/Footer.css',
+  'src/components/CommandPalette.jsx',
+  'src/components/CommandPalette.css',
+  'src/components/auth/GoogleAuthDialog.jsx',
+  'src/components/auth/GoogleSignInButton.jsx',
+  'src/pages/_Kit.jsx',
 ];
 
 const RULES = [

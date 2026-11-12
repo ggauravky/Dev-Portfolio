@@ -55,6 +55,11 @@
   --radius-control: 4px;
   --radius-dialog: 8px;
 
+  /* Motion (PLAN § C formalises these in src/lib/motion.js) */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+
   /* The only shadow token — dialogs */
   --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.5);
 

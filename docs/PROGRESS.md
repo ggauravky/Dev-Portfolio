@@ -4,23 +4,27 @@ Branch: `redesign/v2` (from `main`). Plan: `docs/PLAN.md`. Decisions: `docs/DECI
 Update this file at the end of every session.
 
 ## Current state (2026-11-12)
-Phase **A — Foundations** is done, **uncommitted** pending the user's approval (Phases 0–2 are committed as `bb19729`).
-- v2 tokens are RGB-channel CSS variables in `src/index.css` (`--ink`, `--ink-raised`, `--rule`, `--paper`, `--muted`, `--accent`, type/space/radius/shadow vars) and mapped in `tailwind.config.js` (`bg-ink`, `text-paper`, `font-serif`, `text-display|h2|h3|body|small`, `rounded-control|dialog`, `shadow-dialog`).
-- Fonts are self-hosted in `public/fonts/` (latin woff2, OFL texts alongside) with metric-matched fallbacks in `src/styles/fonts.css`. Only Geist is preloaded. Google Fonts is gone from `index.html` and `public/404.html`.
-- **Legacy aliases** (delete in G): Tailwind `toxic`, `obsidian.*`, `font-display` → v2 tokens/Geist; `@font-face` names `Plus Jakarta Sans`/`Syne` → Geist, `Space Mono` → Geist Mono. So every page now renders in Geist without being restyled.
-- Global `:focus-visible` (accent 2px, offset 2), paper `::selection`, rule scrollbar; noise overlay removed; skip link → `#main-content` in `AppLayout`; Toaster on tokens; SW cache `v5`.
-- `npm run check:design` (`scripts/check-design.mjs`): 553 legacy hits reported as todo; it fails only on files in its `FINISHED` list (Phase A: `src/styles/fonts.css`). Each phase adds its restyled files there.
-- Screenshots: `docs/audit/after/A/{before,after}/` (8 pages × 4 widths, WebP). No horizontal scroll at any width. Contrast: muted/ink 6.7:1, paper/ink 16.2:1.
+Phase **B — Core components** is done, **uncommitted** pending the user's approval (A is committed as `9b86d14`).
+- UI kit in `src/components/ui/` (`Button` primary/secondary/ghost/link with sliding fill on fine pointers, 0.98 press, loading/disabled; `TextLink` underline draw; `Input`/`Textarea`; `Tag`; `Card` as a hairline row; `Rule`; `index.js`; styles in `ui.css`). Dev-only sheet at `/_kit` (`src/pages/_Kit.jsx`, `import.meta.env.DEV` only).
+- Shared `src/hooks/useFocusTrap.js` (stacked traps, Esc, focus return) used by the drawer, ⌘K and the auth dialog.
+- Nav (`Navbar.jsx`/`.css`): solid ink bar + hairline, serif wordmark, 6 links with `aria-current` + accent underline, Search (icon-only < 640 and 1024–1279), Resume ↗ text link, avatar menu when signed in, **no Sign in** (D-002). Drawer = serif "Contents" list of 8 pages, inert when closed, focus-trapped. framer-motion and the scroll listener are gone from the nav.
+- Footer: colophon layout; "Sign in" lives under Account (My activity when signed in). Same links, copy and `/admin` link as before.
+- ⌘K restyled on tokens (ink-raised, rule, sentence-case groups, underline filter tabs, accent bar on the selected item only); logic unchanged apart from the focus trap and scroll-lock restore.
+- Auth dialog restyled; network errors ("Failed to fetch") show friendly copy (`auth/authErrors.js`); Google button `shape: rectangular`.
+- `check:design`: 0 hits in 17 FINISHED files, 500 todo (was 553). Entry chunk 680 → 658 kB.
+- Gates: build ✓, `test:blog` 14/14 ✓, `git diff --check` ✓, keyboard script 19/19 (tab order, focus ring, ⌘K open/trap/Esc/toggle, drawer trap + inert + 44px targets, footer Sign in → dialog trap + Esc + focus return), no horizontal scroll at 390–1440, header targets ≥ 44px at all widths. Contrast: paper/ink 16.2, muted/ink 6.7, muted/ink-raised 6.3, placeholder 4.6.
+- Screenshots: `docs/audit/after/B/{before,after}/` (nav, footer, palette, drawer, auth at 4 widths + `kit-1440`). The "before" mobile auth dialog has no shot (its trigger was inside the closed drawer).
+- Not done here: `BackToTop` (blue ring) and the cursor spotlight still show on every page — C/G.
 
 ## Next step
-Phase **B — Core components** (ui kit, nav without Sign-in, footer, ⌘K, auth dialog). Add each finished file to `FINISHED` in `scripts/check-design.mjs`. When a page first uses `font-serif` at display size (D1), add the Instrument Serif preload to `index.html` (2nd and last preload).
+Phase **C — Motion system** (`src/lib/motion.js`, CSS route fade, remove splash/cursor/tilt/reveals; **confirm RadialMenu removal**). The `--ease-out`/`--dur-*` vars added to `src/index.css` in B are the seed for `motion.js`. When splash goes, drop Navbar's `navReady`/`logoRef` props.
 
 ## Checklist
 - [x] Phase 0 — Recon & audit (`REPO_MAP.md`, `AUDIT.md`, screenshots)
 - [x] Phase 1 — Design direction (`DESIGN.md`, A — Monograph)
 - [x] Phase 2 — Plan (`PLAN.md`, `PROGRESS.md`, `DECISIONS.md`, CLAUDE.md section)
 - [x] A — Foundations (tokens, self-hosted fonts, scales, focus/selection/scrollbar, skip link, `check:design`)
-- [ ] B — Core components (ui kit, nav without Sign-in, footer, Cmd+K, auth dialog)
+- [x] B — Core components (ui kit, nav without Sign-in, footer, Cmd+K, auth dialog)
 - [ ] C — Motion system (motion.js, CSS route fade, remove splash/cursor/tilt/reveals; **confirm RadialMenu removal**)
 - [ ] D1 — Home (+ E: remove particle canvas) — Perf ≥ 90 from here
 - [ ] D2 — Projects index
@@ -40,6 +44,8 @@ Phase **B — Core components** (ui kit, nav without Sign-in, footer, ⌘K, auth
 | Baseline (live, single run) | 38 | 100 | 100 | 100 | 7.1 s | 1,140 ms |
 | Before A (local `vite preview`, median of 3) | 48 | 100 | 96 | 100 | 5.6 s | 820 ms |
 | After A (local `vite preview`, median of 8¹) | 54 | 100 | 96 | 100 | 5.1 s | 640 ms |
+| After B (local `vite preview`, median of 3²) | 64 | 100 | 96 | 100 | 4.9 s | 340 ms |
 
 ¹ Runs 1–2 were CPU-contended (TBT > 2 s, Perf 36) so 5 more were taken; runs: 36, 36, 54, 55, 55, 47, 53, 56. Render-blocking savings fell 751 → 300 ms and CLS 0.023 → 0.002. FCP is still ≈ 4.3 s, set by the JS-rendered splash/hero (fixed in C/D1/E, not fonts).
+² Runs 62, 64, 65; FCP 4.2 s, CLS 0.004. Gain is mostly the nav dropping framer-motion `layoutId` and the scroll listener. Desktop after B: 97 (LCP 1.0 s).
 Desktop (median of 3): before 93 (LCP 1.4 s), after 96 (LCP 1.0 s). BP 96 locally on both sides (not 100 as on live); not caused by A.

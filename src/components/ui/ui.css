@@ -1,0 +1,219 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * v2 UI kit (docs/DESIGN.md, direction A — Monograph). Motion is transform/opacity
+ * only and is switched off under prefers-reduced-motion.
+ */
+
+/* === BUTTON === */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: 500 15px/1 var(--font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+/* The sliding fill: a layer under the label that scales in from the left. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.btn:active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+}
+
+.btn--primary {
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+}
+.btn--primary::before { background: #fff; }
+
+.btn--secondary {
+  border-color: rgb(var(--rule));
+  color: rgb(var(--paper));
+}
+.btn--secondary::before { background: rgb(var(--paper) / 0.08); }
+
+.btn--ghost {
+  color: rgb(var(--muted));
+}
+.btn--ghost::before { background: rgb(var(--paper) / 0.06); }
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled):not([aria-disabled='true'])::before {
+    transform: scaleX(1);
+  }
+  .btn--secondary:hover:not(:disabled):not([aria-disabled='true']) { border-color: rgb(var(--muted)); }
+  .btn--ghost:hover:not(:disabled):not([aria-disabled='true']) { color: rgb(var(--paper)); }
+}
+
+/* Coarse pointers get no hover; keyboard focus gets the fill too. */
+.btn:focus-visible::before { transform: scaleX(1); }
+
+/* "link" variant: text with the drawn underline, no box */
+.btn--link {
+  height: auto;
+  min-height: 44px;
+  padding: 0;
+  overflow: visible;
+  color: rgb(var(--paper));
+}
+.btn--link::before { content: none; }
+.btn--link .btn__label { position: relative; }
+.btn--link .btn__label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.btn--link:hover:not(:disabled):not([aria-disabled='true']) .btn__label::after,
+.btn--link:focus-visible .btn__label::after {
+  transform: scaleX(1);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn[aria-busy='true'] {
+  cursor: progress;
+  opacity: 1;
+}
+
+.btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.btn[aria-busy='true'] .btn__label { opacity: 0; }
+
+.btn__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%; /* design-allow: spinner ring */
+  animation: ui-spin 700ms linear infinite;
+}
+
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === TEXT LINK === underline draws from the left on hover/focus */
+.text-link {
+  min-height: 0;
+  min-width: 0;
+  color: rgb(var(--paper));
+  text-decoration: none;
+}
+
+.text-link__label {
+  position: relative;
+  display: inline-block;
+}
+
+.text-link__label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.text-link:hover .text-link__label::after,
+.text-link:focus-visible .text-link__label::after,
+.text-link[aria-current='page'] .text-link__label::after {
+  transform: scaleX(1);
+}
+
+.text-link--muted { color: rgb(var(--muted)); }
+.text-link--muted:hover,
+.text-link--muted:focus-visible,
+.text-link--muted[aria-current='page'] { color: rgb(var(--paper)); }
+
+/* Resting underline (for links inside running text) */
+.text-link--underlined .text-link__label {
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--rule));
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* === FIELDS === */
+.field { display: grid; gap: var(--space-1); }
+
+.field__label {
+  color: rgb(var(--paper));
+  font: 500 14px/1.4 var(--font-sans);
+}
+
+.field__control {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  background: rgb(var(--ink));
+  color: rgb(var(--paper));
+  font: 400 15px/1.5 var(--font-sans);
+}
+
+textarea.field__control { min-height: 128px; resize: vertical; }
+
+.field__control::placeholder { color: rgb(var(--muted) / 0.8); }
+.field__control:hover:not(:disabled) { border-color: rgb(var(--muted) / 0.6); }
+.field__control:focus { border-color: rgb(var(--paper)); }
+.field__control:disabled { opacity: 0.45; cursor: not-allowed; }
+.field__control[aria-invalid='true'] { border-color: #f87171; }
+
+.field__hint { color: rgb(var(--muted)); font-size: 14px; line-height: 1.5; }
+.field__error { color: #fca5a5; font-size: 14px; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn::before,
+  .btn--link .btn__label::after,
+  .text-link__label::after {
+    transition: none;
+  }
+  .btn:active:not(:disabled):not([aria-disabled='true']) { transform: none; }
+  .btn__spinner { animation-duration: 2s; }
+}

@@ -6,49 +6,25 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-.footer-shell {
-  width: 100%;
-  position: relative;
+.footer-heading {
+  margin-bottom: var(--space-1);
+  color: rgb(var(--paper));
+  font: 500 14px/1.5 var(--font-sans);
 }
 
-.footer-main-grid {
-  align-items: start;
+/* Each footer link is a full 44px row, so it is an easy touch target. */
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: left;
 }
 
-.footer-link,
-.footer-back-to-top {
-  will-change: transform;
-}
-
-.footer-link:hover,
-.footer-back-to-top:hover {
-  transform: translateY(-1px);
-}
-
-@media (max-width: 768px) {
-  .footer-main-grid {
-    row-gap: 2rem;
-  }
-}
-
-@media (prefers-contrast: high) {
-  .footer-shell {
-    border-top-color: #ffffff;
-  }
-
-  .footer-link:hover,
-  .footer-back-to-top:hover {
-    text-decoration: underline;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .footer-shell *,
-  .footer-shell *::before,
-  .footer-shell *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Nine pages in two short columns. */
+.footer-pages ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-3);
 }

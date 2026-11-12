@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * ⌘K palette — v2 Monograph. The accent marks only the active (selected) item.
+ */
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  height: 56px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: rgb(var(--paper));
+  font: 400 17px/1.4 var(--font-sans);
+  caret-color: rgb(var(--paper));
+}
+
+.palette-input::placeholder { color: rgb(var(--muted)); }
+
+/* The input's focus indicator is its full-width bottom rule turning accent,
+   instead of a ring drawn inside the dialog frame. */
+.palette-input:focus-visible { outline: none; }
+.palette-search:focus-within { border-bottom-color: rgb(var(--accent)); }
+
+.palette-filter {
+  flex-shrink: 0;
+  position: relative;
+  height: 44px;
+  min-width: 0;
+  color: rgb(var(--muted));
+  font: 400 14px/1 var(--font-sans);
+  white-space: nowrap;
+}
+
+.palette-filter:hover { color: rgb(var(--paper)); }
+.palette-filter[aria-pressed='true'] { color: rgb(var(--paper)); }
+.palette-filter[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: rgb(var(--paper));
+}
+
+.palette-item,
+.palette-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  color: rgb(var(--paper));
+  font: 400 15px/1.3 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+
+.palette-row { color: rgb(var(--muted)); }
+
+.palette-item:hover,
+.palette-row:hover { background: rgb(var(--paper) / 0.04); }
+.palette-row:hover { color: rgb(var(--paper)); }
+.palette-row:focus-visible { outline-offset: -2px; }
+
+/* Selected item: a raised tint plus a 2px accent bar on the left edge. */
+.palette-item[aria-selected='true'] { background: rgb(var(--paper) / 0.06); }
+.palette-item[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: rgb(var(--accent));
+}
+
+.palette-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control);
+  color: rgb(var(--muted));
+}
+
+.palette-icon-button:hover { color: rgb(var(--paper)); background: rgb(var(--paper) / 0.06); }
+
+.palette-text-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 0;
+  color: rgb(var(--muted));
+  font: 400 14px/1 var(--font-sans);
+}
+
+.palette-text-button:hover { color: rgb(var(--paper)); }
+
+.palette-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  color: rgb(var(--paper));
+  font: 400 12px/1 var(--font-mono);
+}
