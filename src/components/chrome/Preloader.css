@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(var(--ink));
+  color: rgb(var(--paper));
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+
+.preloader.is-exiting {
+  transform: translate3d(0, -100%, 0);
+  pointer-events: none;
+}
+
+.preloader__inner {
+  width: 100%;
+  padding: var(--space-3) var(--space-2) calc(var(--space-5) + env(safe-area-inset-bottom, 0px));
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.preloader.is-exiting .preloader__inner { opacity: 0; }
+
+@media (min-width: 640px) {
+  .preloader__inner { padding: var(--space-5) var(--space-3); }
+}
+
+.preloader__name {
+  font: 400 var(--text-display) / 0.95 var(--font-serif);
+  letter-spacing: -0.02em;
+}
+
+.preloader__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  color: rgb(var(--muted));
+  font: 400 13px/1 var(--font-mono);
+}
+
+.preloader__count { font-variant-numeric: tabular-nums; }
+
+.preloader__skip {
+  min-height: 44px;
+  padding: 0 4px;
+  color: rgb(var(--muted));
+  font: 400 14px/1 var(--font-sans);
+}
+
+.preloader__skip:hover { color: rgb(var(--paper)); }
+
+.preloader__rule {
+  display: block;
+  height: 1px;
+  margin-top: var(--space-2);
+  background: rgb(var(--rule));
+  overflow: hidden;
+}
+
+.preloader__bar {
+  display: block;
+  height: 100%;
+  background: rgb(var(--paper));
+  transform: scaleX(0);
+  transform-origin: left center;
+}

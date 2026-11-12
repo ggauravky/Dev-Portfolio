@@ -7,7 +7,7 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 import ServiceCard from '../components/ServiceCard'
 import TrustStrip from '../components/TrustStrip'
 import StickyMobileCTA from '../components/StickyMobileCTA'
@@ -89,7 +89,7 @@ function Services() {
 
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10">
                 <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-center">
-                    <ScrollReveal className="space-y-6 min-w-0">
+                    <Reveal className="space-y-6 min-w-0">
                         <span className="inline-flex items-center gap-2 text-toxic text-xs font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">
                             Verified Services
                         </span>
@@ -147,9 +147,9 @@ function Services() {
                                 ))}
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
-                    <ScrollReveal delay={100} className="relative min-w-0">
+                    <Reveal delay={100} className="relative min-w-0">
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 shadow-2xl">
                             <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
                             <div className="grid grid-cols-2 gap-3.5 sm:gap-4 relative z-10">
@@ -174,7 +174,7 @@ function Services() {
                                 // Every service page lists full deliverables, process details, and trust signals.
                             </p>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
                 </div>
             </section>
 
@@ -183,22 +183,22 @@ function Services() {
             </section>
 
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <ScrollReveal>
+                <Reveal>
                     <span className="inline-block text-cyber text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyber/5 rounded-full border border-cyber/15">Build and Delivery Services</span>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold uppercase text-white mb-8">Product Implementation</h2>
-                </ScrollReveal>
+                </Reveal>
                 <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
                     {buildServices.map((service, index) => (
-                        <ScrollReveal key={service.slug} delay={index * 80}>
+                        <Reveal key={service.slug} delay={index * 80}>
                             <ServiceCard service={service} featured={service.slug === 'fullstack-development'} />
-                        </ScrollReveal>
+                        </Reveal>
                     ))}
                 </div>
             </section>
 
             {/* Why choose me */}
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <ScrollReveal>
+                <Reveal>
                     <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 lg:p-10 mb-8">
                         <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none pointer-events-none"></div>
                         <div className="relative z-10">
@@ -223,10 +223,10 @@ function Services() {
                             </div>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
 
                 {/* Testimonials */}
-                <ScrollReveal delay={120}>
+                <Reveal delay={120}>
                     <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                         <div className="flex items-center justify-between gap-3 mb-6">
                             <h3 className="text-xl sm:text-2xl font-display font-bold uppercase text-white">What Clients Say</h3>
@@ -252,13 +252,13 @@ function Services() {
                             </div>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
 
             {/* Payments Panel */}
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <ScrollReveal>
+                <Reveal>
                     <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-10">
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
 
@@ -317,12 +317,12 @@ function Services() {
                             <span>Razorpay Checkout + Verified Public Work</span>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Bottom CTA */}
             <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-                <ScrollReveal>
+                <Reveal>
                     <div className="bg-obsidian-card border border-obsidian-border rounded-lg p-8 sm:p-12 text-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
                         <h2 className="text-3xl sm:text-4xl font-display font-bold uppercase text-white mb-3">Ready to Build Something Real?</h2>
@@ -344,7 +344,7 @@ function Services() {
                             </Link>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             <StickyMobileCTA

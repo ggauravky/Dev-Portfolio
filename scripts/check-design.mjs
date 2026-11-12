@@ -29,8 +29,6 @@ const FINISHED = [
   'src/components/ui/Rule.jsx',
   'src/components/ui/index.js',
   'src/components/ui/ui.css',
-  'src/components/Navbar.jsx',
-  'src/components/Navbar.css',
   'src/components/Footer.jsx',
   'src/components/Footer.css',
   'src/components/CommandPalette.jsx',
@@ -38,6 +36,23 @@ const FINISHED = [
   'src/components/auth/GoogleAuthDialog.jsx',
   'src/components/auth/GoogleSignInButton.jsx',
   'src/pages/_Kit.jsx',
+  // P2 — System
+  'src/lib/motion.js',
+  'src/lib/framerFeatures.js',
+  'src/data/siteStatus.js',
+  'src/hooks/useMagnetic.js',
+  'src/components/Reveal.jsx',
+  'src/components/chrome/Dock.jsx',
+  'src/components/chrome/Dock.css',
+  'src/components/chrome/TopChrome.jsx',
+  'src/components/chrome/TopChrome.css',
+  'src/components/chrome/Cursor.jsx',
+  'src/components/chrome/Cursor.css',
+  'src/components/chrome/Preloader.jsx',
+  'src/components/chrome/Preloader.css',
+  'src/components/chrome/RouteWipe.jsx',
+  'src/components/chrome/RouteWipe.css',
+  'src/App.jsx',
 ];
 
 const RULES = [
@@ -79,6 +94,13 @@ function keyframeViolations(text) {
       if (text[i] === '{') depth++;
       else if (text[i] === '}') depth--;
       i++;
+    }
+    // A `design-allow` comment on the @keyframes line silences the whole block.
+    const NL = String.fromCharCode(10);
+    const headerLine = text.slice(text.lastIndexOf(NL, m.index) + 1, text.indexOf(NL, m.index));
+    if (headerLine.includes('design-allow')) {
+      kf.lastIndex = i;
+      continue;
     }
     const body = text.slice(kf.lastIndex, i - 1);
     const props = new Set([...body.matchAll(/([a-z-]+)\s*:/g)].map((x) => x[1]));

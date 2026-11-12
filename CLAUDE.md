@@ -50,10 +50,12 @@ The full payment and auth design is in `docs/ARCHITECTURE.md`. These invariants 
 Before any redesign work, read `docs/REPO_MAP.md`, `docs/DESIGN.md` (direction A — Monograph) and `docs/PROGRESS.md`; the plan is `docs/PLAN.md`. Do one phase per session, run its quality gates, then update `docs/PROGRESS.md` and `docs/DECISIONS.md`.
 
 Anti-slop rules:
-- Banned: gradients and gradient text, glassmorphism, glow and coloured shadows, emoji icons, card-in-card, 3-icon feature rows, generic bento, pills (except a status dot), `// comment` labels, ALL-CAPS eyebrows, and ghost or marquee text.
-- The lime accent `#C2EE3A` has one job, "live / current" (the current page in the nav, the current role, link hover, focus ring), and covers less than 5% of a screen.
+- Banned: gradients and gradient text, glassmorphism, glow and coloured shadows, emoji icons, card-in-card, 3-icon feature rows, generic bento, pills (except the dock, buttons and a status dot), `// comment` labels, ALL-CAPS eyebrows, and ghost or marquee text.
+- The lime accent `#C2EE3A` has one job, "live / current" (the current page in the dock, the availability dot, the current role, link hover, focus ring), and covers less than 5% of a screen.
 - Use 1px hairlines, not shadows; there is one shadow token, for dialogs. Radius is `0/4/8`, and spacing is on 8px (`8 16 24 32 48 64 96 128`).
-- Fonts are Instrument Serif (display), Geist (text) and Geist Mono (code and dates only), self-hosted as woff2. Don't use Inter, Roboto or system fonts as the main face.
+- Fonts are chosen in P2 from a type specimen (D-032; see DESIGN.md "Type"), self-hosted as woff2. Never use Inter, Roboto, Arial, Space Grotesk, Poppins, Montserrat or Playfair.
 - Use only facts already in the repo data. Don't invent numbers or claims, and remove filler stats.
-- Motion respects `prefers-reduced-motion` and animates transform/opacity only. The hero heading is never animated in.
+- The **Signature layer** (S1–S8 in DESIGN.md) is mandatory. At most 3 motion "moments" per page. Every phase fully converts what it touches and deletes the old styles; never leave a page half-migrated.
+- Motion tokens live only in `src/lib/motion.js` (160/280/520 ms, `cubic-bezier(.22,1,.36,1)`). Respect `prefers-reduced-motion`, and animate transform/opacity only. The one exception is the S6 hero-name font axis (D-031). The hero heading paints statically and is never animated in.
+- Reveals: content is visible by default, hidden only under a JS-added class, with a timeout fail-safe; never hide content permanently.
 - Don't reformat `src/data/projectsData.js`, because `scripts/generate-sitemap.js` regex-parses `slug:`.

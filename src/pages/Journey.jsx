@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
 import { useHeaderHeight } from '../hooks/useHeaderHeight'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 import LazyImage from '../components/LazyImage'
 import JourneyNavigator from '../components/journey/JourneyNavigator'
 import { journeyData, journeyCategories } from '../data/journeyData'
@@ -473,7 +473,7 @@ function Journey() {
             
             <div className="relative z-10 mx-auto max-w-6xl">
                 {/* ── HEADER SECTION ── */}
-                <ScrollReveal className="text-center mb-12">
+                <Reveal className="text-center mb-12">
                     <span className="inline-flex items-center gap-1.5 text-toxic text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15 backdrop-blur-sm mb-4">
                         <BoltIcon /> Professional Growth
                     </span>
@@ -503,10 +503,10 @@ function Journey() {
                             <p className="text-xs font-bold text-cyber mt-1.5 uppercase tracking-wide">Learning & Building</p>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
 
                 {/* ── OVERVIEW STATISTICS ── */}
-                <ScrollReveal delay={100} className="mb-12">
+                <Reveal delay={100} className="mb-12">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                         <div className="bg-[#0e0e11] border border-[#1a1a22] p-5 rounded-xl hover:border-toxic/30 transition-all duration-300">
                             <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Total Experiences</span>
@@ -529,10 +529,10 @@ function Journey() {
                             <span className="text-3xl font-display font-black text-white mt-1 block">{stats.conferences}</span>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
 
                 {/* ── SEARCH & FILTER CONTROLS ── */}
-                <ScrollReveal delay={150} className="mb-10 space-y-4">
+                <Reveal delay={150} className="mb-10 space-y-4">
                     <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                         {/* Search Input & Filters Toggle */}
                         <div className="flex gap-2 w-full md:max-w-lg items-center">
@@ -741,20 +741,20 @@ function Journey() {
                                 opacity: 1 !important;
                                 transform: none !important;
                             }
+                            /* Visible by default; hidden only while reveals are armed and
+                               this item has not been revealed yet (Reveal.jsx, D-036). */
                             .timeline-item-reveal .timeline-dot-glow {
-                                opacity: 0.3;
-                                transform: scale(0.85);
                                 transition: opacity 0.5s ease-out, transform 0.5s ease-out, border-color 0.5s ease-out, box-shadow 0.5s ease-out;
-                                transition-delay: 0ms;
                             }
-                            .scroll-visible .timeline-dot-glow {
-                                opacity: 1;
-                                transform: scale(1);
+                            .timeline-item-reveal[data-revealed] .timeline-dot-glow {
                                 border-color: rgba(197, 248, 42, 0.4);
                                 box-shadow: 0 0 15px rgba(197, 248, 42, 0.25);
                             }
+                            .reveal-armed .timeline-item-reveal:not([data-revealed]) .timeline-dot-glow {
+                                opacity: 0.3;
+                                transform: scale(0.85);
+                            }
                             .timeline-item-reveal .timeline-connector-line {
-                                transform: scaleX(0);
                                 transform-origin: left;
                                 transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
                                 transition-delay: 100ms;
@@ -762,18 +762,16 @@ function Journey() {
                             .timeline-item-reveal.is-even-line .timeline-connector-line {
                                 transform-origin: right;
                             }
-                            .scroll-visible .timeline-connector-line {
-                                transform: scaleX(1);
+                            .reveal-armed .timeline-item-reveal:not([data-revealed]) .timeline-connector-line {
+                                transform: scaleX(0);
                             }
                             .timeline-item-reveal .timeline-card-container {
-                                opacity: 0;
-                                transform: translateY(18px);
-                                transition: opacity 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                                transition: opacity 0.52s cubic-bezier(0.22, 1, 0.36, 1), transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
                                 transition-delay: 200ms;
                             }
-                            .scroll-visible .timeline-card-container {
-                                opacity: 1;
-                                transform: translateY(0);
+                            .reveal-armed .timeline-item-reveal:not([data-revealed]) .timeline-card-container {
+                                opacity: 0;
+                                transform: translateY(18px);
                             }
                             @media (prefers-reduced-motion: reduce) {
                                 .timeline-item-reveal .timeline-dot-glow,
@@ -825,11 +823,11 @@ function Journey() {
                             </div>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
 
                 {/* ── EMPTY STATE ── */}
                 {filteredJourney.length === 0 ? (
-                    <ScrollReveal className="text-center py-20 bg-obsidian-card border border-obsidian-border rounded-2xl">
+                    <Reveal className="text-center py-20 bg-obsidian-card border border-obsidian-border rounded-2xl">
                         <div className="w-12 h-12 rounded-full bg-obsidian-light border border-obsidian-border flex items-center justify-center mx-auto mb-4 text-zinc-500">
                             ✕
                         </div>
@@ -851,7 +849,7 @@ function Journey() {
                         >
                             Reset Filter
                         </button>
-                    </ScrollReveal>
+                    </Reveal>
                 ) : (
                     <div ref={timelineContainerRef}>
                         {/* ── TIMELINE VIEW ── */}
@@ -903,13 +901,13 @@ function Journey() {
                         {viewMode === 'grid' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredJourney.map((item, idx) => (
-                                    <ScrollReveal key={item.id} delay={idx * 50}>
+                                    <Reveal key={item.id} delay={idx * 50}>
                                         <JourneyCard
                                             item={item}
                                             onOpenLightbox={setLightboxImageInfo}
                                             isNavigatorHighlighted={navigatorHoveredJourneyId === item.id}
                                         />
-                                    </ScrollReveal>
+                                    </Reveal>
                                 ))}
                             </div>
                         )}
@@ -944,7 +942,7 @@ const JourneyTimelineItem = memo(function JourneyTimelineItem({
     const isHighlighted = isHovered || isNavigatorHighlighted
 
     return (
-        <ScrollReveal
+        <Reveal
             className={`relative flex flex-col lg:flex-row lg:items-center justify-between gap-3 lg:gap-0 timeline-item-reveal ${
                 isEven ? 'lg:flex-row-reverse is-even-line' : ''
             }`}
@@ -986,7 +984,7 @@ const JourneyTimelineItem = memo(function JourneyTimelineItem({
                     <span>{item.dateLabel}</span>
                 </div>
             </div>
-        </ScrollReveal>
+        </Reveal>
     )
 })
 

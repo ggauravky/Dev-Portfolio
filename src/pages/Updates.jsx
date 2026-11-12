@@ -29,7 +29,7 @@ import {
     Calendar,
     ShieldCheck
 } from 'lucide-react'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 import useSEO from '../hooks/useSEO'
 
 const iconMap = {
@@ -524,7 +524,7 @@ function Updates() {
             <div className="pointer-events-none absolute -left-20 bottom-12 h-72 w-72 rounded-full bg-[#c5f82a]/5 blur-3xl" />
 
             <div className="relative z-10 mx-auto max-w-5xl">
-                <ScrollReveal className="text-center mb-12 sm:mb-14">
+                <Reveal className="text-center mb-12 sm:mb-14">
                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#c5f82a]/20 bg-[#c5f82a]/5 font-mono text-xs text-[#c5f82a] uppercase tracking-widest mb-4">
                         <Rocket className="w-4 h-4 text-[#c5f82a]" />
                         <span>System Changelog</span>
@@ -535,14 +535,14 @@ function Updates() {
                     <p className="mx-auto max-w-3xl text-[#a1a1aa] text-base sm:text-lg leading-relaxed">
                         Follow my journey of building, refining, and scaling this personal portfolio platform.
                     </p>
-                </ScrollReveal>
+                </Reveal>
 
                 <section className="relative">
                     <div className="pointer-events-none absolute left-3 top-0 bottom-0 hidden sm:block w-px bg-gradient-to-b from-[#ff5d00]/30 via-[#c5f82a]/20 to-transparent" />
 
                     <div className="space-y-6 sm:space-y-8">
                         {updates.map((update, index) => (
-                            <ScrollReveal key={update.version} delay={index * 90}>
+                            <Reveal key={update.version} delay={index * 90}>
                                 <article className="group relative rounded-lg border border-[#1a1a22] bg-[#0e0e11] p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[#c5f82a]/30 hover:shadow-2xl">
                                     <span className="hidden sm:inline-block absolute left-0 top-9 -translate-x-[35px] h-2.5 w-2.5 rounded-full border border-[#c5f82a]/50 bg-[#c5f82a] shadow-[0_0_0_4px_rgba(7,7,8,0.9)]" />
 
@@ -604,7 +604,7 @@ function Updates() {
                                         })}
                                     </div>
                                 </article>
-                            </ScrollReveal>
+                            </Reveal>
                         ))}
                     </div>
                 </section>

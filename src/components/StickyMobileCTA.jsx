@@ -70,7 +70,7 @@ function StickyMobileCTA({
         <>
             <div className="md:hidden h-28" aria-hidden="true" />
 
-            <div className="md:hidden fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+0.7rem)]">
+            <div className="md:hidden fixed inset-x-0 bottom-[var(--dock-space)] z-40 px-3 pb-2">
                 <div className="rounded-2xl border border-slate-700/80 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/50 p-3.5">
                     <div className="flex items-start justify-between gap-3">
                         <div>

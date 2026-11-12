@@ -27,7 +27,8 @@ function Kit() {
                         <Button variant={variant}>Book a session</Button>
                         <Button variant={variant} disabled>Disabled</Button>
                         <Button variant={variant} loading={loading} onClick={simulate}>Send message</Button>
-                        <Button variant={variant} to="/projects">As a link</Button>
+                        <Button variant={variant} to="/projects" arrow>View projects</Button>
+                        <Button variant={variant} href="/resume.pdf" external arrow>Resume</Button>
                     </div>
                 ))}
             </section>
@@ -47,10 +48,17 @@ function Kit() {
 
             <section aria-labelledby="kit-fields" className="grid max-w-xl gap-6">
                 <h2 id="kit-fields" className="font-serif text-h3 text-paper">Fields</h2>
-                <Input label="Name" placeholder="Your name" hint="As you'd like to be addressed." />
-                <Input label="Email" type="email" defaultValue="not-an-email" error="Enter an email address like name@example.com." />
+                <Input label="Name" hint="As you'd like to be addressed." />
+                <Input
+                    label="Email"
+                    type="email"
+                    validate={(value) => (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value) ? '' : 'Enter an email address like name@example.com.')}
+                    hint="Validated when you leave the field."
+                />
+                <Input label="Email (server error)" type="email" defaultValue="not-an-email" error="Enter an email address like name@example.com." />
+                <Input label="Confirmed" defaultValue="Gaurav" success />
                 <Input label="Disabled" disabled defaultValue="Read only" />
-                <Textarea label="Message" placeholder="What are you building?" />
+                <Textarea label="Message" />
             </section>
 
             <section aria-labelledby="kit-tags" className="space-y-4">

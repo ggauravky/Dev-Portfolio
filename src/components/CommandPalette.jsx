@@ -1,5 +1,7 @@
 // Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-// Site search (Cmd/Ctrl+K) — v2 Monograph styling
+// Site search (Cmd/Ctrl+K) — v2 Monograph styling. Opens on real actions:
+// jump to a page, copy the email, open the resume, GitHub and LinkedIn.
+// Dark-only, so there is no theme action (D-028).
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
@@ -9,13 +11,14 @@ import { Command } from 'cmdk'
 import './CommandPalette.css'
 import {
     Search, X, Folder, Globe, Briefcase, Share2, Zap,
-    Copy, Check, Clock, FileText, Code2, Terminal
+    Copy, Check, Clock, FileText, Code2, Terminal, ArrowRight
 } from 'lucide-react'
 import { getAllCommands, CATEGORIES } from '../data/commandRegistry'
 import { searchCommands } from '../utils/searchEngine'
-import { useHeaderHeight } from '../hooks/useHeaderHeight'
 import { useRecentSearches } from '../hooks/useRecentSearches'
 import { useFocusTrap } from '../hooks/useFocusTrap'
+import { siteStatus } from '../data/siteStatus'
+import { DOCK_PAGES } from './chrome/Dock'
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -43,13 +46,20 @@ const CATEGORY_ORDER = [
     CATEGORIES.ACTIONS,
 ]
 
-// Suggested explore items shown when input is empty and no recents
-const EXPLORE_SUGGESTIONS = [
-    { id: 'explore-projects', label: 'My projects', query: 'projects' },
-    { id: 'explore-stack', label: 'My tech stack', query: 'react' },
-    { id: 'explore-contact', label: 'Contact me', query: 'contact' },
-    { id: 'explore-resume', label: 'Download resume', query: 'resume' },
-    { id: 'explore-github', label: 'Open GitHub', query: 'github' },
+// Idle state: real, runnable actions (arrow keys + Enter work on these).
+const IDLE_PAGES = DOCK_PAGES.map((page) => ({
+    id: `idle-page-${page.name.toLowerCase()}`,
+    title: page.name,
+    category: CATEGORIES.PAGES,
+    type: 'internal',
+    url: page.path,
+}))
+
+const IDLE_ACTIONS = [
+    { id: 'idle-copy-email', title: 'Copy email address', desc: siteStatus.email, category: CATEGORIES.ACTIONS, type: 'action', actionId: 'copy-email' },
+    { id: 'idle-resume', title: 'Open resume', desc: 'PDF, opens in a new tab', icon: FileText, category: CATEGORIES.QUICK_ACTIONS, type: 'external', url: siteStatus.resumeUrl },
+    { id: 'idle-github', title: 'Open GitHub', desc: siteStatus.links.github.replace('https://', ''), category: CATEGORIES.SOCIAL, type: 'external', url: siteStatus.links.github },
+    { id: 'idle-linkedin', title: 'Open LinkedIn', desc: siteStatus.links.linkedin.replace('https://', ''), category: CATEGORIES.SOCIAL, type: 'external', url: siteStatus.links.linkedin },
 ]
 
 // Empty-state suggestions by query topic
@@ -77,11 +87,13 @@ const CATEGORY_ICON = {
     [CATEGORIES.ACTIONS]: Copy,
 }
 
-function ItemIcon({ category, type }) {
-    const Icon = type === 'action' ? Zap : CATEGORY_ICON[category] || Code2
+function ItemIcon({ category, type, icon }) {
+    let Icon = icon || CATEGORY_ICON[category] || Code2
+    if (!icon && type === 'action') Icon = Copy
+    else if (category === CATEGORIES.PAGES) Icon = ArrowRight
     return <Icon className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
 }
-ItemIcon.propTypes = { category: PropTypes.string, type: PropTypes.string }
+ItemIcon.propTypes = { category: PropTypes.string, type: PropTypes.string, icon: PropTypes.elementType }
 
 // Registry categories are upper-case keys; show them in sentence case.
 const sentenceCase = (value = '') => value.charAt(0) + value.slice(1).toLowerCase()
@@ -138,7 +150,7 @@ function CommandItem({ cmd, onSelect, titleSegments }) {
             onSelect={() => onSelect(cmd)}
             className="palette-item group"
         >
-            <ItemIcon category={cmd.category} type={cmd.type} />
+            <ItemIcon category={cmd.category} type={cmd.type} icon={cmd.icon} />
 
             <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-center gap-2">
@@ -207,15 +219,24 @@ FilterChips.propTypes = {
 // ---------------------------------------------------------------------------
 // IDLE STATE — RECENT + EXPLORE
 // ---------------------------------------------------------------------------
-function IdleState({ recents, onQuerySelect, onClearRecents, onRemoveRecent }) {
+function IdleState({ recents, onQuerySelect, onClearRecents, onRemoveRecent, onSelect }) {
     const hasRecents = recents && recents.length > 0
 
     return (
         <div className="p-2">
+            <Command.Group>
+                <div className="px-3 pb-1 pt-2 text-[13px] text-muted">Jump to</div>
+                {IDLE_PAGES.map((cmd) => <CommandItem key={cmd.id} cmd={cmd} onSelect={onSelect} />)}
+            </Command.Group>
+            <Command.Group>
+                <div className="px-3 pb-1 pt-4 text-[13px] text-muted">Actions</div>
+                {IDLE_ACTIONS.map((cmd) => <CommandItem key={cmd.id} cmd={cmd} onSelect={onSelect} />)}
+            </Command.Group>
+
             {hasRecents && (
-                <div className="mb-2">
+                <div className="mt-2">
                     <div className="flex items-center justify-between px-3 pt-2">
-                        <span className="text-[13px] text-muted">Recent</span>
+                        <span className="text-[13px] text-muted">Recent searches</span>
                         <button type="button" onClick={onClearRecents} className="palette-text-button">
                             Clear all
                         </button>
@@ -240,18 +261,6 @@ function IdleState({ recents, onQuerySelect, onClearRecents, onRemoveRecent }) {
                     </ul>
                 </div>
             )}
-
-            <div className="px-3 pt-2 text-[13px] text-muted">Try</div>
-            <ul>
-                {EXPLORE_SUGGESTIONS.map((sug) => (
-                    <li key={sug.id}>
-                        <button type="button" className="palette-row w-full" onClick={() => onQuerySelect(sug.query)}>
-                            <Search className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.5} aria-hidden="true" />
-                            <span className="truncate">{sug.label}</span>
-                        </button>
-                    </li>
-                ))}
-            </ul>
         </div>
     )
 }
@@ -260,6 +269,7 @@ IdleState.propTypes = {
     onQuerySelect: PropTypes.func.isRequired,
     onClearRecents: PropTypes.func.isRequired,
     onRemoveRecent: PropTypes.func.isRequired,
+    onSelect: PropTypes.func.isRequired,
 }
 
 // ---------------------------------------------------------------------------
@@ -314,7 +324,6 @@ export default function CommandPalette({ isOpen, onClose }) {
     const [activeFilter, setActiveFilter] = useState('all')
     const [toastMessage, setToastMessage] = useState('')
     const navigate = useNavigate()
-    const headerHeight = useHeaderHeight()
     const listRef = useRef(null)
     const inputRef = useRef(null)
     const surfaceRef = useRef(null)
@@ -408,7 +417,7 @@ export default function CommandPalette({ isOpen, onClose }) {
 
         try {
             if (cmd.type === 'internal' || cmd.type === 'external') {
-                addRecent(search.trim() || cmd.title)
+                if (search.trim()) addRecent(search.trim())
                 onClose()
                 setSearch('')
             }
@@ -422,8 +431,8 @@ export default function CommandPalette({ isOpen, onClose }) {
                     window.open(cmd.url, '_blank', 'noopener,noreferrer')
                 }
             } else if (cmd.type === 'action') {
-                if (cmd.actionId === 'copy-email') copy('kumar.gaurav.yadav2007@gmail.com', 'Email copied!')
-                else if (cmd.actionId === 'copy-url') copy(window.location.href, 'Link copied!')
+                if (cmd.actionId === 'copy-email') copy(siteStatus.email, 'Email copied')
+                else if (cmd.actionId === 'copy-url') copy(window.location.href, 'Link copied')
             }
         } catch (_) {
             // Any error during command execution — close gracefully
@@ -441,14 +450,12 @@ export default function CommandPalette({ isOpen, onClose }) {
 
     // Modal positioning
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
-    const hasHeader = headerHeight > 0
-    const desktopPaddingTop = hasHeader ? headerHeight + 12 : 24
-    const desktopMaxHeight = `calc(100vh - ${hasHeader ? headerHeight + 24 : 48}px)`
+    const desktopMaxHeight = '80vh'
 
     return (
         <div
             className={`fixed inset-0 z-[500] flex justify-center bg-ink/80 sm:px-4 ${isMobile ? 'items-end' : 'items-start'}`}
-            style={isMobile ? undefined : { paddingTop: `${desktopPaddingTop}px` }}
+            style={isMobile ? undefined : { paddingTop: '12vh' }}
             onClick={onClose}
         >
             <div
@@ -509,6 +516,7 @@ export default function CommandPalette({ isOpen, onClose }) {
                                 onQuerySelect={handleQuerySelect}
                                 onClearRecents={clearRecents}
                                 onRemoveRecent={removeRecent}
+                                onSelect={handleSelectCommand}
                             />
                         )}
 

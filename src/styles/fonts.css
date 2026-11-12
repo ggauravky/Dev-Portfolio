@@ -1,9 +1,11 @@
 /*
  * Self-hosted fonts (redesign v2, Phase A). All SIL OFL 1.1 — licences in public/fonts/.
- * Latin subset only. Source: Fontsource 5.3.0 (@fontsource/instrument-serif,
- * @fontsource-variable/geist, @fontsource-variable/geist-mono).
- * Only geist-var.woff2 is preloaded (index.html); the serif gets its preload when a
- * page first uses it at display size (Phase D1).
+ * Latin subset only. Source: Fontsource 5.3.0 (@fontsource-variable/fraunces
+ * "opsz" file = wght 100–900 + opsz 9–144, @fontsource-variable/geist,
+ * @fontsource-variable/geist-mono). Fraunces picked from the P2 specimen (D-033);
+ * SOFT/WONK sit at their defaults (0), i.e. the sharp cut.
+ * Only geist-var.woff2 is preloaded (index.html); Fraunces gets its preload when
+ * a page first uses it above the fold (P3 hero).
  */
 
 /* unicode-range: Fontsource "latin" subset */
@@ -27,20 +29,11 @@
 }
 
 @font-face {
-  font-family: 'Instrument Serif';
+  font-family: 'Fraunces';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 100 900;
   font-display: swap;
-  src: url('/fonts/instrument-serif-400.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Instrument Serif';
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/instrument-serif-400-italic.woff2') format('woff2');
+  src: url('/fonts/fraunces-var.woff2') format('woff2-variations'), url('/fonts/fraunces-var.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -69,11 +62,13 @@
 }
 
 @font-face {
-  font-family: 'Instrument Serif Fallback';
+  /* Fraunces width depends on opsz (auto): tuned at 56px, the mobile hero size
+     (ratio 1.10 there; 1.15 at 28px, 0.93 at 128px). */
+  font-family: 'Fraunces Fallback';
   src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times');
-  size-adjust: 82.69%;
-  ascent-override: 119.72%;
-  descent-override: 37.49%;
+  size-adjust: 110.14%;
+  ascent-override: 88.98%;
+  descent-override: 23.61%;
   line-gap-override: 0%;
 }
 

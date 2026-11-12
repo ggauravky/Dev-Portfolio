@@ -1,0 +1,175 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * S1 dock. Always a pill (radius = half the idle height). Hairline, no shadow,
+ * no blur. Accent marks only the current page and the availability dot.
+ */
+
+.dock {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 100;
+  transform: translateX(-50%);
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.dock-panel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: 26px; /* design-allow: dock pill */
+  background: rgb(var(--ink-raised));
+  color: rgb(var(--paper));
+}
+
+/* === Trigger (the idle pill) === */
+.dock-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 16px 0 10px;
+  border-radius: 22px; /* design-allow: dock pill */
+  color: rgb(var(--paper));
+  font: 400 13px/1 var(--font-mono);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dock-trigger:hover { background: rgb(var(--paper) / 0.06); }
+.dock-trigger:focus-visible { outline-offset: -2px; }
+
+.dock-trigger__label { display: inline-flex; align-items: baseline; gap: 6px; }
+.dock-trigger__index { color: rgb(var(--muted)); }
+.dock-trigger__slash { color: rgb(var(--muted) / 0.6); }
+.dock-trigger__close { color: rgb(var(--muted)); font-family: var(--font-sans); font-size: 14px; }
+
+.dock-ring {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+.dock-ring circle { fill: none; stroke-width: 1.5; }
+.dock-ring__track { stroke: rgb(var(--rule)); }
+.dock-ring__value {
+  stroke: rgb(var(--paper));
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.dock-status {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%; /* design-allow: status dot */
+  background: rgb(var(--accent));
+}
+
+/* === Expanded menu === */
+.dock-menu { display: flex; align-items: center; gap: 4px; }
+.dock-menu__pages,
+.dock-menu__tools { display: flex; align-items: center; gap: 2px; list-style: none; }
+.dock-menu__tools { padding-left: 6px; margin-left: 2px; border-left: 1px solid rgb(var(--rule)); }
+
+.dock-menu__cell { position: relative; }
+
+.dock-item {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 22px; /* design-allow: dock pill */
+  color: rgb(var(--muted));
+  font: 400 14px/1 var(--font-sans);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.dock-item:hover,
+.dock-item:focus-visible,
+.dock-item[aria-current='page'] { color: rgb(var(--paper)); }
+.dock-item:focus-visible { outline-offset: -2px; }
+
+/* Current page: a 4px accent dot under the label (the accent's one job). */
+.dock-item[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%; /* design-allow: status dot */
+  background: rgb(var(--accent));
+}
+
+.dock-item__label { display: inline-flex; align-items: baseline; gap: 6px; }
+.dock-item__index { display: none; color: rgb(var(--muted)); font: 400 11px/1 var(--font-mono); }
+
+/* Sliding highlight shared across items (framer layoutId). */
+.dock-item__hover {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 22px; /* design-allow: dock pill */
+  background: rgb(var(--paper) / 0.07);
+  pointer-events: none;
+}
+
+.dock-kbd {
+  padding: 2px 4px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  color: rgb(var(--muted));
+  font: 400 11px/1 var(--font-mono);
+}
+
+/* === Below 1024px: the menu stacks above the trigger, thumb-reachable === */
+@media (max-width: 1023px) {
+  .dock.is-open .dock-panel {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    width: min(calc(100vw - 32px), 400px);
+    padding: 8px;
+  }
+  .dock.is-open .dock-trigger { justify-content: center; height: 44px; }
+  .dock-menu { flex-direction: column; align-items: stretch; gap: 8px; }
+  .dock-menu__pages {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+  .dock-menu__tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    padding: 8px 0 0;
+    margin: 0;
+    border-left: 0;
+    border-top: 1px solid rgb(var(--rule));
+  }
+  .dock-item { width: 100%; height: 44px; padding: 0 16px; font-size: 15px; }
+  .dock-item__index { display: inline; }
+  .dock-item[aria-current='page']::after { left: auto; right: 16px; bottom: auto; top: 50%; margin: -2px 0 0; }
+}
+
+@media (max-width: 1023px) and (max-height: 520px) {
+  .dock-menu__pages { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Menu fade-in is CSS so the menu is never stuck invisible if framer's
+   features fail to load. */
+.dock-menu { animation: dock-menu-in var(--dur-fast) var(--ease-out) 60ms both; }
+@keyframes dock-menu-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

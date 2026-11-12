@@ -1,0 +1,97 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * S1 top chrome. Transparent; the wordmark and Resume use difference blending so
+ * they stay legible over any page. The avatar menu is not blended.
+ */
+
+.chrome {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  height: var(--chrome-h);
+  padding: 0 var(--space-2);
+  color: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .chrome { padding: 0 var(--space-3); }
+}
+
+.chrome > * { pointer-events: auto; }
+.chrome.has-account { padding-right: calc(var(--space-2) + 52px); }
+
+.chrome-account {
+  position: fixed;
+  top: 6px;
+  right: var(--space-2);
+  z-index: 61;
+}
+
+@media (min-width: 640px) {
+  .chrome.has-account { padding-right: calc(var(--space-3) + 52px); }
+  .chrome-account { right: var(--space-3); }
+}
+
+.chrome-wordmark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font: 400 19px/1 var(--font-serif);
+  letter-spacing: -0.01em;
+  text-decoration: none;
+}
+
+.chrome-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 4px;
+  font: 400 14px/1 var(--font-sans);
+  text-decoration: none;
+}
+
+.chrome-link:hover,
+.chrome-wordmark:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.chrome-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-control);
+}
+
+.chrome-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: rgb(var(--muted));
+  font: 400 15px/1 var(--font-sans);
+  text-align: left;
+  text-decoration: none;
+}
+
+.chrome-menu-item:hover,
+.chrome-menu-item:focus-visible { color: rgb(var(--paper)); background: rgb(var(--paper) / 0.04); }
+
+/* Inside the difference-blended header an accent ring would invert to violet;
+   white inverts to the opposite of whatever is underneath, so it always shows. */
+.chrome :focus-visible { outline-color: #fff; }

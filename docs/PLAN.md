@@ -47,6 +47,8 @@ Phase 0 (`docs/REPO_MAP.md`, `docs/AUDIT.md`) and Phase 1 (`docs/DESIGN.md`, dir
 
 ## Phases
 
+> **A and B are done** (`9b86d14`, `7594b2c`). Their sections below are kept as the record.
+
 ### A. Foundations
 - **Files:** `tailwind.config.js`, `src/index.css`, `index.html` (drop Google Fonts lines 136–138 and add 2 preloads), new `src/styles/fonts.css`, new `public/fonts/*.woff2`, `public/404.html` and `offline.html` (font links), `public/sw.js` (cache version bump), `src/App.jsx` (skip link, Toaster colours at 254–293), new `scripts/check-design.mjs`, and `package.json` (add `check:design`).
 - **Work:**
@@ -79,57 +81,64 @@ Phase 0 (`docs/REPO_MAP.md`, `docs/AUDIT.md`) and Phase 1 (`docs/DESIGN.md`, dir
   - The drawer focus trap.
 - **Rollback:** revert. The pages keep their inline styles until D.
 
-### C. Motion system
-- **Files:** new `src/lib/motion.js` (easing `cubic-bezier(.2,.7,.2,1)`, durations 150/240/400, stagger 60 ms, and `prefersReducedMotion`), `src/App.jsx`, `PageTransition.jsx`, `src/index.css` (a global reduced-motion kill-switch), and the files that delete or unmount `SplashScreen`, `CursorSpotlight`, `ScrollProgress`, `ScrollReveal` (6 users), `use3DTilt` and `RadialMenu`.
-- **Work:**
-  - Replace `AnimatePresence` in App with a 150 ms CSS opacity crossfade keyed on location, which takes framer-motion out of the entry chunk.
-  - Where framer remains (Journey, Projects filtering), wrap it in `LazyMotion` + `domAnimation` with `m.` components.
-  - Hero secondary-line stagger in CSS only.
-  - Remove `cobe` and the `pino*` packages from the frontend dependencies.
-- **Accept:**
-  - No framer code in the Home or initial chunk (checked in `dist/stats.html`).
-  - With reduced motion on, nothing moves.
-  - Only transform and opacity are animated (DevTools paint flashing).
-  - Performance ≥ 70 on mobile.
-- **Risks:** removing `RadialMenu` removes a feature. It is an a11y negative, but **the user must confirm before it is removed.** The `inert` splash gate (`App.jsx:296`) has to be removed cleanly.
-- **Rollback:** revert. Each removal is its own commit.
+### C–G superseded (2026-11-12, D-026)
+After the owner's review of Phase B, the old C, D1–D9, E, F and G phases are replaced by **P2–P6** below. A and B are done. Read the Signature layer in `docs/DESIGN.md` first.
 
-### E. Particle canvas (done inside D1)
-Delete `NeuralNetworkCanvas.jsx` (an rAF loop with O(n²) work, used only at `Home.jsx:95`), with **no replacement**. In Monograph the hero is the typography plus a contents list. Accept: no rAF loop on Home and TBT < 200 ms. Rollback: revert the file.
+**Rules for every P-phase:**
+- One session per phase. **Stop and wait for the owner's review** after each one, and never start the next phase without the owner's OK.
+- **Conversion rule:** fully convert what the phase touches and delete the old styles and components. No half-migrated pages. Add each converted file to `FINISHED` in `scripts/check-design.mjs`.
+- **Copy:** each page phase rewrites its own copy using existing facts only, and logs every change in `docs/COPY_REVIEW.md` (old → new → source fact, with a ⚠ confirm column for the owner).
+- **Constraints:**
+  - Never reformat `src/data/projectsData.js`; the sitemap script regex-parses `slug:`.
+  - Every page keeps `useSEO` with the same titles and descriptions.
+  - `vercel.json`, the sitemap, `llms.txt`/`llms-full.txt` and all URLs stay unchanged.
+  - No heavy library without a stated reason.
 
-### D. Pages (one session each, in this order; F's copy rules apply in each)
-- **D1 Home** (+E): `Home.jsx`, `Home.css`.
-  - The hero is a static serif name, one plain sentence from the About copy, and a contents list of the top projects, with a portrait in the margin rail.
-  - Remove the pill, the badge, the marquee, the ring and glow, the 3 hard-coded slugs (use the `featured` flag), and the filler stats.
-  - The sections become contents, essay, list and colophon.
-  - **Performance ≥ 90 starts here.**
-- **D2 Projects index:** `Projects.jsx` and its CSS become a ranked index. Featured entries get a large row with an image, the rest are single lines, and the sort control is replaced with accessible buttons.
-- **D3 Case studies:** `ProjectDetail.jsx` is laid out as chapters (problem, solution, architecture, key decisions, lessons), with the meta in the margin rail. This also fixes the hero collision.
-  - Proposed top 6 (all have the full fields): `smartmess`, `rag-ai-teaching-assistant`, `kanoon-mate`, `smart-lms`, `insightaudio`, `real-time-chat-app`. **The user confirms this list.**
-  - The remaining 20 projects use the same template with partial data.
-- **D4 About**, **D5 Skills**, **D6 Journey** (`Journey.jsx` 1470 lines and `JourneyNavigator.css` 642, the biggest page; this may split into D6a/b).
-- **D7 Services** and `ServiceDetail` (fix the clipped "Razorpay" text). Price display still comes from the backend.
-- **D8 Blog** and `BlogPost`: move the existing `--article-*` variables onto the tokens. Light-touch work, since this is the closest to the target.
-- **D9 Contact** and the **sign-in surfaces** (auth dialog, inline triggers).
-- **Each sub-phase:**
-  - Files: that page, its CSS, and the components it uses.
-  - Accept: the gates above, `check:design` clean for those files, and identical `useSEO` titles and descriptions.
-  - Risks: the sitemap script regex-parses `slug:` in `projectsData.js`, so **never reformat data files**.
-  - Rollback: one commit per page.
+### End-of-phase gate (mandatory; replaces "Quality gates" above where they differ)
+1. Screenshots at **1440 and 390**, including hover and focus states, saved as WebP in `docs/audit/phase-N/`.
+2. Run the `web-design-guidelines` audit, then the `feature-dev:code-reviewer` agent, and fix their findings. Then run `code-simplifier`.
+3. `npm run build`, `npm run test:blog`, `npm run check:design` and `git diff --check`. There is still no linter or typecheck (D-006); say so, don't fake it.
+4. Lighthouse mobile and desktop, median of 3 runs against `npm run preview`. Accessibility ≥ 95, SEO 100, no Performance regression. Mobile Performance ≥ 90 from P3 on.
+5. **Self-critique:** list 5 reasons a stranger might think the result is templated or AI-made, and fix them. For each signature move used, say why it is specific to Gaurav and not copyable.
+6. Update `docs/PROGRESS.md` and `docs/DECISIONS.md`, commit after the owner approves, then tell the owner to /clear.
 
-### F. Copy pass (one session after D9)
-Sweep every page for clichés ("Innovator", "Let's Build Something Great", "Welcome", "beginner projects", keyword-stuffed alt text, filler stats). Rewrite using existing facts only. Write `docs/COPY_REVIEW.md` as a table of old line → new line → source fact, with a ⚠ **confirm** column for anything the user must check. No change is merged until the user signs off. If visible text changes, update `llms.txt`/`llms-full.txt` and the portfolio JSON copies.
+### P2 — System
+- **Type:** dev-only `/dev/type-specimen` → the owner picks with AskUserQuestion → self-host the picked fonts and drop the losers. Add the Devanagari face.
+- **Tokens:** update to the new type, add the motion tokens, and the grain overlay (S8).
+- **Motion:** `src/lib/motion.js` holds the durations, easing and springs. Add a global reduced-motion kill switch.
+- **Navigation:** the S1 dock and top chrome. Delete B's top `Navbar` and drawer, and update `useHeaderHeight` and the `AppLayout` padding.
+- **Cursor:** S5.
+- **Components:** rebuild the button and input system in `src/components/ui/` to the DESIGN spec, and restyle ⌘K with real actions.
+- **Data:** `src/data/siteStatus.js`, with placeholders the owner fills in.
+- **Preloader and route transitions:** the preloader, plus a clip-path route wipe that replaces `PageTransition`.
+- **Reveal-bug fix:** one IntersectionObserver reveal that follows the DESIGN reveal rules and replaces `ScrollReveal` for all 6 users.
+- **Delete:** `ScrollProgress`, `CursorSpotlight`, `RadialMenu` (D-029), `use3DTilt`, `SplashScreen` and `BackToTop` (it moves into S4 in P3).
+- **Accept:** the dock is fully keyboard and screen-reader operable; nothing is stuck invisible at any scroll depth; nothing moves under reduced motion; mobile Performance ≥ 64 (after B) with a target of ≥ 70.
+- **Risks:** many pages lose the old nav at once, but they still render because the dock is global. Framer in the entry chunk is limited by lazy features.
+- **Rollback:** revert the phase commit.
 
-### G. Polish
-- **Files:** `NotFound.jsx` (390 lines, to be cut to a simple editorial 404), `public/404.html`, `SkeletonLoader.jsx` (currently unused; either wire it in as the route fallback in place of the lime spinner, or delete it), empty states (Projects filter, Blog, Activity), `public/favicon.svg` plus new PNG/ICO/apple-touch icons, a **new `public/og-image.jpg`** (it is referenced in `index.html:93,117` but missing today, a real bug), `ScrollToTop` (restore the position on back/forward and go to the top on push), and a full hover/focus/active audit.
-- Also delete the legacy token aliases and unused CSS utilities and keyframes.
-- **Accept:** `check:design` reports zero violations repo-wide; the OG image resolves with a 200; back-button scroll is restored; Lighthouse ≥ 90/95/100/100 on Home, Projects, a case study and Blog.
+### P3 — Home, end to end
+- **Sections:** hero (S2 name, S6), about, selected-work index (uses the `featured` flag, not hard-coded slugs), skills, notebook, journey teaser, contact, plus the S4 colophon footer (site-wide).
+- **Portrait:** in the S3 arch mask.
+- **Delete:** `NeuralNetworkCanvas`, every gradient and glow on Home, the pill, the badge, the marquee, the ring and the filler stats.
+- **Owner fills in:** the `siteStatus` values.
+- **Accept:** mobile Performance ≥ 90, TBT < 200 ms, no rAF loop at idle.
+
+### P4 — Projects
+- The S7 index, the case-study template, and the top 5–6 case studies (problem, role, stack, decisions, outcome, links), using facts from `projectsData.js` only.
+- **The owner confirms the list:** proposed `smartmess`, `rag-ai-teaching-assistant`, `kanoon-mate`, `smart-lms`, `insightaudio` and `real-time-chat-app`.
+- The other projects use the same template with partial data. Case studies stay on `/projects/:slug` (D-009).
+
+### P5 — Remaining pages
+- About, Skills, Journey (may split into P5a/b), Services and `ServiceDetail` (fix the clipped "Razorpay"), Blog and BlogPost (reading progress, TOC, code styling), Contact and 404.
+- Sign-in stays as decided in D-002.
+
+### P6 — Polish and QA
+- Performance, a11y, SEO and the OG image (`public/og-image.jpg` is referenced but missing today; build it with the S2 name).
+- The 390/768/1024/1440 sweep and cross-browser checks (Chromium, Firefox, WebKit).
+- Scroll restoration, skeletons and empty states.
+- Delete the legacy aliases and unused CSS.
+- **Accept:** `check:design` reports zero violations repo-wide.
 
 ## Verification (summary)
-Each phase must pass, in order:
-1. `npm run build`, `npm run test:blog`, `npm run check:design` (from A on) and `git diff --check`.
-2. `npm run preview` with Lighthouse ×3.
-3. Screenshots at 4 widths.
-4. A keyboard pass and a reduced-motion pass.
-5. The code-reviewer and then code-simplifier agents.
-6. A PROGRESS update, then stop for commit approval.
+Every phase passes the end-of-phase gate above, in order, then stops for the owner's review and commit approval.

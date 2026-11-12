@@ -8,7 +8,7 @@ import { ArrowRight, ArrowUpRight, Download } from 'lucide-react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 import LazyImage from '../components/LazyImage'
 
 const githubStreakUrl = 'https://camo.githubusercontent.com/80d675df3c581caef2a3fc4af3ab8bd8aeeff7037e331312e09e106dea1b3130/68747470733a2f2f73747265616b2d73746174732e64656d6f6c61622e636f6d3f757365723d676761757261766b79267468656d653d64726163756c6126686964655f626f726465723d74727565266261636b67726f756e643d3064306432622672696e673d37633361656426666972653d613738626661266375727253747265616b4c6162656c3d613738626661'
@@ -202,7 +202,7 @@ function About() {
             <div className="pointer-events-none absolute -left-40 top-[46rem] h-[28rem] w-[28rem] rounded-full bg-cyber/[0.025] blur-[120px]" />
 
             <div className="relative z-10 mx-auto max-w-6xl space-y-20 sm:space-y-24 lg:space-y-28">
-                <ScrollReveal>
+                <Reveal>
                     <section aria-labelledby="about-title" className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card p-5 sm:p-8 lg:p-10">
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-toxic/[0.035] via-transparent to-cyber/[0.025]" />
                         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-toxic/60 to-transparent" />
@@ -262,9 +262,9 @@ function About() {
                             </aside>
                         </div>
                     </section>
-                </ScrollReveal>
+                </Reveal>
 
-                <ScrollReveal delay={40}>
+                <Reveal delay={40}>
                     <section aria-labelledby="current-chapter-title">
                         <SectionHeading id="current-chapter-title" title="Current Chapter" subtitle="Education · Specialization · Experience" />
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
@@ -273,9 +273,9 @@ function About() {
                             ))}
                         </div>
                     </section>
-                </ScrollReveal>
+                </Reveal>
 
-                <ScrollReveal delay={60}>
+                <Reveal delay={60}>
                     <section aria-labelledby="what-i-build-title">
                         <SectionHeading id="what-i-build-title" title="What I Build" subtitle="Applied AI · Production software" />
                         <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
@@ -305,9 +305,9 @@ function About() {
                             })}
                         </div>
                     </section>
-                </ScrollReveal>
+                </Reveal>
 
-                <ScrollReveal delay={70}>
+                <Reveal delay={70}>
                     <section aria-labelledby="workflow-title">
                         <SectionHeading id="workflow-title" title="How I Work" subtitle="A practical path from problem to product" />
                         <ol className="grid overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card sm:grid-cols-2 lg:grid-cols-5">
@@ -327,9 +327,9 @@ function About() {
                             ))}
                         </ol>
                     </section>
-                </ScrollReveal>
+                </Reveal>
 
-                <ScrollReveal delay={80}>
+                <Reveal delay={80}>
                     <section aria-labelledby="consistency-title" className="rounded-lg border border-obsidian-border bg-obsidian-card p-4 sm:p-6 lg:p-8">
                         <SectionHeading id="consistency-title" title="Consistency in Practice" subtitle="GitHub activity · Problem solving" />
                         <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
@@ -376,9 +376,9 @@ function About() {
                             </a>
                         </div>
                     </section>
-                </ScrollReveal>
+                </Reveal>
 
-                <ScrollReveal delay={90}>
+                <Reveal delay={90}>
                     <section aria-labelledby="about-cta-title" className="relative overflow-hidden rounded-lg border border-obsidian-border bg-obsidian-card px-5 py-10 text-center sm:px-8 sm:py-12">
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/[0.05] via-transparent to-transparent" />
                         <div className="relative">
@@ -404,7 +404,7 @@ function About() {
                             </Link>
                         </div>
                     </section>
-                </ScrollReveal>
+                </Reveal>
             </div>
         </main>
     )

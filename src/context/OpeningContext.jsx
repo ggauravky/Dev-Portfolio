@@ -4,15 +4,13 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Broadcasts the current opening-sequence state to any descendant.
- *
- * 'splash'   — SplashScreen is visible; AppLayout is inert
- * 'settling' — wordmark is traveling to navbar; hero is about to reveal
- * 'ready'    — everything is fully interactive
+ * Legacy opening-sequence state. The splash screen it coordinated was replaced in
+ * P2 by the non-blocking Preloader (the page renders underneath it), so there is
+ * no provider any more and the value is always 'ready'. Home still reads it; P3
+ * removes the last user, then delete this file.
  */
 export const OpeningContext = createContext('ready')
 
-/** Convenience hook — returns the current openingState string. */
 export function useOpeningState() {
     return useContext(OpeningContext)
 }

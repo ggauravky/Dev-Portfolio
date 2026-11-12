@@ -5,8 +5,8 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { MotionConfig } from 'framer-motion'
 import PropTypes from 'prop-types'
 
 import { Toaster } from 'react-hot-toast'
@@ -14,17 +14,14 @@ import './App.css'
 import './components/journey/JourneyNavigator.css'
 import './pages/Blog.css'
 import './pages/BlogPost.css'
-import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-import BackToTop from './components/BackToTop'
 import ErrorBoundary from './components/ErrorBoundary'
-import PageTransition from './components/PageTransition'
-import SplashScreen from './components/SplashScreen'
-import { OpeningContext } from './context/OpeningContext'
-import CursorSpotlight from './components/CursorSpotlight'
-import ScrollProgress from './components/ScrollProgress'
+import TopChrome from './components/chrome/TopChrome'
+import Dock from './components/chrome/Dock'
+import Cursor from './components/chrome/Cursor'
+import Preloader from './components/chrome/Preloader'
+import RouteWipe from './components/chrome/RouteWipe'
 import CommandPalette from './components/CommandPalette'
-import RadialMenu from './components/RadialMenu'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
@@ -61,25 +58,17 @@ const ProjectDetail = lazy(() => import('./pages/ProjectDetail'))
 // Dev-only UI kit sheet; the DEV check removes it (and its chunk) from production builds.
 const Kit = import.meta.env.DEV ? lazy(() => import('./pages/_Kit')) : null
 
-// Per-route loading fallback — keeps loading state isolated per route
+// Per-route loading fallback: an empty page-height block (the route wipe
+// covers the swap), announced to screen readers.
 const PageLoader = () => (
-    <div className="min-h-screen bg-obsidian flex items-center justify-center">
-        <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-10 w-10 border-2 border-toxic border-t-transparent"></div>
-        </div>
+    <div className="min-h-screen" role="status">
+        <span className="sr-only">Loading page…</span>
     </div>
 )
 
-// Wraps each route with its own Suspense so lazy loading never bubbles
-// past AnimatePresence and causes a blank screen during page transitions
+// Each route gets its own Suspense so a lazy chunk never blanks the whole shell.
 function R({ children }) {
-    return (
-        <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-                {children}
-            </Suspense>
-        </PageTransition>
-    )
+    return <Suspense fallback={<PageLoader />}>{children}</Suspense>
 }
 
 R.propTypes = {
@@ -122,100 +111,74 @@ function AnalyticsRouteTracker() {
     return null
 }
 
-// Routes that should render without Navbar / Footer (full-screen layouts)
+// Routes that should render without the chrome / footer (full-screen layouts)
 const FULL_SCREEN_ROUTES = new Set([])
 
-function AppLayout({ children, navReady, logoRef }) {
+// The top chrome is transparent and fixed (var(--chrome-h)); the dock floats at
+// the bottom, so the page reserves var(--dock-space) to keep the footer clear.
+function AppLayout({ children }) {
     const { pathname } = useLocation()
     const isFullScreen = FULL_SCREEN_ROUTES.has(pathname)
-    const headerRef = useRef(null)
-    const [headerHeight, setHeaderHeight] = useState(0)
-
-    useEffect(() => {
-        if (isFullScreen || !headerRef.current) return
-        const el = headerRef.current
-        const update = () => setHeaderHeight(el.offsetHeight)
-        update()
-        const ro = new ResizeObserver(update)
-        ro.observe(el)
-        return () => ro.disconnect()
-    }, [isFullScreen])
 
     return (
         <div className="App">
             <a href="#main-content" className="skip-link">Skip to content</a>
-            {!isFullScreen && (
-                <header ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
-                    <Navbar navReady={navReady} logoRef={logoRef} />
-                </header>
-            )}
-            <div id="main-content" tabIndex={-1} style={isFullScreen ? {} : { paddingTop: headerHeight || 0 }}>
+            {!isFullScreen && <TopChrome />}
+            <div
+                id="main-content"
+                tabIndex={-1}
+                style={isFullScreen ? undefined : { paddingTop: 'var(--chrome-h)', paddingBottom: 'var(--dock-space)' }}
+            >
                 {children}
                 {!isFullScreen && <Footer />}
-                {!isFullScreen && <BackToTop />}
             </div>
+            {!isFullScreen && <Dock />}
         </div>
     )
 }
 
 AppLayout.propTypes = {
-    children:  PropTypes.node.isRequired,
-    navReady:  PropTypes.bool,
-    logoRef:   PropTypes.shape({ current: PropTypes.object }),
+    children: PropTypes.node.isRequired,
 }
 
-function AnimatedRoutes() {
+function AppRoutes() {
     const location = useLocation()
     return (
-        <AnimatePresence mode="sync">
-            <Routes location={location} key={location.pathname}>
-                <Route path="/"                           element={<R><Home /></R>} />
-                <Route path="/about"                      element={<R><About /></R>} />
-                <Route path="/journey"                    element={<R><Journey /></R>} />
-                <Route path="/skills"                     element={<R><Skills /></R>} />
-                <Route path="/projects"                   element={<R><Projects /></R>} />
-                <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
-                <Route path="/blog"                       element={<R><Blog /></R>} />
-                <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
-                <Route path="/updates"                    element={<R><Updates /></R>} />
-                <Route path="/services"                   element={<R><Services /></R>} />
-                <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
-                <Route path="/booknow"                    element={<R><BookNow /></R>} />
-                <Route path="/support"                    element={<R><Support /></R>} />
-                <Route path="/payment-success/:transactionId" element={<R><PaymentSuccess /></R>} />
-                <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
-                <Route path="/frontend-development"       element={<R><ServiceDetail forcedSlug="frontend-development" /></R>} />
-                <Route path="/backend-development"        element={<R><ServiceDetail forcedSlug="backend-development" /></R>} />
-                <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
-                <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
-                <Route path="/contact"                    element={<R><Contact /></R>} />
-                <Route path="/my-activity"               element={<R><ActivityTimeline /></R>} />
-                <Route path="/my-supports"                element={<R><ActivityTimeline /></R>} />
-                <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
-                <Route path="/privacy"                    element={<R><Privacy /></R>} />
-                <Route path="/terms"                      element={<R><Terms /></R>} />
-                <Route path="/refund"                     element={<R><Refund /></R>} />
-                {Kit ? <Route path="/_kit" element={<R><Kit /></R>} /> : null}
-                <Route path="*"                           element={<R><NotFound /></R>} />
-            </Routes>
-        </AnimatePresence>
+        <Routes location={location} key={location.pathname}>
+            <Route path="/"                           element={<R><Home /></R>} />
+            <Route path="/about"                      element={<R><About /></R>} />
+            <Route path="/journey"                    element={<R><Journey /></R>} />
+            <Route path="/skills"                     element={<R><Skills /></R>} />
+            <Route path="/projects"                   element={<R><Projects /></R>} />
+            <Route path="/projects/:slug"              element={<R><ProjectDetail /></R>} />
+            <Route path="/blog"                       element={<R><Blog /></R>} />
+            <Route path="/blog/:slug"                 element={<R><BlogPost /></R>} />
+            <Route path="/updates"                    element={<R><Updates /></R>} />
+            <Route path="/services"                   element={<R><Services /></R>} />
+            <Route path="/services/:slug"             element={<R><ServiceDetail /></R>} />
+            <Route path="/booknow"                    element={<R><BookNow /></R>} />
+            <Route path="/support"                    element={<R><Support /></R>} />
+            <Route path="/payment-success/:transactionId" element={<R><PaymentSuccess /></R>} />
+            <Route path="/payment-success"            element={<R><PaymentSuccess /></R>} />
+            <Route path="/frontend-development"       element={<R><ServiceDetail forcedSlug="frontend-development" /></R>} />
+            <Route path="/backend-development"        element={<R><ServiceDetail forcedSlug="backend-development" /></R>} />
+            <Route path="/full-stack-development"     element={<R><ServiceDetail forcedSlug="fullstack-development" /></R>} />
+            <Route path="/ai-data-science-guidance"   element={<R><ServiceDetail forcedSlug="ai-data-guidance" /></R>} />
+            <Route path="/contact"                    element={<R><Contact /></R>} />
+            <Route path="/my-activity"               element={<R><ActivityTimeline /></R>} />
+            <Route path="/my-supports"                element={<R><ActivityTimeline /></R>} />
+            <Route path="/admin"                      element={<R><AdminRedirect /></R>} />
+            <Route path="/privacy"                    element={<R><Privacy /></R>} />
+            <Route path="/terms"                      element={<R><Terms /></R>} />
+            <Route path="/refund"                     element={<R><Refund /></R>} />
+            {Kit ? <Route path="/_kit" element={<R><Kit /></R>} /> : null}
+            <Route path="*"                           element={<R><NotFound /></R>} />
+        </Routes>
     )
 }
 
 function App() {
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
-
-    // ─── Opening sequence state machine ───────────────────────────────────────
-    const alreadySeen = typeof sessionStorage !== 'undefined'
-        ? !!sessionStorage.getItem('gky-splash-shown')
-        : true
-
-    const [openingState, setOpeningState] = useState(alreadySeen ? 'ready' : 'splash')
-    const [navReady, setNavReady]         = useState(alreadySeen)
-
-    // Ref forwarded through AppLayout → Navbar → logo <span>
-    // SplashScreen reads this to calculate travel target
-    const navLogoRef = useRef(null)
 
     // Listen for custom event to trigger command palette from Navbar or other components
     useEffect(() => {
@@ -230,29 +193,18 @@ function App() {
         initializeAnalytics()
     }, [])
 
-    // ─── Splash done handler ───────────────────────────────────────────────────
-    const handleSplashDone = useCallback(() => {
-        setNavReady(true)
-        setTimeout(() => setOpeningState('ready'), 300)
-    }, [])
-
     return (
         <>
             <Router>
-                <ScrollProgress />
-                {openingState === 'ready' && <CursorSpotlight />}
+                {/* framer-motion follows the OS reduced-motion setting everywhere */}
+                <MotionConfig reducedMotion="user">
                 <ScrollToTop />
                 <AnalyticsRouteTracker />
                 <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
-                <RadialMenu />
                 <NetworkStatusBanner />
-
-                {openingState === 'splash' && (
-                    <SplashScreen
-                        onDone={handleSplashDone}
-                        navLogoRef={navLogoRef}
-                    />
-                )}
+                <Preloader />
+                <RouteWipe />
+                <Cursor />
                 <Toaster
                     position="top-center"
                     reverseOrder={false}
@@ -290,14 +242,11 @@ function App() {
                     }}
                 />
                 <ErrorBoundary>
-                    <OpeningContext.Provider value={openingState}>
-                        <div {...(openingState === 'splash' ? { inert: '' } : {})}>
-                            <AppLayout navReady={navReady} logoRef={navLogoRef}>
-                                <AnimatedRoutes />
-                            </AppLayout>
-                        </div>
-                    </OpeningContext.Provider>
+                    <AppLayout>
+                        <AppRoutes />
+                    </AppLayout>
                 </ErrorBoundary>
+                </MotionConfig>
 
             </Router>
         </>

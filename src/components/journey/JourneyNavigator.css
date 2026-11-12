@@ -581,7 +581,7 @@
   white-space: nowrap;
 }
 
-body.journey-index-open .back-to-top-button {
+body.journey-index-open .dock {
   pointer-events: none;
   opacity: 0 !important;
 }

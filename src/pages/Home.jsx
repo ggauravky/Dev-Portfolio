@@ -8,13 +8,12 @@ import { Link } from 'react-router-dom'
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import useSEO from '../hooks/useSEO'
-import { use3DTilt } from '../hooks/use3DTilt'
 import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { journeyData } from '../data/journeyData'
 import LazyImage from '../components/LazyImage'
 import EditorialImage from '../components/blog/EditorialImage'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 import TechIcon from '../components/TechIcon'
 import NeuralNetworkCanvas from '../components/NeuralNetworkCanvas'
 import { useOpeningState } from '../context/OpeningContext'
@@ -22,7 +21,6 @@ import { useOpeningState } from '../context/OpeningContext'
 const HERO_PROFILE_WIDTHS = [480, 768, 1122]
 
 function Home() {
-    const profileTilt = use3DTilt({ maxTilt: 10, glint: true })
     const openingState = useOpeningState()
     // Hero reveals once the interface is fully ready
     const heroReady = openingState === 'ready'
@@ -262,19 +260,7 @@ function Home() {
                             animate={heroReady ? 'visible' : 'hidden'}
                             custom={0.22}
                         >
-                            <motion.div 
-
-                                ref={profileTilt.ref}
-                                onMouseMove={profileTilt.handleMouseMove}
-                                onMouseEnter={profileTilt.handleMouseEnter}
-                                onMouseLeave={profileTilt.handleMouseLeave}
-                                style={{
-                                    rotateX: profileTilt.rotateX,
-                                    rotateY: profileTilt.rotateY,
-                                    transformStyle: 'preserve-3d',
-                                }}
-                                className="relative group cursor-pointer"
-                            >
+                            <div className="relative group">
                                 {/* Clean glow behind image */}
                                 <div className="absolute -inset-4 bg-gradient-to-r from-toxic via-cyber to-purple-600 rounded-full blur-2xl opacity-20 group-hover:opacity-45 transition-opacity duration-500"></div>
                                 
@@ -290,15 +276,6 @@ function Home() {
                                             className="w-full h-full rounded-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
                                         />
 
-                                        {/* Dynamic Specular Glint Sheen */}
-                                        <motion.div
-                                            className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-40 transition-opacity duration-300"
-                                            style={{
-                                                background: profileTilt.isHovered
-                                                    ? `radial-gradient(circle at ${profileTilt.glintPercentX.get()}% ${profileTilt.glintPercentY.get()}%, rgba(255,255,255,0.4) 0%, rgba(197,248,42,0.15) 35%, transparent 70%)`
-                                                    : 'none',
-                                            }}
-                                        />
                                     </div>
                                     
                                     {/* Available badge */}
@@ -312,7 +289,7 @@ function Home() {
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         </motion.div>
                     </div>
                 </div>
@@ -334,7 +311,7 @@ function Home() {
                     <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyber/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
                 </div>
                 
-                <ScrollReveal className="max-w-6xl mx-auto relative z-10">
+                <Reveal className="max-w-6xl mx-auto relative z-10">
                     <div className="text-center mb-16 animate-fadeIn">
                         <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Get to know me</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
@@ -446,7 +423,7 @@ function Home() {
                             <span className="text-sm group-hover:translate-x-1 transition-transform duration-300">→</span>
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Skills Section */}
@@ -457,7 +434,7 @@ function Home() {
                     <div className="absolute top-1/4 -right-20 w-96 h-96 bg-cyber/5 rounded-full blur-3xl"></div>
                 </div>
 
-                <ScrollReveal className="max-w-7xl mx-auto relative z-10" delay={80}>
+                <Reveal className="max-w-7xl mx-auto relative z-10" delay={80}>
                     <div className="text-center mb-16 animate-fadeIn">
                         <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">What I know</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
@@ -541,7 +518,7 @@ function Home() {
                             <span className="text-sm group-hover:translate-x-1 transition-transform duration-300">→</span>
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Projects Section */}
@@ -550,7 +527,7 @@ function Home() {
                     <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-toxic/5 rounded-full blur-3xl"></div>
                 </div>
 
-                <ScrollReveal className="max-w-7xl mx-auto relative z-10" delay={60}>
+                <Reveal className="max-w-7xl mx-auto relative z-10" delay={60}>
                     <div className="text-center mb-16">
                         <span className="inline-block text-cyber text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyber/5 rounded-full border border-cyber/15">My work</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
@@ -648,7 +625,7 @@ function Home() {
                             </div>
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Blog Section */}
@@ -657,7 +634,7 @@ function Home() {
                     <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-cyber/5 rounded-full blur-3xl"></div>
                 </div>
 
-                <ScrollReveal className="max-w-7xl mx-auto" delay={60}>
+                <Reveal className="max-w-7xl mx-auto" delay={60}>
                     <div className="text-center mb-16">
                         <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Engineering notes</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
@@ -723,7 +700,7 @@ function Home() {
                             </div>
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Professional Journey Section */}
@@ -732,7 +709,7 @@ function Home() {
                     <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-toxic/5 rounded-full blur-[120px]"></div>
                 </div>
 
-                <ScrollReveal className="max-w-7xl mx-auto" delay={60}>
+                <Reveal className="max-w-7xl mx-auto" delay={60}>
                     <div className="text-center mb-16">
                         <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Continuous Learning & Growth</span>
                         <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6">
@@ -789,14 +766,14 @@ function Home() {
                             Explore Complete Journey →
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
 
             {/* Contact Section */}
             <section className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-obsidian border-t border-obsidian-border">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent"></div>
                 
-                <ScrollReveal className="max-w-4xl mx-auto text-center relative z-10" delay={60}>
+                <Reveal className="max-w-4xl mx-auto text-center relative z-10" delay={60}>
                     <span className="inline-block text-toxic text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">Get in touch</span>
                     <h2 className="text-4xl sm:text-5xl lg:text-7xl font-display font-extrabold uppercase mt-4 mb-6 leading-[0.95] tracking-tighter">
                         <span className="text-white">
@@ -829,7 +806,7 @@ function Home() {
                             </span>
                         </Link>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </section>
         </main>
     )

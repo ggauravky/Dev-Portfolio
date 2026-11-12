@@ -2,6 +2,92 @@
 
 > **Chosen direction: A — Monograph** (dark editorial, serif-led). Picked by the user on 2026-11-12. B and C are kept below for reference only.
 
+> **Revised 2026-11-12 after the owner's review of Phase B (D-026).** The Monograph *palette, hairlines, radius `0/4/8`, 8px spacing, margin-rail grid, index-not-grid projects and dark-only* stay. Its **motion language ("quiet, one moment, no scroll reveals") and the fixed Instrument Serif + Geist pairing are superseded** by the Signature layer below. Where this section and anything later in the file disagree, this section wins.
+
+## Signature layer (mandatory)
+The goal is an ownable design language, not generic effects. Rules:
+- Every effect must improve clarity or feel. There are **at most 3 "moments" per page**.
+- Nothing may push mobile Lighthouse Performance below 90 or cost accessibility.
+- **Conversion rule:** every phase fully converts what it touches and deletes the old styles. No half-migrated pages, and two design languages never coexist on one page.
+
+**S1 Bottom pill dock** (replaces the top navbar)
+- Fixed at bottom-centre, and always a pill.
+- **Idle:** a compact pill showing the page index and name (e.g. "03 / Projects"), a small scroll-progress ring and the availability dot.
+- **Hover, focus or tap:** it morphs (width/height spring, shared `layoutId` highlight) into the full menu: Home, About, Projects, Journey, Skills, Services, Blog, Contact, plus ⌘/Ctrl+K and Resume. Magnetic hover and a sliding active indicator.
+- **Mobile:** thumb-reachable, `env(safe-area-inset-bottom)`, targets ≥ 44px.
+- **Accessibility:** a `nav` landmark, `aria-current`, a focus trap while expanded (reuse `src/hooks/useFocusTrap.js`), and Esc closes it.
+- **Top chrome:** only a tiny fixed wordmark and a Resume link, with `mix-blend-mode: difference`.
+- **Reduced motion:** no spring; the state change is instant.
+
+**S2 Name as type** — *revised in P2 (D-034): English only, no Devanagari anywhere.*
+- The Latin name, set in Fraunces, is the recurring typographic element in the hero, preloader, route wipe, footer and OG image.
+
+**S3 Lucknow arch** — the single recurring shape
+- An Awadhi/Lucknow arch, built as one SVG `clipPath`. It is used for the portrait mask (replacing the circle and neon ring), image masks and section dividers.
+- No other decorative shapes. The dock and buttons are pills: the only allowed pills besides the status dot.
+
+**S4 Live colophon footer**
+- Lucknow local time (IST, ticking per minute).
+- "Currently building".
+- Last GitHub activity or streak, reusing `fetchGitHubContributions` / `getGitHubFallbackData` from `src/utils/githubApi.js`. Fetched after idle, never blocking.
+- Availability status.
+- Copy-email-to-clipboard with a toast.
+- A big wordmark.
+- Back-to-top.
+
+**S5 Cursor language**, fine pointers only
+- A small dot that morphs into labelled chips (View / Open / Copy / Drag), with a magnetic pull on buttons.
+- Hidden on touch and under reduced motion. The system cursor is kept for text inputs.
+
+**S6 Typography in motion**
+- The hero name responds to the cursor through a variable font axis (weight / optical size).
+- Line-mask text reveals, not fades.
+- A text-roll hover on links and buttons, and an animated underline draw.
+
+**S7 Projects as an index**
+- A ranked list with year, stack and type, sortable and filterable.
+- A hover preview follows the cursor with spring easing.
+- Row → case study uses a shared-element transition: the View Transitions API or Motion `layoutId`, with an instant fallback.
+
+**S8 Atmosphere**
+- No gradients, glow or particles.
+- A static SVG grain overlay at ≤ 4% opacity, hairline borders, warm near-black, off-white, and one lime accent used sparingly.
+- Anything in the background must be purposeful (e.g. a ticker of real commits); otherwise there is nothing.
+
+**Single sources of truth:** new `src/data/siteStatus.js` holds availability, "currently building", the email and the resume URL. The dock, footer, ⌘K and contact all read from it. The owner supplies the availability and "currently building" values in P3; nothing is invented.
+
+## Type (decided by specimen in P2)
+> **Decided 2026-11-12 (D-033):** Fraunces variable (opsz 9–144 + wght 100–900, SOFT/WONK at 0 — the sharp cut) for display and S6 · Geist (text) · Geist Mono (labels, code). Instrument Serif removed. No Devanagari face (D-034).
+
+- Build a temporary, dev-only `/dev/type-specimen` route (no prod route or rewrite) rendering 3–4 stacks with real content: the hero name, an H2, body text, a mono label and the Devanagari name. Then the owner picks with AskUserQuestion.
+- **Instrument Serif has no variable axes, so it cannot do S6.** It stays in only if it clearly wins and S6 uses another face.
+- Candidates shown in the specimen: Fraunces sharp, Fraunces soft, Newsreader, Instrument Serif (control). Satoshi/General Sans were excluded: their ITF licence forbids redistributing font files, and this repo is public.
+- **Banned:** Inter, Roboto, Arial, Space Grotesk, Poppins, Montserrat and Playfair.
+- Self-hosted, subset, `font-display: swap`, metric-matched fallbacks.
+
+## Buttons and micro-interactions (real components)
+- **Buttons:** primary, secondary, ghost and link.
+  - Hover: a text-roll (a duplicate label slides up) plus a fill wipe from the edge the cursor entered.
+  - A magnetic pull of 8–12px (spring), and press `scale(.97)`.
+  - A focus-visible ring, loading and disabled states, and an arrow icon that nudges on hover.
+- **Inputs:** floating labels, an animated focus line, inline validation and a success state.
+- **Motion tokens in one file, `src/lib/motion.js`:** durations **160 / 280 / 520 ms**, easing **`cubic-bezier(.22,1,.36,1)`**, and spring presets. Animate transform and opacity only, and honour `prefers-reduced-motion` everywhere.
+- **Preloader:** first visit only (`sessionStorage`), ≤ 1.4 s, the name and a counter, skippable, and disabled for reduced motion.
+- **Route transitions:** a clip-path wipe carrying the wordmark.
+- **⌘/Ctrl+K:** restyled, with real actions: jump to a page, copy email, open the resume, open GitHub and LinkedIn. There is no theme toggle (dark-only, D-028).
+
+## Reveal rules (fixes the stuck-at-opacity-0 bug)
+- IntersectionObserver with a generous `rootMargin` (e.g. `0px 0px 20% 0px`), and durations ≤ 520 ms.
+- Content is visible by default. It is hidden only under a class added by JS, and a timeout fail-safe reveals everything if the observer or animation fails.
+- Nothing is hidden permanently, and there are no reveals under reduced motion.
+
+## Known tensions and their resolutions
+- **S6 animates `font-variation-settings`, which is not transform or opacity.** This is the one documented exception: hero name only, fine pointers only, rAF-throttled, started after LCP, and off for reduced motion.
+- **The hero heading is the LCP element**, so it paints statically on the first frame and is never animated in. Line-mask reveals apply to below-fold headings only.
+- **The preloader can cost LCP and Speed Index**, because Lighthouse is always a first visit. The page renders underneath, and the overlay animates only opacity and transform. If mobile Performance misses its target, shorten the preloader to ≤ 800 ms or drop it. There is no special-casing for Lighthouse.
+- **The dock morph needs framer `layout`/`layoutId`.** The idle dock is plain CSS, and `LazyMotion` `domMax` features load asynchronously on first interaction so the entry chunk stays lean.
+- **The route clip-path wipe** is a single overlay element and runs ≤ 520 ms. **View Transitions** are progressive enhancement only.
+
 Three directions, not three colorways: each differs in base (dark / dark / light), type voice (serif / grotesk / soft serif), grid logic, how projects are shown, and what the one accent is *for*.
 
 ## Rules for every direction

@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import useSEO from '../hooks/useSEO'
 import { projectsData } from '../data/projectsData'
 import LazyImage from '../components/LazyImage'
-import ScrollReveal from '../components/ScrollReveal'
+import Reveal from '../components/Reveal'
 
 function ProjectTeam({ team, isCollaborative }) {
     if (!isCollaborative || !Array.isArray(team) || team.length === 0) {
@@ -17,7 +17,7 @@ function ProjectTeam({ team, isCollaborative }) {
     }
 
     return (
-        <ScrollReveal>
+        <Reveal>
             <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                 <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
                 <div className="relative z-10">
@@ -69,7 +69,7 @@ function ProjectTeam({ team, isCollaborative }) {
                     </div>
                 </div>
             </div>
-        </ScrollReveal>
+        </Reveal>
     )
 }
 
@@ -234,7 +234,7 @@ function ProjectDetail() {
                     <ProjectTeam team={project.team} isCollaborative={project.isCollaborative} />
 
                     {/* Problem Statement */}
-                    <ScrollReveal>
+                    <Reveal>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none"></div>
                             <div className="relative z-10">
@@ -249,10 +249,10 @@ function ProjectDetail() {
                                 </p>
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
                     {/* Solution */}
-                    <ScrollReveal delay={80}>
+                    <Reveal delay={80}>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
                             <div className="relative z-10">
@@ -267,10 +267,10 @@ function ProjectDetail() {
                                 </p>
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
                     {/* Architecture */}
-                    <ScrollReveal delay={120}>
+                    <Reveal delay={120}>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
                             <div className="relative z-10">
@@ -287,10 +287,10 @@ function ProjectDetail() {
                                 </div>
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
                     {/* Key Technical Decisions */}
-                    <ScrollReveal delay={160}>
+                    <Reveal delay={160}>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none"></div>
                             <div className="relative z-10">
@@ -312,10 +312,10 @@ function ProjectDetail() {
                                 </ul>
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
                     {/* Lessons Learned */}
-                    <ScrollReveal delay={200}>
+                    <Reveal delay={200}>
                         <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                             <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
                             <div className="relative z-10">
@@ -335,11 +335,11 @@ function ProjectDetail() {
                                 </ul>
                             </div>
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
 
                     {/* Screenshots Gallery */}
                     {project.screenshots && project.screenshots.length > 0 && (
-                        <ScrollReveal delay={240}>
+                        <Reveal delay={240}>
                             <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
                                 <div className="flex items-center gap-3 mb-5">
                                     <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
@@ -360,13 +360,13 @@ function ProjectDetail() {
                                     ))}
                                 </div>
                             </div>
-                        </ScrollReveal>
+                        </Reveal>
                     )}
                 </div>
 
                 {/* ── Related Projects ── */}
                 {relatedProjects.length > 0 && (
-                    <ScrollReveal delay={280} className="mt-16">
+                    <Reveal delay={280} className="mt-16">
                         <h2 className="text-xl sm:text-2xl font-display font-bold uppercase text-white mb-6 flex items-center gap-2">
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
@@ -398,11 +398,11 @@ function ProjectDetail() {
                                 </Link>
                             ))}
                         </div>
-                    </ScrollReveal>
+                    </Reveal>
                 )}
 
                 {/* Bottom CTA */}
-                <ScrollReveal delay={320} className="mt-16 text-center">
+                <Reveal delay={320} className="mt-16 text-center">
                     <div className="bg-obsidian-card border border-obsidian-border rounded-lg p-8 relative overflow-hidden">
                         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
                         <h3 className="text-xl sm:text-2xl font-display font-bold uppercase text-white mb-2">Like what you see?</h3>
@@ -427,7 +427,7 @@ function ProjectDetail() {
                             </Link>
                         </div>
                     </div>
-                </ScrollReveal>
+                </Reveal>
             </div>
         </main>
     )

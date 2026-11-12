@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * Route wipe: the panel starts covering the viewport and is clipped away
+ * upwards, revealing the new page. clip-path is composited in modern engines.
+ */
+
+.route-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 940;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(var(--ink-raised));
+  pointer-events: none;
+  clip-path: inset(0 0 0 0);
+  animation: route-wipe-out var(--dur-slow) var(--ease-out) 40ms both;
+}
+
+.route-wipe__mark {
+  color: rgb(var(--paper));
+  font: 400 clamp(28px, 4vw, 48px) / 1 var(--font-serif);
+  letter-spacing: -0.01em;
+  animation: route-wipe-mark var(--dur-slow) var(--ease-out) both;
+}
+
+@keyframes route-wipe-out { /* design-allow: DESIGN.md route clip-path wipe */
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes route-wipe-mark {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(0, -24px, 0); }
+}
