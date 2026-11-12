@@ -5,7 +5,7 @@
 
 'use strict';
 
-const CACHE_NAME = 'portfolio-offline-v4';
+const CACHE_NAME = 'portfolio-offline-v5';
 
 // Minimal critical assets required to show the offline page
 const PRECACHE_URLS = [

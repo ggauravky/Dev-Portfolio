@@ -6,6 +6,8 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
+@import './styles/fonts.css';
+
 /* Fingerprint: identity marker — do not remove.
    Origin: https://github.com/ggauravky/Dev-Portfolio | Author: Gaurav Kumar Yadav */
 :root {
@@ -16,11 +18,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === ROOT VARIABLES === */
+/* === DESIGN TOKENS (v2 Monograph — docs/DESIGN.md) ===
+   Colours are RGB channels so Tailwind opacity modifiers work (`bg-ink/80`).
+   In raw CSS use rgb(var(--ink)). Accent's one job: "live / current", < 5% of a screen. */
 :root {
-  --primary-gradient: linear-gradient(135deg, #c5f82a 0%, #ff5d00 100%);
-  --secondary-gradient: linear-gradient(135deg, #ff5d00 0%, #764ba2 100%);
-  --accent-gradient: linear-gradient(135deg, #c5f82a 0%, #00f2fe 100%);
+  --ink: 14 13 11;          /* #0E0D0B background */
+  --ink-raised: 22 21 18;   /* #161512 dialogs, code blocks */
+  --rule: 42 40 36;         /* #2A2824 1px hairlines */
+  --paper: 237 234 227;     /* #EDEAE3 primary text */
+  --muted: 156 151 140;     /* #9C978C secondary text */
+  --accent: 194 238 58;     /* #C2EE3A live / current */
+
+  --font-serif: 'Instrument Serif', 'Instrument Serif Fallback', Georgia, serif;
+  --font-sans: 'Geist', 'Geist Fallback', Arial, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', 'Courier New', monospace;
+
+  /* Type scale ≈ 1.333 */
+  --text-display: clamp(3.5rem, 9vw, 8rem); /* 56 → 128px */
+  --text-h2: 3rem;      /* 48 */
+  --text-h3: 1.75rem;   /* 28 */
+  --text-body: 1.0625rem; /* 17, line-height 1.6 */
+  --text-small: 0.875rem; /* 14 */
+
+  /* Spacing — 8px base (4 only inside controls) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+  --space-7: 96px;
+  --space-8: 128px;
+
+  /* Radius: structure/images 0, controls 4, dialogs 8 */
+  --radius-0: 0;
+  --radius-control: 4px;
+  --radius-dialog: 8px;
+
+  /* The only shadow token — dialogs */
+  --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.5);
+
+  /* LEGACY — remove in Phase G with the rules that use it */
   --glow-color: rgba(197, 248, 42, 0.3);
 }
 
@@ -40,28 +78,45 @@ body,
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.6;
-  background-color: #070708;
-  color: #a1a1aa;
+  background-color: rgb(var(--ink));
+  color: rgb(var(--muted));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px;
   min-height: 100vh;
 }
 
-/* Premium Noise Grain Overlay */
-body::after {
-  content: "";
+/* === FOCUS === one ring everywhere: accent, 2px, offset 2 */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* === SKIP LINK === hidden until focused */
+.skip-link {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9999;
-  pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  top: var(--space-1);
+  left: var(--space-1);
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-control);
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font: 500 15px/1 var(--font-sans);
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--space-2)));
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+#main-content:focus {
+  outline: none;
 }
 
 /* Better mobile font scaling */
@@ -414,34 +469,29 @@ img, video, iframe {
 }
 
 ::-webkit-scrollbar-track {
-  background: #070708;
+  background: rgb(var(--ink));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a1a22;
-  border-radius: 4px;
-  border: 2px solid #070708;
+  background: rgb(var(--rule));
+  border-radius: var(--radius-control);
+  border: 2px solid rgb(var(--ink));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c5f82a;
+  background: rgb(var(--muted));
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1a1a22 #070708;
+  scrollbar-color: rgb(var(--rule)) rgb(var(--ink));
 }
 
-/* === SELECTION COLOR === */
+/* === SELECTION COLOR === paper on ink, inverted (accent stays for "live / current") */
 ::selection {
-  background-color: #c5f82a;
-  color: #070708;
-}
-
-::-moz-selection {
-  background-color: #c5f82a;
-  color: #070708;
+  background-color: rgb(var(--paper));
+  color: rgb(var(--ink));
 }
 
 html {

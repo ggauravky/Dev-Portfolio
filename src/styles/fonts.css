@@ -1,0 +1,125 @@
+/*
+ * Self-hosted fonts (redesign v2, Phase A). All SIL OFL 1.1 — licences in public/fonts/.
+ * Latin subset only. Source: Fontsource 5.3.0 (@fontsource/instrument-serif,
+ * @fontsource-variable/geist, @fontsource-variable/geist-mono).
+ * Only geist-var.woff2 is preloaded (index.html); the serif gets its preload when a
+ * page first uses it at display size (Phase D1).
+ */
+
+/* unicode-range: Fontsource "latin" subset */
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-var.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Geist';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-var-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-400.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-400-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-mono-var.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Metric-matched fallbacks: shown during the swap so text reflows ~0 (CLS).
+ * Values measured in Chromium against the real woff2 (scratch script, Phase A):
+ * size-adjust = width ratio over a sample sentence; ascent/descent = font
+ * bounding box ÷ size-adjust.
+ */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial'), local('ArialMT'), local('Helvetica');
+  size-adjust: 103.17%;
+  ascent-override: 97.9%;
+  descent-override: 29.08%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Instrument Serif Fallback';
+  src: local('Times New Roman'), local('TimesNewRomanPSMT'), local('Times');
+  size-adjust: 82.69%;
+  ascent-override: 119.72%;
+  descent-override: 37.49%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Geist Mono Fallback';
+  src: local('Courier New'), local('CourierNewPSMT'), local('Courier');
+  size-adjust: 99.98%;
+  ascent-override: 101.02%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+}
+
+/*
+ * LEGACY ALIASES — remove in Phase G.
+ * Unrestyled CSS still names the old Google Fonts families directly
+ * (Blog.css, BlogPost.css, Legal.css, JourneyNavigator.css, …). These faces map
+ * those names onto the new self-hosted files so nothing hits fonts.googleapis.com.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-var-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Syne'; /* design-allow: legacy alias, delete in G */
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-var.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-mono-var.woff2') format('woff2');
+}

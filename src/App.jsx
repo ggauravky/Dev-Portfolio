@@ -141,6 +141,7 @@ function AppLayout({ children, navReady, logoRef }) {
 
     return (
         <div className="App">
+            <a href="#main-content" className="skip-link">Skip to content</a>
             {!isFullScreen && (
                 <div ref={headerRef} id="site-header" className="fixed top-0 left-0 right-0 z-[60] w-full">
                     <div className="pt-1.5 sm:pt-2 pb-1.5 sm:pb-2">
@@ -148,7 +149,7 @@ function AppLayout({ children, navReady, logoRef }) {
                     </div>
                 </div>
             )}
-            <div style={isFullScreen ? {} : { paddingTop: headerHeight || 0 }}>
+            <div id="main-content" tabIndex={-1} style={isFullScreen ? {} : { paddingTop: headerHeight || 0 }}>
                 {children}
                 {!isFullScreen && <Footer />}
                 {!isFullScreen && <BackToTop />}
@@ -256,37 +257,33 @@ function App() {
                     reverseOrder={false}
                     toastOptions={{
                         duration: 4000,
+                        // v2 tokens: ink-raised surface, rule hairline, no shadow
                         style: {
-                            background: '#1e293b',
-                            color: '#e2e8f0',
-                            border: '1px solid #475569',
-                            borderRadius: '12px',
+                            background: 'rgb(var(--ink-raised))',
+                            color: 'rgb(var(--paper))',
+                            border: '1px solid rgb(var(--rule))',
+                            borderRadius: 'var(--radius-dialog)',
+                            boxShadow: 'none',
                             padding: '16px',
                             fontSize: '14px',
                             fontWeight: '500',
                         },
                         success: {
                             iconTheme: {
-                                primary: '#10b981',
-                                secondary: '#fff',
-                            },
-                            style: {
-                                border: '1px solid #10b981',
+                                primary: 'rgb(var(--paper))',
+                                secondary: 'rgb(var(--ink))',
                             },
                         },
                         error: {
                             iconTheme: {
                                 primary: '#ef4444',
-                                secondary: '#fff',
-                            },
-                            style: {
-                                border: '1px solid #ef4444',
+                                secondary: 'rgb(var(--ink))',
                             },
                         },
                         loading: {
                             iconTheme: {
-                                primary: '#3b82f6',
-                                secondary: '#fff',
+                                primary: 'rgb(var(--paper))',
+                                secondary: 'rgb(var(--rule))',
                             },
                         },
                     }}
