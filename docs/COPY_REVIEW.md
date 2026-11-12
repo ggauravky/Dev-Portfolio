@@ -68,3 +68,45 @@ Project facts (descriptions, problems, solutions, architecture, decisions, lesso
 | 20 | Home "Selected work" | First 6 `featured` projects in data order | The 6 ranked case studies | D-049 | |
 
 `useSEO` titles, descriptions, keywords, OG images, the ItemList JSON-LD, URLs, `vercel.json`, the sitemap and `llms.txt` are unchanged.
+
+## P5 — Remaining pages (2026-11-13)
+
+| # | Where | Old | New | Source fact | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | About h1 | "Gaurav Kumar Yadav" (gradient) + eyebrow "About me" + "Full-Stack Developer · AI/ML" | h1 "About"; rail "Lucknow" / "BCA, 2024 to present" | Old About card meta | |
+| 2 | About lede | Two paragraphs (BCA, Minor, Ashoksoft intern; "I build practical web and AI products…") | "Full-stack developer and AI/ML learner. I build web and AI products: full-stack apps and APIs, RAG systems, automation and machine-learning projects." (BCA, Minor and internship move to "Now") | Old About paragraphs | |
+| 3 | About status | "Currently · FullStack Intern · Ashoksoft Technologies · Remote · Aug 2026 to Present" (glow dot) | "Now: full-stack intern at Ashoksoft Technologies" (accent dot) | Old aside | |
+| 4 | About tags / CTAs | Tags "Full Stack, Python, AI/ML, LLM / RAG, Open Source"; "View Resume", "My Journey" | Tags removed; "Resume ↗", "The full journey" | | |
+| 5 | About "Current Chapter" | Logo cards with "In Progress" / "Current" | "Now" rows: Education, Specialisation, Experience (no logos); "Current" carries the accent; certificate links kept | Old cards | |
+| 6 | About role | "FullStack Intern" | "Full-stack intern" | Same role | ⚠ |
+| 7 | About "What I Build" | Subtitle "Applied AI · Production software"; "AI / ML Engineering", "Full-Stack Engineering" | Subtitle removed; "AI / ML", "Full stack"; items unchanged except "&" → "and" | | |
+| 8 | About "How I Work" | Five steps with short details ("Problem & constraints", …, "Iterate") | Same five verbs, details as phrases ("the problem and its constraints", …, "iterate on what the numbers say") | Old steps | ⚠ the last phrase adds nuance |
+| 9 | About "Consistency in Practice" | GitHub-streak and LeetCode stat images (third-party) | "Practice": GitHub and LeetCode links | Same profiles (same call as P3 #13) | ⚠ |
+| 10 | About CTA | "Let's Build Something Useful" | "Work together"; the sentence under it is unchanged | Generic headline removed | |
+| 11 | Skills header | Pill "My Expertise", "Skills & Tech", "Technologies, frameworks, and methodologies I use to turn ideas into practical code solutions." | "Skills"; "The languages, frameworks and tools I use to turn ideas into working code."; rail counts from the data | Old lede | |
+| 12 | Skills tabs | "Web Dev", "Data & AI", "CS & Soft Skills" (tabs) | Three sections, no tabs: "Web development", "Data & AI", "Foundations" | Same groups | |
+| 13 | Skills categories | "Programming Languages", "Frontend Development", "Backend Development", "Database & Tools", "Soft Skills", … | Sentence case and shorter: "Programming languages", "Frontend", "Backend", "Databases & tools", "Working", … (skills unchanged; moved to `src/data/skillsData.js`) | | ⚠ "Soft Skills" → "Working" |
+| 14 | Skills stats | "6+ Languages", "20+ Technologies", "20+ Projects", "3+ Years Learning"; "Verified //"; "N Techs" | *(removed)* | Filler stats | |
+| 15 | Skills CTA | "Let's Build Something Great" / "Always learning, always growing…" / "Book Service", "Start a Conversation" | "In use": "Every project lists the stack it was built with." → Projects, Services, Contact | | |
+| 16 | Journey header | Badge "Professional Growth", "Professional Journey", lede listing "industrial visits" | "Journey"; "Internships, hackathons, workshops, certifications and the degree that shaped how I build, newest first."; rail = entry count and year span from the data | No entry is an industrial visit | |
+| 17 | Journey metrics | "Started Journey 2024", "Current Year 2026", "Learning Span", "Active Status: Learning & Building"; five stat cards | *(removed)*; one live "N of 25 entries" under the filter | Hard-coded / filler | |
+| 18 | Journey layout | Zigzag timeline, grid toggle, search, 5 selects, chips, lightbox, "Journey Started" / "Progress" badges | Year-grouped archive, newest first; one category filter (`?category=`); a disclosure per entry; photos as thumbnails that open the image | Same data | |
+| 19 | Journey "Now" | *(not shown)* | Accent dot "Now" on entries whose `status` is "In Progress" (BCA, ECSoC 2026, Ashoksoft, OSCI UP State Lead) | `journeyData.js` `status` | ⚠ ECSoC (July 2026) is still "In Progress" |
+| 20 | Journey links | "Live Demo", "GitHub Repo", "Certificate", "Blog" | "Live demo", "Source", "Certificate", "Read the post"; the placeholder certificate `https://drive.google.com/` (Product Builder's Day) is hidden | Data | ⚠ add the real certificate URL |
+| 21 | Services header | Pill "Verified Services", "Build With Confidence", "Real services, transparent pricing, and delivery-focused execution. Available for remote collaboration." | "Services"; "Frontend, backend, full-stack and AI or data science work, done remotely. The price is fixed before you pay, and the server verifies every payment."; rail = count and "From INR 499" (data) | Old lede + payment copy | |
+| 22 | Services stats | "Projects Done 20+", "Quick Response < 24h", "Secure Checkout Razorpay" (clipped), "4 Detailed" | *(removed; this was the clipped "Razorpay")* | Filler stats | |
+| 23 | Services trust | Chips, TrustStrip, "Why Choose Me", "Payments & Trust", "Verify First" | "How booking works": 3 steps + 4 facts (Price, Card data, Your data, Proof) | Same claims, merged | |
+| 24 | Services testimonial | "Neha Khanna, Startup Founder, Pune" quote as a marquee | *(removed)* | Marquee banned; one quote | ⚠ restore as a plain quote if it's a real client |
+| 25 | Services badges | "Client Favorite" etc. | *(not shown)*; data unchanged | Unverifiable claim | ⚠ |
+| 26 | Services CTAs | "Book Service", "❤️ Support My Work", "Contact Me", "Ready to Build Something Real?" | "Book a service", "Ask first", "Support my work"; close "Check the work first" → Book, Projects, GitHub | | |
+| 27 | Service pages | Badges, "// Who this is for", "// Expected result", "Step 1–3", "Process and Trust", "Validate Before You Book", "Ready to Start …?" | Rail = category + price; outcome promise under the lede; "Scope" rows (For, You get, Features, You provide, Results, Delivery); "Pricing" with the FAQ; "Book" with the proof link | `servicesData.js` | |
+| 28 | Blog header | "Gaurav / Writing", "Engineering Notes.", "Engineering / Journal" | "Engineering notes"; same lede; rail "Writing" / "Latest first" | | |
+| 29 | Blog archive | "The writing archive", "02 notes", "Reset archive" | "Archive", "N notes", "Clear filters" | | |
+| 30 | Blog newsletter | "Occasional updates" / "Notes from the engineering desk." | "New notes by email" / "An email when a new technical article is published. Nothing else." | Old copy | ⚠ "Nothing else" is a promise |
+| 31 | Article | Breadcrumb; "Continue reading / Related articles"; "Written by"; "← Back to writing" | Rail "← Notes", category, date, read time; "Related"; author block with GitHub, About, All notes | | |
+| 32 | Article support | "Appreciation" / "❤️ Support this post" / "💖 Supported" / "Thanks for supporting ❤️" | "Did this help? Support the article." / "Support this article" / "Supported" / "Thanks for the support." | No emoji | |
+| 33 | Article not found | "Article not found." / toast, redirect after 2 s | "Article not found" / "That note doesn't exist. Taking you back to the archive." / redirect after 4 s | | |
+| 34 | Contact header | "…Something Great"; "Major Platforms / Start Here"; "Find Me Everywhere / All Links" | "Contact"; "Internships, entry-level roles, freelance projects or a collaboration. I read every message and reply personally."; rail "Lucknow, India" / "IST, UTC+5:30" | Old form intro + SEO copy | |
+| 35 | Contact form | Placeholders and toasts | Labels only; inline errors on the backend limits; "n / 2000" counter; success "Message sent. Thanks. I'll reply to the email you gave." | `backend/middleware/validator.js` | |
+| 36 | Contact platforms | Icon cards with subtitles; "Want my full resume?" | "Elsewhere" rows with the same handles and shorter subtitles; a resume row | Same links | ⚠ LinkedIn is `/in/gauravky` here and in the JSON-LD, but `siteStatus` (footer, ⌘K) says `/in/ggauravky`. Which is right? |
+| 37 | 404 (SPA + `public/404.html`) | Animated "404", jokes, countdown, gradient text; "🤖 Machine-Readable Resources" | "Not found"; "There's no page at <path>. It may have moved, or the link has a typo."; Home, Projects, Contact and the other pages; machine-readable links kept on the static page | | |

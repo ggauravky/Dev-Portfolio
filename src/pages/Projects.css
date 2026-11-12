@@ -56,100 +56,12 @@
   border-top: 1px solid rgb(var(--rule));
 }
 
-.pj-seg {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.pj-seg__legend {
-  padding: 0;
-  color: rgb(var(--muted));
-  font: 400 13px/1.5 var(--font-mono);
-}
-
-.pj-seg__options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-1);
-  margin-left: calc(var(--space-1) * -1);
-}
-
-.pj-seg__option {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding-inline: var(--space-1);
-  border-radius: var(--radius-control);
-  color: rgb(var(--muted));
-  font-size: 15px;
-  cursor: pointer;
-}
-
-/* The native radio stays focusable and clickable, covering its label. */
-.pj-seg__option input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.pj-seg__option > span:first-of-type {
-  position: relative;
-}
-
-/* Checked = "current": paper text with the accent underline. */
-.pj-seg__option > span:first-of-type::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -3px;
-  height: 1px;
-  background: rgb(var(--accent));
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--dur-base) var(--ease-out);
-}
-
-.pj-seg__option:has(input:checked) { color: rgb(var(--paper)); }
-.pj-seg__option input:checked + span::after { transform: scaleX(1); }
-
-@media (hover: hover) {
-  .pj-seg__option:hover { color: rgb(var(--paper)); }
-}
-
-.pj-seg__option:has(input:focus-visible) {
-  outline: 2px solid rgb(var(--accent));
-  outline-offset: 2px;
-}
-
-.pj-seg__count {
-  color: rgb(var(--muted));
-  font: 400 12px/1 var(--font-mono);
-}
 
 .pj-search {
   max-width: 440px;
   margin-top: var(--space-1);
 }
 
-@media (min-width: 768px) {
-  .pj-seg {
-    display: grid;
-    grid-template-columns: 80px minmax(0, 1fr);
-    align-items: center;
-  }
-
-  /* A legend can't be a grid item; float it into the first column. */
-  .pj-seg__legend { float: left; width: 80px; }
-}
 
 .pj-status {
   margin-top: var(--space-4);

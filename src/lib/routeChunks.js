@@ -30,10 +30,27 @@ function lazyRoute(load) {
 
 export const Projects = lazyRoute(() => import('../pages/Projects'))
 export const ProjectDetail = lazyRoute(() => import('../pages/ProjectDetail'))
+// P5 pages with a header shell (src/lib/pageHeads.js).
+export const About = lazyRoute(() => import('../pages/About'))
+export const Skills = lazyRoute(() => import('../pages/Skills'))
+export const Journey = lazyRoute(() => import('../pages/Journey'))
+export const Services = lazyRoute(() => import('../pages/Services'))
+export const ServiceDetail = lazyRoute(() => import('../pages/ServiceDetail'))
+export const Blog = lazyRoute(() => import('../pages/Blog'))
+export const BlogPost = lazyRoute(() => import('../pages/BlogPost'))
+export const Contact = lazyRoute(() => import('../pages/Contact'))
 
 const SHELL_ROUTES = [
     [/^\/projects\/?$/, Projects],
     [/^\/projects\/[^/]+\/?$/, ProjectDetail],
+    [/^\/about\/?$/, About],
+    [/^\/skills\/?$/, Skills],
+    [/^\/journey\/?$/, Journey],
+    [/^\/services\/?$/, Services],
+    [/^\/blog\/?$/, Blog],
+    [/^\/contact\/?$/, Contact],
+    [/^\/blog\/[^/]+\/?$/, BlogPost],
+    [/^\/(services\/[^/]+|frontend-development|backend-development|full-stack-development|ai-data-science-guidance)\/?$/, ServiceDetail],
 ]
 
 /** Load the chunk for `pathname` if it has a static shell; resolves either way. */

@@ -11,9 +11,6 @@ import PropTypes from 'prop-types'
 
 import { Toaster } from 'react-hot-toast'
 import './App.css'
-import './components/journey/JourneyNavigator.css'
-import './pages/Blog.css'
-import './pages/BlogPost.css'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
 import TopChrome from './components/chrome/TopChrome'
@@ -23,33 +20,21 @@ import RouteWipe from './components/chrome/RouteWipe'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
-import { Projects, ProjectDetail } from './lib/routeChunks'
+import { About, Blog, BlogPost, Contact, Journey, Projects, ProjectDetail, ServiceDetail, Services, Skills } from './lib/routeChunks'
 
 import Home from './pages/Home'
 
 const loadCommandPalette = () => import('./components/CommandPalette')
 const CommandPalette = lazy(loadCommandPalette)
 
-// Lazy load secondary routes for better performance
-const About = lazy(() => import('./pages/About'))
-const Skills = lazy(() => import('./pages/Skills'))
-
-// Projects and ProjectDetail come from src/lib/routeChunks.js (static route
-// shells, D-057). Pre-fetch Blog and Projects chunks immediately so they're
-// ready before the user navigates — eliminates the Suspense spinner + CSS-animation race that
-// causes a blank page on first navigation to these pages.
-const _blogChunk     = import('./pages/Blog')
+// Routes with a static header shell (Projects, case studies and the P5 pages)
+// come from src/lib/routeChunks.js (D-057). Projects is prefetched at once, as
+// before; the other secondary routes load lazily.
 void Projects.preload()
-const Blog     = lazy(() => _blogChunk)
-const BlogPost = lazy(() => import('./pages/BlogPost'))
-const Contact = lazy(() => import('./pages/Contact'))
-const Services = lazy(() => import('./pages/Services'))
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
 const ActivityTimeline = lazy(() => import('./pages/ActivityTimeline'))
 const BookNow = lazy(() => import('./pages/BookNow'))
 const Support = lazy(() => import('./pages/Support'))
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'))
-const Journey = lazy(() => import('./pages/Journey'))
 const Updates = lazy(() => import('./pages/Updates'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))

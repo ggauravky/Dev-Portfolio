@@ -4,15 +4,36 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
-import useSEO from '../hooks/useSEO'
-import Reveal from '../components/Reveal'
-import ServiceCard from '../components/ServiceCard'
-import TrustStrip from '../components/TrustStrip'
-import StickyMobileCTA from '../components/StickyMobileCTA'
-import { servicesData } from '../data/servicesData'
+// Services (P5). A price list, not a card grid: one hairline row per service
+// with its price in the label column. Display prices come from servicesData;
+// the amount actually charged is always set by the backend
+// (backend/data/servicePricing.json) when /booknow creates the order.
+// Motion moments: (1) line-masked section headings.
 
+import useSEO from '../hooks/useSEO'
+import PageHead from '../components/page/PageHead'
+import { servicesHead } from '../lib/pageHeads'
+import PageSection from '../components/page/PageSection'
+import { Button, TextLink } from '../components/ui'
+import { servicesData } from '../data/servicesData'
+import { siteStatus } from '../data/siteStatus'
+import './Services.css'
+
+const HEAD = servicesHead(servicesData)
+const BOOK_DEFAULT = '/booknow?service=fullstack-development'
+
+const STEPS = [
+    'Read the service page and confirm it fits.',
+    'Book with your preferred schedule and sign in.',
+    'Pay through Razorpay; the booking is confirmed once the server verifies the payment.',
+]
+
+const TRUST = [
+    ['Price', 'The server sets the price and verifies the captured payment before confirming a booking.'],
+    ['Card data', 'Razorpay Checkout handles payment details; this site stores only the identifiers needed to verify the transaction.'],
+    ['Your data', 'Booking details are used only for booking and delivery communication.'],
+    ['Proof', 'Projects and GitHub repositories are public, so you can check the work before booking.'],
+]
 
 function Services() {
     useSEO({
@@ -67,301 +88,64 @@ function Services() {
         }
     })
 
-
-    const allServices = servicesData
-    const buildServices = allServices
-    
-    const testimonials = useMemo(() => [
-        {
-            quote: 'Full stack delivery followed clear milestones with transparent communication. The MVP launch timeline stayed realistic.',
-            name: 'Neha Khanna',
-            role: 'Startup Founder',
-            city: 'Pune',
-            result: 'MVP scope delivered in planned phases',
-        },
-    ], [])
-
     return (
-        <main className="services-page min-h-screen bg-obsidian relative overflow-hidden w-full">
-            {/* Background Orbs */}
-            <div className="absolute top-20 right-10 w-96 h-96 bg-toxic/5 rounded-full blur-3xl animate-float"></div>
-            <div className="absolute bottom-20 left-10 w-96 h-96 bg-cyber/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10">
-                <div className="grid lg:grid-cols-[1.25fr_0.75fr] gap-8 lg:gap-12 items-center">
-                    <Reveal className="space-y-6 min-w-0">
-                        <span className="inline-flex items-center gap-2 text-toxic text-xs font-bold tracking-widest uppercase px-4 py-2 bg-toxic/5 rounded-full border border-toxic/15">
-                            Verified Services
-                        </span>
-                        <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-display font-extrabold uppercase leading-[0.95] tracking-tighter text-white">
-                            Build With <span className="text-transparent bg-gradient-to-r from-white via-zinc-400 to-toxic bg-clip-text">Confidence</span>
-                        </h1>
-                        <p className="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-xl">
-                            Real services, transparent pricing, and delivery-focused execution. Available for remote collaboration.
-                        </p>
-
-                        <div className="flex flex-wrap items-center gap-3">
-                            <Link
-                                to="/booknow?service=fullstack-development"
-                                className="group relative px-6 py-3.5 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 text-center overflow-hidden inline-flex items-center justify-center font-mono"
-                            >
-                                Book Service
-                            </Link>
-                            <Link
-                                to="/support"
-                                className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
-                            >
-                                ❤️ Support My Work
-                            </Link>
-                            <Link
-                                to="/contact"
-                                className="group relative px-6 py-3.5 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
-                            >
-                                Contact Me
-                            </Link>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 pt-2">
-                            <div className="rounded border border-obsidian-border bg-obsidian px-3 py-1.5 text-[10px] font-mono uppercase text-zinc-400">
-                                Clear scope before payment
-                            </div>
-                            <div className="rounded border border-obsidian-border bg-obsidian px-3 py-1.5 text-[10px] font-mono uppercase text-zinc-400">
-                                Mobile-friendly delivery updates
-                            </div>
-                            <div className="rounded border border-toxic/20 bg-toxic/5 px-3 py-1.5 text-[10px] font-mono uppercase text-toxic">
-                                Razorpay secure checkout
-                            </div>
-                        </div>
-
-                        <div className="pt-4 max-w-3xl">
-                            <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-500 mb-3">// Jump to service</p>
-                            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                                {allServices.map((service) => (
-                                    <Link
-                                        key={service.slug}
-                                        to={service.path}
-                                        className="inline-flex shrink-0 items-center justify-center whitespace-nowrap text-[10px] font-mono uppercase tracking-wider px-3.5 py-2.5 rounded border border-obsidian-border bg-obsidian-card text-zinc-400 hover:text-toxic hover:border-toxic/30 transition-all duration-300 hover:-translate-y-0.5"
-                                    >
-                                        {service.title}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    </Reveal>
-
-                    <Reveal delay={100} className="relative min-w-0">
-                        <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 shadow-2xl">
-                            <div className="absolute inset-0 bg-gradient-to-br from-toxic/[0.01] to-transparent pointer-events-none"></div>
-                            <div className="grid grid-cols-2 gap-3.5 sm:gap-4 relative z-10">
-                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
-                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Projects Done</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">20+</p>
-                                </div>
-                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
-                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Quick Response</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">&lt; 24h</p>
-                                </div>
-                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
-                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">Secure Checkout</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-toxic mt-1">Razorpay</p>
-                                </div>
-                                <div className="min-w-0 rounded border border-obsidian-border bg-obsidian px-4 py-3.5">
-                                    <p className="text-zinc-500 font-mono text-[9px] uppercase tracking-wider">View Details</p>
-                                    <p className="text-xl sm:text-2xl font-display font-black text-cyber mt-1">{allServices.length} Detailed</p>
-                                </div>
-                            </div>
-                            <p className="mt-4 text-xs font-mono uppercase tracking-wider text-zinc-500 relative z-10">
-                                // Every service page lists full deliverables, process details, and trust signals.
-                            </p>
-                        </div>
-                    </Reveal>
+        <main className="pg services">
+            <PageHead head={HEAD}>
+                <div className="pg-actions">
+                    <Button to={BOOK_DEFAULT} arrow>Book a service</Button>
+                    <TextLink to="/contact">Ask first</TextLink>
+                    <TextLink to="/support" tone="muted">Support my work</TextLink>
                 </div>
-            </section>
+            </PageHead>
 
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <TrustStrip variant="services" />
-            </section>
-
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <Reveal>
-                    <span className="inline-block text-cyber text-xs font-bold tracking-widest uppercase mb-4 px-4 py-2 bg-cyber/5 rounded-full border border-cyber/15">Build and Delivery Services</span>
-                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold uppercase text-white mb-8">Product Implementation</h2>
-                </Reveal>
-                <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-                    {buildServices.map((service, index) => (
-                        <Reveal key={service.slug} delay={index * 80}>
-                            <ServiceCard service={service} featured={service.slug === 'fullstack-development'} />
-                        </Reveal>
+            <PageSection id="list" index={1} title="Price list">
+                <ul className="pg-rows">
+                    {servicesData.map((service) => (
+                        <li key={service.slug} className="pg-row sv-row">
+                            <p className="pg-row__label sv-price">{service.priceLabel}</p>
+                            <div className="pg-row__body">
+                                <h3 className="pg-row__title">{service.title}</h3>
+                                <p className="sv-summary">{service.summary}</p>
+                                <ul className="sv-features">
+                                    {service.features.map((f) => <li key={f}>{f}</li>)}
+                                </ul>
+                                <p className="pg-row__meta">{service.timeline}</p>
+                                <p className="sv-links">
+                                    <TextLink to={service.path}>Details<span className="sr-only">: {service.title}</span></TextLink>
+                                    <TextLink to={`/booknow?service=${service.slug}`}>Book<span className="sr-only">: {service.title}</span></TextLink>
+                                </p>
+                            </div>
+                        </li>
                     ))}
+                </ul>
+            </PageSection>
+
+            <PageSection id="booking" index={2} title="How booking works">
+                <ol className="pg-rows sv-steps">
+                    {STEPS.map((step, i) => (
+                        <li key={step} className="sv-step">
+                            <span className="pg-row__label" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                            <span>{step}</span>
+                        </li>
+                    ))}
+                </ol>
+                <dl className="sv-trust">
+                    {TRUST.map(([term, text]) => (
+                        <div key={term} className="sv-trust__row">
+                            <dt className="pg-row__label">{term}</dt>
+                            <dd>{text}</dd>
+                        </div>
+                    ))}
+                </dl>
+            </PageSection>
+
+            <PageSection id="start" index={3} title="Check the work first">
+                <div className="pg-actions sv-close">
+                    <Button to={BOOK_DEFAULT} arrow>Book a service</Button>
+                    <TextLink to="/projects">Projects</TextLink>
+                    <TextLink href={siteStatus.links.github} external>GitHub</TextLink>
                 </div>
-            </section>
-
-            {/* Why choose me */}
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <Reveal>
-                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8 lg:p-10 mb-8">
-                        <div className="absolute inset-0 bg-gradient-to-br from-cyber/[0.01] to-transparent pointer-events-none pointer-events-none"></div>
-                        <div className="relative z-10">
-                            <h3 className="text-2xl sm:text-3xl font-display font-bold uppercase text-white mb-6">Why Choose Me</h3>
-                            <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
-                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-toxic/20 transition-all">
-                                    <p className="text-toxic text-xs font-mono font-bold uppercase tracking-widest mb-2">// Execution First</p>
-                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Actionable deliverables, not generic consultation. You get concrete outcomes and code implementation guidance.</p>
-                                </div>
-                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-cyber/20 transition-all">
-                                    <p className="text-cyber text-xs font-mono font-bold uppercase tracking-widest mb-2">// Transparent Proof</p>
-                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Projects and GitHub repositories are fully public. You can verify quality standards before booking.</p>
-                                </div>
-                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-toxic/20 transition-all">
-                                    <p className="text-toxic text-xs font-mono font-bold uppercase tracking-widest mb-2">// Clear Communication</p>
-                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Scope and milestones are aligned before payment. You always know what is being delivered.</p>
-                                </div>
-                                <div className="rounded border border-obsidian-border bg-obsidian/40 p-5 hover:border-cyber/20 transition-all">
-                                    <p className="text-cyber text-xs font-mono font-bold uppercase tracking-widest mb-2">// Secure Process</p>
-                                    <p className="text-zinc-300 text-sm sm:text-base leading-relaxed">Razorpay Standard Checkout handles payment details; this portfolio stores only the identifiers needed to verify the transaction.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Reveal>
-
-                {/* Testimonials */}
-                <Reveal delay={120}>
-                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-8">
-                        <div className="flex items-center justify-between gap-3 mb-6">
-                            <h3 className="text-xl sm:text-2xl font-display font-bold uppercase text-white">What Clients Say</h3>
-                            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">// Live Feedback</span>
-                        </div>
-
-                        <div className="group overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-                            <div className="flex gap-4 sm:gap-5 w-max animate-[serviceMarquee_34s_linear_infinite] [animation-play-state:running] group-hover:[animation-play-state:paused]">
-                                {[...testimonials, ...testimonials].map((item, index) => (
-                                    <blockquote
-                                        key={`${item.name}-${index}`}
-                                        className="w-[300px] sm:w-[360px] rounded-lg border border-obsidian-border bg-obsidian p-5 flex flex-col justify-between"
-                                    >
-                                        <div>
-                                            <p className="text-zinc-300 text-sm leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
-                                        </div>
-                                        <div className="mt-4">
-                                            <footer className="text-xs font-mono text-toxic uppercase tracking-wider">{item.name} · {item.role}</footer>
-                                            <p className="mt-1.5 text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Result: {item.result}</p>
-                                        </div>
-                                    </blockquote>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </Reveal>
-            </section>
-
-
-            {/* Payments Panel */}
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 border-t border-obsidian-border">
-                <Reveal>
-                    <div className="relative overflow-hidden bg-obsidian-card border border-obsidian-border rounded-lg p-6 sm:p-10">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
-
-                        <div className="relative z-10 grid lg:grid-cols-3 gap-8 items-start">
-                            <div className="lg:col-span-2 space-y-6">
-                                <div>
-                                    <p className="text-[10px] font-mono font-bold text-toxic uppercase tracking-[0.2em] mb-2">// Payments & Trust</p>
-                                    <h3 className="text-2xl sm:text-4xl font-display font-bold uppercase text-white leading-[0.95] tracking-tighter">Protected Checkout.</h3>
-                                </div>
-
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
-                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Razorpay Checkout</p>
-                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">The server controls pricing and verifies captured payments before confirming a booking.</p>
-                                    </div>
-                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
-                                        <p className="text-cyber font-mono font-bold text-xs uppercase tracking-wider mb-1">Card Data Safety</p>
-                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">No card credentials are processed or stored on this portfolio server.</p>
-                                    </div>
-                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
-                                        <p className="text-toxic font-mono font-bold text-xs uppercase tracking-wider mb-1">Limited Data Usage</p>
-                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Booking info is exclusively used for shipping service outcomes.</p>
-                                    </div>
-                                    <div className="rounded border border-obsidian-border bg-obsidian/45 p-4">
-                                        <p className="text-cyber font-mono font-bold text-xs uppercase tracking-wider mb-1">Credibility Proof</p>
-                                        <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">Direct code metrics and repository proofs are public in GitHub.</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="rounded-lg border border-cyber/20 bg-cyber/5 p-6 space-y-4">
-                                <p className="text-white font-display font-bold uppercase text-lg">Verify First</p>
-                                <p className="text-zinc-400 text-xs leading-relaxed font-mono">// Check live repository quality metrics before booking.</p>
-
-                                <div className="flex flex-col gap-3 pt-2">
-                                    <Link
-                                        to="/projects"
-                                        className="w-full text-center bg-cyber hover:bg-white text-obsidian font-bold px-4 py-2.5 rounded-full transition-all duration-300 text-xs uppercase tracking-wider font-mono"
-                                    >
-                                        Open Projects
-                                    </Link>
-                                    <a
-                                        href="https://github.com/ggauravky"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full text-center border border-zinc-850 hover:border-cyber text-zinc-300 hover:text-cyber font-bold px-4 py-2.5 rounded-full transition-all duration-300 text-xs uppercase tracking-wider font-mono"
-                                    >
-                                        Open GitHub
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="relative z-10 mt-6 flex items-center justify-center lg:justify-start gap-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                            <span className="h-1.5 w-1.5 rounded-full bg-toxic" />
-                            <span>Razorpay Checkout + Verified Public Work</span>
-                        </div>
-                    </div>
-                </Reveal>
-            </section>
-
-            {/* Bottom CTA */}
-            <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-                <Reveal>
-                    <div className="bg-obsidian-card border border-obsidian-border rounded-lg p-8 sm:p-12 text-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent pointer-events-none"></div>
-                        <h2 className="text-3xl sm:text-4xl font-display font-bold uppercase text-white mb-3">Ready to Build Something Real?</h2>
-                        <p className="text-zinc-400 text-sm sm:text-base mb-8 max-w-xl mx-auto leading-relaxed">
-                            Review process details on the service page, align the scope, and begin shipping.
-                        </p>
-                        <div className="flex flex-wrap gap-4 justify-center">
-                            <Link
-                                to="/booknow?service=fullstack-development"
-                                className="group relative px-8 py-4 bg-toxic text-obsidian rounded-full font-bold text-xs tracking-wider uppercase hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg shadow-toxic/15 text-center overflow-hidden inline-flex items-center justify-center font-mono"
-                            >
-                                Book Now
-                            </Link>
-                            <Link
-                                to="/support"
-                                className="group relative px-8 py-4 border border-zinc-700 hover:border-toxic rounded-full font-bold text-xs tracking-wider uppercase bg-transparent text-zinc-300 hover:text-toxic hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-toxic/5 text-center backdrop-blur-sm inline-flex items-center justify-center font-mono"
-                            >
-                                ❤️ Support My Work
-                            </Link>
-                        </div>
-                    </div>
-                </Reveal>
-            </section>
-
-            <StickyMobileCTA
-                badge="Primary Action"
-                title="Ready to book your service?"
-                primaryLabel="Book Service"
-                primaryTo="/booknow?service=fullstack-development"
-                secondaryLabel="Start a Conversation"
-                secondaryTo="/contact"
-            />
-
-            <style>{`
-                @keyframes serviceMarquee {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-            `}</style>
+            </PageSection>
         </main>
     )
 }

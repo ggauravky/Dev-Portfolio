@@ -101,3 +101,322 @@
 [data-reveal][data-revealed] .line-mask__line {
   transition: transform var(--dur-slow) var(--ease-out);
 }
+
+/* ── P5 pages: header, sections, hairline rows ─────────────────
+   Shared by About, Skills, Journey, Services, Blog, Contact and 404
+   (src/components/page/). The header markup is also painted before JS by
+   scripts/route-shells.js; keep the two in step. */
+.pg {
+  overflow-x: clip;
+}
+
+.pg-head {
+  padding-block: var(--space-6) var(--space-5);
+}
+
+.pg-head__rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.pg-h1 {
+  margin: 0;
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.pg-lede {
+  max-width: 46ch;
+  margin-top: var(--space-3);
+  color: rgb(var(--paper));
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.pg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.pg-actions .text-link,
+.pg-more .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+@media (min-width: 1024px) {
+  .pg-head { padding-block: var(--space-7) var(--space-6); }
+  .pg-head__rail { flex-direction: column; padding-top: 22px; }
+}
+
+.pg-section {
+  padding-block: var(--space-6);
+  border-top: 1px solid rgb(var(--rule));
+}
+
+@media (min-width: 1024px) {
+  .pg-section { padding-block: var(--space-7); }
+}
+
+.pg-h2 {
+  margin: 0 0 var(--space-4);
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2.25rem, 5vw, var(--text-h2));
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.pg-intro,
+.pg-prose p {
+  max-width: 62ch;
+  color: rgb(var(--muted));
+  font-size: var(--text-body);
+  line-height: 1.6;
+}
+
+.pg-intro { margin: calc(var(--space-2) * -1) 0 var(--space-4); }
+.pg-prose p { color: rgb(var(--paper)); }
+.pg-prose p + p { margin-top: var(--space-2); }
+
+.pg-more {
+  margin-top: var(--space-4);
+  font-size: 15px;
+}
+
+/* Hairline rows: a mono label column and a body column. */
+.pg-rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.pg-row {
+  display: grid;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid rgb(var(--rule));
+}
+
+.pg-row__label {
+  margin: 0;
+  color: rgb(var(--muted));
+  font: 400 13px/1.6 var(--font-mono);
+}
+
+.pg-row__title {
+  margin: 0;
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: var(--text-h3);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.pg-row__body {
+  min-width: 0;
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.pg-row__meta {
+  margin-top: var(--space-1);
+  color: rgb(var(--muted));
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* A lone link in a row body is a 44px target. */
+.pg-row__body > .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+@media (min-width: 640px) {
+  .pg-row {
+    grid-template-columns: 160px minmax(0, 1fr);
+    column-gap: var(--space-3);
+  }
+}
+
+/* "Live / current": the accent's one job. */
+.pg-now {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-1);
+  color: rgb(var(--paper));
+}
+
+.pg-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%; /* design-allow: status dot */
+  background: rgb(var(--accent));
+  transform: translateY(-1px);
+}
+
+/* ── Native radio filter (from P4 Projects; shared by Journey and Blog) ── */
+.pj-seg {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.pj-seg__legend {
+  padding: 0;
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+}
+
+.pj-seg__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-1);
+  margin-left: calc(var(--space-1) * -1);
+}
+
+.pj-seg__option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-control);
+  color: rgb(var(--muted));
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* The native radio stays focusable and clickable, covering its label. */
+.pj-seg__option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pj-seg__option > span:first-of-type {
+  position: relative;
+}
+
+/* Checked = "current": paper text with the accent underline. */
+.pj-seg__option > span:first-of-type::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -3px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.pj-seg__option:has(input:checked) { color: rgb(var(--paper)); }
+.pj-seg__option input:checked + span::after { transform: scaleX(1); }
+
+@media (hover: hover) {
+  .pj-seg__option:hover { color: rgb(var(--paper)); }
+}
+
+.pj-seg__option:has(input:focus-visible) {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.pj-seg__count {
+  color: rgb(var(--muted));
+  font: 400 12px/1 var(--font-mono);
+}
+
+@media (min-width: 768px) {
+  .pj-seg {
+    display: grid;
+    grid-template-columns: 80px minmax(0, 1fr);
+    align-items: center;
+  }
+
+  /* A legend can't be a grid item; float it into the first column. */
+  .pj-seg__legend { float: left; width: 80px; }
+}
+
+/* ── Disclosure toggle for native <details> (Journey, service FAQ) ── */
+/* A plus that turns into a minus; transform only. */
+.pg-toggle {
+  position: absolute;
+  top: 12px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+.pg-toggle::before,
+.pg-toggle::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 16px;
+  height: 1px;
+  background: rgb(var(--muted));
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.pg-toggle::after { transform: rotate(90deg); }
+details[open] > summary .pg-toggle::after { transform: rotate(0deg); }
+
+@media (hover: hover) {
+  summary:hover .pg-toggle::before,
+  summary:hover .pg-toggle::after { background: rgb(var(--paper)); }
+}
+
+
+/* ── 404 (src/pages/NotFound.jsx; public/404.html mirrors it) ── */
+.nf {
+  min-height: calc(100vh - var(--chrome-h) - var(--dock-space));
+}
+
+.nf-path {
+  padding: 1px 6px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  font: 400 0.8em/1 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.nf-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: var(--space-6) 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid rgb(var(--rule));
+  list-style: none;
+}
+
+.nf-more .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

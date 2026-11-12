@@ -83,6 +83,14 @@ const shellSettled = () => {
 const ROUTE_CHUNKS = [
     [/^\/projects\/?$/, () => import('./pages/Projects')],
     [/^\/projects\/[^/]+\/?$/, () => import('./pages/ProjectDetail')],
+    [/^\/about\/?$/, () => import('./pages/About')],
+    [/^\/skills\/?$/, () => import('./pages/Skills')],
+    [/^\/journey\/?$/, () => import('./pages/Journey')],
+    [/^\/services\/?$/, () => import('./pages/Services')],
+    [/^\/blog\/?$/, () => import('./pages/Blog')],
+    [/^\/contact\/?$/, () => import('./pages/Contact')],
+    [/^\/blog\/[^/]+\/?$/, () => import('./pages/BlogPost')],
+    [/^\/(services\/[^/]+|frontend-development|backend-development|full-stack-development|ai-data-science-guidance)\/?$/, () => import('./pages/ServiceDetail')],
 ]
 
 const start = () => {

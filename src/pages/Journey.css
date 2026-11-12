@@ -1,0 +1,155 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* Journey (P5): a year-grouped archive on the shared .pg-* primitives
+   (src/styles/page.css). Replaces JourneyNavigator.css and the timeline. */
+
+.jr-filter {
+  padding-block: 0 var(--space-5);
+}
+
+.jr-filter .pj-seg {
+  padding-top: var(--space-3);
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.jr-count {
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--space-2);
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+}
+
+.jr-entry {
+  display: grid;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid rgb(var(--rule));
+  scroll-margin-top: calc(var(--chrome-h) + var(--space-3));
+}
+
+@media (min-width: 640px) {
+  .jr-entry {
+    grid-template-columns: 160px minmax(0, 1fr);
+    column-gap: var(--space-3);
+  }
+  .jr-entry__date { padding-top: 6px; }
+}
+
+.jr-entry__summary {
+  position: relative;
+  display: block;
+  min-height: 44px;
+  padding-right: var(--space-5);
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--radius-control);
+}
+
+.jr-entry__summary::-webkit-details-marker { display: none; }
+
+.jr-entry__summary:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 4px;
+}
+
+.jr-entry__title {
+  display: block;
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: var(--text-h3);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.jr-entry__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.jr-entry__now { font-size: 15px; }
+
+.jr-entry__detail {
+  max-width: 62ch;
+  padding-top: var(--space-3);
+}
+
+.jr-facts {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 4px var(--space-2);
+  margin: 0 0 var(--space-3);
+  font-size: 15px;
+}
+
+.jr-facts dt {
+  color: rgb(var(--muted));
+  font: 400 13px/1.8 var(--font-mono);
+}
+
+.jr-facts dd { margin: 0; color: rgb(var(--paper)); }
+
+.jr-text {
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.jr-sub { margin: var(--space-3) 0 var(--space-1); }
+
+.jr-list {
+  margin: 0;
+  padding-left: 1.1em;
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.jr-list li + li { margin-top: 4px; }
+
+.jr-skills {
+  margin-top: var(--space-3);
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.jr-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jr-images a {
+  display: block;
+  border: 1px solid rgb(var(--rule));
+}
+
+.jr-images a:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.jr-images img {
+  display: block;
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  background: rgb(var(--ink-raised));
+}
+
+.jr-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.jr-links .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

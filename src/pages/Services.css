@@ -1,0 +1,126 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* Services and service pages (P5) on the shared .pg-* primitives
+   (src/styles/page.css). Prices sit in the mono label column and never wrap
+   mid-word (the old stat box clipped "Razorpay"). */
+
+.sv-price {
+  color: rgb(var(--paper));
+  overflow-wrap: normal;
+}
+
+.sv-summary {
+  max-width: 62ch;
+  margin-top: var(--space-1);
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.sv-features {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.1em;
+  color: rgb(var(--muted));
+  line-height: 1.6;
+}
+
+.sv-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.sv-links .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.sv-step {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: baseline;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid rgb(var(--rule));
+  color: rgb(var(--paper));
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.sv-trust {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 0;
+}
+
+.sv-trust__row dd {
+  max-width: 62ch;
+  margin: 4px 0 0;
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  .sv-trust { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-4); }
+}
+
+.sv-promise {
+  max-width: 46ch;
+  margin-top: var(--space-2);
+  color: rgb(var(--muted));
+  line-height: 1.6;
+}
+
+.sv-scope {
+  margin: 0;
+  padding-left: 1.1em;
+  color: rgb(var(--paper));
+  line-height: 1.6;
+}
+
+.sv-scope li + li { margin-top: 4px; }
+
+.sv-amount {
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  line-height: 1.1;
+}
+
+.sv-amount__note { margin-top: var(--space-2); }
+
+.sv-faq {
+  max-width: 62ch;
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.sv-faq__item { border-bottom: 1px solid rgb(var(--rule)); }
+
+.sv-faq__q {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding-right: var(--space-5);
+  color: rgb(var(--paper));
+  list-style: none;
+  cursor: pointer;
+  border-radius: var(--radius-control);
+}
+
+.sv-faq__q::-webkit-details-marker { display: none; }
+.sv-faq__q .pg-toggle { top: 20px; }
+
+.sv-faq__q:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.sv-faq__a {
+  padding-bottom: var(--space-2);
+  color: rgb(var(--muted));
+  line-height: 1.6;
+}

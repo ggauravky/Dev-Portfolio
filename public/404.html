@@ -1,8 +1,10 @@
 <!doctype html>
 <!--
   Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
-  Custom 404 page — served by Vercel with HTTP 404 status for unmatched routes.
-  Bootstraps the full React SPA so the interactive NotFound component renders.
+  Custom 404 page, served by Vercel with HTTP 404 status for unmatched routes.
+  Fully static (P5): it no longer boots the SPA, because /src/main.jsx does not
+  exist in a production build. Same Monograph tokens and self-hosted fonts as
+  the site; keep it in step with src/pages/NotFound.jsx.
   Portfolio: https://ggauravky.vercel.app
 -->
 <html lang="en">
@@ -21,83 +23,70 @@
     <link rel="canonical" href="https://ggauravky.vercel.app/" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#070708" />
+    <meta name="theme-color" content="#0E0D0B" />
+    <meta name="color-scheme" content="dark" />
 
     <!-- Agent-friendly discovery links -->
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLMs Text Specification" />
 
-    <!-- Minimal inline styles: dark background shown instantly before React hydrates -->
+    <link rel="preload" href="/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin />
     <style>
-      html, body { margin: 0; padding: 0; background-color: #070708; color: #fff; }
-      #root { min-height: 100vh; }
-      /* Static 404 layout shown only when JS is disabled */
-      .static-404 {
-        display: none;
-        font-family: 'Space Mono', 'Courier New', monospace;
-        min-height: 100vh;
-        background: #070708;
-        color: #fff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 2rem;
-        box-sizing: border-box;
+      @font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/fraunces-var.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/geist-var.woff2') format('woff2'); }
+      @font-face { font-family: 'Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('/fonts/geist-mono-var.woff2') format('woff2'); }
+      :root { --ink: #0E0D0B; --rule: #2A2824; --paper: #EDEAE3; --muted: #9C978C; --accent: #C2EE3A; }
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--ink); color: var(--paper); }
+      body { font: 400 17px/1.6 'Geist', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+      a { color: inherit; }
+      a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 96px 16px 128px; }
+      .rail { margin: 0 0 16px; color: var(--muted); font: 400 13px/1.5 'Geist Mono', 'Courier New', monospace; }
+      h1 { margin: 0; font: 400 clamp(3rem, 8vw, 6rem)/0.95 'Fraunces', Georgia, serif; letter-spacing: -0.02em; }
+      .lede { max-width: 46ch; margin: 24px 0 0; font-size: 20px; line-height: 1.5; }
+      .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; margin-top: 32px; }
+      .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 4px; background: var(--paper); color: var(--ink); font-weight: 500; font-size: 15px; text-decoration: none; }
+      .btn:hover { background: #fff; }
+      .link { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 4px; }
+      .link:hover { text-decoration-color: var(--accent); }
+      .list { margin: 64px 0 0; padding: 24px 0 0; border-top: 1px solid var(--rule); list-style: none; display: flex; flex-wrap: wrap; gap: 0 24px; }
+      .machine { margin-top: 48px; color: var(--muted); font: 400 13px/1.6 'Geist Mono', 'Courier New', monospace; }
+      .machine a { display: inline-flex; align-items: center; min-height: 44px; margin-right: 16px; }
+      @media (min-width: 1024px) {
+        .wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; padding: 128px 32px; }
+        .rail { grid-column: 1 / span 2; padding-top: 22px; }
+        .main { grid-column: 3 / span 8; }
       }
     </style>
   </head>
-  <body style="background-color: #070708; color: #ffffff;">
-
-    <!--
-      Agent / No-JS fallback — visible to crawlers that don't run JavaScript.
-      Provides HTTP-404-status content with navigation links for agents.
-    -->
-    <noscript>
-      <div class="static-404">
-        <p style="font-size:5rem;font-weight:900;background:linear-gradient(90deg,#c5f82a,#ff5d00,#c5f82a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0">404</p>
-        <h1 style="font-family:'Syne',sans-serif;font-size:2rem;margin:1rem 0">Page Not Found</h1>
-        <p style="color:#a1a1aa;max-width:520px;line-height:1.6;margin-bottom:2rem">
-          The URL you requested does not exist on this server. This is a real HTTP 404 — not a soft redirect.
-          Gaurav Kumar Yadav's portfolio is at <a href="https://ggauravky.vercel.app/" style="color:#c5f82a">ggauravky.vercel.app</a>.
+  <body>
+    <main class="wrap">
+      <p class="rail">404</p>
+      <div class="main">
+        <h1>Not found</h1>
+        <p class="lede">There&rsquo;s no page at this address. It may have moved, or the link has a typo.</p>
+        <p class="actions">
+          <a class="btn" href="/">Home &rarr;</a>
+          <a class="link" href="/projects">Projects</a>
+          <a class="link" href="/contact">Contact</a>
         </p>
-
-        <!-- Navigation for humans -->
-        <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;margin-bottom:2.5rem">
-          <a href="/" style="background:#c5f82a;color:#070708;padding:.75rem 1.5rem;border-radius:6px;font-weight:700;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Home</a>
-          <a href="/projects" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Projects</a>
-          <a href="/about" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">About</a>
-          <a href="/contact" style="border:1px solid #1a1a22;color:#a1a1aa;padding:.75rem 1.5rem;border-radius:6px;text-decoration:none;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em">Contact</a>
-        </div>
-
-        <!-- Agent-friendly discovery section -->
-        <div style="border-top:1px solid #1a1a22;padding-top:1.5rem;max-width:520px;width:100%">
-          <p style="color:#a1a1aa;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem">
-            🤖 Machine-Readable Resources
-          </p>
-          <div style="display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center">
-            <a href="/sitemap.xml" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/sitemap.xml</a>
-            <a href="/llms.txt" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/llms.txt</a>
-            <a href="/llms-full.txt" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/llms-full.txt</a>
-            <a href="/openapi.json" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/openapi.json</a>
-            <a href="/.well-known/mcp.json" style="color:#c5f82a;font-size:.75rem;font-family:monospace;text-decoration:underline">/.well-known/mcp.json</a>
-          </div>
-          <p style="color:#a1a1aa;font-size:.65rem;margin-top:1rem;opacity:.6">
-            Portfolio owner: Gaurav Kumar Yadav (ggauravky) · AI/ML Developer &amp; Web Developer · Lucknow, India
-          </p>
-        </div>
+        <ul class="list" aria-label="Other pages">
+          <li><a class="link" href="/about">About</a></li>
+          <li><a class="link" href="/journey">Journey</a></li>
+          <li><a class="link" href="/skills">Skills</a></li>
+          <li><a class="link" href="/services">Services</a></li>
+          <li><a class="link" href="/blog">Notes</a></li>
+        </ul>
+        <p class="machine">
+          Machine-readable:
+          <a href="/sitemap.xml">/sitemap.xml</a>
+          <a href="/llms.txt">/llms.txt</a>
+          <a href="/llms-full.txt">/llms-full.txt</a>
+          <a href="/openapi.json">/openapi.json</a>
+          <a href="/.well-known/mcp.json">/.well-known/mcp.json</a>
+        </p>
       </div>
-    </noscript>
-
-    <!-- React SPA root — when JS runs, the full interactive NotFound component mounts here -->
-    <div id="root"></div>
-
-    <!--
-      Load the same Vite entry point as index.html.
-      React Router's wildcard route (*) matches and renders <NotFound /> with
-      the full interactive experience: animated 404, countdown, easter eggs, etc.
-    -->
-    <script type="module" src="/src/main.jsx"></script>
+    </main>
   </body>
 </html>

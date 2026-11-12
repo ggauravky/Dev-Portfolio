@@ -3,18 +3,16 @@
 Branch: `redesign/v2` (from `main`). Plan: `docs/PLAN.md`. Decisions: `docs/DECISIONS.md`.
 Update this file at the end of every session.
 
-## Current state (2026-11-12)
-**P4 — Projects is built, uncommitted, awaiting the owner's review.** P3 is committed (`45150a9`).
-- `/projects` is an S7 ranked index: the 6 owner-confirmed case studies, then 20 compact rows. Filter (category, search) and order (rank, title, stack size) live in the URL. A spring hover preview appears on fine pointers. The empty state has a Clear filters button. No year column: the data has none (D-050).
-- `/projects/:slug` is one chapter template for all 26 projects: an arch frontispiece, a facts rail, and Problem, Team, What it does, Architecture, Key decisions, What I learned, Screens and Next. Missing data hides its chapter (D-051).
-- `/projects` and every case study paint a static header shell from `index.html` before any JS (D-057); the preloader is gone (D-055), and the boot path is ~260 KB gzip (D-056).
-- Row → case study and case study → next morph the title (and the preview into the arch) with View Transitions. There's an instant fallback (D-052).
-- Shared grid, arch and line-mask moved to `src/styles/page.css` (D-054). Home "Selected work" uses the same ranking (D-049).
-- Copy log: `docs/COPY_REVIEW.md` § P4 (⚠ rows, including 3 data claims to verify). Screenshots: `docs/audit/phase-4/`.
+## Current state (2026-11-13)
+**P5 — Remaining pages is built, uncommitted, awaiting the owner's review.** P4 is committed (`dec113f`).
+- About, Skills, Journey, Services + the four service pages, Blog, BlogPost, Contact and 404 (SPA and `public/404.html`) are fully on the v2 system; their old styles and components are deleted (D-065).
+- Shared layer: `PageHead`/`PageSection` and the `.pg-*` primitives in `src/styles/page.css` (D-058). Every P5 header (and each public article's header + cover) paints from `index.html` before JS (D-059).
+- Journey is a year-grouped archive with native disclosures and a URL category filter (D-060). Services is a price list; the clipped "Razorpay" stat box is gone (D-061). Articles get a rail TOC, reading progress and code styling (D-062). Contact and the newsletter use the kit inputs with inline validation and a success state, same endpoints (D-063). `public/404.html` was blank in production and is now static (D-064).
+- Copy log: `docs/COPY_REVIEW.md` § P5 (37 rows, ⚠ ones incl. the LinkedIn URL mismatch and the testimonial). Screenshots: `docs/audit/phase-5/`.
 
 ## Next step
-1. Owner reviews P4, confirms the ⚠ copy rows, and approves the commit.
-2. **P5 — Remaining pages.**
+1. Owner reviews P5, answers the ⚠ copy rows, and approves the commit.
+2. **P6 — Polish & QA** (BookNow, Support, Updates, ActivityTimeline, PaymentSuccess and the legal pages are still on the old styles; `check:design` lists them).
 
 ## Checklist
 - [x] Phase 0 — Recon & audit (`REPO_MAP.md`, `AUDIT.md`, screenshots)
@@ -25,8 +23,8 @@ Update this file at the end of every session.
 - [x] Signature-layer revision of DESIGN/PLAN (owner review, D-026)
 - [x] P2 — System: type specimen, motion, dock, cursor, buttons/inputs, preloader, route wipe, reveal fix (`529650f`)
 - [x] P3 — Home end to end + colophon footer (`45150a9`)
-- [x] P4 — Projects index + case studies (uncommitted, awaiting review)
-- [ ] P5 — About, Skills, Journey, Services, Blog, Contact, 404
+- [x] P4 — Projects index + case studies (`dec113f`)
+- [x] P5 — About, Skills, Journey, Services, Blog, Contact, 404 (uncommitted, awaiting review)
 - [ ] P6 — Polish & QA (OG image, sweep, cross-browser, legacy cleanup)
 
 ## Lighthouse log (mobile, median of 3)
@@ -49,6 +47,12 @@ Update this file at the end of every session.
 | **P4 + route shells `/projects/kanoon-mate`** (median of 5⁸) | **98** | 100 | 96 | 100 | 2.0 s | 0 ms |
 | **P4 + route shells `/projects/notes-app`** (median of 3⁸) | **94** | 100 | 96 | 100 | 2.1 s | 240 ms |
 | P4 + route shells Home (median of 3⁸) | 97 | 100 | 96 | 100 | 2.1 s | 130 ms |
+| **P5 `/about`** (median of 3⁹) | **96** | 100 | 96 | 100 | 2.0 s | 180 ms |
+| **P5 `/journey`** (median of 3⁹) | **98** | 100 | 96 | 100 | 2.0 s | 110 ms |
+| **P5 `/blog`** (median of 3⁹) | **97** | 100 | 96 | 100 | 2.0 s | 160 ms |
+| **P5 `/blog/what-is-mcp`** (median of 3⁹) | **97** | 100 | 96 | 100 | 2.1 s | 90 ms |
+| **P5 `/services`** (median of 3⁹) | **98** | 100 | 96 | 100 | 2.0 s | 90 ms |
+| P5 `/contact` (median of 3⁹) | 89 | 100 | 96 | 100 | 2.0 s | 380 ms |
 
 ¹ Runs 1–2 were CPU-contended (TBT > 2 s, Perf 36) so 5 more were taken; runs: 36, 36, 54, 55, 55, 47, 53, 56. Render-blocking savings fell 751 → 300 ms and CLS 0.023 → 0.002. FCP is still ≈ 4.3 s, set by the JS-rendered splash/hero (fixed in C/D1/E, not fonts).
 ² Runs 62, 64, 65; FCP 4.2 s, CLS 0.004. Gain is mostly the nav dropping framer-motion `layoutId` and the scroll listener. Desktop after B: 97 (LCP 1.0 s).
@@ -63,6 +67,16 @@ Desktop (median of 3): before 93 (LCP 1.4 s), after 96 (LCP 1.0 s). BP 96 locall
 ⁷ The host was heavily contended for the whole set (22–59% background load from other apps; bootup 0.8–1.6 s vs 0.4–0.5 s quiet). Unchanged Home code ranged 80–98 in the same set. Quiet runs during this pass: `/projects` 97 and 88 (LCP 2.0 s, 3.4 s), case study 89 and 89 (LCP 3.2–3.3 s). Critical-path JS is ~260 KB gzip, down from ~501 KB. **Mobile ≥ 90 is not yet proven** on JS-rendered pages. The structural fix left is a pre-JS shell for `/projects` and `/projects/:slug` (title + lede painted from index.html, like D-044). Re-measure on a quiet machine first.
 
 ⁸ D-057. Runs: `/projects` 96, 84, 99; case study 87, 80, 98, 99, 99; notes-app 89, 94, 99; Home 97, 97, 98. CLS 0 everywhere. The lower runs are TBT from host CPU contention (bootup 0.9–1.3 s); LCP was 2.0–2.1 s in every run. Desktop (before the boot deferral, median of 3): `/projects` 99, case study 98, notes-app 97, Home 100. Shell paint measured at 48–168 ms (unthrottled). **Mobile ≥ 90 met on `/projects` and the case studies.**
+
+⁹ P5, local `vite preview`, mobile. Quiet host (benchmark index ≈ 1710): About 95/96/96, Journey 99/98/96, Blog 96/97/97, article 97/81/98, Services 99/98/75, Contact 87/89/98. CLS 0 and A11y 100 / SEO 100 on every run; the low outliers are TBT/LCP spikes. Two later sets ran on a contended host (benchmark ≈ 750–860, half speed): unchanged About scored 73–95 and Contact 79–92, so they're not used. **Contact (median 89) is not yet proven ≥ 90**: its own work is two ~70 ms document tasks; the rest is the shared boot (vendor + `index` chunk, ~380 ms at 4× throttle). Re-measure on a quiet machine before P6 work on the boot path. Desktop (median of 3): About 100, Journey 100, Blog 100, article 98, Services 99, Contact 100.
+
+## P5 self-critique ("looks templated" check)
+1. **Seven pages on one header + numbered-section recipe could read as a template.** Each page uses the recipe for a different "page of the book": About is an essay with facts, Skills an index, Journey an archive by year, Services a price list, Contact a form plus a directory, the article a chapter with its contents in the margin. The header is shared because it is the one thing that paints before JS.
+2. **Hairline lists everywhere is the minimal-portfolio default.** The label column always carries a real fact (date, price, category, platform), never an icon or a number for decoration, and lists replace what used to be cards-in-cards, so the structure is the content.
+3. **A reading-progress bar is a blog cliché.** It's 1px, under the chrome, scroll-linked (no animation), and the accent's job there is "current position", the same job it has in the dock and the TOC tick.
+4. **Accordion journeys look like every résumé site.** Native `<details>` keeps all 25 entries visible as titles, works without JS and with find-in-page; the only accent is "Now", driven by the data's `status`.
+5. **"Contact" pages with a form and social list are generic.** The validation mirrors this site's own backend rules, errors come back onto the fields, and the success state names what happens next; no "Let's build something great".
+Still templated: the service descriptions in `servicesData.js` are marketing-toned ("production-ready", "performance-focused"); they're the owner's data, so they're shown as written and flagged rather than rewritten.
 
 ## P4 self-critique ("looks templated" check)
 1. **A hover image that follows the cursor over a list is a common awards-site index.** It is used only where it adds information (touch gets none). It springs on the shared `SPRING.soft`, and when you click it becomes the case study's arch, so the effect feeds the navigation instead of just decorating it.

@@ -1,137 +1,59 @@
 /*
  * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
- * Unauthorized copying, modification, or distribution of this software,
- * via any medium, is strictly prohibited without the express written
- * consent of the author. See LICENSE for details.
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-.contact-container {
-  padding: 40px 20px;
-  min-height: 80vh;
+/* Contact (P5) on the shared .pg-* primitives (src/styles/page.css). */
+
+.ct-email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-3);
+  margin-top: var(--space-3);
+  font-size: 18px;
 }
 
-.contact-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.contact-content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 15px;
-  color: #333;
-}
-
-.contact-intro {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 40px;
-}
-
-.contact-form {
-  background-color: #f9f9f9;
-  padding: 30px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  color: #333;
-}
-
-.form-group input,
-.form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-family: Arial, sans-serif;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: #007bff;
-}
-
-.submit-btn {
-  background-color: #007bff;
-  color: white;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.ct-email .text-link,
+.ct-email .btn {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
-  touch-action: manipulation;
+  overflow-wrap: anywhere;
 }
 
-.submit-btn:hover {
-  background-color: #0056b3;
+.ct-form {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 62ch;
 }
 
-.submit-btn:active {
-  transform: scale(0.98);
+.ct-form__pair {
+  display: grid;
+  gap: var(--space-3);
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  .contact-container {
-    padding: 20px 15px;
-  }
-
-  .contact-content h1 {
-    font-size: 2rem;
-    line-height: 1.2;
-  }
-
-  .contact-intro {
-    font-size: 1rem;
-    margin-bottom: 30px;
-  }
-
-  .contact-form {
-    padding: 20px;
-  }
-
-  .form-group input,
-  .form-group textarea {
-    font-size: 16px; /* Prevents zoom on iOS */
-    padding: 14px;
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 14px 20px;
-    font-size: 1.05rem;
-  }
+@media (min-width: 640px) {
+  .ct-form__pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* Extra small devices */
-@media (max-width: 480px) {
-  .contact-container {
-    padding: 15px 10px;
-  }
+.ct-form__actions { margin-top: 0; }
 
-  .contact-content h1 {
-    font-size: 1.75rem;
-  }
-
-  .contact-intro {
-    font-size: 0.95rem;
-  }
-
-  .contact-form {
-    padding: 15px;
-  }
+.ct-sent {
+  max-width: 62ch;
+  outline: none;
 }
+
+.ct-sent__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: var(--text-h3);
+}
+
+.ct-sent .pg-intro { margin: 0 0 var(--space-3); }
+
+.ct-note { margin-top: 0; }
