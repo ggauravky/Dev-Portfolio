@@ -7,7 +7,8 @@
 // Home (P3, direction A — Monograph). Each section is a different "page" of the
 // book: title page, essay, contents, list, notebook, timeline, colophon.
 // Motion moments: (1) S6 hero-name weight axis, (2) section reveals with
-// line-masked headings. Nothing else moves on its own.
+// line-masked headings. Nothing else moves on its own; the hero live panel
+// (HeroLive, D-074) only changes text once a minute.
 
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
@@ -16,16 +17,14 @@ import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { RANKED_PROJECTS } from '../lib/projects'
 import { journeyData } from '../data/journeyData'
-import { siteStatus, isAvailable } from '../data/siteStatus'
-import LazyImage from '../components/LazyImage'
+import { siteStatus } from '../data/siteStatus'
 import Reveal from '../components/Reveal'
-import Arch from '../components/Arch'
 import HeroName from '../components/home/HeroName'
+import HeroLive from '../components/home/HeroLive'
 import { Button, TextLink } from '../components/ui'
 import './Home.css'
 
 const NAME = 'Gaurav Kumar Yadav'
-const PORTRAIT_WIDTHS = [480, 768]
 const SELECTED_WORK_LIMIT = 6
 
 // Module-level: the data is static, so compute once.
@@ -86,8 +85,6 @@ function Home() {
         ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
     })
 
-    const available = isAvailable()
-
     return (
         <main className="home">
             {/* Title page */}
@@ -103,33 +100,13 @@ function Home() {
                         <p className="home-hero__lede">
                             AI/ML and web developer. I build machine learning projects and web products with Python, React and Node.js.
                         </p>
-                        {available ? (
-                            <p className="home-status">
-                                <span className="home-status__dot" aria-hidden="true" />
-                                {siteStatus.availability.label}
-                            </p>
-                        ) : null}
+                        <HeroLive />
                         <div className="home-hero__actions">
                             <Button to="/projects" arrow>View projects</Button>
                             <Button to="/services" variant="secondary">Book a service</Button>
                             <TextLink to="/contact" className="home-hero__contact">Contact</TextLink>
                         </div>
                     </div>
-
-                    <figure className="home-hero__portrait">
-                        <Arch>
-                            <LazyImage
-                                src="/images/profile.jpg"
-                                alt="Portrait of Gaurav Kumar Yadav"
-                                width={480}
-                                height={600}
-                                priority
-                                responsiveWidths={PORTRAIT_WIDTHS}
-                                sizes="(min-width: 1024px) 280px, 240px"
-                                className="home-hero__img"
-                            />
-                        </Arch>
-                    </figure>
                 </div>
             </section>
 

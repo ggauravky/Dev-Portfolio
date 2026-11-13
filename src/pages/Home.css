@@ -61,17 +61,49 @@
   line-height: 1.5;
 }
 
-/* Availability: the accent's job is "live / current". */
-.home-status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin-top: var(--space-3);
-  color: rgb(var(--muted));
-  font: 400 14px/1.5 var(--font-mono);
+/* Live panel (HeroLive, D-074): in the portrait's old slot. Not a card: a
+   hairline, no fill, mono numerals, three lines at most. Labels muted, values
+   in paper; the accent is only the availability dot ("live / current"). */
+.hero-live {
+  margin-top: var(--space-4);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgb(var(--rule));
+  font: 400 13px/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
-.home-status__dot,
+.hero-live__list {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.hero-live__row {
+  display: contents;
+}
+
+.hero-live dt {
+  color: rgb(var(--muted));
+}
+
+.hero-live dd {
+  margin: 0;
+  color: rgb(var(--paper));
+}
+
+/* The dot is the label, so the status line takes the full width. */
+.hero-live__row--status dd {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: rgb(var(--muted));
+}
+
+/* Availability: the accent's job is "live / current". */
+.hero-live__dot,
 .home-now__dot {
   width: 8px;
   height: 8px;
@@ -94,28 +126,29 @@
   min-height: 44px;
 }
 
-.home-hero__portrait {
-  width: min(100%, 240px);
-  margin: var(--space-5) 0 0;
-}
-
-.home-hero__img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
+/* Desktop: a two-column title page. The name and its lede/actions hold the
+   left text column; the live panel answers the name from the right, its last
+   line on the name's last line, so the width the portrait held is used, not
+   left empty. `display: contents` lets the hero pieces sit on the page grid
+   directly; DOM order stays name → lede → panel → actions for mobile and
+   screen readers. */
 @media (min-width: 1024px) {
   .home-hero { padding-block: var(--space-7) var(--space-8); }
-  .home-hero__meta { flex-direction: column; padding-top: 22px; }
-  .home-hero__main { grid-column: 3 / span 7; }
-  .home-hero__portrait {
-    grid-column: 10 / span 3;
-    align-self: end;
-    width: 100%;
-    margin: 0;
+  .home-hero .page-grid { row-gap: 0; } /* the pieces keep their own margins */
+  .home-hero__meta { grid-column: 1 / span 2; grid-row: 1 / span 3; flex-direction: column; padding-top: 22px; }
+  .home-hero__main { display: contents; }
+  .hero-name { grid-column: 3 / span 5; grid-row: 1; }
+  .home-hero__lede { grid-column: 3 / span 5; grid-row: 2; }
+  .home-hero__actions { grid-column: 3 / span 8; grid-row: 3; }
+  .hero-live {
+    grid-column: 8 / span 5;
+    grid-row: 1;
+    align-self: end; /* fallback */
+    margin-top: 0;
   }
+  /* The panel's last line sits on the baseline of "Yadav". */
+  .hero-name,
+  .hero-live { align-self: last baseline; }
 }
 
 /* ── Sections ─────────────────────────────────────────────── */

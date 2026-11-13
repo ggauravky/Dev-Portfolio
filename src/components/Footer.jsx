@@ -16,7 +16,7 @@ import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import TextLink from './ui/TextLink'
 import { siteStatus, isAvailable } from '../data/siteStatus'
-import { fetchGitHubContributions } from '../utils/githubApi'
+import { timeFormat, numberFormat, formatGitHubDay, useLucknowTime, loadGitHubActivity } from '../lib/liveStatus'
 import { prefersReducedMotion } from '../lib/motion'
 import './Footer.css'
 
@@ -38,38 +38,11 @@ const LEGAL_LINKS = [
     { name: 'Refund Policy', path: '/refund' },
 ]
 
-const timeFormat = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Kolkata',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-})
-const dayFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
-const numberFormat = new Intl.NumberFormat('en-IN')
-
-/** Lucknow (IST) wall-clock time, re-rendered on each minute boundary. */
-function useLucknowTime() {
-    const [now, setNow] = useState(() => new Date())
-    useEffect(() => {
-        let interval = 0
-        const tick = () => setNow(new Date())
-        const timeout = window.setTimeout(() => {
-            tick()
-            interval = window.setInterval(tick, 60_000)
-        }, 60_000 - (Date.now() % 60_000))
-        return () => {
-            window.clearTimeout(timeout)
-            window.clearInterval(interval)
-        }
-    }, [])
-    return now
-}
-
 /**
- * Last-year contributions and the last active day, from the existing GitHub
- * helper. Never blocks: it waits until the footer is within a screen of the
- * viewport, then for idle time. Fallback numbers are not shown (they are not
- * real data); on failure the row is just a profile link.
+ * Last-year contributions and the last active day (src/lib/liveStatus.js).
+ * Never blocks: it waits until the footer is within a screen of the viewport,
+ * then for idle time. Fallback numbers are not shown (they are not real data);
+ * on failure the row is just a profile link.
  */
 function useGitHubActivity(targetRef) {
     const [state, setState] = useState({ status: 'idle', data: null })
@@ -83,16 +56,9 @@ function useGitHubActivity(targetRef) {
 
         const load = () => {
             setState({ status: 'loading', data: null })
-            fetchGitHubContributions()
-                .then((result) => {
-                    if (cancelled) return
-                    const days = result.contributionsArray || []
-                    const today = new Date().toISOString().slice(0, 10)
-                    const last = [...days].reverse().find((day) => day.count > 0 && day.date <= today)
-                    setState({
-                        status: 'ready',
-                        data: { total: result.totalContributions, lastActive: last?.date || null },
-                    })
+            loadGitHubActivity()
+                .then((data) => {
+                    if (!cancelled) setState({ status: 'ready', data })
                 })
                 .catch(() => {
                     if (!cancelled) setState({ status: 'error', data: null })
@@ -154,7 +120,7 @@ function GitHubLine({ state }) {
     const data = state.status === 'ready' ? state.data : null
     let stat = ' '
     if (data) {
-        const last = data.lastActive ? `, last on ${dayFormat.format(new Date(`${data.lastActive}T00:00:00Z`))}` : ''
+        const last = data.lastActive ? `, last on ${formatGitHubDay(data.lastActive)}` : ''
         stat = `${numberFormat.format(data.total)} contributions in the last year${last}`
     }
     return (

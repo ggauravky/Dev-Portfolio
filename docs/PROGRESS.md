@@ -13,9 +13,19 @@ Update this file at the end of every session.
 - QA sweep (20 routes × 390/768/1024/1440, reduced motion) in **Chromium, Firefox and WebKit**: no horizontal scroll, no console/page errors, one h1 per page. Touch targets ≥ 44 px after P6 fixes (footer, Services links, mobile article TOC, 404 list); left by design: the 32 px desktop article TOC (fine pointers; WCAG 2.5.8 needs 24) and inline in-sentence links (2.5.8 exception). Keyboard pass: skip link first, radio groups on arrows, dialogs trap focus and close on Escape. Scroll restoration checked (push → 0, back → saved 1500). SEO: `useSEO` on every page (only `AdminRedirect` and the dev `_Kit` skip it), every route has a `vercel.json` rewrite, `sitemap.xml` unchanged after build, `llms*.txt` unchanged (no public text they quote changed). Results: `docs/audit/phase-6/sweep-chromium.json`.
 - Copy log: `docs/COPY_REVIEW.md` § P6. Screenshots: `docs/audit/phase-6/`.
 
+## Post-merge: hero live panel (2026-11-13, branch `feat/hero-live-panel`, uncommitted)
+The redesign is merged to `main` (#25). This change touches only the Home hero (D-074).
+- **Portrait removed.** The hero is type only: the name keeps `--text-display` (DESIGN.md defines no larger step). On ≥ 1024px the hero pieces sit on the page grid directly (`display: contents`): name/lede/actions in columns 3–7, the panel in 8–12 with its last line on the baseline of "Yadav" (`align-self: last baseline`). Meta rail and lede keep their places relative to the name.
+- **Live panel** (`components/home/HeroLive.jsx`): Lucknow time (IST, ticks on the minute), the last GitHub contribution date, and availability from `siteStatus.js`. Hairline, no fill, Geist Mono, a `<dl>` in a `role="group"` with one static label and `aria-live="off"`. It replaces the hero's separate availability line, so the status isn't shown twice.
+- **Shared logic:** the footer's clock, formatters and GitHub derivation moved to `src/lib/liveStatus.js`; the footer and the panel both import it (the footer looks the same).
+- **Removed:** the shell portrait, its preload script, the boot's wait on the hero image (`main.jsx`), `.home-hero__portrait/__img`, `.home-status`, and the hero-only `profile-480/768/1122` variants with their build step. Kept: `profile.jpg` (SEO/structured data) and the arch (`Arch.jsx`, used by case studies).
+- **QA** (prod build, `vite preview`, Chrome): 1440/1024/768/390, no horizontal scroll and no overlap. A New York visitor sees the same IST time as real IST. A fake clock ticks 11:59 → 12:00 → 12:01. With the browser offline the clock shows, the GitHub line is hidden, there are no requests and no console errors. A real offline reload gets the service worker's `offline.html` (D-073), as before. With GitHub down the line hides; the existing helper still logs its own `console.error`. Reduced motion: no animations in the hero, and no S6 axis. S6 still works on hover at the new width. The arch still clips the case-study frontispiece.
+- **Lighthouse (mobile), same host, alternating runs:** `main` 88/90/89 against this branch 89/88/91, so the median is 89 for both. A11y 100 and CLS 0 on all of them. Both are below the P6 98 because this host is slower today (TBT 190–410 ms), not because of this change.
+- Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
-1. Owner reviews P6, answers the ⚠ copy rows (P3–P6), and approves the commit.
-2. Then merge `redesign/v2` → `main` and deploy (owner's call); re-run Lighthouse on the live site.
+1. Owner reviews the hero change and approves the commit.
+2. Earlier: owner answers the ⚠ copy rows (P3–P6); re-run Lighthouse on the live site after deploy.
 
 ## Checklist
 - [x] Phase 0 — Recon & audit (`REPO_MAP.md`, `AUDIT.md`, screenshots)
