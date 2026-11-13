@@ -13,6 +13,7 @@
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
 import { RANKED_PROJECTS } from '../lib/projects'
@@ -23,6 +24,8 @@ import HeroName from '../components/home/HeroName'
 import HeroLive from '../components/home/HeroLive'
 import { Button, TextLink } from '../components/ui'
 import './Home.css'
+
+const SEO = staticSeo('/')
 
 const NAME = 'Gaurav Kumar Yadav'
 const SELECTED_WORK_LIMIT = 6
@@ -79,10 +82,7 @@ Section.propTypes = {
 
 function Home() {
     useSEO({
-        title: 'Gaurav Kumar Yadav | AI/ML Developer & Web Developer | BBDU Lucknow | Portfolio',
-        description: 'Gaurav Kumar Yadav is a BCA student at BBD University (BBDU), Lucknow, India, building AI/ML and web development projects. Explore portfolio case studies in machine learning, data science basics, React, MERN stack, and Python.',
-        keywords: 'Gaurav Kumar Yadav, Gaurav Kumar Yadav BBDU, Gaurav Lucknow developer, Gaurav AI ML developer, Gaurav web developer India, ggauravky portfolio, BCA AI ML student India, AI ML developer Lucknow, frontend developer portfolio India, MERN stack developer student, machine learning beginner projects',
-        ogImage: 'https://ggauravky.vercel.app/og-image.jpg'
+        ...SEO,
     })
 
     return (
@@ -98,7 +98,7 @@ function Home() {
                     <div className="home-hero__main">
                         <HeroName id="home-title" name={NAME} />
                         <p className="home-hero__lede">
-                            AI/ML and web developer. I build machine learning projects and web products with Python, React and Node.js.
+                            Gaurav Kumar Yadav is an AI/ML and web developer. I build machine learning projects and web products with Python, React and Node.js.
                         </p>
                         <HeroLive />
                         <div className="home-hero__actions">

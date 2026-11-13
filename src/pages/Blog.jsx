@@ -14,6 +14,7 @@
 import { useId, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
@@ -21,6 +22,8 @@ import { Button, Input } from '../components/ui'
 import { categories, getPublishedBlogArchive } from '../data/blogsData'
 import { validateEmail } from '../lib/validate'
 import './Blog.css'
+
+const SEO = staticSeo('/blog')
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/$/, '')
 
@@ -90,10 +93,7 @@ function Blog() {
     ])), [publishedBlogs])
 
     useSEO({
-        title: 'Engineering Notes | Gaurav Kumar Yadav',
-        description: 'System design, software engineering, and practical notes on building web applications and AI-powered products.',
-        keywords: 'engineering notes, system design, software engineering, full stack development, AI engineering, Gaurav Kumar Yadav',
-        ogImage: 'https://ggauravky.vercel.app/images/blogs/cover.webp',
+        ...SEO,
         additionalJsonLd: {
             '@type': 'ItemList',
             name: 'Engineering Notes',

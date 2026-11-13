@@ -34,7 +34,7 @@ const SITE_URL = "https://ggauravky.vercel.app";
 
 // Define all static pages
 const staticPages = [
-  { path: "", priority: "1.0", changefreq: "weekly" },
+  { path: "/", priority: "1.0", changefreq: "weekly" },
   { path: "/about", priority: "0.8", changefreq: "monthly" },
   { path: "/journey", priority: "0.8", changefreq: "monthly" },
   { path: "/skills", priority: "0.8", changefreq: "monthly" },

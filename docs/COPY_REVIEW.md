@@ -126,3 +126,10 @@ Project facts (descriptions, problems, solutions, architecture, decisions, lesso
 | 9 | Error boundary | "Oops! Something went wrong" / "We're sorry for the inconvenience…" | "Something broke" / "This page hit an unexpected error. Reloading usually fixes it." | — | ✔ kept |
 | 10 | Offline page | "You're Offline", 💡 note, "Go Home" | "You're offline", plain note, "Home" | — | |
 | 11 | OG image | *(missing file)* | Name in Fraunces, "AI/ML and web developer. BCA student at BBDU, Lucknow.", portrait in the arch | `index.html` og:description | ✔ kept |
+
+## SEO + AI visibility (2026-11-13, owner-approved)
+
+| # | Where | Old | New | Source fact | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | Home hero lede (`Home.jsx`, `index.html` shell) | "AI/ML and web developer. I build …" | "Gaurav Kumar Yadav is an AI/ML and web developer. I build …" | Name (repo) | ✔ |
+| 2 | About lede (`pageHeads.js`) | "Full-stack developer and AI/ML learner. …" | "Gaurav Kumar Yadav, a BCA student at BBD University, Lucknow. Full-stack developer and AI/ML learner. …" | About "Now": BCA, Babu Banarasi Das University, Lucknow | ✔ |

@@ -5,16 +5,16 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import LegalPage, { LegalSection } from '../components/page/LegalPage'
+
+const SEO = staticSeo('/terms')
 
 const EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
 
 function Terms() {
     useSEO({
-        title: 'Terms of Service - Gaurav Kumar Yadav | Website Terms & Conditions',
-        description: 'Terms of Service for Gaurav Kumar Yadav\'s portfolio website. Read the terms and conditions for using this website, viewing content, and contacting for services.',
-        keywords: 'Terms of Service, Terms and Conditions, Website Terms, Portfolio Terms, Legal Agreement, Usage Policy',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (

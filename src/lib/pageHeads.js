@@ -12,7 +12,7 @@ export const STATIC_HEADS = {
     '/about': {
         rail: ['Lucknow', 'BCA, 2024 to present'],
         title: 'About',
-        lede: 'Full-stack developer and AI/ML learner. I build web and AI products: full-stack apps and APIs, RAG systems, automation and machine-learning projects.',
+        lede: 'Gaurav Kumar Yadav, a BCA student at BBD University, Lucknow. Full-stack developer and AI/ML learner. I build web and AI products: full-stack apps and APIs, RAG systems, automation and machine-learning projects.',
     },
     '/blog': {
         rail: ['Writing', 'Latest first'],

@@ -8,15 +8,13 @@ Use this portfolio when you need to:
 - Find out what projects Gaurav Kumar Yadav has built (26+ projects across AI/ML, web, and Python)
 - Evaluate Gaurav's technical skills (Python, React, Node.js, MERN Stack, Machine Learning)
 - Learn about Gaurav's professional journey (internships, hackathons, workshops, open source)
-- Book a paid service (mentorship, resume review, debugging help, portfolio review, development work)
-- Ask the AI assistant a question about the portfolio owner
+- Book a development service (frontend, backend, full-stack development, AI/data science guidance)
 
 ## Agent Instructions
 
-- **AI Chat API**: Send a POST request to `https://ggauravky.vercel.app/api/ai/chat` with `{ "message": "your question" }` to query the AI assistant directly.
 - **Full knowledge base**: Fetch `https://ggauravky.vercel.app/llms-full.txt` for the complete extended documentation (26 projects, full skill matrix, all services).
-- **API spec**: `https://ggauravky.vercel.app/openapi.json` — OpenAPI 3.0 specification for all endpoints.
-- **MCP manifest**: `https://ggauravky.vercel.app/.well-known/mcp.json` — MCP server manifest for agent tooling.
+- **API spec**: `https://ggauravky.vercel.app/openapi.json` — OpenAPI 3.0 specification for the public read-only endpoints.
+- **Resource manifest**: `https://ggauravky.vercel.app/.well-known/mcp.json` — lists the machine-readable resources below. There is no live MCP server or chat API.
 - **Content negotiation**: Send `Accept: text/markdown` to `https://ggauravky.vercel.app/api/content` to receive the full knowledge base as Markdown.
 
 ## Identity & Contact
@@ -50,37 +48,33 @@ Use this portfolio when you need to:
 
 ## Featured Projects
 
-- [SmartMess](https://ggauravky.vercel.app/projects/smartmess): Full-stack hostel mess management platform with real-time menus, digital attendance, and admin analytics. Built with React, Node.js, Express, MongoDB.
-- [InsightAudio](https://ggauravky.vercel.app/projects/insightaudio): Autonomous AI meeting assistant — transforms recordings and YouTube videos into executive summaries, task trackers, and RAG memory. 100% self-hosted.
-- [Kanoon-Mate](https://ggauravky.vercel.app/projects/kanoon-mate): AI legal help platform that simplifies legal documents in English and Hindi with OCR, Gemini AI, and law mapping.
-- [SupportPilot AI](https://ggauravky.vercel.app/projects/supportpilot-ai): AI-powered customer support agent built at the Build With Swytchcode buildathon (Paytm Office, Noida).
-- [Real-Time Chat App](https://ggauravky.vercel.app/projects/real-time-chat-app): Live messaging application with WebSocket support. Built with React, Node.js, Socket.io.
-- [BuildMyTeam](https://ggauravky.vercel.app/projects/buildmyteam): Team-building and collaboration platform. Built with React, Node.js, MongoDB.
-- [Dev Portfolio Admin Panel](https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel): Admin panel for portfolio backend management with JWT auth and analytics.
-- [AiReel Studio](https://ggauravky.vercel.app/projects/aireel-studio): AI-powered short reel generation studio.
-- [FocusGuard](https://ggauravky.vercel.app/projects/focusguard): Productivity and focus management application.
-- [TrueCert](https://ggauravky.vercel.app/projects/truecert): Certificate verification and credential management platform.
+- [SmartMess](https://ggauravky.vercel.app/projects/smartmess): Comprehensive hostel mess management platform with real-time menu visibility, digital attendance, a student feedback & rating system, complaint portal, and an admin analytics dashboard. Built with React, Node.js, Express, MongoDB, JWT.
+- [Dev Portfolio Admin Panel](https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel): Blazing-fast admin panel for managing portfolio backend data — contact messages, newsletter subscriptions — with JWT auth, smart filtering, full CRUD operations, and a professional analytics dashboard. Built with React, Node.js, Express, MongoDB, JWT.
+- [Real-Time Chat App](https://ggauravky.vercel.app/projects/real-time-chat-app): Full-stack chat application with JWT authentication, Socket.IO for real-time messaging, online/offline status, and Cloudinary image uploads. Features modern UI with theme customization. Built with React, Node.js, Socket.IO, MongoDB, JWT.
+- [BuildMyTeam](https://ggauravky.vercel.app/projects/buildmyteam): Production-oriented collaboration platform for colleges to manage hackathons, team formation, join requests, and team workspaces with secure role-based access. Built with React, Node.js, Express, MongoDB, JWT.
+- [FocusGuard](https://ggauravky.vercel.app/projects/focusguard): AI-powered real-time attention monitor that detects sustained phone-looking behavior from webcam input and triggers alerts to reduce distraction and mindless scrolling. Built with Python, OpenCV, YOLOv4-tiny, NumPy, Computer Vision.
+- [TrueCert](https://ggauravky.vercel.app/projects/truecert): Secure digital certificate issuance and verification platform with QR-based public validation, tamper detection, analytics, and issuer dashboard workflows. Built with React, Node.js, Express, MongoDB, JWT.
+- [Fire Detection Alert System](https://ggauravky.vercel.app/projects/fire-detection-alert-system): Real-time computer-vision fire detection pipeline that analyzes webcam streams and triggers instant audio alerts using multi-stage confirmation logic. Built with Python, OpenCV, NumPy, Pygame, pyttsx3.
+- [ZipLink](https://ggauravky.vercel.app/projects/ziplink): A full-stack URL shortener project built with Flask, SQLite, Tailwind CSS, and Jinja2. Automatically generates collision-resistant short codes, redirects users to target destinations, and tracks click counts via a unified dashboard. Built with Python, Flask, SQLite, Tailwind CSS, Jinja2.
+- [InstaX](https://ggauravky.vercel.app/projects/instax): High-performance social media platform built using Next.js 16 App Router, React 19, TypeScript, Prisma ORM, Neon PostgreSQL, Clerk OAuth, and UploadThing edge storage. Features optimistic client updates, drag-and-drop media uploads, and real-time-like notifications. Built with Next.js, React, TypeScript, Tailwind CSS, Prisma.
+- [RAG-Based AI Teaching Assistant](https://ggauravky.vercel.app/projects/rag-ai-teaching-assistant): A high-performance Retrieval-Augmented Generation (RAG) system built specifically for video course lecture processing. Turns long video lectures into an intelligent, queryable AI knowledge base delivering grounded explanations with exact video numbers, titles, and precise timestamps (MM:SS). Built with Python, OpenAI Whisper, Google Gemini API, Ollama, Scikit-Learn.
+- [LinkedIn Clone (MERN Stack)](https://ggauravky.vercel.app/projects/mern-linkedin-clone): Comprehensive professional networking platform built with the MERN stack. Features secure JWT authentication, user profile setup, connection requests, rich feed posts with image attachments, real-time Socket.io notifications, Mailtrap email delivery, Zod schema validation, AWS S3 image storage, and analytics tracking. Built with React, Node.js, Express, MongoDB, Mongoose.
+- [Spotify Clone](https://ggauravky.vercel.app/projects/spotify-clone): Full-featured audio streaming and social music platform built with React, Node.js, Express, MongoDB, Socket.io, Cloudinary CDN, and Redux. Includes custom audio playback controls, queue management, live multi-user listening activity tracking, built-in real-time chat, and an admin analytics dashboard. Built with React, Node.js, Express, MongoDB, Mongoose.
+- [Kanoon-Mate AI Legal Assistance Platform](https://ggauravky.vercel.app/projects/kanoon-mate): An end-to-end, production-ready legal AI platform designed to break down legal barriers for Indian citizens. Features Multi-Format OCR, Google Gemini 2.5 Flash AI, Bharatiya Nyaya Sanhita (BNS) law mapping, Voice Dictation/Read-Aloud, Automated Deadline Tracking, and Emergency Legal Helpline Hub. Built with React, Vite, Tailwind CSS, Framer Motion, Google Gemini API.
+- [Smart LMS (SaaS Platform)](https://ggauravky.vercel.app/projects/smart-lms): Full-stack SaaS Learning Management System built with React, Redux Toolkit, Tailwind CSS, Node.js, Express, MongoDB, Google OAuth 2.0, Razorpay payment gateway, and Gemini AI-powered smart search. Built with React, Tailwind CSS, Redux Toolkit, Node.js, Express.
+- [InsightAudio](https://ggauravky.vercel.app/projects/insightaudio): Autonomous AI Meeting Assistant & Video Intelligence Platform. Converts YouTube links and local media recordings into structured executive summaries, actionable task trackers, and conversational RAG memory — 100% self-hosted, private, and cost-free. Built with Python, Streamlit, OpenAI Whisper, Sarvam AI API, LangChain.
 
 ## Services Offered
 
-- [Mentorship](https://ggauravky.vercel.app/mentorship): 1:1 mentorship sessions — INR 49
-- [Resume Review](https://ggauravky.vercel.app/resume-review): ATS-optimised resume review — INR 49
-- [Debugging Help](https://ggauravky.vercel.app/debugging-help): Code debugging and root-cause analysis — INR 99
-- [Portfolio Review](https://ggauravky.vercel.app/portfolio-review): Developer portfolio review — INR 99
-- [Frontend Development](https://ggauravky.vercel.app/frontend-development): Frontend project delivery
-- [Backend Development](https://ggauravky.vercel.app/backend-development): Backend and API development
-- [Full Stack Development](https://ggauravky.vercel.app/full-stack-development): End-to-end product delivery
-- [AI & Data Science Guidance](https://ggauravky.vercel.app/ai-data-science-guidance): AI/ML project guidance and review
+- [Frontend Development](https://ggauravky.vercel.app/frontend-development): Modern, responsive frontend experiences with clean component architecture and performance-focused implementation.
+- [Backend Development](https://ggauravky.vercel.app/backend-development): Reliable backend systems with API design, authentication, validation, and production-focused architecture.
+- [Full Stack Development](https://ggauravky.vercel.app/full-stack-development): End-to-end development from UI to APIs with practical product thinking, deployment support, and production readiness.
+- [AI / Data Science Guidance](https://ggauravky.vercel.app/ai-data-science-guidance): Applied guidance for ML and data science projects including roadmap, experimentation, and practical implementation strategy.
 
 ## Blog Articles
 
-- [AI Inside Every Tool](https://ggauravky.vercel.app/blog/ai-inside-every-tool-future): The future of AI-embedded software tools.
-- [Hidden AI War: Cybercriminals 2025](https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025): How AI is reshaping cybersecurity threats.
-- [Traditional Cybersecurity Is Dead](https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution): Why AI is making legacy security obsolete.
-- [Certificates in CS 2025](https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide): A practical guide to CS certifications worth pursuing.
-- [Learning to Code Beyond Syntax](https://ggauravky.vercel.app/blog/learning-to-code-beyond-syntax): What nobody tells you about becoming a developer.
-- [Stop Asking Which Language Is Best](https://ggauravky.vercel.app/blog/stop-asking-which-language-is-best): Why the language debate misses the point.
-- [India, AI, ChatGPT and the Future](https://ggauravky.vercel.app/blog/india-talent-ai-chatgpt-deepseek-future): India's AI talent edge and what comes next.
+- [Uber System Design: How Ride Sharing Apps like Uber, Lyft Works at Scale](https://ggauravky.vercel.app/blog/uber-system-design): What happens after you tap “Book Ride”? Learn how a scalable ride-sharing platform can find nearby drivers, match requests, and handle millions of moving parts.
+- [What is MCP? A Simple Guide to the Model Context Protocol](https://ggauravky.vercel.app/blog/what-is-mcp): A beginner-friendly guide to MCP, the open protocol that helps AI assistants connect to tools, data, and useful developer workflows.
 
 ## External Profiles
 
@@ -89,8 +83,8 @@ Use this portfolio when you need to:
 
 ## Machine-Readable Resources
 
-- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 spec for the portfolio AI chat API.
-- [MCP Manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Model Context Protocol manifest for agent tooling.
+- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 spec for the public read-only endpoints.
+- [MCP Manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Index of machine-readable resources for agents.
 - [Full LLM Knowledge Base](https://ggauravky.vercel.app/llms-full.txt): Extended documentation with full project catalog, skill matrix, and all services.
 - [Sitemap](https://ggauravky.vercel.app/sitemap.xml): XML sitemap of all pages.
 - [Content API](https://ggauravky.vercel.app/api/content): Send `Accept: text/markdown` to get the knowledge base as Markdown.

@@ -16,6 +16,7 @@ import { useCallback, useEffect, useId, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import { projectsData } from '../data/projectsData'
 import {
     CASE_STUDY_COUNT,
@@ -42,6 +43,8 @@ import Reveal from '../components/Reveal'
 import HoverPreview from '../components/ui/HoverPreview'
 import { Button, Input, TextLink } from '../components/ui'
 import './Projects.css'
+
+const SEO = staticSeo('/projects')
 
 const SORTS = [
     { id: 'rank', label: 'Rank' },
@@ -135,10 +138,7 @@ Group.propTypes = {
 
 function Projects() {
     useSEO({
-        title: 'Projects | Gaurav Kumar Yadav | AI/ML and Web Developer Portfolio',
-        description: 'Explore portfolio case studies by Gaurav Kumar Yadav, a BCA student at BBDU Lucknow, India. AI/ML and web development projects built with Python, React, Node.js, and MERN stack tools.',
-        keywords: 'Gaurav Kumar Yadav projects, Gaurav AI ML developer, Gaurav web developer India, ggauravky portfolio, AI ML developer Lucknow, MERN stack developer student, machine learning beginner projects',
-        ogImage: 'https://ggauravky.vercel.app/images/projects/chatapp.png',
+        ...SEO,
         additionalJsonLd: {
             '@type': 'ItemList',
             name: 'Gaurav Kumar Yadav Project Portfolio',

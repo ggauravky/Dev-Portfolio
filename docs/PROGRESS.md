@@ -61,7 +61,16 @@ Only `/contact`, plus two opt-in kit props (D-078–D-082).
 - Screenshots: `docs/audit/contact/` (`contact-before-*` / `contact-after-*`, 1440 and 390, plus 1440 idle/sending/sent/error close-ups).
 - Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Post-merge: SEO + AI visibility (2026-11-13, branch `feat/seo-ai-visibility`, uncommitted)
+Meta, data and structure only; no visual or layout change. Report: `docs/SEO_AUDIT.md`.
+- `src/lib/seo.js` is the one source for every route's title, description, canonical, OG/Twitter and JSON-LD `@graph`; `useSEO` reads it on the client and `scripts/route-heads.js` prerenders it into `dist/<route>/index.html` (60 routes + Home). `vercel.json` rewrites each route to its own file, so unknown slugs return a real 404.
+- Removed the dead `/api/ai/chat` function (500 since `0d4b615`); `openapi.json`, `mcp.json`, `llms.txt`, `llms-full.txt` corrected from the repo data.
+- **Freshness:** SEO/structured-data files (llms.txt, llms-full.txt, sitemap.xml, JSON-LD project data) must be reviewed whenever a project, journey entry, or blog post is added/changed — they are hand-written summaries, not auto-generated, so they drift out of sync silently.
+- **Lighthouse (13.4.1, `vite preview`, median of 3, alternating with `main`):** mobile Perf 94–98 (main 94–98), desktop 100 on all 6 routes; A11y 100, SEO 100, CLS 0 on both. `/projects/smartmess` mobile LCP 2.7 s on both builds (pre-existing).
+- Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
+0. Owner reviews `feat/seo-ai-visibility` (`docs/SEO_AUDIT.md`), approves the commit, then checks the Vercel preview (per-route heads, slug 404s).
 1. Owner reviews the Contact redesign and approves the commit.
 2. Owner reviews the Journey redesign and approves the commit.
 3. Earlier: owner answers the ⚠ copy rows (P3–P6); re-run Lighthouse on the live site after deploy.

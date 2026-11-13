@@ -5,7 +5,10 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import LegalPage, { LegalSection } from '../components/page/LegalPage'
+
+const SEO = staticSeo('/privacy')
 
 const EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
 
@@ -15,10 +18,7 @@ const Ext = ({ href }) => (
 
 function Privacy() {
     useSEO({
-        title: 'Privacy Policy - Gaurav Kumar Yadav | Data Protection & Privacy',
-        description: 'Privacy Policy for Gaurav Kumar Yadav\'s portfolio website. Learn how we collect, use, and protect your personal information when you visit our site or contact us.',
-        keywords: 'Privacy Policy, Data Protection, Personal Information, GDPR, Website Privacy, Portfolio Privacy',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (

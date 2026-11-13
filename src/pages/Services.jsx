@@ -11,6 +11,7 @@
 // Motion moments: (1) line-masked section headings.
 
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { servicesHead } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
@@ -18,6 +19,8 @@ import { Button, TextLink } from '../components/ui'
 import { servicesData } from '../data/servicesData'
 import { siteStatus } from '../data/siteStatus'
 import './Services.css'
+
+const SEO = staticSeo('/services')
 
 const HEAD = servicesHead(servicesData)
 const BOOK_DEFAULT = '/booknow?service=fullstack-development'
@@ -37,10 +40,7 @@ const TRUST = [
 
 function Services() {
     useSEO({
-        title: 'Services | Gaurav Kumar Yadav | Web Development and AI Guidance',
-        description: 'Work with Gaurav Kumar Yadav on frontend, backend, full-stack, and AI or data science projects. Practical remote development services from Lucknow, India.',
-        keywords: 'Gaurav Kumar Yadav services, frontend developer Lucknow, backend developer India, full stack development, AI data science guidance, MERN stack developer',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
         additionalJsonLd: {
             '@type': 'FAQPage',
             mainEntity: [

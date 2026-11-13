@@ -20,6 +20,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import { useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { journeyHead } from '../lib/pageHeads'
 import { useFinePointer, useReducedMotion } from '../lib/motion'
@@ -29,6 +30,8 @@ import HoverPreview, { preloadPreviewImages } from '../components/ui/HoverPrevie
 import { TextLink } from '../components/ui'
 import { journeyData } from '../data/journeyData'
 import './Journey.css'
+
+const SEO = staticSeo('/journey')
 
 // The year from the ISO string itself, so it can't shift with the time zone.
 const yearOf = (item) => Number(item.date.slice(0, 4))
@@ -311,10 +314,7 @@ function useStickyYear(timelineRef, deps) {
 
 function Journey() {
     useSEO({
-        title: 'Professional Journey | Gaurav Kumar Yadav | AI/ML & Web Developer',
-        description: 'Explore my internships, workshops, hackathons, conferences, certifications, industrial visits, and technical experiences throughout my journey as an AI/ML Developer and Web Developer.',
-        keywords: 'Gaurav Kumar Yadav journey, AI ML learning timeline, web developer experiences Lucknow, certifications Gaurav Kumar, workshops hackathons Lucknow',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     const [params, setParams] = useSearchParams()

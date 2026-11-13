@@ -10,6 +10,7 @@
 // Motion moments: (1) line-masked section headings.
 
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { skillsHead } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
@@ -17,14 +18,13 @@ import { Button, TextLink } from '../components/ui'
 import { skillGroups } from '../data/skillsData'
 import './Skills.css'
 
+const SEO = staticSeo('/skills')
+
 const HEAD = skillsHead(skillGroups)
 
 function Skills() {
     useSEO({
-        title: 'Skills | Gaurav Kumar Yadav | Python, AI/ML, React & Full Stack Technologies',
-        description: 'Technical skills of Gaurav Kumar Yadav, a BCA student at BBDU Lucknow — Python, AI/ML, Data Science, React, Node.js, MongoDB, JavaScript, Pandas, NumPy, and modern full stack web technologies. Open to internships and entry-level AI and Full Stack Development positions.',
-        keywords: 'Gaurav Kumar Yadav skills, Gaurav Kumar Yadav BBDU, Python developer Lucknow, AI ML skills student India, React developer skills, Full Stack skills MERN, machine learning developer portfolio, ggauravky technical skills',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (

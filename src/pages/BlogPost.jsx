@@ -14,6 +14,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import useSEO from '../hooks/useSEO'
+import { NOT_FOUND_SEO, blogSeo } from '../lib/seo'
 import { getBlogBySlug, getRelatedBlogs } from '../data/blogsData'
 import SupportButton from '../components/support/SupportButton'
 import LazyImage from '../components/LazyImage'
@@ -40,18 +41,8 @@ function BlogPost() {
         return () => window.clearTimeout(timer)
     }, [blog, navigate])
 
-    useSEO({
-        title: blog ? `${blog.title} | Engineering Notes` : 'Article not found | Engineering Notes',
-        description: blog?.excerpt || 'Engineering notes by Gaurav Kumar Yadav.',
-        keywords: blog ? [...(blog.tags || []), blog.category, 'Engineering Notes'].join(', ') : '',
-        ogImage: blog?.ogImage || 'https://ggauravky.vercel.app/images/profile.jpg',
-        type: blog ? 'article' : 'website',
-        author: blog?.author || 'Gaurav Kumar Yadav',
-        publishedTime: blog?.publishedDate || undefined,
-        modifiedTime: blog?.updatedDate || undefined,
-        tags: blog?.tags || [],
-        noindex: !blog || blog.status === 'preview',
-    })
+    const seo = useMemo(() => (blog ? blogSeo(blog) : NOT_FOUND_SEO), [blog])
+    useSEO(seo)
 
     if (!blog) {
         return (

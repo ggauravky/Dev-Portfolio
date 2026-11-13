@@ -10,6 +10,7 @@
 
 import { useLocation } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
+import { NOT_FOUND_SEO } from '../lib/seo'
 import { Button, TextLink } from '../components/ui'
 
 const MORE = [
@@ -23,12 +24,7 @@ const MORE = [
 function NotFound() {
     const { pathname } = useLocation()
 
-    useSEO({
-        title: '404 - Page Not Found | Gaurav Kumar Yadav',
-        description: 'Oops! The page you\'re looking for doesn\'t exist. Navigate back to Gaurav Kumar Yadav\'s portfolio homepage.',
-        keywords: '404, Page Not Found, Error Page',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
-    })
+    useSEO(NOT_FOUND_SEO)
 
     return (
         <main className="pg nf">

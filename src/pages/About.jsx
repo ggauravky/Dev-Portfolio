@@ -11,12 +11,15 @@
 
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
 import { Button, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
 import './About.css'
+
+const SEO = staticSeo('/about')
 
 const NOW = [
     {
@@ -99,10 +102,7 @@ NowRow.propTypes = {
 
 function About() {
     useSEO({
-        title: 'About Gaurav Kumar Yadav | Full-Stack & AI/ML Developer',
-        description: 'Meet Gaurav Kumar Yadav, a BCA student at BBD University specializing in AI and Data Science and working as a FullStack Intern at Ashoksoft Technologies.',
-        keywords: 'Gaurav Kumar Yadav, full-stack developer, AI ML developer, BBD University, IIT Mandi Masai, Ashoksoft Technologies',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (

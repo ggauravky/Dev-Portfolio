@@ -14,7 +14,10 @@ import PropTypes from 'prop-types'
 import Reveal from '../components/Reveal'
 import PageHead from '../components/page/PageHead'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import '../styles/updates.css'
+
+const SEO = staticSeo('/updates')
 
 const updates = [
     {
@@ -489,10 +492,7 @@ Release.propTypes = {
 
 function Updates() {
     useSEO({
-        title: 'Updates / Changelog | Gaurav Kumar Yadav',
-        description: 'Track product updates and feature releases for Gaurav Kumar Yadav portfolio platform.',
-        keywords: 'updates, changelog, product updates, portfolio releases, Gaurav Kumar Yadav',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (
