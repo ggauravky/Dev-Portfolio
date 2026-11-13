@@ -33,6 +33,7 @@ import {
 import { VT_TITLE, canViewTransition, isPlainClick, navigateWithTransition, preloadCaseStudy } from '../lib/viewTransition'
 import LazyImage from '../components/LazyImage'
 import Reveal from '../components/Reveal'
+import LineMask from '../components/LineMask'
 import Arch from '../components/Arch'
 import { Button, TextLink } from '../components/ui'
 import './ProjectDetail.css'
@@ -47,7 +48,7 @@ function Chapter({ id, index, title, children }) {
             <Reveal>
                 <h2 id={headingId} className="case-h2">
                     <span className="case-h2__no" aria-hidden="true">{pad2(index)}</span>
-                    <span className="line-mask"><span className="line-mask__line">{title}</span></span>
+                    <LineMask text={title} />
                 </h2>
                 {children}
             </Reveal>

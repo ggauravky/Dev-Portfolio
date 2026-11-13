@@ -16,14 +16,14 @@
   max-width: 62ch;
   margin-top: var(--space-1);
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .sv-features {
   margin: var(--space-2) 0 0;
   padding-left: 1.1em;
   color: rgb(var(--muted));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .sv-links {
@@ -61,7 +61,7 @@
   max-width: 62ch;
   margin: 4px 0 0;
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 @media (min-width: 768px) {
@@ -72,14 +72,14 @@
   max-width: 46ch;
   margin-top: var(--space-2);
   color: rgb(var(--muted));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .sv-scope {
   margin: 0;
   padding-left: 1.1em;
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .sv-scope li + li { margin-top: 4px; }
@@ -123,5 +123,5 @@
 .sv-faq__a {
   padding-bottom: var(--space-2);
   color: rgb(var(--muted));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }

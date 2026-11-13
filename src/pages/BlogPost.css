@@ -102,7 +102,7 @@
   gap: var(--space-1) var(--space-3);
   margin-top: var(--space-1);
   color: var(--article-muted);
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .ar-caption a,
@@ -308,7 +308,7 @@
 
 .article-content th {
   color: var(--article-muted);
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 /* ── Code ─────────────────────────────────────────────────── */
@@ -487,7 +487,7 @@
   display: block;
   margin-bottom: 4px;
   color: var(--article-muted);
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .article-note p { margin: 0; }
@@ -497,14 +497,14 @@
 .article-references span {
   display: block;
   color: var(--article-muted);
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .article-disclaimer {
   margin-top: var(--space-4);
   color: var(--article-muted);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 /* ── End matter ───────────────────────────────────────────── */
@@ -530,7 +530,7 @@
 .ar-support__count {
   display: block;
   color: var(--article-muted);
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .article-share {
@@ -584,7 +584,7 @@
   line-height: 1.2;
 }
 
-.ar-author p { color: var(--article-muted); line-height: 1.6; }
+.ar-author p { color: var(--article-muted); line-height: var(--leading-body); }
 
 .ar-author__links {
   display: flex;

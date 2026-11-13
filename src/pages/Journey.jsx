@@ -26,6 +26,7 @@ import { journeyHead } from '../lib/pageHeads'
 import { useFinePointer, useReducedMotion } from '../lib/motion'
 import { previewSrc } from '../lib/projects'
 import Reveal from '../components/Reveal'
+import LineMask from '../components/LineMask'
 import HoverPreview, { preloadPreviewImages } from '../components/ui/HoverPreview'
 import { TextLink } from '../components/ui'
 import { journeyData } from '../data/journeyData'
@@ -463,7 +464,7 @@ function Journey() {
                             <p className="page-rail" aria-hidden="true">{items.length} {items.length === 1 ? 'entry' : 'entries'}</p>
                             <div className="page-main">
                                 <h2 id={`year-${year}`} className="pg-h2 jr-year__title" data-year={year}>
-                                    <span className="line-mask"><span className="line-mask__line">{year}</span></span>
+                                    <LineMask text={year} />
                                 </h2>
                                 <ol className="pg-rows jr-rows" {...listProps}>
                                     {items.map((item) => (

@@ -19,7 +19,7 @@
   gap: 0 var(--space-3);
   margin-top: var(--space-1);
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .about-status .pg-now { color: rgb(var(--paper)); }
@@ -47,7 +47,7 @@
   padding-block: var(--space-1);
   border-bottom: 1px solid rgb(var(--rule));
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 @media (min-width: 768px) {

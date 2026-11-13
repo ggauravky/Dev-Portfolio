@@ -18,7 +18,7 @@
   gap: var(--space-2);
   height: var(--chrome-h);
   padding: 0 var(--space-2);
-  color: #fff;
+  color: rgb(var(--paper));
   mix-blend-mode: difference;
   pointer-events: none;
 }
@@ -92,6 +92,7 @@
 .chrome-menu-item:hover,
 .chrome-menu-item:focus-visible { color: rgb(var(--paper)); background: rgb(var(--paper) / 0.04); }
 
-/* Inside the difference-blended header an accent ring would invert to violet;
-   white inverts to the opposite of whatever is underneath, so it always shows. */
-.chrome :focus-visible { outline-color: #fff; }
+/* Accent ring like everywhere else. Inside the difference-blended header it
+   shows as lime over ink (#B8E727, ≈ 12:1) and inverts to blue over light
+   imagery, so it stays visible on both. */
+.chrome :focus-visible { outline-color: rgb(var(--accent)); }

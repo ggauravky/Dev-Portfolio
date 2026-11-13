@@ -20,6 +20,7 @@ import { RANKED_PROJECTS } from '../lib/projects'
 import { journeyData } from '../data/journeyData'
 import { siteStatus } from '../data/siteStatus'
 import Reveal from '../components/Reveal'
+import LineMask from '../components/LineMask'
 import HeroName from '../components/home/HeroName'
 import HeroLive from '../components/home/HeroLive'
 import { Button, TextLink } from '../components/ui'
@@ -62,7 +63,7 @@ function Section({ id, index, title, children, footer }) {
                 <p className="page-rail" aria-hidden="true">{pad(index)}</p>
                 <div className="page-main">
                     <h2 id={headingId} className="home-h2">
-                        <span className="line-mask"><span className="line-mask__line">{title}</span></span>
+                        <LineMask text={title} />
                     </h2>
                     {children}
                     {footer ? <div className="home-more">{footer}</div> : null}

@@ -56,6 +56,45 @@ The goal is an ownable design language, not generic effects. Rules:
 
 **Single sources of truth:** new `src/data/siteStatus.js` holds availability, "currently building", the email and the resume URL. The dock, footer, ⌘K and contact all read from it. The owner supplies the availability and "currently building" values in P3; nothing is invented.
 
+## Colour tokens (colour/motion/mobile phase, 2026-11-13)
+Tokens live only in `src/index.css` as RGB channels (D-011); use `rgb(var(--token))`. No `--color-*` aliases were needed.
+
+| Token | Value | Use |
+|---|---|---|
+| `--ink` | `#0E0D0B` | background (warm near-black, kept) |
+| `--paper` | `#EDEAE3` | primary text — 16.17:1 on ink |
+| `--muted` | `#9C978C` | secondary text — 6.68:1 on ink, 6.28:1 on ink-raised |
+| `--accent` | **`#C6F432`** | "live / current" (was `#C2EE3A`, 14.42:1) |
+| `--accent-contrast-text` | `#0E0D0B` | text on an accent fill |
+| `--accent-muted` | `#4E5E19` (accent at 35% over ink) | tracks (Journey spine fill), the resting primary-CTA outline; never text |
+
+**Measured contrast (WCAG 2.x relative luminance):**
+- `#C6F432` on ink `#0E0D0B`: **15.16:1** — passes AA/AAA for text of any size and for UI (3:1).
+- Ink text on a `#C6F432` fill: **15.16:1** — passes.
+- `#C6F432` on ink-raised `#161512`: 14.25:1 — passes.
+- `#C6F432` on paper: **1.07:1** — fails everything, so lime is never placed on a paper surface.
+- `--accent-muted` on ink: 2.72:1 — below 3:1, so it is never the only thing that identifies a control: the primary CTA is identified by its label (16.17:1) and arrow, and the spine is decoration.
+
+## Where lime is / isn't allowed (permanent)
+Lime is currency: every use must mean "live", "current", or "this is interactive and you are on it".
+
+**Allowed only on:**
+1. Hover/focus of interactive text — the drawn underline (`.text-link`, `.btn--link`, row titles, blog links).
+2. The live/available status dot — `.dock-status`, `.hero-live__dot`, `.pg-dot`, `.colophon__dot.is-live` (all `rgb(var(--accent))`).
+3. Active/current indicators — the dock's current-page tick, the Journey "Now" node, the active filter segment, the active tab, the current TOC entry, the selected ⌘K item.
+4. Primary CTAs — **an outline, never a fill**, the same everywhere (`.btn--primary`): a muted-accent hairline at rest, a full-accent outline plus a drawn label underline on hover/focus.
+5. Focus rings (`:focus-visible`, 2px, offset 2) and active form fields (the focus line and the floated label).
+6. The blog reading-progress bar.
+7. One code-syntax token type in blog code blocks (reserved; there is no highlighter yet).
+
+**Never on:** body text · large fills · decoration (e.g. a full-height track — the Journey spine uses `--accent-muted`) · resting, non-interactive icons · paper surfaces.
+
+**Scarcity:** at the default scroll position of any page and viewport there is at most **one** accent moment in the page content, plus the dock's availability dot (persistent chrome). Measured: under 0.06% of the screen at 390px and 1440px on all eight main pages.
+
+**Never the only signal:** every lime state also changes something else — position or scale (underline draw, floated label), a 2px ring, text-roll and arrow nudge, `aria-current`, or text ("Now").
+
+**Small screens:** if an accent element gets lost at 360px, enlarge the element; never intensify or spread the colour.
+
 ## Type (decided by specimen in P2)
 > **Decided 2026-11-12 (D-033):** Fraunces variable (opsz 9–144 + wght 100–900, SOFT/WONK at 0 — the sharp cut) for display and S6 · Geist (text) · Geist Mono (labels, code). Instrument Serif removed. No Devanagari face (D-034).
 
@@ -75,6 +114,13 @@ The goal is an ownable design language, not generic effects. Rules:
 - **Preloader:** first visit only (`sessionStorage`), ≤ 1.4 s, the name and a counter, skippable, and disabled for reduced motion.
 - **Route transitions:** a clip-path wipe carrying the wordmark.
 - **⌘/Ctrl+K:** restyled, with real actions: jump to a page, copy email, open the resume, open GitHub and LinkedIn. There is no theme toggle (dark-only, D-028).
+
+## Motion layer (colour/motion/mobile phase, 2026-11-13)
+- **Reveals:** the primary mechanism is a CSS scroll-driven animation (`animation-timeline: view()`, range `entry 0%` → `entry 40vh`, opacity plus 24px of travel, or 16px below 768px) on each `[data-reveal]` section and each list row, so rows stagger by their own position. The IntersectionObserver reveal below is the fallback (`@supports not (animation-timeline: view())`). Both are gated on the JS-added `.reveal-armed` class and the fail-safe. Anything on screen when the page mounts is static (`data-reveal-static`), so nothing visible at rest is ever part-faded; rows finish once fully entered. Support: Chrome/Edge 115+, Safari 26+, Firefox 159+ (on by default since 2026-10-27); older Firefox gets the fallback.
+- **Headings:** `LineMask` splits below-fold headings into rendered lines (never characters). Each line rises 80 ms after the one above, in 280 ms, for at most 520 ms in total. The hero name stays static.
+- **Parallax (the only one):** the hero live panel moves at 0.6× the name's scroll speed over the first viewport. It uses a root scroll timeline (`translate`) and needs no JS. It runs only at ≥ 1200px, where the panel clears the hero actions (D-091), and is off under reduced motion.
+- **Reduced motion:** one block in `src/index.css` switches off reveals, the heading stagger, the parallax and the pulses outright. Scroll-driven animations ignore the duration collapse, which is why they get their own rule there.
+- **Preloader:** none (dropped by the owner in D-055).
 
 ## Reveal rules (fixes the stuck-at-opacity-0 bug)
 - IntersectionObserver with a generous `rootMargin` (e.g. `0px 0px 20% 0px`), and durations ≤ 520 ms.
@@ -114,7 +160,7 @@ Three directions, not three colorways: each differs in base (dark / dark / light
 | rule | `#2A2824` | hairlines |
 | paper | `#EDEAE3` | primary text |
 | muted | `#9C978C` | secondary text (≈ 7:1 on ink) |
-| accent | `#C2EE3A` (refined lime) | **job: "live / current"** — current role, current page in nav, link hover underline, focus ring |
+| accent | `#C6F432` (was `#C2EE3A`; see "Colour tokens") | **job: "live / current"** — current role, current page in nav, link hover underline, focus ring |
 
 **Type:** Instrument Serif (display, 400 + italic) · Geist (text, variable) · Geist Mono (code and dates only, not preloaded). All **SIL OFL 1.1**, self-hostable (Fontsource or the `geist` npm package). Scale ≈ 1.333: display `clamp(56px, 9vw, 128px)`, h2 48, h3 28, body 17/1.6, small 14.
 **Grid:** 12 columns, max 1200. Content in cols 3–10; cols 1–2 are a **margin rail** for dates, stack and meta (desktop). Mobile: single column, meta inline above titles. Left-aligned throughout; no centered section intros.

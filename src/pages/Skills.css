@@ -14,7 +14,7 @@
   list-style: none;
   color: rgb(var(--paper));
   font-size: 20px;
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .skills-close {

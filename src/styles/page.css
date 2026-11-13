@@ -94,12 +94,29 @@
   display: block;
 }
 
+/* Split headings (src/components/LineMask.jsx): every word clips itself, and
+   all words on one rendered line share a delay, so lines rise one after
+   another — never characters. 280 ms + up to 3 × 80 ms = 520 ms, under 600. */
+.line-mask--split {
+  overflow: visible;
+  padding-bottom: 0;
+}
+
+.line-mask__word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
 .reveal-armed [data-reveal]:not([data-revealed]) .line-mask__line {
   transform: translate3d(0, 105%, 0);
 }
 
 [data-reveal][data-revealed] .line-mask__line {
-  transition: transform var(--dur-slow) var(--ease-out);
+  transition: transform var(--dur-base) var(--ease-out);
+  transition-delay: calc(var(--line, 0) * 80ms);
 }
 
 /* ── P5 pages: header, sections, hairline rows ─────────────────
@@ -184,7 +201,7 @@
   max-width: 62ch;
   color: rgb(var(--muted));
   font-size: var(--text-body);
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .pg-intro { margin: calc(var(--space-2) * -1) 0 var(--space-4); }
@@ -214,7 +231,7 @@
 .pg-row__label {
   margin: 0;
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .pg-row__title {
@@ -229,14 +246,14 @@
 .pg-row__body {
   min-width: 0;
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .pg-row__meta {
   margin-top: var(--space-1);
   color: rgb(var(--muted));
   font-size: 15px;
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 /* A lone link in a row body is a 44px target. */
@@ -444,7 +461,7 @@ details[open] > summary .pg-toggle::after { transform: rotate(0deg); }
   max-width: 68ch;
   color: rgb(var(--muted));
   font-size: var(--text-body);
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 .lg-prose > * + * { margin-top: var(--space-2); }
 .lg-prose h3 {
@@ -550,6 +567,6 @@ details[open] > summary .pg-toggle::after { transform: rotate(0deg); }
 }
 
 /* ── P6 error boundary details (dev only) ── */
-.eb-details { margin-top: var(--space-5); color: rgb(var(--muted)); font: 400 13px/1.6 var(--font-mono); }
+.eb-details { margin-top: var(--space-5); color: rgb(var(--muted)); font: 400 13px/var(--leading-body) var(--font-mono); }
 .eb-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 .eb-details pre { max-height: 256px; overflow: auto; padding: var(--space-2); border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background: rgb(var(--ink-raised)); white-space: pre-wrap; }
