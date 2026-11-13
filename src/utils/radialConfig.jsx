@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 
 // Lucide-styled GitHub SVG Icon with identical stroke & viewbox properties
-const GithubIcon = ({ className = 'h-5 w-5', strokeWidth = 1.8 }) => (
+export const GithubIcon = ({ className = 'h-5 w-5', strokeWidth = 1.8 }) => (
     <svg
         className={className}
         viewBox="0 0 24 24"

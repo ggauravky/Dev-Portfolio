@@ -119,9 +119,12 @@ const backToTop = () => {
 function GitHubLine({ state }) {
     const data = state.status === 'ready' ? state.data : null
     let stat = ' '
-    if (data) {
+    // Only real numbers: a missing total never prints "NaN" or "undefined".
+    if (data && Number.isFinite(data.total)) {
         const last = data.lastActive ? `, last on ${formatGitHubDay(data.lastActive)}` : ''
         stat = `${numberFormat.format(data.total)} contributions in the last year${last}`
+    } else if (data?.lastActive) {
+        stat = `Last contribution ${formatGitHubDay(data.lastActive)}`
     }
     return (
         <>

@@ -42,9 +42,29 @@ Only `/journey`, plus the preview extracted from Projects (D-075–D-077).
 - Screenshots: `docs/audit/journey/` (`journey-before-*` / `journey-after-*`, 1440 and 390; webp copies are tracked, PNGs are gitignored).
 - Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Post-merge: Contact redesign (2026-11-13, branch `feat/contact-redesign`, uncommitted)
+Only `/contact`, plus two opt-in kit props (D-078–D-082).
+- **Form (D-078):** the existing v2 fields, with labels lifting on `--dur-fast` and the existing left-to-right focus line. Validation runs on blur only; typing only clears an error once the value is valid. Errors get a < 400 ms transform shake (new opt-in `shake` prop on `Input`/`Textarea`, off under reduced motion). The counter turns paper at 1800/2000 and red at 2000. Submit: arrow → spinner → drawn check and "Sent" for 2 s, all in one 16 px slot with both labels stacked in one grid cell (new `icon` prop on `Button`), so the button doesn't move (checked: same box in all states). A failure goes back to idle with an inline error, and the input is kept. ⌘/Ctrl+Enter submits; the hint shows only with a fine pointer. One polite live region announces field errors, "Sending…", success and failure (`errorRole={null}` drops the per-field `role="alert"`).
+- **Intent chips (D-079):** the Journey/Projects native radio filter (`.pj-seg`) with `role="radiogroup"`, optional, and prefilling an editable Subject (never over custom text). **Not sent as metadata:** `/api/contact` accepts extra fields but its controller only reads name/email/subject/message, so the field would be dropped. The backend is unchanged.
+- **Elsewhere (D-080):** 9 rows, same links. Each has a 16 px muted icon (`aria-hidden`) that takes the platform's colour on link hover or focus. Colour changes instantly, with no transition. WhatsApp is first, with its label and note in paper. Resume opens `/resume.pdf` (200, `application/pdf`) in a new tab; there was no download micro-interaction to reuse.
+- **LiveStatus (D-081):** no new component. The page's time/status/GitHub/email block *is* the footer colophon, which already shares `lib/liveStatus.js` with the hero (D-074). Fix: the footer's GitHub line can no longer print "NaN".
+- **Signature touch (D-082):** owner chose an English line: "Thanks, {first name}, it's in my inbox. I'll reply to {email}." No Devanagari (D-034).
+- **QA** (Vite dev, Playwright headless, `/api/contact` stubbed, no real emails):
+  - Submit runs sending → sent → idle with no box change.
+  - The 500 and network-error paths both keep the input.
+  - Empty name and bad email: each shows its message and shakes on blur, then clears on correction. An empty submit shakes 4 fields, focuses Name and announces "4 fields need attention".
+  - Keyboard order: email, copy, name, email, intent group (arrows), subject, message, submit, 9 rows, then the footer's copy.
+  - Reduced motion: no shake (`animation: none`), and transitions use the global 0.01 ms.
+  - 390 (touch): the chips wrap to 2 lines, no horizontal scroll, and no ⌘⏎ hint.
+  - No console or page errors.
+- **Lighthouse (mobile, `vite preview`, 13.4.1, alternating with `main` on the same host):** `main` 89/87/89/87/86/88 against the branch 88/92/91/93/82/92, so the medians are 87.5 and 91.5. A11y 100 (one 4.23:1 legend contrast miss was fixed), CLS 0. Both are below P6's 99 because the host is slower today.
+- Screenshots: `docs/audit/contact/` (`contact-before-*` / `contact-after-*`, 1440 and 390, plus 1440 idle/sending/sent/error close-ups).
+- Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
-1. Owner reviews the Journey redesign and approves the commit.
-2. Earlier: owner answers the ⚠ copy rows (P3–P6); re-run Lighthouse on the live site after deploy.
+1. Owner reviews the Contact redesign and approves the commit.
+2. Owner reviews the Journey redesign and approves the commit.
+3. Earlier: owner answers the ⚠ copy rows (P3–P6); re-run Lighthouse on the live site after deploy.
 
 ## Checklist
 - [x] Phase 0 — Recon & audit (`REPO_MAP.md`, `AUDIT.md`, screenshots)

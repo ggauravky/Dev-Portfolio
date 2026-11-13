@@ -28,6 +28,8 @@ function edgeFrom(event, el) {
  *   edge the pointer entered (and out through the edge it left).
  * - Magnetic pull up to 10px on a spring; press scales to .97.
  * - `arrow`: true → "→" (internal), "external" → "↗"; it nudges on hover.
+ * - `icon`: a node in the arrow's slot instead of the glyph (e.g. a state icon
+ *   that swaps arrow → spinner → check in place; Contact's submit).
  * - Renders <button>, a router <Link> (`to`) or <a> (`href`). Disabled/loading
  *   links get aria-disabled and swallow clicks.
  */
@@ -38,6 +40,7 @@ const Button = forwardRef(function Button(
         href,
         external = false,
         arrow = false,
+        icon = null,
         type = 'button',
         loading = false,
         disabled = false,
@@ -85,7 +88,8 @@ const Button = forwardRef(function Button(
                     <span className="btn__text">{children}</span>
                     <span className="btn__text btn__text--clone" aria-hidden="true">{children}</span>
                 </span>
-                {arrow ? <span className={`btn__arrow ${externalArrow ? 'btn__arrow--external' : ''}`} aria-hidden="true">{arrowGlyph}</span> : null}
+                {icon ? <span className="btn__arrow btn__icon" aria-hidden="true">{icon}</span> : null}
+                {!icon && arrow ? <span className={`btn__arrow ${externalArrow ? 'btn__arrow--external' : ''}`} aria-hidden="true">{arrowGlyph}</span> : null}
             </span>
             {loading ? <span className="btn__spinner" aria-hidden="true" /> : null}
         </>
@@ -141,6 +145,7 @@ Button.propTypes = {
     href: PropTypes.string,
     external: PropTypes.bool,
     arrow: PropTypes.oneOf([true, false, 'external']),
+    icon: PropTypes.node,
     type: PropTypes.oneOf(['button', 'submit', 'reset']),
     loading: PropTypes.bool,
     disabled: PropTypes.bool,
