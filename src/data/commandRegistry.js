@@ -493,7 +493,7 @@ export const STATIC_COMMANDS = [
         category: CATEGORIES.SOCIAL,
         desc: 'Connect professionally, view experience & endorsements',
         type: 'external',
-        url: 'https://linkedin.com/in/ggauravky',
+        url: 'https://linkedin.com/in/gauravky',
         badge: 'External ↗',
         priority: 82,
         aliases: ['linkdin', 'linkedin profile', 'lnkd', 'professional network', 'in'],

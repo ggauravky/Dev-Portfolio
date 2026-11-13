@@ -26,7 +26,7 @@ export const siteStatus = {
     resumeUrl: '/resume.pdf',
     links: {
         github: 'https://github.com/ggauravky',
-        linkedin: 'https://linkedin.com/in/ggauravky',
+        linkedin: 'https://linkedin.com/in/gauravky',
     },
 }
 

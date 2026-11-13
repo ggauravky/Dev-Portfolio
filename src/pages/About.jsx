@@ -54,7 +54,7 @@ const STEPS = [
     ['Understand', 'the problem and its constraints'],
     ['Build', 'a working solution'],
     ['Measure', 'test and evaluate it'],
-    ['Improve', 'iterate on what the numbers say'],
+    ['Improve', 'iterate'],
     ['Ship', 'a practical result'],
 ]
 

@@ -29,7 +29,7 @@ export const skillGroups = [
         categories: [
             { title: 'Computer science', skills: ['Data Structures', 'Algorithms', 'OOP Concepts', 'DBMS', 'Computer Networks'] },
             { title: 'Security & DevOps', skills: ['Cybersecurity Basics', 'Secure Coding', 'API Security', 'Version Control', 'CI/CD Basics'] },
-            { title: 'Working', skills: ['Problem Solving', 'Team Collaboration', 'Self Learning', 'Time Management', 'Communication'] },
+            { title: 'Soft skills', skills: ['Problem Solving', 'Team Collaboration', 'Self Learning', 'Time Management', 'Communication'] },
         ],
     },
 ]
