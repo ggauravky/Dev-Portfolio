@@ -14,29 +14,16 @@
 }
 
 .lazy-image-loading {
-  filter: blur(8px);
-  opacity: 0.7;
-  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
+  opacity: 0.6; /* never 0: an invisible image is skipped as LCP */
+  transition: opacity var(--dur-base) var(--ease-out);
 }
 
 .lazy-image-loaded {
-  filter: blur(0);
   opacity: 1;
-  transition: filter 0.25s ease-out, opacity 0.25s ease-out;
+  transition: opacity var(--dur-base) var(--ease-out);
 }
 
-/* Skeleton animation for images */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
+/* Placeholder behind an unloaded image: the hairline tone, no shimmer (v2). */
 .lazy-image-skeleton {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(to right, #0f172a 4%, #1e293b 25%, #0f172a 36%);
-  background-size: 1000px 100%;
+  background: rgb(var(--ink-raised));
 }

@@ -6,49 +6,184 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-.footer-shell {
-  width: 100%;
-  position: relative;
+/* S4 colophon footer. Same 12-column grid and margin logic as the pages. */
+.colophon {
+  border-top: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink));
+  color: rgb(var(--muted));
 }
 
-.footer-main-grid {
+.colophon__wrap {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: var(--space-6) var(--space-2) var(--space-4);
+}
+
+.colophon__grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.colophon__facts {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.colophon__facts > div {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
   align-items: start;
+  gap: var(--space-2);
+  padding-block: 12px;
+  border-bottom: 1px solid rgb(var(--rule));
 }
 
-.footer-link,
-.footer-back-to-top {
-  will-change: transform;
+.colophon__facts dt {
+  font: 400 13px/1.7 var(--font-mono);
 }
 
-.footer-link:hover,
-.footer-back-to-top:hover {
-  transform: translateY(-1px);
+.colophon__facts dd {
+  margin: 0;
+  color: rgb(var(--paper));
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
 }
 
-@media (max-width: 768px) {
-  .footer-main-grid {
-    row-gap: 2rem;
+.colophon__facts time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reserves two lines on narrow screens, one on wide ones (no shift on load). */
+.colophon__gh-stat {
+  display: block;
+  min-height: calc(2 * 1.55em);
+}
+
+@media (min-width: 640px) {
+  .colophon__gh-stat { min-height: 1.55em; }
+}
+
+.colophon__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.colophon__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%; /* design-allow: status dot */
+  background: rgb(var(--muted));
+}
+
+.colophon__dot.is-live { background: rgb(var(--accent)); }
+
+.colophon__email {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-2);
+}
+
+.colophon__copy {
+  min-height: 44px;
+  padding-inline: 12px;
+  margin-block: -10px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  color: rgb(var(--paper));
+  font: 500 13px/1 var(--font-sans);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.colophon__copy:hover,
+.colophon__copy:focus-visible { border-color: rgb(var(--muted)); }
+.colophon__copy:active { transform: scale(.97); }
+
+.footer-heading {
+  margin-bottom: var(--space-1);
+  color: rgb(var(--paper));
+  font: 500 14px/1.5 var(--font-sans);
+}
+
+/* Each footer link is a full 44px row, so it is an easy touch target. */
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+/* Nine pages in two short columns. */
+.footer-pages ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--space-3);
+}
+
+.colophon__account { margin-top: var(--space-3); }
+
+/* The big wordmark (S2 name as type). */
+.colophon__mark {
+  margin-top: var(--space-6);
+  color: rgb(var(--paper));
+  font-family: var(--font-serif);
+  font-size: clamp(2.75rem, 10.2vw, 8.25rem);
+  font-weight: 300;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.colophon__base {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgb(var(--rule));
+  font-size: var(--text-small);
+}
+
+.colophon__base p + p { margin-top: 4px; }
+
+@media (min-width: 640px) {
+  .colophon__wrap { padding-inline: var(--space-3); }
+}
+
+@media (min-width: 768px) {
+  .colophon__base {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 }
 
-@media (prefers-contrast: high) {
-  .footer-shell {
-    border-top-color: #ffffff;
+@media (min-width: 1024px) {
+  .colophon__wrap { padding: var(--space-7) var(--space-4) var(--space-4); }
+
+  .colophon__grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-3);
   }
 
-  .footer-link:hover,
-  .footer-back-to-top:hover {
-    text-decoration: underline;
-  }
+  .colophon__facts { grid-column: 1 / span 6; }
+  .colophon__col { grid-column: span 2; }
+  .colophon__col--pages { grid-column: 8 / span 3; }
+
+  .colophon__mark { white-space: nowrap; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .footer-shell *,
-  .footer-shell *::before,
-  .footer-shell *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* P6 touch targets: page links and the fact links (GitHub, email) are
+   at least 44×44 even when the word is short. */
+.footer-link { min-width: 44px; }
+.colophon__facts dd > .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }

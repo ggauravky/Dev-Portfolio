@@ -827,7 +827,7 @@ export const projectsData = [
             "/images/projects/kanoon2.png",
             "/images/projects/kanoon3.png"
         ],
-        problem: "Over 85% of Indian citizens struggle to read legal notices, court summons, rent agreements, or FIR copies due to archaic legal terminology, language barriers, and dense formatting—leading to missed response deadlines, fear, and lack of legal awareness.",
+        problem: "Many Indian citizens struggle to read legal notices, court summons, rent agreements, or FIR copies due to archaic legal terminology, language barriers, and dense formatting—leading to missed response deadlines, fear, and lack of legal awareness.",
         solution: "Engineered Kanoon-Mate, an intelligent legal AI platform that ingests digital PDFs or scanned document images via Multi-Format OCR, uses Google Gemini 2.5 Flash with strict JSON Schema output to generate plain-language summaries in Hindi & English, maps statutory Indian laws (BNS, BNSS, BSA, Sec 138 NI Act, Model Tenancy Act), provides color-coded risk assessment (Low, Medium, High), tracks court response deadlines automatically, and offers natural voice dictation and text-to-speech audio controls.",
         architecture: "React SPA with Framer Motion & Tailwind CSS ↔ Express REST API Gateway ↔ Google Gemini 2.5 Flash AI & Tesseract.js / PDF-Parse OCR Pipeline ↔ MongoDB Atlas (Users, Documents & Cached AI Analysis). Web Speech API handles browser-native voice dictation and audio synthesis.",
         diagrams: {
@@ -858,7 +858,7 @@ export const projectsData = [
             "Emergency Legal Help Hub: Quick-dial helpline integration for NALSA (15100), Cyber Crime (1930), Women Helpline (1091), and Consumer Forum (1915)"
         ],
         lessonsLearned: [
-            "MongoDB Atlas response caching for identical document hashes reduced LLM inference costs by over 70% during high-traffic hackathon testing",
+            "MongoDB Atlas response caching for identical document hashes reduced repeat LLM inference costs during hackathon testing",
             "Combining client-side PDF parsing with server-side fallback OCR ensures high accuracy across degraded scanned documents",
             "Multilingual Web Speech API integration significantly improves accessibility for low-literacy users reading legal documents"
         ]

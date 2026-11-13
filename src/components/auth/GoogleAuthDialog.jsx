@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import GoogleSignInButton from './GoogleSignInButton'
+import { friendlyAuthError } from './authErrors'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 const dialogCopy = {
     activity: 'Sign in to securely view your bookings, receipts, and account activity.',
@@ -13,50 +15,24 @@ function GoogleAuthDialog({ error, isAuthenticating, isOpen, onClose, onCredenti
     const dialogRef = useRef(null)
     const closeButtonRef = useRef(null)
 
+    useFocusTrap(dialogRef, isOpen, {
+        onEscape: onClose,
+        initialFocusRef: closeButtonRef,
+        returnFocusTo: openerElement,
+    })
+
     useEffect(() => {
         if (!isOpen) return undefined
-
         const previousOverflow = document.body.style.overflow
         document.body.style.overflow = 'hidden'
-        closeButtonRef.current?.focus()
-
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                event.preventDefault()
-                onClose()
-                return
-            }
-
-            if (event.key !== 'Tab' || !dialogRef.current) return
-            const focusable = [...dialogRef.current.querySelectorAll(
-                'button:not([disabled]), [href], iframe, input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            )]
-            if (!focusable.length) return
-
-            const first = focusable[0]
-            const last = focusable.at(-1)
-            if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault()
-                last.focus()
-            } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault()
-                first.focus()
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyDown)
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown)
-            document.body.style.overflow = previousOverflow
-            openerElement?.focus?.()
-        }
-    }, [isOpen, onClose, openerElement])
+        return () => { document.body.style.overflow = previousOverflow }
+    }, [isOpen])
 
     if (!isOpen) return null
 
     return (
         <div
-            className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-obsidian/85 px-3 py-6 backdrop-blur-md sm:px-4"
+            className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto bg-ink/80 px-4 py-6"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) onClose()
             }}
@@ -68,56 +44,44 @@ function GoogleAuthDialog({ error, isAuthenticating, isOpen, onClose, onCredenti
                 aria-labelledby="google-auth-title"
                 aria-describedby="google-auth-description"
                 aria-busy={isAuthenticating}
-                className="relative w-full max-w-md rounded-2xl border border-obsidian-border bg-obsidian-card p-5 shadow-[0_30px_120px_rgba(0,0,0,0.9)] sm:p-7"
+                className="relative w-full max-w-md rounded-dialog border border-rule bg-ink-raised p-6 shadow-dialog sm:p-8"
             >
                 <button
                     ref={closeButtonRef}
                     type="button"
                     onClick={onClose}
-                    className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg border border-obsidian-border bg-obsidian text-zinc-400 transition-colors hover:border-toxic/40 hover:text-toxic focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
+                    className="absolute right-2 top-2 inline-flex h-11 w-11 items-center justify-center rounded-control text-muted hover:bg-paper/[0.06] hover:text-paper"
                     aria-label="Close sign-in dialog"
                 >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                <p className="pr-12 text-[10px] font-mono font-bold uppercase tracking-[0.18em] text-toxic">
-                    Continue with Google
-                </p>
-                <h2 id="google-auth-title" className="mt-3 pr-10 text-2xl font-display font-bold text-white sm:text-3xl">
-                    Secure account access
+                <h2 id="google-auth-title" className="pr-12 font-serif text-h3 text-paper">
+                    Sign in
                 </h2>
-                <p id="google-auth-description" className="mt-2 text-sm leading-relaxed text-zinc-400">
+                <p id="google-auth-description" className="mt-2 text-small text-muted">
                     {dialogCopy[reason] || dialogCopy.navbar}
                 </p>
 
-                <div className="mt-5 grid gap-2 text-xs text-zinc-300 sm:grid-cols-3">
-                    {['Secure checkout identity', 'Receipts linked to you', 'Activity available later'].map((benefit) => (
-                        <div key={benefit} className="rounded-lg border border-obsidian-border bg-obsidian px-3 py-2.5">
-                            <span className="mr-1.5 text-toxic" aria-hidden="true">•</span>{benefit}
-                        </div>
-                    ))}
-                </div>
-
-                <div className="mt-6 rounded-xl border border-obsidian-border bg-obsidian p-3 sm:p-4">
+                <div className="mt-6 border-t border-rule pt-6">
                     <GoogleSignInButton isAuthenticating={isAuthenticating} onCredential={onCredential} />
                 </div>
 
                 {isAuthenticating ? (
-                    <div className="mt-4 flex items-center justify-center gap-2 text-xs font-mono text-toxic" role="status">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-toxic border-t-transparent" />
-                        Verifying your Google account...
-                    </div>
+                    <p className="mt-4 text-center text-small text-muted" role="status">
+                        Verifying your Google account…
+                    </p>
                 ) : null}
 
                 {error ? (
-                    <div className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200" role="alert">
-                        {error}
-                    </div>
+                    <p className="mt-4 rounded-control border border-red-400/40 px-4 py-3 text-small text-red-200" role="alert">
+                        {friendlyAuthError(error)}
+                    </p>
                 ) : null}
 
-                <p className="mt-4 text-center text-[10px] leading-relaxed text-zinc-600">
+                <p className="mt-6 text-small text-muted">
                     Google verifies your identity. Payment details remain inside Razorpay Checkout.
                 </p>
             </section>

@@ -1,0 +1,280 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ *
+ * v2 UI kit (docs/DESIGN.md "Buttons and micro-interactions"). Motion is
+ * transform/opacity only, uses the src/lib/motion.js tokens, and the global
+ * reduced-motion switch in src/index.css collapses it.
+ */
+
+/* === BUTTON === */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: 500 15px/1 var(--font-sans);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  /* `scale` (press) and `translate` (magnetic) are independent of `transform`. */
+  transition: scale var(--dur-fast) var(--ease-out);
+}
+
+/* Fill wipe: a layer under the label that grows from the edge the pointer
+   entered (data-from, set in Button.jsx) and retracts through the exit edge. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.btn[data-from='right']::before { transform-origin: right center; }
+.btn[data-from='top']::before { transform: scaleY(0); transform-origin: center top; }
+.btn[data-from='bottom']::before { transform: scaleY(0); transform-origin: center bottom; }
+
+.btn:active:not(:disabled):not([aria-disabled='true']) { scale: 0.97; }
+
+.btn--primary { background: rgb(var(--paper)); color: rgb(var(--ink)); }
+.btn--primary::before { background: #fff; }
+
+.btn--secondary { border-color: rgb(var(--rule)); color: rgb(var(--paper)); }
+.btn--secondary::before { background: rgb(var(--paper) / 0.08); }
+
+.btn--ghost { color: rgb(var(--muted)); }
+.btn--ghost::before { background: rgb(var(--paper) / 0.06); }
+
+/* Label: text-roll (the duplicate slides up into place) + arrow nudge */
+.btn__label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.btn__roll {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  padding: 0.15em 0;
+  margin: -0.15em 0;
+}
+
+.btn__text {
+  display: block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.btn__text--clone {
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  transform: translateY(130%);
+}
+
+.btn__arrow {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled):not([aria-disabled='true'])::before { transform: scale(1); }
+  .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__text { transform: translateY(-130%); }
+  .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__text--clone { transform: translateY(0); }
+  .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__arrow { transform: translateX(3px); }
+  .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__arrow--external { transform: translate(2px, -2px); }
+  .btn--secondary:hover:not(:disabled):not([aria-disabled='true']) { border-color: rgb(var(--muted)); }
+  .btn--ghost:hover:not(:disabled):not([aria-disabled='true']) { color: rgb(var(--paper)); }
+}
+
+/* Coarse pointers get no hover; keyboard focus shows the fill. */
+.btn:focus-visible::before { transform: scale(1); }
+
+/* "link" variant: text with the drawn underline, no box, no magnet */
+.btn--link {
+  height: auto;
+  min-height: 44px;
+  padding: 0;
+  overflow: visible;
+  color: rgb(var(--paper));
+}
+.btn--link::before { content: none; }
+.btn--link .btn__roll::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.1em;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.btn--link:hover:not(:disabled):not([aria-disabled='true']) .btn__roll::after,
+.btn--link:focus-visible .btn__roll::after {
+  transform: scaleX(1);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn[aria-busy='true'] { cursor: progress; opacity: 1; }
+.btn[aria-busy='true'] .btn__label { opacity: 0; }
+
+.btn__spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%; /* design-allow: spinner ring */
+  animation: ui-spin 700ms linear infinite;
+}
+
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === TEXT LINK === underline draws from the left on hover/focus */
+.text-link {
+  min-height: 0;
+  min-width: 0;
+  color: rgb(var(--paper));
+  text-decoration: none;
+}
+
+.text-link__label {
+  position: relative;
+  display: inline-block;
+}
+
+.text-link__label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.text-link:hover .text-link__label::after,
+.text-link:focus-visible .text-link__label::after,
+.text-link[aria-current='page'] .text-link__label::after {
+  transform: scaleX(1);
+}
+
+.text-link--muted { color: rgb(var(--muted)); }
+.text-link--muted:hover,
+.text-link--muted:focus-visible,
+.text-link--muted[aria-current='page'] { color: rgb(var(--paper)); }
+
+/* Resting underline (for links inside running text) */
+.text-link--underlined .text-link__label {
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--rule));
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* === FIELDS === floating label, focus line, inline validation, success */
+.field { display: grid; gap: var(--space-1); }
+
+.field__box { position: relative; }
+
+.field__control {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 22px 40px 6px 14px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: var(--radius-control);
+  background: rgb(var(--ink));
+  color: rgb(var(--paper));
+  font: 400 15px/1.5 var(--font-sans);
+}
+
+.field--multiline .field__control {
+  height: auto;
+  min-height: 136px;
+  padding-top: 28px;
+  resize: vertical;
+}
+
+/* The focus line below replaces the outline inside fields. */
+.field__control:focus-visible { outline: none; }
+.field__control::placeholder { color: transparent; }
+.field--floated .field__control::placeholder,
+.field__control:focus::placeholder { color: rgb(var(--muted) / 0.8); }
+
+.field__control:hover:not(:disabled) { border-color: rgb(var(--muted) / 0.6); }
+.field__control:focus { border-color: rgb(var(--muted)); }
+.field__control:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.field__label {
+  position: absolute;
+  left: 15px;
+  top: 18px;
+  color: rgb(var(--muted));
+  font: 400 15px/20px var(--font-sans);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.field__control:focus ~ .field__label,
+.field__control:not(:placeholder-shown) ~ .field__label,
+.field--floated .field__label {
+  transform: translateY(-10px) scale(0.8);
+}
+
+.field__control:focus ~ .field__label { color: rgb(var(--paper)); }
+
+.field__line {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  height: 2px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+  pointer-events: none;
+}
+
+.field__control:focus ~ .field__line { transform: scaleX(1); }
+
+.field__status {
+  position: absolute;
+  right: 14px;
+  top: 20px;
+  width: 16px;
+  height: 16px;
+  color: rgb(var(--paper));
+}
+
+.field.is-error .field__control { border-color: #f87171; }
+.field.is-error .field__line { background: #f87171; }
+.field.is-success .field__control { border-color: rgb(var(--muted)); }
+
+.field__hint { color: rgb(var(--muted)); font-size: 14px; line-height: 1.5; }
+.field__error { color: #fca5a5; font-size: 14px; line-height: 1.5; }

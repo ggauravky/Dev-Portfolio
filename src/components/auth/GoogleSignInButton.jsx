@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
+import Button from '../ui/Button'
+import { friendlyAuthError } from './authErrors'
 import { fetchPublicAuthConfig, resetPublicAuthConfig } from '../../services/auth'
 import {
     clearGoogleCredentialHandler,
@@ -40,6 +42,7 @@ function GoogleSignInButton({ isAuthenticating, onCredential }) {
 
     useEffect(() => {
         let cancelled = false
+        const isRetry = retryCount > 0
         const credentialHandler = (response) => credentialHandlerRef.current?.(response)
 
         const prepareButton = async () => {
@@ -47,7 +50,7 @@ function GoogleSignInButton({ isAuthenticating, onCredential }) {
             setErrorMessage('')
 
             try {
-                const config = await fetchPublicAuthConfig({ forceRefresh: retryCount > 0 })
+                const config = await fetchPublicAuthConfig({ forceRefresh: isRetry })
                 if (!config.googleAuthEnabled || !config.googleClientId) {
                     throw new Error('Google Sign-In is currently unavailable.')
                 }
@@ -55,7 +58,7 @@ function GoogleSignInButton({ isAuthenticating, onCredential }) {
                 const api = await initializeGoogleIdentity({
                     clientId: config.googleClientId,
                     onCredential: credentialHandler,
-                    retry: retryCount > 0,
+                    retry: isRetry,
                 })
 
                 if (cancelled || !containerRef.current) return
@@ -84,27 +87,22 @@ function GoogleSignInButton({ isAuthenticating, onCredential }) {
         <div>
             <div
                 ref={containerRef}
-                className={`mx-auto flex min-h-11 w-full max-w-[360px] items-center justify-center overflow-hidden transition-opacity ${isAuthenticating ? 'pointer-events-none opacity-50' : ''}`}
+                className={`mx-auto flex min-h-11 w-full max-w-[360px] items-center justify-center overflow-hidden ${isAuthenticating ? 'pointer-events-none opacity-50' : ''}`}
                 aria-hidden={loadState !== 'ready'}
             />
 
             {loadState === 'loading' ? (
-                <div className="mt-3 flex items-center justify-center gap-2 text-xs font-mono text-zinc-500" role="status">
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-toxic/70 border-t-transparent" />
-                    Loading Google Sign-In...
-                </div>
+                <p className="mt-3 text-center text-small text-muted" role="status">
+                    Loading Google Sign-In…
+                </p>
             ) : null}
 
             {loadState === 'error' ? (
                 <div className="mt-3 text-center" role="alert">
-                    <p className="text-xs text-amber-200">{errorMessage}</p>
-                    <button
-                        type="button"
-                        onClick={retry}
-                        className="mt-3 rounded-md border border-toxic/40 px-3 py-2 text-[11px] font-mono font-bold uppercase tracking-wider text-toxic transition-colors hover:bg-toxic/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic"
-                    >
-                        Retry
-                    </button>
+                    <p className="text-small text-paper">{friendlyAuthError(errorMessage)}</p>
+                    <Button variant="secondary" onClick={retry} className="mt-4">
+                        Try again
+                    </Button>
                 </div>
             ) : null}
         </div>

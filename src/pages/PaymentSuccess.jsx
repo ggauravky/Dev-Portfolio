@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { CheckCircle2, Download, ReceiptText } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
 import { fetchPaymentReceipt, fetchPaymentTransaction } from '../services/payment'
 import { trackEvent } from '../utils/analytics'
+import PageHead from '../components/page/PageHead'
+import PageSection from '../components/page/PageSection'
+import { Button, TextLink } from '../components/ui'
+import '../styles/checkout.css'
 
 const formatDate = (value) => {
     const date = new Date(value)
@@ -82,68 +85,81 @@ function PaymentSuccess() {
     }
 
     if (isLoading || isFetching) {
-        return <div className="min-h-screen bg-obsidian flex items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-2 border-toxic border-t-transparent" /></div>
+        return (
+            <main className="pg checkout">
+                <div className="pg-head page-wrap page-grid ck-loading">
+                    <p className="page-rail" role="status">Loading payment...</p>
+                </div>
+            </main>
+        )
     }
 
     if (pageError || !transaction) {
         return (
-            <div className="min-h-screen bg-obsidian px-4 py-16 flex items-center justify-center">
-                <div className="w-full max-w-xl rounded-lg border border-obsidian-border bg-obsidian-card p-8 text-center">
-                    <h1 className="text-3xl font-display font-bold text-white">Payment Details Unavailable</h1>
-                    <p className="mt-3 text-sm text-zinc-400">{pageError || 'This transaction could not be found.'}</p>
-                    <Link to="/services" className="mt-6 inline-flex rounded-md bg-toxic px-5 py-3 text-xs font-mono font-bold uppercase text-obsidian">Back to Services</Link>
-                </div>
-            </div>
+            <main className="pg checkout">
+                <PageHead head={{ rail: ['Payment'], title: 'Payment details unavailable', lede: pageError || 'This transaction could not be found.' }}>
+                    <div className="pg-actions">
+                        <Button to="/services" arrow>Back to services</Button>
+                    </div>
+                </PageHead>
+            </main>
         )
     }
 
     const isPaid = transaction.status === 'paid'
     const isFailed = transaction.status === 'failed'
+    const backTo = isSupport ? '/' : '/services'
+    const backLabel = isSupport ? 'Back home' : 'Back to services'
+
+    const title = isPaid ? (isSupport ? 'Thanks for the support.' : 'Payment confirmed.') : isFailed ? 'Payment failed.' : 'Payment pending.'
+    const lede = isPaid
+        ? isSupport
+            ? transaction.receiptEmailSent
+                ? `Thank you for your support. A receipt has been sent to ${transaction.email}.`
+                : 'Thank you for your support. The receipt is ready to download below; email delivery may still be pending.'
+            : transaction.receiptEmailSent
+                ? `Your booking is confirmed. A receipt has been sent to ${transaction.email}.`
+                : 'Your booking is confirmed. The receipt is ready to download below; email delivery may still be pending.'
+        : isFailed
+            ? isSupport
+                ? 'This support payment was not confirmed. You can return home or try again from the support page.'
+                : 'This booking was not confirmed. You can return to services and start a fresh checkout.'
+            : 'Razorpay has not confirmed a captured payment yet. Check My Activity shortly.'
+
+    const rows = [
+        [isSupport ? 'Type' : 'Service', isSupport ? 'Support Contribution' : transaction.serviceName],
+        ['Amount', `INR ${Number(transaction.amount).toLocaleString('en-IN')}`],
+        ['Receipt', transaction.receiptNumber || 'Pending'],
+        ['Payment ID', transaction.razorpayPaymentId || 'Pending'],
+        ['Date', formatDate(transaction.paidAt || transaction.createdAt)],
+        ['Provider', 'Razorpay'],
+    ]
 
     return (
-        <div className="min-h-screen bg-obsidian relative overflow-hidden">
-            <div className="absolute -top-24 right-0 h-80 w-80 rounded-full bg-toxic/5 blur-3xl" />
-            <main className="relative z-10 mx-auto max-w-4xl px-4 py-14 sm:px-6 sm:py-18 lg:px-8">
-                <Link to={isSupport ? '/' : '/services'} className="text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-toxic">&larr; {isSupport ? 'Back Home' : 'Back to Services'}</Link>
-                <section className="mt-7 rounded-lg border border-obsidian-border bg-obsidian-card p-6 sm:p-9">
-                    <div className={`inline-flex h-14 w-14 items-center justify-center rounded-full border ${isPaid ? 'border-toxic/40 bg-toxic/10 text-toxic' : isFailed ? 'border-rose-500/40 bg-rose-500/10 text-rose-300' : 'border-amber-500/40 bg-amber-500/10 text-amber-300'}`}>
-                        {isPaid ? <CheckCircle2 className="h-7 w-7" /> : <ReceiptText className="h-7 w-7" />}
-                    </div>
-                    <p className="mt-5 text-[10px] font-mono uppercase tracking-widest text-toxic">Server-Verified Payment</p>
-                    <h1 className="mt-2 text-3xl font-display font-bold text-white sm:text-4xl">{isPaid ? (isSupport ? 'Thanks for the support.' : 'Payment confirmed.') : isFailed ? 'Payment Failed' : 'Payment Pending'}</h1>
-                    <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
-                        {isPaid
-                            ? isSupport
-                                ? transaction.receiptEmailSent
-                                    ? `Thank you for your support. A receipt has been sent to ${transaction.email}.`
-                                    : 'Thank you for your support. The receipt is ready to download below; email delivery may still be pending.'
-                                : transaction.receiptEmailSent
-                                    ? `Your booking is confirmed. A receipt has been sent to ${transaction.email}.`
-                                    : 'Your booking is confirmed. The receipt is ready to download below; email delivery may still be pending.'
-                            : isFailed
-                                ? isSupport
-                                    ? 'This support payment was not confirmed. You can return home or try again from the support page.'
-                                    : 'This booking was not confirmed. You can return to services and start a fresh checkout.'
-                                : 'Razorpay has not confirmed a captured payment yet. Check My Activity shortly.'}
-                    </p>
+        <main className="pg checkout">
+            <PageHead head={{ rail: ['Payment', 'Server-verified'], title, lede }}>
+                <div className="pg-actions">
+                    {isPaid ? (
+                        <Button onClick={downloadReceipt} disabled={isDownloading} loading={isDownloading}>
+                            {isDownloading ? 'Preparing...' : 'Download receipt'}
+                        </Button>
+                    ) : null}
+                    <Button variant="secondary" to="/my-activity?tab=payments">View My Activity</Button>
+                    <TextLink to={backTo} tone="muted">{backLabel}</TextLink>
+                </div>
+            </PageHead>
 
-                    <div className="mt-7 grid gap-3 rounded-md border border-obsidian-border bg-obsidian p-5 text-sm sm:grid-cols-2">
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">{isSupport ? 'Type' : 'Service'}</span><span className="text-white">{isSupport ? 'Support Contribution' : transaction.serviceName}</span></p>
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Amount</span><span className="text-white">INR {Number(transaction.amount).toLocaleString('en-IN')}</span></p>
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Receipt</span><span className="break-all text-white">{transaction.receiptNumber || 'Pending'}</span></p>
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Payment ID</span><span className="break-all text-white">{transaction.razorpayPaymentId || 'Pending'}</span></p>
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Date</span><span className="text-white">{formatDate(transaction.paidAt || transaction.createdAt)}</span></p>
-                        <p><span className="block text-[10px] font-mono uppercase tracking-wider text-zinc-500">Provider</span><span className="text-white">Razorpay</span></p>
-                    </div>
-
-                    <div className="mt-7 flex flex-wrap gap-3">
-                        {isPaid ? <button type="button" onClick={downloadReceipt} disabled={isDownloading} className="inline-flex items-center gap-2 rounded-md bg-toxic px-5 py-3 text-xs font-mono font-bold uppercase text-obsidian disabled:opacity-60"><Download className="h-4 w-4" />{isDownloading ? 'Preparing...' : 'Download Receipt'}</button> : null}
-                        <Link to="/my-activity?tab=payments" className="rounded-md border border-obsidian-border px-5 py-3 text-xs font-mono font-bold uppercase text-white hover:border-toxic/40 hover:text-toxic">View My Activity</Link>
-                        <Link to={isSupport ? '/' : '/services'} className="rounded-md border border-obsidian-border px-5 py-3 text-xs font-mono font-bold uppercase text-zinc-400 hover:text-white">{isSupport ? 'Back Home' : 'Back to Services'}</Link>
-                    </div>
-                </section>
-            </main>
-        </div>
+            <PageSection id="details" index={1} title="Details">
+                <ul className="pg-rows">
+                    {rows.map(([label, value]) => (
+                        <li key={label} className="pg-row">
+                            <p className="pg-row__label">{label}</p>
+                            <p className="pg-row__body ck-break">{value}</p>
+                        </li>
+                    ))}
+                </ul>
+            </PageSection>
+        </main>
     )
 }
 

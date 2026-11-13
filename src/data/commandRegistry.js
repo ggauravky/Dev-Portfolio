@@ -5,6 +5,7 @@
 import { projectsData } from './projectsData'
 import { getPublicBlogs } from './blogsData'
 import { servicesData } from './servicesData'
+import { siteStatus } from './siteStatus'
 
 // ─── CATEGORY CONSTANTS ───────────────────────────────────────────────────────
 export const CATEGORIES = {
@@ -492,7 +493,7 @@ export const STATIC_COMMANDS = [
         category: CATEGORIES.SOCIAL,
         desc: 'Connect professionally, view experience & endorsements',
         type: 'external',
-        url: 'https://linkedin.com/in/ggauravky',
+        url: 'https://linkedin.com/in/gauravky',
         badge: 'External ↗',
         priority: 82,
         aliases: ['linkdin', 'linkedin profile', 'lnkd', 'professional network', 'in'],
@@ -576,10 +577,10 @@ export const STATIC_COMMANDS = [
         id: 'action-copy-email',
         title: 'Copy Email Address',
         category: CATEGORIES.ACTIONS,
-        desc: 'Copy kumar.gaurav.yadav2007@gmail.com to clipboard',
+        desc: `Copy ${siteStatus.email} to clipboard`,
         type: 'action',
         actionId: 'copy-email',
-        badge: 'Action ⚡',
+        badge: 'Action',
         priority: 72,
         aliases: ['clipboard email', 'get email', 'copy mail'],
         keywords: ['copy email', 'email address', 'get email', 'copy mail', 'clipboard email', 'email copy', 'clipboard', 'copy address', 'share email'],
@@ -591,7 +592,7 @@ export const STATIC_COMMANDS = [
         desc: 'Copy current portfolio link to share with others',
         type: 'action',
         actionId: 'copy-url',
-        badge: 'Action ⚡',
+        badge: 'Action',
         priority: 60,
         aliases: ['share portfolio', 'portfolio link', 'clipboard url'],
         keywords: ['copy url', 'share portfolio', 'copy link', 'share site', 'portfolio link', 'url', 'link', 'share', 'clipboard url', 'share link'],

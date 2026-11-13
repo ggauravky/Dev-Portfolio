@@ -535,7 +535,7 @@ export const journeyData = [
     duration: '2 Months',
     category: 'Open Source',
     mode: 'Online',
-    status: 'In Progress',
+    status: 'Completed',
     description: "Accepted as an Open Source Contributor for the Elite Coders Summer of Code (ECSoC) 2026, contributing to the UI Components track. Collaborating with a global developer community to build, improve, and optimize reusable frontend modules.",
     whatILearned: [
       'Contributing to real-world open-source repositories under the UI Components track',

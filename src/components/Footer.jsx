@@ -4,114 +4,278 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { Link } from 'react-router-dom'
+// S4 — live colophon footer (DESIGN.md "Signature layer"), site-wide.
+// Lucknow time (ticks per minute, no rAF), availability and "currently building"
+// from siteStatus, last GitHub activity (fetched only once the footer is near the
+// viewport and the browser is idle), copy-email with a toast, a big wordmark and
+// back-to-top. It is also where signed-out visitors find "Sign in" (D-002).
+
+import { useEffect, useRef, useState } from 'react'
+import PropTypes from 'prop-types'
+import toast from 'react-hot-toast'
+import useAuth from '../hooks/useAuth'
+import TextLink from './ui/TextLink'
+import { siteStatus, isAvailable } from '../data/siteStatus'
+import { fetchGitHubContributions } from '../utils/githubApi'
+import { prefersReducedMotion } from '../lib/motion'
 import './Footer.css'
 
-function Footer() {
-    const footerLinks = {
-        quickLinks: [
-            { name: 'Home', path: '/' },
-            { name: 'About', path: '/about' },
-            { name: 'Journey', path: '/journey' },
-            { name: 'Projects', path: '/projects' },
-            { name: 'Services', path: '/services' },
-            { name: 'Blog', path: '/blog' },
-            { name: 'Updates', path: '/updates' },
-            { name: 'Skills', path: '/skills' },
-            { name: 'Contact', path: '/contact' },
-        ],
-        legal: [
-            { name: 'Privacy Policy', path: '/privacy' },
-            { name: 'Terms of Service', path: '/terms' },
-            { name: 'Refund Policy', path: '/refund' },
-        ],
-    }
+const PAGE_LINKS = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Journey', path: '/journey' },
+    { name: 'Projects', path: '/projects' },
+    { name: 'Services', path: '/services' },
+    { name: 'Blog', path: '/blog' },
+    { name: 'Updates', path: '/updates' },
+    { name: 'Skills', path: '/skills' },
+    { name: 'Contact', path: '/contact' },
+]
 
-    const handleBackToTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+const LEGAL_LINKS = [
+    { name: 'Privacy Policy', path: '/privacy' },
+    { name: 'Terms of Service', path: '/terms' },
+    { name: 'Refund Policy', path: '/refund' },
+]
+
+const timeFormat = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+})
+const dayFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+const numberFormat = new Intl.NumberFormat('en-IN')
+
+/** Lucknow (IST) wall-clock time, re-rendered on each minute boundary. */
+function useLucknowTime() {
+    const [now, setNow] = useState(() => new Date())
+    useEffect(() => {
+        let interval = 0
+        const tick = () => setNow(new Date())
+        const timeout = window.setTimeout(() => {
+            tick()
+            interval = window.setInterval(tick, 60_000)
+        }, 60_000 - (Date.now() % 60_000))
+        return () => {
+            window.clearTimeout(timeout)
+            window.clearInterval(interval)
+        }
+    }, [])
+    return now
+}
+
+/**
+ * Last-year contributions and the last active day, from the existing GitHub
+ * helper. Never blocks: it waits until the footer is within a screen of the
+ * viewport, then for idle time. Fallback numbers are not shown (they are not
+ * real data); on failure the row is just a profile link.
+ */
+function useGitHubActivity(targetRef) {
+    const [state, setState] = useState({ status: 'idle', data: null })
+
+    useEffect(() => {
+        const el = targetRef.current
+        if (!el || typeof IntersectionObserver === 'undefined') return undefined
+        let cancelled = false
+        let idleId = 0
+        let timerId = 0
+
+        const load = () => {
+            setState({ status: 'loading', data: null })
+            fetchGitHubContributions()
+                .then((result) => {
+                    if (cancelled) return
+                    const days = result.contributionsArray || []
+                    const today = new Date().toISOString().slice(0, 10)
+                    const last = [...days].reverse().find((day) => day.count > 0 && day.date <= today)
+                    setState({
+                        status: 'ready',
+                        data: { total: result.totalContributions, lastActive: last?.date || null },
+                    })
+                })
+                .catch(() => {
+                    if (!cancelled) setState({ status: 'error', data: null })
+                })
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return
+            observer.disconnect()
+            if ('requestIdleCallback' in window) idleId = window.requestIdleCallback(load, { timeout: 3000 })
+            else timerId = window.setTimeout(load, 300)
+        }, { rootMargin: '0px 0px 100% 0px' })
+        observer.observe(el)
+
+        return () => {
+            cancelled = true
+            observer.disconnect()
+            if (idleId) window.cancelIdleCallback(idleId)
+            window.clearTimeout(timerId)
+        }
+    }, [targetRef])
+
+    return state
+}
+
+function LinkList({ links }) {
+    return (
+        <ul>
+            {links.map((link) => (
+                <li key={link.path}>
+                    <TextLink to={link.path} tone="muted" className="footer-link">{link.name}</TextLink>
+                </li>
+            ))}
+        </ul>
+    )
+}
+
+LinkList.propTypes = {
+    links: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string, path: PropTypes.string })).isRequired,
+}
+
+const copyEmail = async () => {
+    try {
+        await navigator.clipboard.writeText(siteStatus.email)
+        toast.success('Email copied')
+    } catch {
+        toast.error(`Couldn't copy. The address is ${siteStatus.email}`)
     }
+}
+
+const backToTop = () => {
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+}
+
+// The stat line keeps its space while loading (and stays blank on failure), so
+// the data arriving never shifts the page.
+function GitHubLine({ state }) {
+    const data = state.status === 'ready' ? state.data : null
+    let stat = ' '
+    if (data) {
+        const last = data.lastActive ? `, last on ${dayFormat.format(new Date(`${data.lastActive}T00:00:00Z`))}` : ''
+        stat = `${numberFormat.format(data.total)} contributions in the last year${last}`
+    }
+    return (
+        <>
+            <span className="colophon__gh-stat">{stat}</span>
+            <TextLink href={siteStatus.links.github} external tone="muted">github.com/ggauravky</TextLink>
+        </>
+    )
+}
+
+GitHubLine.propTypes = {
+    state: PropTypes.shape({ status: PropTypes.string, data: PropTypes.object }).isRequired,
+}
+
+function Footer() {
+    const { isAuthenticated, openAuthDialog } = useAuth()
+    const ref = useRef(null)
+    const now = useLucknowTime()
+    const github = useGitHubActivity(ref)
+    const available = isAvailable()
+    const building = siteStatus.currentlyBuilding
 
     return (
-        <footer className="footer-shell relative overflow-hidden border-t border-obsidian-border bg-obsidian-card">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-toxic/30 to-transparent" aria-hidden="true" />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-obsidian-card/45 to-obsidian/65" />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-toxic/5 via-transparent to-transparent" />
-            <div className="pointer-events-none absolute -left-24 top-0 h-64 w-64 rounded-full bg-toxic/5 blur-3xl" />
-            <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-cyber/5 blur-3xl" />
+        <footer ref={ref} className="colophon" aria-labelledby="colophon-title">
+            <div className="colophon__wrap">
+                <h2 id="colophon-title" className="sr-only">Colophon</h2>
 
-            <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
-                <div className="footer-main-grid grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-12 xl:grid-cols-3 xl:gap-16">
-                    <section className="min-w-0 text-center md:text-left">
-                        <h3 className="text-2xl font-display font-extrabold uppercase tracking-wider text-white sm:text-3xl">
-                            Gaurav Kumar Yadav
-                        </h3>
-                        <p className="mt-3 text-xs sm:text-sm font-bold tracking-widest uppercase text-toxic font-mono">
-                            AI/ML & Web Developer
-                        </p>
-                        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-zinc-400 md:mx-0">
-                            Building practical, user-focused digital products with modern frontend, data, and machine learning workflows.
-                        </p>
-                    </section>
+                <div className="colophon__grid">
+                    <dl className="colophon__facts">
+                        <div>
+                            <dt>Local time</dt>
+                            <dd>
+                                <time dateTime={now.toISOString()}>{timeFormat.format(now)}</time> in Lucknow (IST)
+                            </dd>
+                        </div>
+                        {siteStatus.availability ? (
+                            <div>
+                                <dt>Status</dt>
+                                <dd className="colophon__status">
+                                    <span className={`colophon__dot ${available ? 'is-live' : ''}`} aria-hidden="true" />
+                                    {siteStatus.availability.label}
+                                </dd>
+                            </div>
+                        ) : null}
+                        {building ? (
+                            <div>
+                                <dt>Building</dt>
+                                <dd>
+                                    {building.href
+                                        ? <TextLink to={building.href}>{building.title}</TextLink>
+                                        : building.title}
+                                </dd>
+                            </div>
+                        ) : null}
+                        <div>
+                            <dt>GitHub</dt>
+                            <dd aria-live="polite"><GitHubLine state={github} /></dd>
+                        </div>
+                        <div>
+                            <dt>Email</dt>
+                            <dd className="colophon__email">
+                                <TextLink href={`mailto:${siteStatus.email}`} translate="no">{siteStatus.email}</TextLink>
+                                <button type="button" className="colophon__copy" onClick={copyEmail} data-cursor="Copy" aria-label="Copy email address">
+                                    Copy
+                                </button>
+                            </dd>
+                        </div>
+                    </dl>
 
-                    <section className="min-w-0 text-center md:text-left">
-                        <h4 className="text-sm font-display font-bold uppercase tracking-widest text-white sm:text-base">
-                            Quick Navigation
-                        </h4>
-                        <nav aria-label="Footer quick navigation" className="mt-4">
-                            <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-2 text-sm sm:gap-y-3 sm:text-base md:justify-items-start">
-                                {footerLinks.quickLinks.map((link) => (
-                                    <li key={link.path}>
-                                        <Link
-                                            to={link.path}
-                                            className="footer-link group inline-flex min-h-[44px] items-center text-zinc-400 transition-colors duration-300 hover:text-toxic"
+                    <nav aria-labelledby="footer-pages" className="colophon__col colophon__col--pages">
+                        <h3 id="footer-pages" className="footer-heading">Pages</h3>
+                        <div className="footer-pages">
+                            <LinkList links={PAGE_LINKS} />
+                        </div>
+                    </nav>
+
+                    <div className="colophon__col">
+                        <section aria-labelledby="footer-legal">
+                            <h3 id="footer-legal" className="footer-heading">Legal</h3>
+                            <LinkList links={LEGAL_LINKS} />
+                        </section>
+                        <section aria-labelledby="footer-account" className="colophon__account">
+                            <h3 id="footer-account" className="footer-heading">Account</h3>
+                            <ul>
+                                <li>
+                                    {isAuthenticated ? (
+                                        <TextLink to="/my-activity" tone="muted" className="footer-link">My activity</TextLink>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => openAuthDialog({ reason: 'navbar' })}
+                                            className="footer-link text-link text-link--muted"
                                         >
-                                            <span className="relative">
-                                                {link.name}
-                                                <span className="absolute -bottom-1 left-0 h-[1px] w-0 bg-toxic transition-all duration-300 group-hover:w-full" />
-                                            </span>
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-                    </section>
-
-                    <section className="min-w-0 text-center md:col-span-2 md:text-left xl:col-span-1">
-                        <h4 className="text-sm font-display font-bold uppercase tracking-widest text-white sm:text-base">
-                            Legal & Extras
-                        </h4>
-                        <ul className="mt-4 space-y-1.5 text-xs sm:text-sm">
-                            {footerLinks.legal.map((link) => (
-                                <li key={link.path}>
-                                    <Link
-                                        to={link.path}
-                                        className="footer-link inline-flex min-h-[40px] items-center text-zinc-500 transition-colors duration-300 hover:text-toxic"
-                                    >
-                                        {link.name}
-                                    </Link>
+                                            <span className="text-link__label">Sign in</span>
+                                        </button>
+                                    )}
                                 </li>
-                            ))}
-                        </ul>
-
-                        <button
-                            type="button"
-                            onClick={handleBackToTop}
-                            className="footer-back-to-top mt-6 inline-flex min-h-[40px] items-center rounded-full border border-obsidian-border bg-obsidian-light px-5 text-xs font-bold uppercase tracking-wider text-zinc-300 transition-all duration-300 hover:border-toxic hover:text-toxic"
-                        >
-                            Back to top ↑
-                        </button>
-                    </section>
+                                <li>
+                                    <TextLink href={siteStatus.resumeUrl} external tone="muted" className="footer-link" aria-label="Resume (PDF, opens in a new tab)">
+                                        Resume
+                                    </TextLink>
+                                </li>
+                            </ul>
+                        </section>
+                    </div>
                 </div>
 
-                <div className="mt-10 border-t border-obsidian-border pt-6 sm:pt-7">
-                    <div className="flex flex-col items-center gap-2 text-center">
-                        <p className="text-xs sm:text-sm text-zinc-400 font-mono">
-                            © 2026 Gaurav Kumar Yadav. All rights reserved.
-                        </p>
-                        <p className="text-[11px] sm:text-xs text-zinc-600">
-                            Designed & Developed by <Link to="/admin" className="text-zinc-600 hover:text-toxic transition-colors duration-200 font-semibold uppercase tracking-wider">Gaurav Kumar Yadav</Link> | Student Developer Portfolio 2026
+                <p className="colophon__mark" aria-hidden="true" translate="no">Gaurav Kumar Yadav</p>
+
+                <div className="colophon__base">
+                    <div>
+                        <p>© 2026 Gaurav Kumar Yadav. All rights reserved.</p>
+                        <p>
+                            Designed &amp; developed by{' '}
+                            <TextLink to="/admin" tone="muted">Gaurav Kumar Yadav</TextLink>
+                            . Set in Fraunces, Geist and Geist Mono.
                         </p>
                     </div>
+                    <button type="button" onClick={backToTop} className="footer-link text-link text-link--muted">
+                        <span className="text-link__label">Back to top ↑</span>
+                    </button>
                 </div>
             </div>
         </footer>

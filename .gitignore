@@ -64,3 +64,6 @@ public/images/journey/*-1200.avif
 # Test files
 **/test-*.js
 **/quick-test.js
+
+# Redesign audit screenshots: only WebP fold shots are committed (docs/DECISIONS.md D-005)
+docs/audit/**/*.png

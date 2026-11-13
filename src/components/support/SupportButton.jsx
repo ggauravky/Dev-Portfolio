@@ -1,10 +1,16 @@
+// Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+// Source: https://github.com/ggauravky/Dev-Portfolio
+//
+// "Support this article" (P5 restyle). Signing in is triggered here for
+// signed-out readers (D-002); the count and the support call are unchanged.
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
 import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { fetchSupportStatus, supportBlogPost } from '../../services/blogSupport'
 import { trackEvent } from '../../utils/analytics'
+import { Button } from '../ui'
 
 function SupportButton({ slug, title, content = '' }) {
     const { isAuthenticated, isLoading, openAuthDialog } = useAuth()
@@ -12,7 +18,6 @@ function SupportButton({ slug, title, content = '' }) {
     const [supported, setSupported] = useState(false)
     const [isFetching, setIsFetching] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [pulseActive, setPulseActive] = useState(false)
 
     const normalizedSlug = useMemo(() => String(slug || '').trim().toLowerCase(), [slug])
 
@@ -40,15 +45,6 @@ function SupportButton({ slug, title, content = '' }) {
     useEffect(() => {
         loadStatus()
     }, [loadStatus, isAuthenticated])
-
-    useEffect(() => {
-        if (!pulseActive) {
-            return undefined
-        }
-
-        const timer = setTimeout(() => setPulseActive(false), 650)
-        return () => clearTimeout(timer)
-    }, [pulseActive])
 
     const runSupportRequest = useCallback(async () => {
         if (!normalizedSlug || isSubmitting) {
@@ -80,8 +76,7 @@ function SupportButton({ slug, title, content = '' }) {
             if (data.alreadySupported) {
                 toast.success('Already supported')
             } else {
-                toast.success('Thanks for supporting ❤️')
-                setPulseActive(true)
+                toast.success('Thanks for the support.')
             }
         } catch (error) {
             setSupportCount(previousCount)
@@ -118,43 +113,21 @@ function SupportButton({ slug, title, content = '' }) {
     }
 
     return (
-        <div className="rounded-2xl border border-slate-700/70 bg-slate-800/50 p-4 sm:p-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Appreciation</p>
-                        <p className="mt-1 text-sm text-slate-300">Support this article if it helped you.</p>
-                    </div>
-
-                    <p className="text-sm font-semibold text-rose-200">
-                        ❤️ {supportCount} {supportCount === 1 ? 'supporter' : 'supporters'}
-                    </p>
-                </div>
-
-                <div className="mt-4 relative">
-                    <motion.button
-                        type="button"
-                        whileHover={{ scale: supported ? 1.01 : 1.03 }}
-                        whileTap={{ scale: 0.97 }}
-                        disabled={isSubmitting || isFetching || isLoading}
-                        onClick={onSupportClick}
-                        className={`relative w-full overflow-hidden rounded-xl border px-5 py-3.5 text-sm font-semibold transition-all duration-300 sm:w-auto ${
-                            supported
-                                ? 'border-rose-400/50 bg-gradient-to-r from-rose-500/25 to-pink-500/25 text-rose-100 shadow-[0_0_32px_rgba(244,63,94,0.25)]'
-                                : 'border-cyan-400/40 bg-gradient-to-r from-cyan-500/15 to-blue-500/15 text-cyan-100 hover:border-cyan-300/70 hover:shadow-[0_0_30px_rgba(34,211,238,0.22)]'
-                        }`}
-                    >
-                        <span className="relative z-10 inline-flex items-center gap-2">
-                            {supported ? '💖 Supported' : '❤️ Support this post'}
-                            {isSubmitting ? (
-                                <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                            ) : null}
-                        </span>
-
-                        {pulseActive ? (
-                            <span className="pointer-events-none absolute inset-0 animate-ping rounded-xl bg-rose-400/20" />
-                        ) : null}
-                    </motion.button>
-                </div>
+        <div className="ar-support">
+            <p className="ar-support__text">
+                Did this help? Support the article.
+                <span className="ar-support__count" aria-live="polite">
+                    {supportCount} {supportCount === 1 ? 'supporter' : 'supporters'}
+                </span>
+            </p>
+            <Button
+                variant={supported ? 'secondary' : 'primary'}
+                loading={isSubmitting}
+                disabled={isFetching || isLoading}
+                onClick={onSupportClick}
+            >
+                {supported ? 'Supported' : 'Support this article'}
+            </Button>
         </div>
     )
 }

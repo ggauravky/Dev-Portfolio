@@ -114,7 +114,7 @@ export const renderGoogleSignInButton = ({ api, container, width }) => {
         type: 'standard',
         theme: 'filled_black',
         size: 'large',
-        shape: 'pill',
+        shape: 'rectangular',
         text: 'continue_with',
         logo_alignment: 'left',
         width,

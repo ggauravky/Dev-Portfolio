@@ -1,0 +1,34 @@
+/* Updates (P6): the changelog. Builds on the shared P5 page layer in page.css. */
+
+.up-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.up-rail dd { margin: 0; }
+
+.up-rail__version { color: rgb(var(--paper)); }
+
+@media (min-width: 1024px) {
+  .up-rail { flex-direction: column; margin: 0; }
+}
+
+.up-h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.up-group {
+  font-weight: 400;
+}
+
+.up-items {
+  margin: 0;
+  padding-left: var(--space-2);
+  list-style: disc;
+}
+
+.up-items li::marker { color: rgb(var(--muted)); }
+
+.up-items li + li { margin-top: var(--space-1); }

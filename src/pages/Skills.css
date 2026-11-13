@@ -1,231 +1,25 @@
 /*
  * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
- * Unauthorized copying, modification, or distribution of this software,
- * via any medium, is strictly prohibited without the express written
- * consent of the author. See LICENSE for details.
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Skills Page Animations */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Skills (P5) on the shared .pg-* primitives (src/styles/page.css). */
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: rgb(var(--paper));
+  font-size: 20px;
+  line-height: 1.6;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
-  }
-}
-
-.animate-slideUp {
-  animation: slideUp 0.6s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-/* Skill Card Styles */
-.skill-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.skill-card::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.03),
-    transparent
-  );
-  transform: rotate(45deg);
-  transition: all 0.6s ease;
-  opacity: 0;
-}
-
-.skill-card:hover::before {
-  opacity: 1;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  }
-  100% {
-    transform: translateX(100%) translateY(100%) rotate(45deg);
-  }
-}
-
-/* Icon Wrapper */
-.skill-icon-wrapper {
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
-  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-/* Skill Badge Styles */
-.skill-badge {
-  position: relative;
-  overflow: hidden;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: slideUp 0.4s ease-out forwards;
-  opacity: 0;
-}
-
-.skill-badge:hover {
-  transform: translateY(-2px) scale(1.05);
-  z-index: 10;
-}
-
-.skill-badge-dot {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Responsive Design - Mobile First */
-@media (max-width: 640px) {
-  .skill-card {
-    padding: 1.25rem !important;
-  }
-
-  .skill-icon-wrapper {
-    font-size: 2rem;
-  }
-
-  .skill-badge {
-    font-size: 0.75rem;
-    padding: 0.5rem 0.75rem !important;
-  }
-}
-
-/* Tablet */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .skill-card {
-    padding: 1.5rem !important;
-  }
-}
-
-/* Desktop */
-@media (min-width: 1025px) {
-  .skill-card:hover {
-    transform: translateY(-8px) scale(1.02);
-  }
-}
-
-/* High Resolution Displays */
-@media (min-width: 1536px) {
-  .skill-card {
-    padding: 2.5rem !important;
-  }
-}
-
-/* Accessibility - Reduced Motion */
-@media (prefers-reduced-motion: reduce) {
-  .skill-card,
-  .skill-badge,
-  .skill-icon-wrapper,
-  .animate-slideUp,
-  .animate-fadeIn {
-    animation: none !important;
-    transition: none !important;
-  }
-  
-  .skill-card:hover,
-  .skill-badge:hover {
-    transform: none !important;
-  }
-}
-
-/* Dark Mode Optimization */
-@media (prefers-color-scheme: dark) {
-  .skill-card {
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-  }
-}
-
-/* Touch Device Optimizations */
-@media (hover: none) and (pointer: coarse) {
-  .skill-badge:hover {
-    transform: scale(1.02);
-  }
-  
-  .skill-card:hover {
-    transform: translateY(-2px);
-  }
-}
-
-/* Print Styles */
-@media print {
-  .skill-card {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-}
-
-/* Loading State */
-.skill-card.loading {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-/* Focus Styles for Accessibility */
-.skill-badge:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
-/* Smooth Scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Container Queries Support */
-@supports (container-type: inline-size) {
-  .skill-card {
-    container-type: inline-size;
-  }
-  
-  @container (max-width: 300px) {
-    .skill-badge {
-      font-size: 0.7rem;
-      padding: 0.4rem 0.6rem !important;
-    }
-  }
+.skills-close {
+  max-width: 46ch;
+  color: rgb(var(--paper));
+  font-size: 20px;
+  line-height: 1.5;
 }

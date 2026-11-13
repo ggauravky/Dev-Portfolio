@@ -6,6 +6,8 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
+@import './styles/fonts.css';
+
 /* Fingerprint: identity marker — do not remove.
    Origin: https://github.com/ggauravky/Dev-Portfolio | Author: Gaurav Kumar Yadav */
 :root {
@@ -16,12 +18,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === ROOT VARIABLES === */
+/* === DESIGN TOKENS (v2 Monograph — docs/DESIGN.md) ===
+   Colours are RGB channels so Tailwind opacity modifiers work (`bg-ink/80`).
+   In raw CSS use rgb(var(--ink)). Accent's one job: "live / current", < 5% of a screen. */
 :root {
-  --primary-gradient: linear-gradient(135deg, #c5f82a 0%, #ff5d00 100%);
-  --secondary-gradient: linear-gradient(135deg, #ff5d00 0%, #764ba2 100%);
-  --accent-gradient: linear-gradient(135deg, #c5f82a 0%, #00f2fe 100%);
-  --glow-color: rgba(197, 248, 42, 0.3);
+  --ink: 14 13 11;          /* #0E0D0B background */
+  --ink-raised: 22 21 18;   /* #161512 dialogs, code blocks */
+  --rule: 42 40 36;         /* #2A2824 1px hairlines */
+  --paper: 237 234 227;     /* #EDEAE3 primary text */
+  --muted: 156 151 140;     /* #9C978C secondary text */
+  --accent: 194 238 58;     /* #C2EE3A live / current */
+
+  --font-serif: 'Fraunces', 'Fraunces Fallback', Georgia, serif;
+  --font-sans: 'Geist', 'Geist Fallback', Arial, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', 'Courier New', monospace;
+
+  /* Type scale ≈ 1.333 */
+  --text-display: clamp(3.5rem, 9vw, 8rem); /* 56 → 128px */
+  --text-h2: 3rem;      /* 48 */
+  --text-h3: 1.75rem;   /* 28 */
+  --text-body: 1.0625rem; /* 17, line-height 1.6 */
+  --text-small: 0.875rem; /* 14 */
+
+  /* Spacing — 8px base (4 only inside controls) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-6: 64px;
+  --space-7: 96px;
+  --space-8: 128px;
+
+  /* Radius: structure/images 0, controls 4, dialogs 8 */
+  --radius-0: 0;
+  --radius-control: 4px;
+  --radius-dialog: 8px;
+
+  /* Motion — mirrors src/lib/motion.js (D-030). Transform/opacity only. */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --dur-fast: 160ms;
+  --dur-base: 280ms;
+  --dur-slow: 520ms;
+
+  /* Fixed chrome: top wordmark bar height, and the space the bottom dock needs */
+  --chrome-h: 56px;
+  --dock-space: calc(88px + env(safe-area-inset-bottom, 0px));
+
+  /* The only shadow token — dialogs */
+  --shadow-dialog: 0 16px 48px rgb(0 0 0 / 0.5);
+
 }
 
 * {
@@ -40,28 +86,83 @@ body,
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.6;
-  background-color: #070708;
-  color: #a1a1aa;
+  background-color: rgb(var(--ink));
+  color: rgb(var(--muted));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 16px;
   min-height: 100vh;
 }
 
-/* Premium Noise Grain Overlay */
+/* Dark-only (D-028): native controls and scrollbars match. Fixed chrome and the
+   dock must never cover the focused element or an anchor target. */
+html {
+  color-scheme: dark;
+  scroll-padding-top: var(--chrome-h);
+  scroll-padding-bottom: var(--dock-space);
+}
+
+/* === GRAIN (S8) === one static SVG noise tile, <= 4% opacity, never animated.
+   Above content, below dialogs; ignores the pointer. */
 body::after {
-  content: "";
+  content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9999;
+  inset: 0;
+  z-index: 90;
   pointer-events: none;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* === REDUCED MOTION — global kill switch ===
+   Collapses every CSS animation and transition site-wide; JS motion checks
+   useReducedMotion() / prefersReducedMotion() from src/lib/motion.js, and
+   framer-motion follows <MotionConfig reducedMotion="user"> in App.jsx. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* === FOCUS === one ring everywhere: accent, 2px, offset 2 */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* === SKIP LINK === hidden until focused */
+.skip-link {
+  position: fixed;
+  top: var(--space-1);
+  left: var(--space-1);
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-control);
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
+  font: 500 15px/1 var(--font-sans);
+  text-decoration: none;
+  transform: translateY(calc(-100% - var(--space-2)));
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+#main-content:focus {
+  outline: none;
 }
 
 /* Better mobile font scaling */
@@ -90,7 +191,7 @@ a, button, input, select, textarea {
 
 /* Better button appearance on mobile */
 button, a {
-  -webkit-tap-highlight-color: rgba(102, 126, 234, 0.1);
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
@@ -114,299 +215,6 @@ img, video, iframe {
   min-height: 0;
 }
 
-/* === ENHANCED ANIMATIONS === */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-25px);
-  }
-}
-
-@keyframes gradient {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-slideInRight {
-  animation: slideInRight 0.4s ease-out forwards;
-}
-
-@keyframes scroll {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideRight {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 5s ease infinite;
-}
-.animate-scroll {
-  animation: scroll 2s ease-in-out infinite;
-}
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-.animate-slide-down {
-  animation: slideDown 0.6s ease-out forwards;
-}
-.animate-slide-right {
-  animation: slideRight 0.8s ease-out forwards;
-}
-.animate-fade-in {
-  animation: fadeIn 1s ease-out forwards;
-}
-.animate-spin-slow {
-  animation: spin 20s linear infinite;
-}
-
-.delay-100 {
-  animation-delay: 0.1s;
-}
-.delay-200 {
-  animation-delay: 0.2s;
-}
-.delay-300 {
-  animation-delay: 0.3s;
-}
-.delay-400 {
-  animation-delay: 0.4s;
-}
-.delay-700 {
-  animation-delay: 0.7s;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* === ADVANCED EFFECTS === */
-
-/* Glassmorphism utility */
-.glass-effect {
-  background: rgba(14, 14, 17, 0.65);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-/* Neon glow effect */
-@keyframes neon-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px var(--glow-color),
-                0 0 10px var(--glow-color),
-                0 0 15px var(--glow-color);
-  }
-  50% {
-    box-shadow: 0 0 2px var(--glow-color),
-                0 0 5px var(--glow-color),
-                0 0 10px var(--glow-color);
-  }
-}
-
-.neon-glow {
-  animation: neon-glow 2s ease-in-out infinite;
-}
-
-/* Shimmer effect */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-.shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 1000px 100%;
-  animation: shimmer 3s infinite;
-}
-
-/* Pulse glow */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.02);
-  }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Scale on hover */
-.hover-scale {
-  transition: transform 0.3s ease;
-}
-
-.hover-scale:hover {
-  transform: scale(1.03);
-}
-
-/* Lift on hover */
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* Gradient border animation */
-@keyframes gradient-border {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.gradient-border {
-  background: linear-gradient(90deg, #c5f82a, #ff5d00, #764ba2, #c5f82a);
-  background-size: 300% 300%;
-  animation: gradient-border 3s ease infinite;
-}
-
-/* Text gradient animation */
-.animate-text-gradient {
-  background: linear-gradient(90deg, #c5f82a, #ffffff, #ff5d00, #764ba2, #c5f82a);
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: gradient-border 5s ease infinite;
-}
-
-/* Smooth transitions */
-.smooth-transition {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Card hover effect */
-.card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-}
-
-/* === RESPONSIVE UTILITIES === */
-
-/* Better mobile padding */
-@media (max-width: 640px) {
-  .container-mobile {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-/* Hide on mobile */
-@media (max-width: 768px) {
-  .hide-mobile {
-    display: none !important;
-  }
-}
-
-/* Show only on mobile */
-@media (min-width: 769px) {
-  .show-mobile {
-    display: none !important;
-  }
-}
-
 /* === CUSTOM SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 8px;
@@ -414,170 +222,42 @@ img, video, iframe {
 }
 
 ::-webkit-scrollbar-track {
-  background: #070708;
+  background: rgb(var(--ink));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a1a22;
-  border-radius: 4px;
-  border: 2px solid #070708;
+  background: rgb(var(--rule));
+  border-radius: var(--radius-control);
+  border: 2px solid rgb(var(--ink));
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #c5f82a;
+  background: rgb(var(--muted));
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1a1a22 #070708;
+  scrollbar-color: rgb(var(--rule)) rgb(var(--ink));
 }
 
-/* === SELECTION COLOR === */
+/* === SELECTION COLOR === paper on ink, inverted (accent stays for "live / current") */
 ::selection {
-  background-color: #c5f82a;
-  color: #070708;
+  background-color: rgb(var(--paper));
+  color: rgb(var(--ink));
 }
 
-::-moz-selection {
-  background-color: #c5f82a;
-  color: #070708;
-}
 
-html {
-  scroll-behavior: smooth;
-}
-
-/* ── Smooth card image hover zoom ── */
-
-/* Apply to the overflow-hidden wrapper div around the image */
-.card-img-wrap {
-  overflow: hidden;
-  transform: translateZ(0);        /* own compositing layer — isolates from card's transition-all */
-  backface-visibility: hidden;
-}
-
-/* Apply to the <img> / LazyImage itself */
-.card-img-zoom {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale3d(1, 1, 1);    /* explicit start — no snap on first hover */
-  transition: transform 0.9s ease; /* gentle standard ease-out curve */
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.card-img-wrap:hover .card-img-zoom,
-.group:hover .card-img-wrap .card-img-zoom,
-.group:hover .card-img-zoom {
-  transform: scale3d(1.06, 1.06, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card-img-zoom,
-  .card-img-wrap:hover .card-img-zoom,
-  .group:hover .card-img-wrap .card-img-zoom,
-  .group:hover .card-img-zoom {
-    transition: none;
-    transform: scale3d(1, 1, 1);
-  }
-}
-
-/* ── Scroll-triggered reveal animation ── */
-.scroll-reveal {
+/* ── Reveal (src/components/Reveal.jsx) — DESIGN.md "Reveal rules" ──
+   Content is visible by default. It is hidden only while JS has armed reveals
+   (html.reveal-armed, never under reduced motion) and the element has not been
+   revealed yet ([data-revealed]); Reveal.jsx disarms everything on a timeout fail-safe. */
+.reveal-armed [data-reveal]:not([data-revealed]) {
   opacity: 0;
-  transform: translateY(14px);
-  will-change: opacity, transform;
-  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 16px, 0);
 }
 
-.scroll-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Respect prefers-reduced-motion accessibility setting */
-@media (prefers-reduced-motion: reduce) {
-  .scroll-reveal {
-    opacity: 1;
-    transform: none !important;
-    transition: none !important;
-    will-change: auto;
-  }
-}
-
-/* Morphing organic shape for profile picture */
-@keyframes morph {
-  0% {
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  }
-  50% {
-    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
-  }
-  100% {
-    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  }
-}
-
-.animate-morph {
-  animation: morph 8s ease-in-out infinite;
-}
-
-/* === PATHFINDING GRID VISUALIZATION ANIMATIONS === */
-@keyframes visitedAnimation {
-  0% {
-    transform: scale(0.3);
-    background-color: rgba(255, 93, 0, 0.75); /* Cyber orange start */
-    border-radius: 100%;
-  }
-  50% {
-    background-color: rgba(118, 75, 162, 0.65); /* Purple transition */
-  }
-  75% {
-    transform: scale(1.15);
-    background-color: rgba(197, 248, 42, 0.4); /* Toxic lime transition */
-  }
-  100% {
-    transform: scale(1.0);
-    background-color: rgba(197, 248, 42, 0.15);
-    border: 1px solid rgba(197, 248, 42, 0.3);
-  }
-}
-
-.node-visited-anim {
-  animation-name: visitedAnimation;
-  animation-duration: 1.2s;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
-}
-
-@keyframes shortestPathAnimation {
-  0% {
-    transform: scale(0.6);
-    background-color: #ff5d00;
-    box-shadow: 0 0 4px #ff5d00;
-    border-radius: 50%;
-  }
-  50% {
-    transform: scale(1.1);
-    background-color: #c5f82a;
-    box-shadow: 0 0 10px #c5f82a;
-    border-radius: 20%;
-  }
-  100% {
-    transform: scale(1.0);
-    background-color: #c5f82a;
-    box-shadow: 0 0 6px #c5f82a;
-  }
-}
-
-.node-shortest-path-anim {
-  animation-name: shortestPathAnimation;
-  animation-duration: 0.5s;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: forwards;
+[data-reveal][data-revealed] {
+  transition: opacity var(--dur-slow) var(--ease-out), transform var(--dur-slow) var(--ease-out);
 }
 

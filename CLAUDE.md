@@ -43,4 +43,19 @@ The full payment and auth design is in `docs/ARCHITECTURE.md`. These invariants 
 ## Conventions
 
 - Conventional Commits (`feat(ui): …`, `fix(navbar): …`). Branches are `feat/…` or `fix/…`.
-- Use Tailwind with the "Obsidian" design tokens: `#070708` background and `#c5f82a` accent.
+- Use Tailwind with the "Obsidian" design tokens: `#070708` background and `#c5f82a` accent. (Being replaced by the v2 tokens in `docs/DESIGN.md`; once Phase A lands, those win.)
+
+## Redesign v2 (in progress, branch `redesign/v2`)
+
+Before any redesign work, read `docs/REPO_MAP.md`, `docs/DESIGN.md` (direction A — Monograph) and `docs/PROGRESS.md`; the plan is `docs/PLAN.md`. Do one phase per session, run its quality gates, then update `docs/PROGRESS.md` and `docs/DECISIONS.md`.
+
+Anti-slop rules:
+- Banned: gradients and gradient text, glassmorphism, glow and coloured shadows, emoji icons, card-in-card, 3-icon feature rows, generic bento, pills (except the dock, buttons and a status dot), `// comment` labels, ALL-CAPS eyebrows, and ghost or marquee text.
+- The lime accent `#C2EE3A` has one job, "live / current" (the current page in the dock, the availability dot, the current role, link hover, focus ring), and covers less than 5% of a screen.
+- Use 1px hairlines, not shadows; there is one shadow token, for dialogs. Radius is `0/4/8`, and spacing is on 8px (`8 16 24 32 48 64 96 128`).
+- Fonts are chosen in P2 from a type specimen (D-032; see DESIGN.md "Type"), self-hosted as woff2. Never use Inter, Roboto, Arial, Space Grotesk, Poppins, Montserrat or Playfair.
+- Use only facts already in the repo data. Don't invent numbers or claims, and remove filler stats.
+- The **Signature layer** (S1–S8 in DESIGN.md) is mandatory. At most 3 motion "moments" per page. Every phase fully converts what it touches and deletes the old styles; never leave a page half-migrated.
+- Motion tokens live only in `src/lib/motion.js` (160/280/520 ms, `cubic-bezier(.22,1,.36,1)`). Respect `prefers-reduced-motion`, and animate transform/opacity only. The one exception is the S6 hero-name font axis (D-031). The hero heading paints statically and is never animated in.
+- Reveals: content is visible by default, hidden only under a JS-added class, with a timeout fail-safe; never hide content permanently.
+- Don't reformat `src/data/projectsData.js`, because `scripts/generate-sitemap.js` regex-parses `slug:`.
