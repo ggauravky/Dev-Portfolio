@@ -11,8 +11,8 @@ import './styles/page.css'
 
 // Boot the app only after the first paint. On "/" the static hero shell paints
 // first, so FCP/LCP don't wait for the React/vendor bundles (D-044). On "/" it
-// also waits for the shell portrait, the web fonts and the paint of both (all
-// capped at 1.5 s), so the final hero paint (the LCP) is the shell's, not
+// also waits for the web fonts and their paint (capped at 1.5 s; the hero has
+// no image since D-074), so the final hero paint (the LCP) is the shell's, not
 // React's identical copy of it. A hidden tab gets no rAF, so it boots at once.
 let booted = false
 const boot = () => {
@@ -69,13 +69,11 @@ const homeShell = () => document.documentElement.classList.contains('route-home'
 const routeShell = () => Boolean(document.getElementById('route-shell'))
 
 const shellSettled = () => {
-    const img = homeShell() ? document.querySelector('#home-shell img') : null
-    const image = img?.decode ? img.decode().catch(() => {}) : Promise.resolve()
     const fonts = document.fonts
         ? Promise.all(SHELL_FONTS.map((font) => document.fonts.load(font).catch(() => {})))
         : Promise.resolve()
     const cap = new Promise((resolve) => { setTimeout(resolve, SHELL_WAIT_MS) })
-    return Promise.race([Promise.all([image, fonts]).then(settledPaint), cap])
+    return Promise.race([fonts.then(settledPaint), cap])
 }
 
 // A route with a shell also fetches its own chunk alongside boot, not after it
