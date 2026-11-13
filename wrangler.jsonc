@@ -1,0 +1,15 @@
+// Cloudflare Workers Builds config (Worker "gauravky"). The primary host is
+// Vercel (vercel.json); this deploys the same Vite build as static assets so the
+// Cloudflare check passes without Wrangler's auto-setup, which needs Vite >= 6.
+// Static only: the Vercel functions in api/ are not served here, and the
+// backend stays on Render (VITE_API_URL).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gauravky",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Client routes (React Router) fall back to index.html.
+    "not_found_handling": "single-page-application"
+  }
+}
