@@ -3,8 +3,10 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Journey (P5): a year-grouped archive on the shared .pg-* primitives
-   (src/styles/page.css). Replaces JourneyNavigator.css and the timeline. */
+/* Journey: a year-grouped archive on the shared .pg-* primitives
+   (src/styles/page.css), on a vertical spine. The spine sits in the list
+   column, in the gap between the date and the entry (on mobile, at the column's
+   left edge). The hover preview is src/components/ui/HoverPreview.css. */
 
 .jr-filter {
   padding-block: 0 var(--space-5);
@@ -22,46 +24,196 @@
   font: 400 13px/1.5 var(--font-mono);
 }
 
+/* ── Spine ─────────────────────────────────────────────────── */
+.jr-timeline {
+  --spine-x: 4px;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  /* Date column 160 + half the 24px gap. */
+  .jr-timeline { --spine-x: 172px; }
+}
+
+/* A decorative copy of the page grid laid over the list, so the spine lines up
+   with the list column at every width. No z-index: the rows paint above it. */
+.jr-spine-layer {
+  position: absolute;
+  inset: 0;
+  grid-template-rows: minmax(0, 1fr);
+  pointer-events: none;
+}
+
+.jr-spine-col {
+  position: relative;
+  grid-row: 1;
+}
+
+/* top/height are set from the first and last node (measured on resize only). */
+.jr-spine {
+  position: absolute;
+  top: 0;
+  left: var(--spine-x);
+  width: 1px;
+  height: 0;
+  background: rgb(var(--rule));
+}
+
+/* Filled down to the reading position: scroll-linked scaleY, no transition. */
+.jr-spine__fill {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--accent));
+  transform: scaleY(0);
+  transform-origin: top center;
+  will-change: transform;
+}
+
+/* ── Sticky year (IntersectionObserver on the year headings) ── */
+.jr-year-label {
+  position: sticky;
+  top: calc(var(--chrome-h) + var(--space-1));
+  z-index: 2;
+  width: max-content;
+  margin: 0;
+  padding: 4px var(--space-1);
+  border: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink));
+  color: rgb(var(--paper));
+  font: 400 13px/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.jr-year-label[data-shown='true'] { opacity: 1; }
+
+/* Desktop: a band across the date column, masking the dates under it. */
+@media (min-width: 640px) {
+  .jr-year-label {
+    width: calc(var(--spine-x) - var(--space-2));
+    padding: var(--space-1) 0;
+    border: 0;
+    border-bottom: 1px solid rgb(var(--rule));
+  }
+}
+
+/* ── Year groups and rows ──────────────────────────────────── */
+.jr-year__title { padding-left: calc(var(--spine-x) + var(--space-3)); }
+
+@media (min-width: 640px) {
+  .jr-year__title { padding-left: 0; }
+}
+
 .jr-entry {
+  position: relative;
   display: grid;
   gap: var(--space-1);
   padding-block: var(--space-3);
+  padding-left: calc(var(--spine-x) + var(--space-3));
   border-bottom: 1px solid rgb(var(--rule));
-  scroll-margin-top: calc(var(--chrome-h) + var(--space-3));
+  scroll-margin-top: calc(var(--chrome-h) + var(--space-5));
 }
 
 @media (min-width: 640px) {
   .jr-entry {
     grid-template-columns: 160px minmax(0, 1fr);
     column-gap: var(--space-3);
+    padding-left: 0;
   }
   .jr-entry__date { padding-top: 6px; }
 }
 
-.jr-entry__summary {
-  position: relative;
-  display: block;
-  min-height: 44px;
-  padding-right: var(--space-5);
-  list-style: none;
-  cursor: pointer;
-  border-radius: var(--radius-control);
+/* One node per entry, on the spine at the date's first line. */
+.jr-node {
+  position: absolute;
+  top: calc(var(--space-3) + 6px);
+  left: calc(var(--spine-x) - 4px);
+  display: grid;
+  place-items: center;
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgb(var(--muted));
+  background: rgb(var(--ink));
 }
 
-.jr-entry__summary::-webkit-details-marker { display: none; }
+@media (min-width: 640px) {
+  .jr-node { top: calc(var(--space-3) + 12px); }
+}
 
-.jr-entry__summary:focus-visible {
+/* "Now": the live dot replaces the node. */
+.jr-entry[data-now='true'] .jr-node { border-color: transparent; }
+.jr-node .pg-dot { transform: none; }
+
+.jr-entry__heading {
+  margin: 0;
+  font: inherit;
+}
+
+.jr-entry__toggle {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 var(--space-5) 0 0;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jr-entry__toggle:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 4px;
 }
 
 .jr-entry__title {
-  display: block;
+  position: relative;
+  display: inline-block;
   color: rgb(var(--paper));
   font-family: var(--font-serif);
   font-size: var(--text-h3);
   line-height: 1.2;
   text-wrap: balance;
+}
+
+/* Title underline draws on hover/focus (the Projects row pattern). */
+.jr-entry__title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) {
+  .jr-entry__toggle:hover .jr-entry__title::after { transform: scaleX(1); }
+  .jr-entry__toggle:hover .pg-toggle::before,
+  .jr-entry__toggle:hover .pg-toggle::after { background: rgb(var(--paper)); }
+}
+
+.jr-entry__toggle:focus-visible .jr-entry__title::after { transform: scaleX(1); }
+
+/* The shared plus turns into a minus (page.css), driven by aria-expanded. */
+.jr-entry__toggle[aria-expanded='true'] .pg-toggle::after { transform: rotate(0deg); }
+
+/* With the preview (fine pointer): the other rows step back while one is
+   hovered or keyboard-focused (the Projects value). Nodes and panels stay. */
+@media (hover: hover) and (pointer: fine) {
+  .jr-entry__date,
+  .jr-entry__toggle { transition: opacity var(--dur-base) var(--ease-out); }
+  .jr-timeline:has(.jr-entry__toggle:hover, .jr-entry__toggle:focus-visible)
+    .jr-entry:not(:has(.jr-entry__toggle:hover, .jr-entry__toggle:focus-visible))
+    :is(.jr-entry__date, .jr-entry__toggle) { opacity: 0.45; }
 }
 
 .jr-entry__meta {
@@ -72,7 +224,11 @@
 
 .jr-entry__now { font-size: 15px; }
 
-.jr-entry__detail {
+/* Closed = hidden="until-found" where supported (find-in-page can open it).
+   Tailwind's preflight sets [hidden] to display:none, which would block that. */
+.jr-entry__detail[hidden='until-found'] { display: block; }
+
+.jr-entry__panel {
   max-width: 62ch;
   padding-top: var(--space-3);
 }
@@ -114,13 +270,21 @@
   line-height: 1.6;
 }
 
+/* Photos: a horizontal strip of 480px variants; each opens full size. */
 .jr-images {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--space-1);
   margin: var(--space-3) 0 0;
-  padding: 0;
+  padding: 0 0 var(--space-1);
   list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+
+.jr-images li {
+  flex: none;
+  scroll-snap-align: start;
 }
 
 .jr-images a {
@@ -130,13 +294,13 @@
 
 .jr-images a:focus-visible {
   outline: 2px solid rgb(var(--accent));
-  outline-offset: 2px;
+  outline-offset: -2px;
 }
 
 .jr-images img {
   display: block;
-  width: 120px;
-  height: 90px;
+  width: 192px;
+  height: 120px;
   object-fit: cover;
   background: rgb(var(--ink-raised));
 }

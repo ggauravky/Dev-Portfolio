@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* S7 hover preview (Projects, Journey). The outer box is moved by the spring
+   (transform only); the frame fades and settles in. Hairline frame, radius 0,
+   no shadow. Below the top chrome (60) and the grain (90). */
+.hover-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hover-preview__frame {
+  position: relative;
+  width: 320px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink-raised));
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: left center;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.hover-preview[data-visible='true'] .hover-preview__frame {
+  opacity: 1;
+  transform: none;
+}
+
+/* Two stacked slots when crossfading; one otherwise. */
+.hover-preview__slot {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.hover-preview__slot[data-active='true'] { opacity: 1; }
+
+.hover-preview[data-crossfade='true'] .hover-preview__slot {
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.hover-preview[data-snap='true'] .hover-preview__frame,
+.hover-preview[data-snap='true'] .hover-preview__slot {
+  transition: none;
+}
+
+.hover-preview__slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+}
+
+/* No image: a quiet solid tile with the label (mono, bottom left). */
+.hover-preview__tile {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: flex-end;
+  padding: var(--space-2);
+  background: rgb(var(--ink-raised));
+  color: rgb(var(--muted));
+  font: 400 13px/1.5 var(--font-mono);
+}
+
+.hover-preview__slot[data-kind='tile'] img { display: none; }
+.hover-preview__slot[data-kind='tile'] .hover-preview__tile { display: flex; }

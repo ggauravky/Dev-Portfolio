@@ -23,8 +23,27 @@ The redesign is merged to `main` (#25). This change touches only the Home hero (
 - **Lighthouse (mobile), same host, alternating runs:** `main` 88/90/89 against this branch 89/88/91, so the median is 89 for both. A11y 100 and CLS 0 on all of them. Both are below the P6 98 because this host is slower today (TBT 190–410 ms), not because of this change.
 - Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Post-merge: Journey redesign (2026-11-13, branch `feat/journey-redesign`, uncommitted)
+Only `/journey`, plus the preview extracted from Projects (D-075–D-077).
+- **Shared preview:** `components/ui/HoverPreview` replaces `components/projects/ProjectPreview` (checked on Projects: 12/12 rows preview, still off under reduced motion and on touch). Journey adds a crossfade between rows, a category tile for the one entry with no photo, and a snap under reduced motion. It warms the first 4 preview images after idle.
+- **Both pages:** a keyboard preview on `:focus-visible`, and rows that dim to 0.45 while another row is hovered or focused (fine pointer only). Checked: hover, leave and Tab set the right opacities on both pages; nothing dims at 390.
+- **Spine:** a hairline in the list column with a node per entry and live dots on the 3 "In Progress" entries. An accent fill tracks the scroll (scaleY, no per-frame layout reads). It's kept on mobile.
+- **Sticky year:** IntersectionObserver on the year headings, no scroll math.
+- **Rows:** a real `button[aria-expanded]`, the panel `hidden="until-found"`, and photos as a strip of 480px webp variants.
+- **QA** (headless Chromium, dev + `vite preview`):
+  - 1440 and 1024: consecutive-row crossfade, and the spine fill tracks scroll (0 → 0.2 → 0.52 → 0.84 → 1).
+  - Sticky year: 2026 → 2025 → 2024 → hidden on a jump back to the top.
+  - All 11 filter chips: node x equals spine x, and the spine ends on the first and last node (the two "misaligned" readings were rows still mid-reveal).
+  - Keyboard: 25/25 rows reached, preview on each, and Enter/Space toggle.
+  - Reduced motion: no running animations, the preview jumps, and the fill is set directly.
+  - 390: no follower mounted, tap expands, thumbnails load the 480 variant, and no horizontal overflow.
+  - No console or page errors.
+- **Lighthouse (mobile, `vite preview`, Lighthouse 13.4.1):** 99/99/99, A11y 100, LCP 2.0 s, TBT 50–60 ms, CLS 0 (P5 recorded 98/100).
+- Screenshots: `docs/audit/journey/` (`journey-before-*` / `journey-after-*`, 1440 and 390; webp copies are tracked, PNGs are gitignored).
+- Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
-1. Owner reviews the hero change and approves the commit.
+1. Owner reviews the Journey redesign and approves the commit.
 2. Earlier: owner answers the ⚠ copy rows (P3–P6); re-run Lighthouse on the live site after deploy.
 
 ## Checklist
@@ -72,6 +91,7 @@ The redesign is merged to `main` (#25). This change touches only the Home hero (
 | **P6 `/blog`** | **95** | 100 | 100 | 100 | 2.7 s | 39 ms |
 | **P6 `/blog/what-is-mcp`** | **98** | 100 | 100 | 100 | 2.1 s | 100 ms |
 | **P6 `/contact`** | **99** | 100 | 100 | 100 | 2.0 s | 39 ms |
+| **Journey redesign `/journey`** (median of 3) | **99** | 100 | — | — | 2.0 s | 60 ms |
 
 ¹ Runs 1–2 were CPU-contended (TBT > 2 s, Perf 36) so 5 more were taken; runs: 36, 36, 54, 55, 55, 47, 53, 56. Render-blocking savings fell 751 → 300 ms and CLS 0.023 → 0.002. FCP is still ≈ 4.3 s, set by the JS-rendered splash/hero (fixed in C/D1/E, not fonts).
 ² Runs 62, 64, 65; FCP 4.2 s, CLS 0.004. Gain is mostly the nav dropping framer-motion `layoutId` and the scroll listener. Desktop after B: 97 (LCP 1.0 s).

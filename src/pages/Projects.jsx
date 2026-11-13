@@ -23,8 +23,10 @@ import {
     PROJECTS_LEDE,
     RANKED_PROJECTS,
     RANK_BY_SLUG,
+    hasRealImage,
     isCaseStudy,
     pad2,
+    previewSrc,
     projectType,
 } from '../lib/projects'
 import { useFinePointer, useReducedMotion } from '../lib/motion'
@@ -37,7 +39,7 @@ import {
     preloadCaseStudy,
 } from '../lib/viewTransition'
 import Reveal from '../components/Reveal'
-import ProjectPreview from '../components/projects/ProjectPreview'
+import HoverPreview from '../components/ui/HoverPreview'
 import { Button, Input, TextLink } from '../components/ui'
 import './Projects.css'
 
@@ -48,6 +50,9 @@ const SORTS = [
 ]
 
 const STACK_SHOWN = 3
+
+/** The hover/focus preview for a row; null when it has no real screenshot. */
+const previewOf = (project) => (hasRealImage(project.image) ? { key: project.slug, src: previewSrc(project.image) } : null)
 
 const CATEGORY_COUNTS = Object.fromEntries(
     CATEGORIES.map((c) => [c, c === 'All' ? projectsData.length : projectsData.filter((p) => p.categories.includes(c)).length]),
@@ -66,7 +71,7 @@ function sortProjects(list, sort) {
     return list // RANKED_PROJECTS is already in rank order
 }
 
-function ProjectRow({ project, compact, onEnter, onActivate }) {
+function ProjectRow({ project, compact, onEnter, onFocusRow, onBlurRow, onActivate }) {
     const titleRef = useRef(null)
     const extra = project.techStack.length - STACK_SHOWN
     return (
@@ -76,7 +81,8 @@ function ProjectRow({ project, compact, onEnter, onActivate }) {
                 className={`pj-row${compact ? ' pj-row--compact' : ''}`}
                 data-cursor="View"
                 onPointerEnter={(event) => onEnter(event, project)}
-                onFocus={preloadCaseStudy}
+                onFocus={(event) => onFocusRow(event, project, titleRef.current)}
+                onBlur={onBlurRow}
                 onClick={(event) => onActivate(event, project, titleRef.current)}
             >
                 <span className="pj-row__no" aria-hidden="true">{pad2(RANK_BY_SLUG.get(project.slug))}</span>
@@ -102,6 +108,8 @@ ProjectRow.propTypes = {
     project: PropTypes.object.isRequired,
     compact: PropTypes.bool,
     onEnter: PropTypes.func.isRequired,
+    onFocusRow: PropTypes.func.isRequired,
+    onBlurRow: PropTypes.func.isRequired,
     onActivate: PropTypes.func.isRequired,
 }
 
@@ -189,8 +197,22 @@ function Projects() {
 
     const onEnter = useCallback((event, project) => {
         preloadCaseStudy()
-        if (event.pointerType === 'mouse') previewRef.current?.show(project, event.clientX, event.clientY)
+        if (event.pointerType !== 'mouse') return
+        const content = previewOf(project)
+        if (content) previewRef.current?.show(content, event.clientX, event.clientY)
+        else previewRef.current?.hide()
     }, [])
+
+    // Keyboard: the same preview beside the focused row's title.
+    const onFocusRow = useCallback((event, project, titleEl) => {
+        preloadCaseStudy()
+        if (!event.currentTarget.matches(':focus-visible')) return
+        const content = previewOf(project)
+        if (content && titleEl) previewRef.current?.showBeside(content, titleEl)
+        else previewRef.current?.hide()
+    }, [])
+
+    const onBlurRow = useCallback(() => previewRef.current?.hide(), [])
 
     const onMove = useCallback((event) => {
         if (event.pointerType === 'mouse') previewRef.current?.move(event.clientX, event.clientY)
@@ -211,7 +233,7 @@ function Projects() {
     const rows = (list, compact) => (
         <ol className="pj-list" {...listProps}>
             {list.map((project) => (
-                <ProjectRow key={project.id} project={project} compact={compact} onEnter={onEnter} onActivate={onActivate} />
+                <ProjectRow key={project.id} project={project} compact={compact} onEnter={onEnter} onFocusRow={onFocusRow} onBlurRow={onBlurRow} onActivate={onActivate} />
             ))}
         </ol>
     )
@@ -316,7 +338,7 @@ function Projects() {
                 </div>
             </div>
 
-            {showPreview ? <ProjectPreview ref={previewRef} /> : null}
+            {showPreview ? <HoverPreview ref={previewRef} /> : null}
         </main>
     )
 }

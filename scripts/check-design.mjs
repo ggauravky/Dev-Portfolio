@@ -66,8 +66,8 @@ const FINISHED = [
   'src/pages/Projects.css',
   'src/pages/ProjectDetail.jsx',
   'src/pages/ProjectDetail.css',
-  'src/components/projects/ProjectPreview.jsx',
-  'src/components/projects/ProjectPreview.css',
+  'src/components/ui/HoverPreview.jsx',
+  'src/components/ui/HoverPreview.css',
   'src/lib/arch.js',
   'src/lib/routeChunks.js',
   // P5 — remaining pages

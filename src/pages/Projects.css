@@ -8,7 +8,7 @@
 
 /* Projects index — P4, S7. A ranked contents page on the shared margin-rail grid
    (src/styles/page.css). Hairline rows, no cards, no images in the flow (the
-   hover preview is src/components/projects/ProjectPreview.css). */
+   hover preview is src/components/ui/HoverPreview.css). */
 
 .pj {
   overflow-x: clip;
@@ -106,6 +106,13 @@
 }
 
 .pj-row--compact { padding-block: var(--space-2); }
+
+/* With the preview (fine pointer): the other rows step back while one is
+   hovered or keyboard-focused. Opacity only; same value on Journey. */
+@media (hover: hover) and (pointer: fine) {
+  .pj-row { transition: opacity var(--dur-base) var(--ease-out); }
+  .pj-body:has(.pj-row:hover, .pj-row:focus-visible) .pj-row:not(:hover, :focus-visible) { opacity: 0.45; }
+}
 
 .pj-row__no {
   color: rgb(var(--muted));
