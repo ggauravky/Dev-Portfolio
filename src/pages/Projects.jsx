@@ -40,6 +40,7 @@ import {
     preloadCaseStudy,
 } from '../lib/viewTransition'
 import Reveal from '../components/Reveal'
+import LineMask from '../components/LineMask'
 import HoverPreview from '../components/ui/HoverPreview'
 import { Button, Input, TextLink } from '../components/ui'
 import './Projects.css'
@@ -122,7 +123,7 @@ function Group({ id, title, children }) {
         <section className="pj-group" aria-labelledby={id}>
             <Reveal>
                 <h2 id={id} className="pj-group__title">
-                    <span className="line-mask"><span className="line-mask__line">{title}</span></span>
+                    <LineMask text={title} />
                 </h2>
             </Reveal>
             {children}

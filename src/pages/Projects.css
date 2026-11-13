@@ -169,7 +169,7 @@
   flex-wrap: wrap;
   gap: 0 var(--space-2);
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .pj-row__arrow {

@@ -42,7 +42,7 @@
   max-width: 62ch;
   margin-top: var(--space-1);
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .bl-empty {

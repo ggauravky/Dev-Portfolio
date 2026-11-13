@@ -69,6 +69,18 @@ Meta, data and structure only; no visual or layout change. Report: `docs/SEO_AUD
 - **Lighthouse (13.4.1, `vite preview`, median of 3, alternating with `main`):** mobile Perf 94–98 (main 94–98), desktop 100 on all 6 routes; A11y 100, SEO 100, CLS 0 on both. `/projects/smartmess` mobile LCP 2.7 s on both builds (pre-existing).
 - Gates: `npm run build` ✓, `test:blog` 14/14 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Colour + motion + mobile pass (2026-11-13, branch `feat/color-motion-mobile`, uncommitted)
+- **Colour:** `--accent` is `#C6F432` (15.16:1 on ink, and 15.16:1 for ink text on a lime fill), with new `--accent-contrast-text` and `--accent-muted`. Literal `#fff`/`#000` are replaced with tokens. The primary CTA is an accent outline, never a fill (D-088), and the Journey spine fill is muted. The permanent lime rules are in DESIGN.md. Measured: at most one in-content accent moment plus the dock dot at default scroll on all 8 pages, under 0.06% of the screen.
+- **Motion:** scroll-driven `view()` reveals, with the IntersectionObserver as fallback. On-screen-at-load content is static. Below-fold headings are split by line (`LineMask`). There is one parallax: the hero live panel at 0.60× from 1200px up (D-091). A single reduced-motion rule set covers all of it. The preloader is still dropped (D-055).
+- **Mobile:** body leading is 1.7 below 768px. Reveal travel is 16px below 768px. At 360 and 390 there are 0 tap targets under 44×44 and no horizontal overflow. The dock uses `env(safe-area-inset-bottom)`. The cursor, magnetic pull and row previews are fine-pointer only.
+- **QA:**
+  - Reveals: nothing is left hidden after reading or after a jump to the bottom in Chromium 156 and WebKit 26.6 (scroll-driven) and Firefox 156 (fallback).
+  - Reduced motion: no animation and nothing hidden.
+  - Keyboard: every focus ring is the 2px accent.
+  - Screenshots: `docs/audit/phase-color-motion/` (committed: `compare-<width>.webp`, before/after first viewport for all 8 pages; the full-page before/after JPGs are kept local, per D-005).
+- **Lighthouse (mobile, 13.4.1, `vite preview`, median of 3):** `/` 97, `/about` 97, `/projects` 98, `/projects/smartmess` 95, `/blog/what-is-mcp` 98, `/contact` 99, `/journey` 96. A11y 100, SEO 100, CLS 0 on all of them. BP 96 is the known local `/health` gap. That compares with the SEO-pass branch at 95/98/98/94/94/98. A first pass showed A11y 96/97 from part-faded on-screen text at load; that is fixed (D-089).
+- **Gates:** `npm run build`, `npm run test:blog` (14/14), `npm run check:design --all` (0 hits) and `git diff --check` all pass.
+
 ## Next step
 0. Owner reviews `feat/seo-ai-visibility` (`docs/SEO_AUDIT.md`), approves the commit, then checks the Vercel preview (per-route heads, slug 404s).
 1. Owner reviews the Contact redesign and approves the commit.

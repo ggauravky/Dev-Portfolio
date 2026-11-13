@@ -151,6 +151,30 @@
   .hero-live { align-self: last baseline; }
 }
 
+/* The site's one parallax (owner decision, 2026-11-13): as the title page
+   leaves, the live panel moves at 60% of the name's speed (it lags 0.4 × the
+   scroll over the first viewport). A root scroll timeline, compositor-only
+   `translate`, no JS. Only at ≥ 1200px: below that the drifting panel reaches
+   the "Contact" link (measured at 1024), and from 768–1023px it is stacked
+   above the actions.
+   Off under reduced motion; the hero clips vertically so the panel never
+   drifts into the next section. Browsers without scroll timelines get none. */
+@supports (animation-timeline: scroll()) {
+  @media (min-width: 1200px) and (prefers-reduced-motion: no-preference) {
+    .home-hero { overflow-y: clip; }
+    .hero-live {
+      animation: hero-live-drift linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
+  }
+}
+
+@keyframes hero-live-drift {
+  from { translate: none; }
+  to { translate: 0 40vh; }
+}
+
 /* ── Sections ─────────────────────────────────────────────── */
 .home-section {
   padding-block: var(--space-6);
@@ -177,7 +201,7 @@
   max-width: 62ch;
   color: rgb(var(--paper));
   font-size: var(--text-body);
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .home-intro { color: rgb(var(--muted)); }
@@ -217,7 +241,7 @@
   display: flex;
   align-items: baseline;
   gap: var(--space-1);
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .home-now__dot { transform: translateY(-2px); }
@@ -310,7 +334,7 @@
   flex-wrap: wrap;
   gap: 0 var(--space-2);
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .work-row__arrow {
@@ -387,7 +411,7 @@
   display: flex;
   gap: var(--space-2);
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .note-row__title {
@@ -422,7 +446,7 @@
 
 .journey-row__date {
   color: rgb(var(--muted));
-  font: 400 13px/1.6 var(--font-mono);
+  font: 400 13px/var(--leading-body) var(--font-mono);
 }
 
 .journey-row__title {

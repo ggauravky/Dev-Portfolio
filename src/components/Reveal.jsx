@@ -74,14 +74,33 @@ function arm() {
     return true
 }
 
+// Scroll-driven reveals (src/index.css) animate by position, so anything already
+// on screen when a page mounts would sit part-faded until the reader scrolls.
+// Mark those as static (fully shown, never animated); everything below the fold
+// keeps its reveal. Rows are marked once ("seen"), so a later sweep can never
+// freeze a row mid-animation.
+const ROW_SELECTOR = 'main :is(.pg-row, .pj-row, .work-row, .note-row, .journey-row, .jr-entry)'
+
+function freezeOnScreenRows() {
+    const limit = window.innerHeight
+    document.querySelectorAll(ROW_SELECTOR).forEach((row) => {
+        if ('revealSeen' in row.dataset) return
+        row.dataset.revealSeen = ''
+        if (row.getBoundingClientRect().top < limit) row.dataset.revealStatic = ''
+    })
+}
+
 function Reveal({ as = 'div', delay = 0, className = '', style, children, ...rest }) {
     const ref = useRef(null)
 
     useLayoutEffect(() => {
         const el = ref.current
         if (!el) return undefined
-        if (!arm() || el.getBoundingClientRect().top < window.innerHeight) {
+        const armed = arm()
+        if (armed) freezeOnScreenRows()
+        if (!armed || el.getBoundingClientRect().top < window.innerHeight) {
             el.dataset.revealed = ''
+            el.dataset.revealStatic = ''
             return undefined
         }
         pending.add(el)

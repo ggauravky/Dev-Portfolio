@@ -45,8 +45,28 @@
 
 .btn:active:not(:disabled):not([aria-disabled='true']) { scale: 0.97; }
 
-.btn--primary { background: rgb(var(--paper)); color: rgb(var(--ink)); }
-.btn--primary::before { background: #fff; }
+/* Primary CTA (owner decision, 2026-11-13): an accent outline, never a fill.
+   Resting: a muted-accent hairline, so it is not a full lime moment at rest
+   (DESIGN.md "Where lime is / isn't allowed"). Hover/focus: the outline turns
+   full accent and the label underline draws. Lime is never the only signal:
+   the wipe, text-roll, arrow nudge and focus ring change too. */
+.btn--primary { border-color: rgb(var(--accent-muted)); color: rgb(var(--paper)); }
+.btn--primary::before { background: rgb(var(--paper) / 0.08); }
+.btn--primary .btn__roll::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.05em;
+  height: 1px;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.btn--primary { transition: scale var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+.btn--primary:focus-visible { border-color: rgb(var(--accent)); }
+.btn--primary:focus-visible .btn__roll::after { transform: scaleX(1); }
 
 .btn--secondary { border-color: rgb(var(--rule)); color: rgb(var(--paper)); }
 .btn--secondary::before { background: rgb(var(--paper) / 0.08); }
@@ -92,6 +112,8 @@
   .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__text--clone { transform: translateY(0); }
   .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__arrow { transform: translateX(3px); }
   .btn:hover:not(:disabled):not([aria-disabled='true']) .btn__arrow--external { transform: translate(2px, -2px); }
+  .btn--primary:hover:not(:disabled):not([aria-disabled='true']) { border-color: rgb(var(--accent)); }
+  .btn--primary:hover:not(:disabled):not([aria-disabled='true']) .btn__roll::after { transform: scaleX(1); }
   .btn--secondary:hover:not(:disabled):not([aria-disabled='true']) { border-color: rgb(var(--muted)); }
   .btn--ghost:hover:not(:disabled):not([aria-disabled='true']) { color: rgb(var(--paper)); }
 }
@@ -246,7 +268,7 @@
   transform: translateY(-10px) scale(0.8);
 }
 
-.field__control:focus ~ .field__label { color: rgb(var(--paper)); }
+.field__control:focus ~ .field__label { color: rgb(var(--accent)); } /* active floating label: 15:1 on ink, and it also moves and shrinks */
 
 .field__line {
   position: absolute;

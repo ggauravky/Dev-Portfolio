@@ -6,6 +6,7 @@
 
 import PropTypes from 'prop-types'
 import Reveal from '../Reveal'
+import LineMask from '../LineMask'
 
 const pad2 = (n) => String(n).padStart(2, '0')
 
@@ -17,7 +18,7 @@ function PageSection({ id, index, title, intro, children, className = '' }) {
                 <p className="page-rail" aria-hidden="true">{pad2(index)}</p>
                 <div className="page-main">
                     <h2 id={headingId} className="pg-h2">
-                        <span className="line-mask"><span className="line-mask__line">{title}</span></span>
+                        <LineMask text={title} />
                     </h2>
                     {intro ? <p className="pg-intro">{intro}</p> : null}
                     {children}

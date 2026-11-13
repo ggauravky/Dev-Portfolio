@@ -59,11 +59,13 @@
   background: rgb(var(--rule));
 }
 
-/* Filled down to the reading position: scroll-linked scaleY, no transition. */
+/* Filled down to the reading position: scroll-linked scaleY, no transition.
+   A track, not a "current" marker, so it takes the muted accent; full lime is
+   kept for the Now node (DESIGN.md "Where lime is / isn't allowed"). */
 .jr-spine__fill {
   position: absolute;
   inset: 0;
-  background: rgb(var(--accent));
+  background: rgb(var(--accent-muted));
   transform: scaleY(0);
   transform-origin: top center;
   will-change: transform;
@@ -250,7 +252,7 @@
 
 .jr-text {
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .jr-sub { margin: var(--space-3) 0 var(--space-1); }
@@ -259,7 +261,7 @@
   margin: 0;
   padding-left: 1.1em;
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 .jr-list li + li { margin-top: 4px; }
@@ -267,7 +269,7 @@
 .jr-skills {
   margin-top: var(--space-3);
   color: rgb(var(--paper));
-  line-height: 1.6;
+  line-height: var(--leading-body);
 }
 
 /* Photos: a horizontal strip of 480px variants; each opens full size. */

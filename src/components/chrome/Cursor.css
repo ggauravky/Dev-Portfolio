@@ -36,9 +36,9 @@ html.has-cursor [contenteditable='true'] {
   top: -16px;
   width: 32px;
   height: 32px;
-  border: 1px solid #fff;
+  border: 1px solid rgb(var(--paper));
   border-radius: 50%; /* design-allow: cursor dot */
-  background: #fff;
+  background: rgb(var(--paper));
   transform: scale(0.25);
   transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out), background-color 0s;
 }
@@ -63,8 +63,8 @@ html.has-cursor [contenteditable='true'] {
   top: 12px;
   padding: 6px 8px;
   border-radius: var(--radius-control);
-  background: #fff;
-  color: #000;
+  background: rgb(var(--paper));
+  color: rgb(var(--ink));
   font: 500 12px/1 var(--font-mono);
   white-space: nowrap;
   opacity: 0;
