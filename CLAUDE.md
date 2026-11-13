@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Frontend (repo root, ESM):
 - `npm run dev` — Vite dev server on :5173
-- `npm run build` — generates image variants and `public/sitemap.xml`, then runs `vite build`. This is the only CI gate (`.github/workflows/ci.yml`, Node 20).
+- `npm run build` — generates image variants and `public/sitemap.xml`, then runs `vite build`. This is the only CI gate (`.github/workflows/ci.yml`, Node 22).
 - `npm run test:blog` — `node --test scripts/blog-data.test.mjs`
 
 Backend (`cd backend`, CommonJS, separate `package.json`/`node_modules`):
