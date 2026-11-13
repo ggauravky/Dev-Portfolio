@@ -3,12 +3,15 @@ import { useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import { fetchPaymentReceipt, fetchPaymentTransaction } from '../services/payment'
 import { trackEvent } from '../utils/analytics'
 import PageHead from '../components/page/PageHead'
 import PageSection from '../components/page/PageSection'
 import { Button, TextLink } from '../components/ui'
 import '../styles/checkout.css'
+
+const SEO = staticSeo('/payment-success')
 
 const formatDate = (value) => {
     const date = new Date(value)
@@ -26,12 +29,7 @@ function PaymentSuccess() {
     const isSupport = transaction?.flowType === 'support'
 
     useSEO({
-        title: `${isSupport ? 'Support ' : ''}Payment Status | Gaurav Kumar Yadav`,
-        description: isSupport
-            ? 'View an authenticated support payment status and download its receipt.'
-            : 'View an authenticated booking payment status and download its receipt.',
-        keywords: `payment status, ${isSupport ? 'support' : 'booking'} receipt, Razorpay payment`,
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     useEffect(() => {

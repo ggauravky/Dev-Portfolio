@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import useAuth from '../hooks/useAuth'
 import { fetchMyActivityTimeline } from '../services/activity'
 import { fetchMySupports } from '../services/blogSupport'
@@ -12,6 +13,8 @@ import ProfileEditorDialog from '../components/account/ProfileEditorDialog'
 import PaymentDetailsDialog from '../components/account/PaymentDetailsDialog'
 import { Button, TextLink } from '../components/ui'
 import '../styles/activity.css'
+
+const SEO = staticSeo('/my-activity')
 
 const INTERNAL_PAYMENT_ACTIONS = new Set([
     'order_created',
@@ -232,10 +235,7 @@ function ActivityTimeline() {
     const activeTab = normalizeTab(searchParams.get('tab'))
 
     useSEO({
-        title: 'My Activity | Gaurav Kumar Yadav',
-        description: 'Manage your portfolio profile, payments, receipts, and sign-in history.',
-        keywords: 'account profile, transaction history, payment receipts, login history',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     const loadData = useCallback(async () => {

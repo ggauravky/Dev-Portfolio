@@ -22,11 +22,11 @@ There is no linter or formatter configured.
 There are three deployables:
 1. **React SPA** (`src/`) on Vercel. It talks to the backend through `import.meta.env.VITE_API_URL` (the origin only, with no `/api` suffix).
 2. **Express API** (`backend/server.js`) on Render. It connects to MongoDB, Razorpay, Brevo SMTP (NodeMailer), Cloudinary avatars and Google Identity.
-3. **Vercel serverless functions** (`api/`): `content.js` serves `public/llms-full.txt`, `ai/chat.js` reuses `backend/controllers/aiController.js` through `createRequire`, and `[...path].js` is the JSON 404 catch-all.
+3. **Vercel serverless functions** (`api/`): `content.js` serves `public/llms-full.txt` and `[...path].js` is the JSON 404 catch-all.
 
-`server.js` mounts only the contact, newsletter, auth, blog, activity and payment routers. `adminRoutes.js` and `feedbackRoutes.js` exist but aren't mounted, and AI chat is served only by the Vercel function.
+`server.js` mounts only the contact, newsletter, auth, blog, activity and payment routers. `adminRoutes.js` and `feedbackRoutes.js` exist but aren't mounted. There is no AI chat endpoint (removed in `0d4b615`).
 
-**Adding a client route:** register it in `src/App.jsx` and also add an explicit rewrite to `index.html` in `vercel.json`. Every SPA path is listed individually there, so a route without a rewrite returns a 404 in production.
+**Adding a client route:** register it in `src/App.jsx`, add its title/description to `STATIC` in `src/lib/seo.js`, and add an explicit rewrite to `/<route>/index.html` in `vercel.json`. The build (`scripts/route-heads.js`) writes `dist/<route>/index.html` with that route's own head (title, canonical, OG, JSON-LD) for every entry in `src/lib/seoRoutes.js`; dynamic routes (`/projects/:slug`, `/blog/:slug`, `/services/:slug`) rewrite to `/<path>/index.html`, so an unknown slug has no file and returns the real 404. A route without a rewrite returns a 404 in production.
 
 The full payment and auth design is in `docs/ARCHITECTURE.md`. These invariants matter when editing:
 - **Payments:** the price always comes from `backend/data/servicePricing.json`, and amounts sent by the browser are ignored. The checkout callback is not proof of payment. `/api/payment/verify` and the Razorpay webhook (raw-body signature check, idempotent on `x-razorpay-event-id`) both go through the single finalizer in `services/payment/paymentFinalizationService.js`. A failed email must never change the paid state.

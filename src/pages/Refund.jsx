@@ -5,16 +5,16 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import LegalPage, { LegalSection } from '../components/page/LegalPage'
+
+const SEO = staticSeo('/refund')
 
 const EMAIL = 'kumar.gaurav.yadav2007@gmail.com'
 
 function Refund() {
     useSEO({
-        title: 'Refund Policy - Gaurav Kumar Yadav Services',
-        description: 'Refund policy for development and AI or data science services booked through this portfolio.',
-        keywords: 'refund policy, cancellation policy, developer services, payment policy',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     return (

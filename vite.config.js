@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { viteObfuscateFile } from "vite-plugin-obfuscator";
 import routeShells from "./scripts/route-shells.js";
+import routeHeads from "./scripts/route-heads.js";
 
 // vite-plugin-obfuscator obfuscates every chunk in the bundle. Pass it a view of
 // the bundle without third-party chunks (it mutates the chunk objects in place).
@@ -59,6 +60,8 @@ export default defineConfig({
   plugins: [
     // Pre-JS header shells for /projects and /projects/:slug (D-057).
     routeShells(),
+    // Per-route <head> (title, canonical, OG, JSON-LD) prerendered into dist/<route>/index.html.
+    routeHeads(),
     react(),
     visualizer({
       open: false,

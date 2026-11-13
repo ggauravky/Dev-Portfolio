@@ -41,13 +41,12 @@
 
 ## Complete Project Catalog
 
-### 1. SmartMess — Hostel Mess Management System
+### 1. SmartMess
 - URL: https://ggauravky.vercel.app/projects/smartmess
 - GitHub: https://github.com/ggauravky/SmartMess
 - Demo: https://smartmesslms.vercel.app/
-- Description: Comprehensive hostel mess management platform with real-time menu visibility, digital attendance, student feedback & rating system, complaint portal, and admin analytics dashboard.
+- Description: Comprehensive hostel mess management platform with real-time menu visibility, digital attendance, a student feedback & rating system, complaint portal, and an admin analytics dashboard.
 - Tech Stack: React, Node.js, Express, MongoDB, JWT, Vercel
-- Status: Live
 
 ### 2. Dev Portfolio Admin Panel
 - URL: https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel
@@ -55,139 +54,186 @@
 - Demo: https://ggauravkyadmin.vercel.app
 - Description: Blazing-fast admin panel for managing portfolio backend data — contact messages, newsletter subscriptions — with JWT auth, smart filtering, full CRUD operations, and a professional analytics dashboard.
 - Tech Stack: React, Node.js, Express, MongoDB, JWT, Tailwind CSS, Vercel
-- Status: Live
 
 ### 3. Real-Time Chat App
 - URL: https://ggauravky.vercel.app/projects/real-time-chat-app
-- Description: Real-time messaging application with WebSocket-powered live chat, user authentication, and room support.
-- Tech Stack: React, Node.js, Express, Socket.io, MongoDB, JWT
+- GitHub: https://github.com/ggauravky/chat-app
+- Demo: https://chat-app-6ly8.onrender.com/
+- Description: Full-stack chat application with JWT authentication, Socket.IO for real-time messaging, online/offline status, and Cloudinary image uploads. Features modern UI with theme customization.
+- Tech Stack: React, Node.js, Socket.IO, MongoDB, JWT, Cloudinary
 
 ### 4. MERN Product Store
 - URL: https://ggauravky.vercel.app/projects/mern-product-store
-- Description: Full-stack product store with product catalog, cart, and checkout. Built with the MERN stack.
-- Tech Stack: React, Node.js, Express, MongoDB
+- GitHub: https://github.com/ggauravky/mern-product-store
+- Demo: https://g-mern-product-store.onrender.com/
+- Description: Modern e-commerce product management system with CRUD operations, dark/light mode toggle, smooth Framer Motion animations, and responsive design using Chakra UI.
+- Tech Stack: React, Node.js, MongoDB, Express, Chakra UI, Framer Motion
 
 ### 5. Notes App
 - URL: https://ggauravky.vercel.app/projects/notes-app
-- Description: Feature-rich note-taking application with create, read, update, delete functionality.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/notes-app-mern-stack
+- Demo: #
+- Description: Full-featured notes application with add, edit, delete functionality. Shows updated timestamps with complete backend integration and MongoDB database for secure storage.
+- Tech Stack: React, Node.js, Express, MongoDB, REST API
 
-### 6. AiReel Studio
+### 6. AIReel Studio
 - URL: https://ggauravky.vercel.app/projects/aireel-studio
-- Description: AI-powered short reel generation studio for social media creators.
-- Tech Stack: React, Node.js, AI APIs
+- GitHub: https://github.com/ggauravky/My-all-Python-Projects-
+- Demo: #
+- Description: AI-powered video editing platform for content creators. Features automatic caption generation, smart video edits, and optimization for social media using advanced AI algorithms.
+- Tech Stack: Python, Flask, ffmpeg, ElevenLabs API, AI/ML
 
-### 7. Glass Morphism Calculator
+### 7. Glass-Morphism Calculator
 - URL: https://ggauravky.vercel.app/projects/glass-morphism-calculator
-- Description: Modern glassmorphism-styled scientific calculator with smooth animations.
-- Tech Stack: React, CSS3, JavaScript
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/calculator
+- Demo: https://gkycalculator.netlify.app/
+- Description: A beautiful, responsive calculator with glass-morphism design and full functionality. Features backdrop blur effects, smooth animations, keyboard support, and complete mathematical operations. Built with vanilla HTML, CSS, and JavaScript, showcasing advanced CSS techniques.
+- Tech Stack: HTML5, CSS3, JavaScript, Responsive Design
 
-### 8. Custom Captcha Generator
+### 8. Custom CAPTCHA Generator
 - URL: https://ggauravky.vercel.app/projects/custom-captcha-generator
-- Description: Configurable CAPTCHA generation library for web security implementations.
-- Tech Stack: JavaScript, Node.js
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/captcha-generator
+- Demo: https://gcapcha.netlify.app/
+- Description: A secure and interactive CAPTCHA generator with random character generation and real-time verification. Creates secure 6-character verification codes with textured background overlay, reload functionality, and instant verification feedback.
+- Tech Stack: HTML5, CSS3, JavaScript, FontAwesome
 
-### 9. TaskMaster Pro
+### 9. TaskMaster Pro - Advanced Todo App
 - URL: https://ggauravky.vercel.app/projects/taskmaster-pro
-- Description: Advanced task management application with priority tracking, deadlines, and progress analytics.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/Todo%20List%20-%20Advanced
+- Demo: https://gtodolista.netlify.app/
+- Description: A comprehensive, modern todo list application with dark mode, focus timer, and AI-inspired features. Features natural language input processing, drag-and-drop task management, focus timer (Pomodoro technique), advanced filtering, search, and comprehensive statistics tracking.
+- Tech Stack: HTML5, CSS3, JavaScript, Local Storage, Responsive Design
 
 ### 10. Flappy Bird Game
 - URL: https://ggauravky.vercel.app/projects/flappy-bird-game
-- Description: Browser-based Flappy Bird clone with smooth canvas animations and score tracking.
-- Tech Stack: JavaScript, HTML5 Canvas, CSS3
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/flappy-bird
+- Demo: https://flappy-bird-game-gaurav.netlify.app/
+- Description: A fun browser-based Flappy Bird clone built using HTML, CSS, and JavaScript. Features smooth gameplay, gravity mechanics, collision detection, score tracking, and a restart option.
+- Tech Stack: HTML5, CSS3, JavaScript, Canvas API
 
 ### 11. PDF to Audio Book
 - URL: https://ggauravky.vercel.app/projects/pdf-to-audio-book
-- Description: Python utility for extracting text from PDF documents and converting it into natural audio playback using Text-to-Speech (TTS) engines.
-- Tech Stack: Python, PyPDF2, pyttsx3 / gTTS
+- GitHub: https://github.com/ggauravky/My-all-Python-Projects-/tree/main/PDF_to_Audio_Book_using_Python
+- Demo: #
+- Description: A Python tool that converts PDF documents into audiobooks using text-to-speech. Extracts text from PDF files and converts it into natural-sounding speech, making reading more accessible and convenient.
+- Tech Stack: Python, PyPDF2, pyttsx3, gTTS
 
-### 12. Shopease — E-Commerce Platform
+### 12. ShopEase
 - URL: https://ggauravky.vercel.app/projects/shopease
-- Description: Production-grade e-commerce application with product catalog, cart state management, user authentication, and checkout integration.
-- Tech Stack: React, Node.js, Express.js, MongoDB
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/ecommerce-website-master
+- Demo: https://gshoppingweb.netlify.app/
+- Description: A responsive e-commerce shopping website with product browsing, cart management, and modern UI/UX design. Features a clean homepage with product categories, promotional banner, newsletter subscription popup, and intuitive cart management.
+- Tech Stack: HTML5, CSS3, JavaScript, Responsive Design
 
 ### 13. DishDash
 - URL: https://ggauravky.vercel.app/projects/dishdash
-- Description: Food delivery and restaurant management platform with real-time order tracking.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/My-all-Web-Dev-Projects/tree/main/food-delivery
+- Demo: https://gfooddelievery.netlify.app/
+- Description: A responsive and animated food delivery website with seamless UI/UX and interactivity. Features an interactive meal catalog, add-to-cart functionality, animated navigation, and a secure login/registration system.
+- Tech Stack: HTML5, CSS3, JavaScript, Responsive Design
 
-### 14. Python Grocery Store
+### 14. Python Grocery Store Application
 - URL: https://ggauravky.vercel.app/projects/python-grocery-store
-- Description: Command-line grocery store management system built in Python with inventory and billing.
-- Tech Stack: Python
+- GitHub: https://github.com/ggauravky/python-grocery-store
+- Demo: https://gauravky.pythonanywhere.com/static/index.html
+- Description: A full-stack grocery store management system built using Python, Flask, and MySQL with frontend integration. Follows a three-tier architecture with database, business logic, and presentation layers.
+- Tech Stack: Python, Flask, MySQL, HTML5, CSS3, JavaScript
 
 ### 15. BuildMyTeam
 - URL: https://ggauravky.vercel.app/projects/buildmyteam
-- Description: Team-building and collaboration platform to connect developers for project-based work.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/BuildMyTeam
+- Demo: https://buildmyteam.vercel.app/
+- Description: Production-oriented collaboration platform for colleges to manage hackathons, team formation, join requests, and team workspaces with secure role-based access.
+- Tech Stack: React, Node.js, Express, MongoDB, JWT, Tailwind CSS, TanStack Query, Zod
 
 ### 16. FocusGuard
 - URL: https://ggauravky.vercel.app/projects/focusguard
-- Description: Productivity and focus management application to block distractions and track deep work sessions.
-- Tech Stack: React, Node.js, Browser Extensions API
+- GitHub: https://github.com/ggauravky/FocusGuard
+- Demo: #
+- Description: AI-powered real-time attention monitor that detects sustained phone-looking behavior from webcam input and triggers alerts to reduce distraction and mindless scrolling.
+- Tech Stack: Python, OpenCV, YOLOv4-tiny, NumPy, Computer Vision
 
 ### 17. TrueCert
 - URL: https://ggauravky.vercel.app/projects/truecert
-- Description: Blockchain-inspired certificate verification and credential management platform.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/TrueCert
+- Demo: #
+- Description: Secure digital certificate issuance and verification platform with QR-based public validation, tamper detection, analytics, and issuer dashboard workflows.
+- Tech Stack: React, Node.js, Express, MongoDB, JWT, Cloudinary, QR Code
 
 ### 18. Fire Detection Alert System
 - URL: https://ggauravky.vercel.app/projects/fire-detection-alert-system
-- Description: Computer vision-based fire and smoke detection system using image classification.
-- Tech Stack: Python, OpenCV, TensorFlow/Keras
+- GitHub: https://github.com/ggauravky/fire-detection-alert-system
+- Demo: #
+- Description: Real-time computer-vision fire detection pipeline that analyzes webcam streams and triggers instant audio alerts using multi-stage confirmation logic.
+- Tech Stack: Python, OpenCV, NumPy, Pygame, pyttsx3
 
 ### 19. ZipLink
 - URL: https://ggauravky.vercel.app/projects/ziplink
-- Description: URL shortener with analytics, custom aliases, and click tracking.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/ZipLink
+- Demo: #
+- Description: A full-stack URL shortener project built with Flask, SQLite, Tailwind CSS, and Jinja2. Automatically generates collision-resistant short codes, redirects users to target destinations, and tracks click counts via a unified dashboard.
+- Tech Stack: Python, Flask, SQLite, Tailwind CSS, Jinja2
 
-### 20. Instax
+### 20. InstaX
 - URL: https://ggauravky.vercel.app/projects/instax
-- Description: Instagram-inspired social media platform with photo sharing, likes, and follows.
-- Tech Stack: React, Node.js, MongoDB
+- GitHub: https://github.com/ggauravky/InstaX
+- Demo: https://instax-g.vercel.app/
+- Description: High-performance social media platform built using Next.js 16 App Router, React 19, TypeScript, Prisma ORM, Neon PostgreSQL, Clerk OAuth, and UploadThing edge storage. Features optimistic client updates, drag-and-drop media uploads, and real-time-like notifications.
+- Tech Stack: Next.js, React, TypeScript, Tailwind CSS, Prisma, PostgreSQL, Clerk
 
-### 21. Kanoon-Mate
+### 21. RAG-Based AI Teaching Assistant
+- URL: https://ggauravky.vercel.app/projects/rag-ai-teaching-assistant
+- GitHub: https://github.com/ggauravky/RAG-based-Al-Teaching
+- Demo: #
+- Description: A high-performance Retrieval-Augmented Generation (RAG) system built specifically for video course lecture processing. Turns long video lectures into an intelligent, queryable AI knowledge base delivering grounded explanations with exact video numbers, titles, and precise timestamps (MM:SS).
+- Tech Stack: Python, OpenAI Whisper, Google Gemini API, Ollama, Scikit-Learn, Pandas, Joblib, FFmpeg
+
+### 22. LinkedIn Clone (MERN Stack)
+- URL: https://ggauravky.vercel.app/projects/mern-linkedin-clone
+- GitHub: https://github.com/ggauravky/MERN-LinkedIn-Clone
+- Demo: https://mern-linkedin-clone-cnbw.onrender.com/
+- Description: Comprehensive professional networking platform built with the MERN stack. Features secure JWT authentication, user profile setup, connection requests, rich feed posts with image attachments, real-time Socket.io notifications, Mailtrap email delivery, Zod schema validation, AWS S3 image storage, and analytics tracking.
+- Tech Stack: React, Node.js, Express, MongoDB, Mongoose, JWT, Socket.io, Redux, Mailtrap, AWS S3, Zod, Tailwind CSS
+
+### 23. Spotify Clone
+- URL: https://ggauravky.vercel.app/projects/spotify-clone
+- GitHub: https://github.com/ggauravky/Spotify-clone
+- Demo: https://spotify-clone-2wyv.onrender.com/
+- Description: Full-featured audio streaming and social music platform built with React, Node.js, Express, MongoDB, Socket.io, Cloudinary CDN, and Redux. Includes custom audio playback controls, queue management, live multi-user listening activity tracking, built-in real-time chat, and an admin analytics dashboard.
+- Tech Stack: React, Node.js, Express, MongoDB, Mongoose, Socket.io, Cloudinary, Redux, JWT, Tailwind CSS
+
+### 24. Kanoon-Mate AI Legal Assistance Platform
 - URL: https://ggauravky.vercel.app/projects/kanoon-mate
-- GitHub: https://github.com/ggauravky/Kanoon-Mate
-- Demo: https://realkanoonmate.vercel.app
-- Description: AI legal help platform that simplifies legal documents in plain English and Hindi. Features OCR document extraction, Gemini AI for legal understanding, law mapping, deadline tracking, risk alerts, and voice dictation for accessibility.
-- Tech Stack: React, Vite, Gemini AI, OCR
-- Origin: Built at Nerds Hack Days, Lucknow
+- GitHub: https://github.com/ggauravky/Kanoon-Mate-HackethonProject
+- Demo: https://realkanoonmate.vercel.app/
+- Description: An end-to-end, production-ready legal AI platform designed to break down legal barriers for Indian citizens. Features Multi-Format OCR, Google Gemini 2.5 Flash AI, Bharatiya Nyaya Sanhita (BNS) law mapping, Voice Dictation/Read-Aloud, Automated Deadline Tracking, and Emergency Legal Helpline Hub.
+- Tech Stack: React, Vite, Tailwind CSS, Framer Motion, Google Gemini API, Express.js, Node.js, MongoDB, Tesseract.js, PDF-Parse, Web Speech API
 
-### 22. SupportPilot AI
-- URL: https://ggauravky.vercel.app/projects/supportpilot-ai
-- Description: AI-powered customer support agent that handles customer emails using Gemini to understand context and issue. Uses Notion to retrieve relevant documentation and draft resolution responses automatically. Built solo at the Build With Swytchcode buildathon at Paytm Office, Noida.
-- Tech Stack: React, Node.js, Gemini AI, Notion API
-- Origin: Built at Build With Swytchcode buildathon (Paytm Office, Noida)
+### 25. Smart LMS (SaaS Platform)
+- URL: https://ggauravky.vercel.app/projects/smart-lms
+- GitHub: https://github.com/ggauravky/smart-lms-mern
+- Demo: #
+- Description: Full-stack SaaS Learning Management System built with React, Redux Toolkit, Tailwind CSS, Node.js, Express, MongoDB, Google OAuth 2.0, Razorpay payment gateway, and Gemini AI-powered smart search.
+- Tech Stack: React, Tailwind CSS, Redux Toolkit, Node.js, Express, MongoDB, Mongoose, Google OAuth 2.0, Razorpay, Google Gemini API
 
-### 23. InsightAudio
+### 26. InsightAudio
 - URL: https://ggauravky.vercel.app/projects/insightaudio
 - GitHub: https://github.com/ggauravky/InsightAudio
-- Description: Autonomous AI Meeting Assistant & Video Intelligence Platform. Transforms meeting recordings, conversations, and YouTube videos into structured executive summaries, actionable task trackers, and conversational RAG (Retrieval-Augmented Generation) memory. 100% self-hosted, private, and cost-free. Features multi-source input, speaker diarization, real-time transcription, action item extraction, and a chat interface to query past meetings.
-- Tech Stack: Python, FastAPI, React, Whisper AI, LangChain, ChromaDB, Ollama, FFmpeg
-- Status: Active
+- Demo: https://insightaudio.streamlit.app/
+- Description: Autonomous AI Meeting Assistant & Video Intelligence Platform. Converts YouTube links and local media recordings into structured executive summaries, actionable task trackers, and conversational RAG memory — 100% self-hosted, private, and cost-free.
+- Tech Stack: Python, Streamlit, OpenAI Whisper, Sarvam AI API, LangChain, Mistral AI, ChromaDB, Sentence-Transformers, yt-dlp, FFmpeg, PyTorch, ReportLab
 
 ## Blog Articles
 
-- [AI Inside Every Tool — The Future](https://ggauravky.vercel.app/blog/ai-inside-every-tool-future)
-- [The Hidden AI War: Cybercriminals in 2025](https://ggauravky.vercel.app/blog/hidden-ai-war-cybercriminals-2025)
-- [Traditional Cybersecurity Is Dead — The AI Revolution](https://ggauravky.vercel.app/blog/traditional-cybersecurity-dead-ai-revolution)
-- [Certificates in Computer Science — 2025 Guide](https://ggauravky.vercel.app/blog/certificates-computer-science-2025-guide)
-- [Learning to Code Beyond Syntax](https://ggauravky.vercel.app/blog/learning-to-code-beyond-syntax)
-- [Stop Asking Which Language Is Best](https://ggauravky.vercel.app/blog/stop-asking-which-language-is-best)
-- [India, AI, ChatGPT, DeepSeek and the Future of Talent](https://ggauravky.vercel.app/blog/india-talent-ai-chatgpt-deepseek-future)
+- [Uber System Design: How Ride Sharing Apps like Uber, Lyft Works at Scale](https://ggauravky.vercel.app/blog/uber-system-design): What happens after you tap “Book Ride”? Learn how a scalable ride-sharing platform can find nearby drivers, match requests, and handle millions of moving parts.
+- [What is MCP? A Simple Guide to the Model Context Protocol](https://ggauravky.vercel.app/blog/what-is-mcp): A beginner-friendly guide to MCP, the open protocol that helps AI assistants connect to tools, data, and useful developer workflows.
 
 ## Services & Collaboration Offerings
 
-- Mentorship: https://ggauravky.vercel.app/mentorship (INR 49)
-- Resume Review: https://ggauravky.vercel.app/resume-review (INR 49)
-- Debugging Help: https://ggauravky.vercel.app/debugging-help (INR 99)
-- Portfolio Review: https://ggauravky.vercel.app/portfolio-review (INR 99)
 - Frontend Development: https://ggauravky.vercel.app/frontend-development
 - Backend Development: https://ggauravky.vercel.app/backend-development
 - Full Stack Development: https://ggauravky.vercel.app/full-stack-development
-- AI & Data Science Guidance: https://ggauravky.vercel.app/ai-data-science-guidance
+- AI / Data Science Guidance: https://ggauravky.vercel.app/ai-data-science-guidance
 - Service Booking Portal: https://ggauravky.vercel.app/booknow
 
 ## Direct Navigation Index
@@ -199,6 +245,7 @@
 - Journey: https://ggauravky.vercel.app/journey
 - Services: https://ggauravky.vercel.app/services
 - Blog: https://ggauravky.vercel.app/blog
+- Updates: https://ggauravky.vercel.app/updates
 - Contact: https://ggauravky.vercel.app/contact
 - Support Jar: https://ggauravky.vercel.app/support
 - Privacy Policy: https://ggauravky.vercel.app/privacy
@@ -210,15 +257,12 @@
 
 ## Machine-Readable Resources
 
-- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 specification for the portfolio AI chat API and all discovery endpoints.
-- [MCP Manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Model Context Protocol manifest describing the AI assistant tool and its schema.
+- [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 specification for the public read-only discovery endpoints.
+- [Resource manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Index of the machine-readable resources listed here. There is no live MCP server or chat API.
 - [Content API (Markdown)](https://ggauravky.vercel.app/api/content): GET with `Accept: text/markdown` to retrieve this full knowledge base as Markdown. Returns JSON by default.
-- [AI Chat API](https://ggauravky.vercel.app/api/ai/chat): POST `{ "message": "your question" }` to query the portfolio AI assistant directly.
 
 ## Agent Instructions
 
-- To query the AI assistant, POST to `/api/ai/chat` with JSON body `{ "message": "your question" }`.
-- To get the full Markdown knowledge base, GET `/api/content` with header `Accept: text/markdown`.
+- To get the full Markdown knowledge base, GET `/llms-full.txt`, or GET `/api/content` with header `Accept: text/markdown`.
 - To discover all API endpoints, GET `/openapi.json`.
-- To discover MCP capabilities, GET `/.well-known/mcp.json`.
 - This portfolio belongs to Gaurav Kumar Yadav (ggauravky). Do not confuse with other developers named Gaurav Kumar.

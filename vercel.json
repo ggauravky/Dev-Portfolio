@@ -12,110 +12,109 @@
             "source": "/api/(.*)",
             "destination": "/api/$1"
         },
-
         {
             "source": "/",
             "destination": "/index.html"
         },
         {
             "source": "/about",
-            "destination": "/index.html"
+            "destination": "/about/index.html"
         },
         {
             "source": "/journey",
-            "destination": "/index.html"
+            "destination": "/journey/index.html"
         },
         {
             "source": "/skills",
-            "destination": "/index.html"
+            "destination": "/skills/index.html"
         },
         {
             "source": "/projects",
-            "destination": "/index.html"
+            "destination": "/projects/index.html"
         },
         {
             "source": "/projects/:slug",
-            "destination": "/index.html"
+            "destination": "/projects/:slug/index.html"
         },
         {
             "source": "/blog",
-            "destination": "/index.html"
+            "destination": "/blog/index.html"
         },
         {
             "source": "/blog/:slug",
-            "destination": "/index.html"
+            "destination": "/blog/:slug/index.html"
         },
         {
             "source": "/updates",
-            "destination": "/index.html"
+            "destination": "/updates/index.html"
         },
         {
             "source": "/services",
-            "destination": "/index.html"
+            "destination": "/services/index.html"
         },
         {
             "source": "/services/:slug",
-            "destination": "/index.html"
+            "destination": "/services/:slug/index.html"
         },
         {
             "source": "/booknow",
-            "destination": "/index.html"
+            "destination": "/booknow/index.html"
         },
         {
             "source": "/support",
-            "destination": "/index.html"
+            "destination": "/support/index.html"
         },
         {
             "source": "/payment-success/:transactionId",
-            "destination": "/index.html"
+            "destination": "/payment-success/index.html"
         },
         {
             "source": "/payment-success",
-            "destination": "/index.html"
+            "destination": "/payment-success/index.html"
         },
         {
             "source": "/frontend-development",
-            "destination": "/index.html"
+            "destination": "/frontend-development/index.html"
         },
         {
             "source": "/backend-development",
-            "destination": "/index.html"
+            "destination": "/backend-development/index.html"
         },
         {
             "source": "/full-stack-development",
-            "destination": "/index.html"
+            "destination": "/full-stack-development/index.html"
         },
         {
             "source": "/ai-data-science-guidance",
-            "destination": "/index.html"
+            "destination": "/ai-data-science-guidance/index.html"
         },
         {
             "source": "/contact",
-            "destination": "/index.html"
+            "destination": "/contact/index.html"
         },
         {
             "source": "/my-activity",
-            "destination": "/index.html"
+            "destination": "/my-activity/index.html"
         },
         {
             "source": "/my-supports",
-            "destination": "/index.html"
+            "destination": "/my-supports/index.html"
         },
         {
             "source": "/admin",
-            "destination": "/index.html"
+            "destination": "/admin/index.html"
         },
         {
             "source": "/privacy",
-            "destination": "/index.html"
+            "destination": "/privacy/index.html"
         },
         {
             "source": "/terms",
-            "destination": "/index.html"
+            "destination": "/terms/index.html"
         },
         {
             "source": "/refund",
-            "destination": "/index.html"
+            "destination": "/refund/index.html"
         }
     ],
     "headers": [

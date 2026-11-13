@@ -12,10 +12,11 @@
 // preview morph, src/lib/viewTransition.js), (2) line-masked chapter headings,
 // (3) the same morph into the next project. The h1 paints statically.
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import useSEO from '../hooks/useSEO'
+import { NOT_FOUND_SEO, projectSeo } from '../lib/seo'
 import { projectsData } from '../data/projectsData'
 import {
     RANKED_PROJECTS,
@@ -125,14 +126,8 @@ function ProjectDetail() {
     const nextTitleRef = useRef(null)
     const project = projectsData.find((p) => p.slug === slug) || null
 
-    useSEO({
-        title: project
-            ? `${project.title} — Case Study | Gaurav Kumar Yadav`
-            : 'Project | Gaurav Kumar Yadav',
-        description: project ? project.description : 'Explore a project case study by Gaurav Kumar Yadav.',
-        keywords: project ? `${project.techStack.join(', ')}, Gaurav Kumar Yadav, AI ML developer Lucknow, web developer India, ggauravky portfolio` : '',
-        ogImage: project ? `https://ggauravky.vercel.app${project.image}` : 'https://ggauravky.vercel.app/images/profile.jpg'
-    })
+    const seo = useMemo(() => (project ? projectSeo(project) : NOT_FOUND_SEO), [project])
+    useSEO(seo)
 
     if (!project) return <NotFound />
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import {
     createSupportPaymentOrder,
     openRazorpayCheckout,
@@ -14,6 +15,8 @@ import PageHead from '../components/page/PageHead'
 import PageSection from '../components/page/PageSection'
 import { Button, Input, Textarea, TextLink } from '../components/ui'
 import '../styles/checkout.css'
+
+const SEO = staticSeo('/support')
 
 const SUPPORT_MIN_AMOUNT_INR = 5
 const SUPPORT_MAX_AMOUNT_INR = 100000
@@ -33,10 +36,7 @@ function Support() {
     const [paymentMessage, setPaymentMessage] = useState('')
 
     useSEO({
-        title: 'Support My Work | Gaurav Kumar Yadav',
-        description: 'Support Gaurav Kumar Yadav through secure Razorpay checkout with server verification and a downloadable payment receipt.',
-        keywords: 'support Gaurav Kumar Yadav, Razorpay support payment, developer portfolio support',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     useEffect(() => {

@@ -4,353 +4,142 @@
 // consent of the author. See LICENSE for details.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import {
+    DEFAULT_OG,
+    MARKDOWN_ALTERNATE_HREF,
+    MARKDOWN_ALTERNATE_PATHS,
+    NAME,
+    SITE_NAME,
+    TWITTER_HANDLE,
+    absoluteUrl,
+    buildJsonLd,
+    robotsContent,
+} from '../lib/seo'
 
+const JSON_LD_ID = 'seo-json-ld'
+
+const setMeta = (attribute, key, content) => {
+    let meta = document.head.querySelector(`meta[${attribute}="${key}"]`)
+    if (!content) {
+        meta?.remove()
+        return
+    }
+    if (!meta) {
+        meta = document.createElement('meta')
+        meta.setAttribute(attribute, key)
+        document.head.appendChild(meta)
+    }
+    meta.setAttribute('content', String(content))
+}
+
+const setLink = (selector, attrs) => {
+    let link = document.head.querySelector(selector)
+    if (!attrs) {
+        link?.remove()
+        return
+    }
+    if (!link) {
+        link = document.createElement('link')
+        document.head.appendChild(link)
+    }
+    Object.entries(attrs).forEach(([key, value]) => link.setAttribute(key, value))
+}
+
+/**
+ * Applies a route's SEO (from src/lib/seo.js) to <head>. The same values are
+ * prerendered into each route's HTML by scripts/route-heads.js, so this only
+ * keeps the head right during client-side navigation.
+ *
+ * `path` is the canonical path (defaults to the current one); `additionalJsonLd`
+ * adds page-only nodes (ItemList, FAQ) to the shared @graph.
+ */
 const useSEO = ({
+    path,
     title,
     description,
     keywords,
     ogImage,
     type = 'website',
-    author,
+    author = NAME,
     publishedTime,
     modifiedTime,
     tags,
     noindex = false,
-    additionalJsonLd = null
+    page,
+    crumbs,
+    nodes,
+    additionalJsonLd = null,
 }) => {
     const location = useLocation()
-    const siteUrl = 'https://ggauravky.vercel.app'
-    const fullUrl = `${siteUrl}${location.pathname}`
-    const createdMetaRefs = useRef([])
+    const canonicalPath = path || location.pathname.replace(/(.)\/+$/, '$1')
 
     useEffect(() => {
-        // Cleanup function to track created meta tags
-        const createdMeta = []
-        // Set page title
-        if (title) {
-            document.title = title
-        }
+        const url = absoluteUrl(canonicalPath)
+        const image = typeof ogImage === 'string' ? { url: ogImage } : (ogImage || DEFAULT_OG)
+        const isDefaultImage = image.url === DEFAULT_OG.url
 
-        // Set meta description
-        if (description) {
-            const metaDescription = document.querySelector('meta[name="description"]')
-            if (metaDescription) {
-                metaDescription.setAttribute('content', description)
-            }
-        }
+        if (title) document.title = title
+        setMeta('name', 'description', description)
+        setMeta('name', 'keywords', keywords)
+        setMeta('name', 'robots', robotsContent(noindex))
 
-        // Set meta keywords
-        if (keywords) {
-            const metaKeywords = document.querySelector('meta[name="keywords"]')
-            if (metaKeywords) {
-                metaKeywords.setAttribute('content', keywords)
-            }
-        }
+        setMeta('property', 'og:type', type)
+        setMeta('property', 'og:url', url)
+        setMeta('property', 'og:title', title)
+        setMeta('property', 'og:description', description)
+        setMeta('property', 'og:site_name', SITE_NAME)
+        setMeta('property', 'og:image', image.url)
+        setMeta('property', 'og:image:alt', image.alt || title)
+        setMeta('property', 'og:image:width', isDefaultImage ? DEFAULT_OG.width : null)
+        setMeta('property', 'og:image:height', isDefaultImage ? DEFAULT_OG.height : null)
 
-        // Set Open Graph tags - optimized to track created elements
-        const updateOrCreateMeta = (property, content, isProperty = true) => {
-            if (!content) return // Skip if no content
-            const attribute = isProperty ? 'property' : 'name'
-            let meta = document.querySelector(`meta[${attribute}="${property}"]`)
-            if (!meta) {
-                meta = document.createElement('meta')
-                meta.setAttribute(attribute, property)
+        setMeta('name', 'twitter:card', 'summary_large_image')
+        setMeta('name', 'twitter:site', TWITTER_HANDLE)
+        setMeta('name', 'twitter:creator', TWITTER_HANDLE)
+        setMeta('name', 'twitter:title', title)
+        setMeta('name', 'twitter:description', description)
+        setMeta('name', 'twitter:image', image.url)
+        setMeta('name', 'twitter:image:alt', image.alt || title)
+
+        const isArticle = type === 'article'
+        setMeta('property', 'article:author', isArticle ? author : null)
+        setMeta('property', 'article:published_time', isArticle ? publishedTime : null)
+        setMeta('property', 'article:modified_time', isArticle ? modifiedTime : null)
+        document.head.querySelectorAll('meta[property="article:tag"]').forEach((tag) => tag.remove())
+        if (isArticle) {
+            (tags || []).forEach((tag) => {
+                const meta = document.createElement('meta')
+                meta.setAttribute('property', 'article:tag')
+                meta.setAttribute('content', tag)
                 document.head.appendChild(meta)
-                createdMeta.push(meta)
-            }
-            meta.setAttribute('content', content)
+            })
         }
 
-        if (title) updateOrCreateMeta('og:title', title)
-        if (description) updateOrCreateMeta('og:description', description)
-        updateOrCreateMeta('og:url', fullUrl)
-        updateOrCreateMeta('og:type', type)
-        updateOrCreateMeta('og:site_name', 'Gaurav Kumar Yadav - Developer Portfolio')
-        updateOrCreateMeta('og:locale', 'en_US')
-        if (ogImage) updateOrCreateMeta('og:image', ogImage)
-        if (ogImage) updateOrCreateMeta('og:image:alt', title || 'Gaurav Kumar Yadav portfolio preview')
-
-        // Set Twitter Card tags
-        updateOrCreateMeta('twitter:card', 'summary_large_image', false)
-        if (title) updateOrCreateMeta('twitter:title', title, false)
-        if (description) updateOrCreateMeta('twitter:description', description, false)
-        if (ogImage) updateOrCreateMeta('twitter:image', ogImage, false)
-        if (ogImage) updateOrCreateMeta('twitter:image:alt', title || 'Gaurav Kumar Yadav portfolio preview', false)
-        updateOrCreateMeta('twitter:url', fullUrl, false)
-        updateOrCreateMeta('twitter:site', '@ggauravky', false)
-        updateOrCreateMeta('twitter:creator', '@ggauravky', false)
-
-        // Explicit robots control (index/follow by default)
-        updateOrCreateMeta(
-            'robots',
-            noindex
-                ? 'noindex, nofollow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
-                : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
-            false
+        setLink('link[rel="canonical"]', { rel: 'canonical', href: url })
+        setLink(
+            'link[rel="alternate"][type="text/markdown"]',
+            MARKDOWN_ALTERNATE_PATHS.includes(canonicalPath)
+                ? { rel: 'alternate', type: 'text/markdown', href: MARKDOWN_ALTERNATE_HREF }
+                : null,
         )
 
-        // Set article-specific tags for blog posts
-        if (type === 'article') {
-            if (author) updateOrCreateMeta('article:author', author)
-            if (publishedTime) {
-                updateOrCreateMeta('article:published_time', publishedTime)
-            } else {
-                document.querySelector('meta[property="article:published_time"]')?.remove()
-            }
-            if (modifiedTime) updateOrCreateMeta('article:modified_time', modifiedTime)
-            else document.querySelector('meta[property="article:modified_time"]')?.remove()
-            if (tags && tags.length > 0) {
-                tags.forEach(tag => {
-                    const tagMeta = document.createElement('meta')
-                    tagMeta.setAttribute('property', 'article:tag')
-                    tagMeta.setAttribute('content', tag)
-                    document.head.appendChild(tagMeta)
-                })
-            }
+        const extras = additionalJsonLd
+            ? (Array.isArray(additionalJsonLd) ? additionalJsonLd : [additionalJsonLd])
+            : []
+        let script = document.getElementById(JSON_LD_ID)
+        if (!script) {
+            script = document.createElement('script')
+            script.type = 'application/ld+json'
+            script.id = JSON_LD_ID
+            document.head.appendChild(script)
         }
-
-        // Set canonical URL
-        let canonical = document.querySelector('link[rel="canonical"]')
-        if (!canonical) {
-            canonical = document.createElement('link')
-            canonical.setAttribute('rel', 'canonical')
-            document.head.appendChild(canonical)
-        }
-        canonical.setAttribute('href', fullUrl)
-
-        // Add JSON-LD structured data - Enhanced with multiple schemas
-        const jsonLdId = 'seo-json-ld'
-        let jsonLdScript = document.getElementById(jsonLdId)
-
-        // Base author/person schema
-        const personSchema = {
-            '@type': 'Person',
-            '@id': `${siteUrl}/#person`,
-            name: 'Gaurav Kumar Yadav',
-            alternateName: ['Gaurav Kumar', 'ggauravky', 'Gaurav BBDU'],
-            url: siteUrl,
-            email: 'kumar.gaurav.yadav2007@gmail.com',
-            image: {
-                '@type': 'ImageObject',
-                url: `${siteUrl}/images/profile.jpg`,
-                width: 512,
-                height: 512,
-                caption: 'Gaurav Kumar Yadav — AI/ML Developer & Web Developer from Lucknow, India'
-            },
-            jobTitle: 'AI/ML Developer & Web Developer',
-            description: 'Gaurav Kumar Yadav is a BCA student at BBD University (BBDU), Lucknow, India, focused on AI/ML and web development projects.',
-            alumniOf: {
-                '@type': 'EducationalOrganization',
-                name: 'BBD University Lucknow',
-                alternateName: 'BBDU',
-                url: 'https://bbdu.ac.in/'
-            },
-            affiliation: {
-                '@type': 'EducationalOrganization',
-                name: 'BBD University Lucknow',
-                alternateName: 'BBDU',
-                url: 'https://bbdu.ac.in/'
-            },
-            hasCredential: {
-                '@type': 'EducationalOccupationalCredential',
-                name: 'AI and Machine Learning Program',
-                credentialCategory: 'certificate',
-                recognizedBy: {
-                    '@type': 'Organization',
-                    name: 'IIT Mandi x Masai School'
-                }
-            },
-            address: {
-                '@type': 'PostalAddress',
-                addressLocality: 'Lucknow',
-                addressRegion: 'Uttar Pradesh',
-                addressCountry: 'India'
-            },
-            knowsAbout: ['Machine Learning', 'Artificial Intelligence', 'Web Development', 'Full Stack Development', 'React', 'Python', 'MERN Stack', 'Data Science basics'],
-            knowsLanguage: ['English', 'Hindi'],
-            sameAs: [
-                'https://github.com/ggauravky',
-                'https://www.linkedin.com/in/gauravky/',
-                'https://twitter.com/ggauravky'
-            ]
-        }
-
-        let structuredData = {}
-
-        const breadcrumbItems = location.pathname
-            .split('/')
-            .filter(Boolean)
-            .map((segment, index, arr) => {
-                const itemPath = `/${arr.slice(0, index + 1).join('/')}`
-                const name = segment
-                    .replaceAll('-', ' ')
-                    .replaceAll(/\b\w/g, (char) => char.toUpperCase())
-                return {
-                    '@type': 'ListItem',
-                    position: index + 2,
-                    name,
-                    item: `${siteUrl}${itemPath}`
-                }
-            })
-
-        if (type === 'article') {
-            // Blog post schema - Google Rich Results compliant
-            structuredData = {
-                '@context': 'https://schema.org',
-                '@type': 'BlogPosting',
-                headline: title,
-                name: title,
-                description: description,
-                url: fullUrl,
-                image: {
-                    '@type': 'ImageObject',
-                    url: ogImage || `${siteUrl}/images/profile.jpg`,
-                    width: 1200,
-                    height: 630
-                },
-                author: {
-                    '@type': 'Person',
-                    name: author || 'Gaurav Kumar Yadav',
-                    url: siteUrl,
-                    image: `${siteUrl}/images/profile.jpg`,
-                    jobTitle: 'AI/ML Developer & Web Developer'
-                },
-                publisher: {
-                    '@type': 'Person',
-                    name: 'Gaurav Kumar Yadav',
-                    url: siteUrl,
-                    logo: {
-                        '@type': 'ImageObject',
-                        url: `${siteUrl}/images/profile.jpg`,
-                        width: 512,
-                        height: 512
-                    }
-                },
-                mainEntityOfPage: {
-                    '@type': 'WebPage',
-                    '@id': fullUrl
-                }
-            }
-            if (keywords) {
-                structuredData.keywords = keywords
-            }
-            if (publishedTime) {
-                structuredData.datePublished = publishedTime
-            }
-            if (modifiedTime) structuredData.dateModified = modifiedTime
-        } else {
-            // Portfolio website with comprehensive schemas
-            structuredData = {
-                '@context': 'https://schema.org',
-                '@graph': [
-                    // WebSite Schema
-                    {
-                        '@type': 'WebSite',
-                        '@id': `${siteUrl}/#website`,
-                        url: siteUrl,
-                        name: 'Gaurav Kumar Yadav Portfolio',
-                        alternateName: ['ggauravky portfolio', 'Gaurav Kumar Yadav BBDU portfolio', 'Gaurav Lucknow developer portfolio'],
-                        description: 'Portfolio of Gaurav Kumar Yadav, AI/ML developer and web developer from Lucknow, India.',
-                        inLanguage: 'en-IN',
-                        potentialAction: {
-                            '@type': 'SearchAction',
-                            target: {
-                                '@type': 'EntryPoint',
-                                urlTemplate: `${siteUrl}/projects?q={search_term_string}`
-                            },
-                            'query-input': 'required name=search_term_string'
-                        }
-                    },
-                    // Person Schema
-                    personSchema,
-                    // ProfilePage Schema
-                    {
-                        '@type': 'ProfilePage',
-                        '@id': fullUrl,
-                        url: fullUrl,
-                        name: title,
-                        description: description,
-                        mainEntity: {
-                            '@id': `${siteUrl}/#person`
-                        },
-                        breadcrumb: {
-                            '@type': 'BreadcrumbList',
-                            '@id': `${fullUrl}#breadcrumb`,
-                            itemListElement: [
-                                {
-                                    '@type': 'ListItem',
-                                    position: 1,
-                                    name: 'Home',
-                                    item: siteUrl
-                                },
-                                ...breadcrumbItems
-                            ]
-                        }
-                    },
-                    // Organization Schema (Portfolio as professional presence)
-                    {
-                        '@type': 'Organization',
-                        '@id': `${siteUrl}/#organization`,
-                        name: 'ggauravky portfolio',
-                        alternateName: 'Gaurav Kumar Yadav Portfolio',
-                        url: siteUrl,
-                        logo: {
-                            '@type': 'ImageObject',
-                            url: `${siteUrl}/images/profile.jpg`,
-                            width: 512,
-                            height: 512
-                        },
-                        founder: {
-                            '@id': `${siteUrl}/#person`
-                        },
-                        contactPoint: {
-                            '@type': 'ContactPoint',
-                            contactType: 'Portfolio Inquiries',
-                            availableLanguage: ['English', 'Hindi']
-                        },
-                        sameAs: [
-                            'https://github.com/ggauravky',
-                            'https://www.linkedin.com/in/gauravky/',
-                            'https://twitter.com/ggauravky'
-                        ]
-                    }
-                ]
-            }
-        }
-
-        if (additionalJsonLd) {
-            const extras = Array.isArray(additionalJsonLd) ? additionalJsonLd : [additionalJsonLd]
-
-            if (structuredData['@graph']) {
-                structuredData['@graph'].push(...extras)
-            } else {
-                structuredData = {
-                    '@context': 'https://schema.org',
-                    '@graph': [structuredData, ...extras]
-                }
-            }
-        }
-
-        if (!jsonLdScript) {
-            jsonLdScript = document.createElement('script')
-            jsonLdScript.type = 'application/ld+json'
-            jsonLdScript.id = jsonLdId
-            document.head.appendChild(jsonLdScript)
-        }
-        jsonLdScript.text = JSON.stringify(structuredData)
-
-        // Store ref for cleanup
-        createdMetaRefs.current = createdMeta
-
-        // Cleanup function
-        return () => {
-            if (type === 'article') {
-                document.querySelectorAll('meta[property="article:tag"]').forEach(tag => tag.remove())
-            }
-        }
-    }, [title, description, keywords, ogImage, location, type, author, publishedTime, modifiedTime, tags, fullUrl, siteUrl, noindex, additionalJsonLd])
+        script.text = JSON.stringify(buildJsonLd(
+            { path: canonicalPath, title, description, page, crumbs, nodes },
+            extras,
+        ))
+    }, [canonicalPath, title, description, keywords, ogImage, type, author, publishedTime, modifiedTime, tags, noindex, page, crumbs, nodes, additionalJsonLd])
 }
 
 export default useSEO

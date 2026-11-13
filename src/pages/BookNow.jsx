@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import useAuth from '../hooks/useAuth'
 import { getServiceBySlug, servicesData } from '../data/servicesData'
 import {
@@ -15,6 +16,8 @@ import PageHead from '../components/page/PageHead'
 import PageSection from '../components/page/PageSection'
 import { Button, Input, Textarea, TextLink } from '../components/ui'
 import '../styles/checkout.css'
+
+const SEO = staticSeo('/booknow')
 
 const HEAD = {
     rail: ['Booking', 'Razorpay checkout'],
@@ -55,10 +58,7 @@ function BookNow() {
     )
 
     useSEO({
-        title: `Book ${currentService.title} | Gaurav Kumar Yadav`,
-        description: `Book ${currentService.title} with secure Razorpay Standard Checkout and server-verified pricing.`,
-        keywords: `book ${currentService.title}, Razorpay checkout, Gaurav Kumar Yadav services`,
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
     })
 
     useEffect(() => {

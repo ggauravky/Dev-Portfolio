@@ -20,6 +20,7 @@ import toast from 'react-hot-toast'
 import PropTypes from 'prop-types'
 import { AtSign, BookOpen, BriefcaseBusiness, Camera, ChartColumn, FileDown, MessageCircle, SquareCode } from 'lucide-react'
 import useSEO from '../hooks/useSEO'
+import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
 import { STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
@@ -29,6 +30,8 @@ import { validateEmail, validateRequired } from '../lib/validate'
 import { useFinePointer } from '../lib/motion'
 import { GithubIcon } from '../utils/radialConfig'
 import './Contact.css'
+
+const SEO = staticSeo('/contact')
 
 const MESSAGE_MAX = 2000
 const MESSAGE_WARN = Math.floor(MESSAGE_MAX * 0.9)
@@ -278,10 +281,7 @@ function ContactForm() {
 
 function Contact() {
     useSEO({
-        title: 'Contact - Gaurav Portfolio | Hire Python & AI Developer | Get in Touch',
-        description: 'Contact Gaurav Kumar Yadav. Reach out for internship opportunities, entry-level positions, freelance projects, or collaborations. Python Developer & AI enthusiast from Lucknow, India.',
-        keywords: 'Contact Gaurav Portfolio, Contact Gaurav Kumar Yadav, Portfolio Contact, Hire Python Developer, Hire AI Developer, Internship Developer Lucknow, Freelance Developer India',
-        ogImage: 'https://ggauravky.vercel.app/images/profile.jpg',
+        ...SEO,
         additionalJsonLd: {
             '@type': 'FAQPage',
             mainEntity: [
