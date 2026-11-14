@@ -81,6 +81,14 @@ Meta, data and structure only; no visual or layout change. Report: `docs/SEO_AUD
 - **Lighthouse (mobile, 13.4.1, `vite preview`, median of 3):** `/` 97, `/about` 97, `/projects` 98, `/projects/smartmess` 95, `/blog/what-is-mcp` 98, `/contact` 99, `/journey` 96. A11y 100, SEO 100, CLS 0 on all of them. BP 96 is the known local `/health` gap. That compares with the SEO-pass branch at 95/98/98/94/94/98. A first pass showed A11y 96/97 from part-faded on-screen text at load; that is fixed (D-089).
 - **Gates:** `npm run build`, `npm run test:blog` (14/14), `npm run check:design --all` (0 hits) and `git diff --check` all pass.
 
+## GitHub stat + scroll/motion pass (2026-11-14, branch `fix/github-stat-scroll-pass`, uncommitted)
+- **GitHub stat (D-094):** the hero dropped the count because `gitHubText()` preferred the date. It now renders a last-known-good value: the browser copy or the committed seed, refreshed every 15 min from `/api/github-activity` (a Vercel function, CDN `s-maxage=1800` + SWR + `stale-if-error`). Failures keep the old value. Hero and footer share one formatter and store; `utils/githubApi.js` is removed.
+- **QA:** `npm run test:github` 16/16 (mocked 403/500/network/malformed failures, success, persistence, ETag 304). In the browser, mocked 403/500/abort/malformed all still show 1,999; a mocked success shows 2,001 and survives a 500 on the next load. CLS 0.
+- **Scroll (D-095, D-096):** native smooth scroll kept (no Lenis). Blog posts gain the shared section reveal, case studies gain the reading-progress line, and in-page `#hash` jumps no longer stop short. Table and Lighthouse: `docs/AUDIT.md`.
+- **Gates:** `npm run build`, `npm run test:blog` (14/14), `npm run test:github` (16/16), `npm run check:design --all` (0 hits) and `git diff --check` all pass. Backend untouched.
+- **Owner, optional:** add `GITHUB_TOKEN` in Vercel to make GitHub GraphQL the first upstream. Without it, the no-auth API is used.
+- **Follow-up:** `/services/:slug` mobile is 87 (LCP 3.7 s, never measured before, not changed here).
+
 ## Next step
 0. Owner reviews `feat/seo-ai-visibility` (`docs/SEO_AUDIT.md`), approves the commit, then checks the Vercel preview (per-route heads, slug 404s).
 1. Owner reviews the Contact redesign and approves the commit.

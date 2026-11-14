@@ -10,6 +10,7 @@
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js",
         "test:blog": "node --test scripts/blog-data.test.mjs",
+        "test:github": "node --test scripts/github-activity.test.mjs",
         "check:design": "node scripts/check-design.mjs"
     },
     "dependencies": {

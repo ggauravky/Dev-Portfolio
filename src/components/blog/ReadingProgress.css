@@ -1,0 +1,19 @@
+/* Reading progress (D-062, D-095): a 1px accent line under the top chrome,
+   shared by blog posts and project case studies. Scroll-linked via transform
+   only; the accent's "current position" job (DESIGN.md lime rule 6). */
+.ar-progress {
+  position: fixed;
+  top: var(--chrome-h);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: 1px;
+  pointer-events: none;
+}
+
+.ar-progress__bar {
+  height: 100%;
+  background: rgb(var(--accent));
+  transform: scaleX(0);
+  transform-origin: left center;
+}

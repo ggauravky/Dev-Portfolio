@@ -6,7 +6,7 @@
 // and one GitHub derivation, so the two surfaces can't drift apart.
 
 import { useEffect, useState } from 'react'
-import { fetchGitHubContributions } from '../utils/githubApi'
+import { readLastKnownGood, refreshActivity, REFRESH_MS } from './githubActivity.js'
 
 /** Lucknow wall-clock time, always IST whatever the visitor's timezone. */
 export const timeFormat = new Intl.DateTimeFormat('en-GB', {
@@ -44,15 +44,61 @@ export function useLucknowTime() {
 }
 
 /**
- * Last-year contribution total and the last active day, from the existing
- * GitHub helper (and its localStorage cache). Rejects on any failure; callers
- * hide the line rather than showing fallback numbers, which aren't real data.
+ * The one GitHub line, worded as the footer always had it. Null when there's no
+ * real value, so callers omit the line instead of printing "NaN"/"undefined".
  */
-export function loadGitHubActivity() {
-    return fetchGitHubContributions().then((result) => {
-        const days = result.contributionsArray || []
-        const today = new Date().toISOString().slice(0, 10)
-        const last = [...days].reverse().find((day) => day.count > 0 && day.date <= today)
-        return { total: result.totalContributions, lastActive: last?.date || null }
+export function formatGitHubStat(data) {
+    if (!data) return null
+    const last = data.lastActive ? formatGitHubDay(data.lastActive) : null
+    if (Number.isInteger(data.count) && data.count >= 0) {
+        return `${numberFormat.format(data.count)} contributions in the last year${last ? `, last on ${last}` : ''}`
+    }
+    return last ? `Last contribution ${last}` : null
+}
+
+// One shared store for the hero and the footer (D-094): one value, one timer.
+let current = null
+let started = false
+let lastAttempt = 0
+const listeners = new Set()
+
+function refreshNow() {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return
+    lastAttempt = Date.now()
+    refreshActivity(current).then((next) => {
+        if (next === current) return
+        current = next
+        listeners.forEach((fn) => fn(current))
     })
+}
+
+function startRefreshing() {
+    if (started) return
+    started = true
+    // After idle, so it never competes with the hero paint.
+    if ('requestIdleCallback' in window) window.requestIdleCallback(refreshNow, { timeout: 3000 })
+    else window.setTimeout(refreshNow, 300)
+    window.setInterval(refreshNow, REFRESH_MS)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && Date.now() - lastAttempt >= REFRESH_MS) refreshNow()
+    })
+}
+
+/**
+ * Last-known-good GitHub activity: renders from the stored copy or the seed at
+ * once, then takes a newer value when a background refresh succeeds.
+ */
+export function useGitHubActivity() {
+    const [value, setValue] = useState(() => {
+        if (current === null) current = readLastKnownGood()
+        return current
+    })
+    useEffect(() => {
+        listeners.add(setValue)
+        if (current !== value) setValue(current)
+        startRefreshing()
+        return () => { listeners.delete(setValue) }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    return value
 }

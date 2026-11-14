@@ -9,7 +9,8 @@
 // static header shell is painted before JS for published/preview posts
 // (scripts/route-shells.js, `articleHeader`); keep the two in step.
 // Motion moments: (1) the scroll-linked reading-progress line,
-// (2) the TOC's current-section marker. The h1 paints statically.
+// (2) the TOC's current-section marker, (3) the site's section reveal
+// (D-095; no line mask on article h2s). The h1 paints statically.
 
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'

@@ -133,3 +133,45 @@ Baseline: live site, Lighthouse 12.8.2, single run. P6: local `vite preview`, Li
 | "Sign In" in the nav | Out of the nav (D-002); only booking/support/activity open it. |
 | Equal-weight card grids | Projects as an index (S7), case studies with rail facts. |
 | Off-system surfaces (legal, checkout, activity, changelog, offline, OG/favicon) | All on v2 in P6. |
+
+## Scroll and motion pass — audit (2026-11-14, branch `fix/github-stat-scroll-pass`)
+
+Measured on `vite preview` (Chromium 1248, 1440×900 and 390×844) with a Playwright script that counts `[data-reveal]` sections, `.line-mask` headings, view-timeline rows and the progress bar, and flags any block below the fold with none of them. Mid-scroll screenshots: `docs/audit/phase-scroll-pass/before/`.
+
+**Site-wide, every page:** native smooth scrolling from `html { scroll-behavior: smooth }` (index.css), switched to `auto` under reduced motion; route changes jump instantly to the top (`ScrollManager` in App.jsx), back/forward restores the saved position, and hash links use `scrollIntoView` (instant under reduced motion). No Lenis or GSAP (D-004). One reveal system: `Reveal.jsx` arms `html.reveal-armed`; where `animation-timeline: view()` exists, sections fade 0→1 and rise `--reveal-y` (16px < 768px, 24px above) over `entry 0% → entry 40vh`, and list rows over `entry 0% → entry 100%` (stagger comes from scroll position). Otherwise an IntersectionObserver adds `[data-revealed]` with a 520 ms `--ease-out` transition. Below-fold h2s use `LineMask` (80 ms per line, 280 ms rise, D-090). Easing, distance and stagger therefore can't differ between pages: they share one keyframe and one set of tokens.
+
+| Page | Smooth scroll | Reveal mechanism | Sections / line-mask h2 / rows | Long-page progress | Consistent with Hero/Journey/Contact? | Gap |
+|---|---|---|---|---|---|---|
+| Home | Native CSS | view() + IO fallback | 6 / 6 / 10 | – (6.4 screens, index page) | Reference | – |
+| Journey | Native CSS | view() + IO fallback | 3 / 3 / 25 | – | Reference | – |
+| Projects | Native CSS | view() + IO fallback | 2 / 2 / 26 | – | Yes | – |
+| Project detail (case study) | Native CSS | view() + IO fallback | 7 / 7 / 0 | **None** (5–8 screens) | Yes | Needs the reading-progress line |
+| About | Native CSS | view() + IO fallback (via `PageSection`) | 5 / 5 / 5 | – | Yes, **not flat** | – |
+| Skills | Native CSS | view() + IO fallback (via `PageSection`) | 4 / 4 / 10 | – | Yes, **not flat** | – |
+| Services | Native CSS | view() + IO fallback (via `PageSection`) | 3 / 3 / 4 | – | Yes | – |
+| Service detail | Native CSS | view() + IO fallback (via `PageSection`) | 3 / 3 / 4 | – | Yes | – |
+| Blog index | Native CSS | view() + IO fallback (via `PageSection`) | 2 / 2 / 2 | – | Yes | – |
+| Blog post | Native CSS | **None** (`reveal-armed` never set) | 0 / 0 / 0 | Yes (`ReadingProgress`) | **No** | Article sections need the shared reveal |
+| Contact | Native CSS | view() + IO fallback (via `PageSection`) | 2 / 2 / 9 | – | Reference | – |
+
+**Jank sources checked:** every scroll listener (ScrollManager, Reveal sweep, Dock ring, ReadingProgress, Journey spine) is passive and coalesced to one rAF per frame. Reveals and the parallax animate `opacity`/`translate`/`transform` only; the parallax is a CSS scroll timeline, off below 1200px. Long lists (Journey 25 rows, Projects 26) each run on their own compositor-driven view timeline, not 26 JS-timed transitions. The only non-transform transitions are 160 ms hover colour/border changes on links and buttons (not scroll-linked), which are left alone.
+
+### After (same day, same branch)
+
+| Page | Change | Reveal / line-mask / rows | Progress | Lighthouse mobile, median of 3 (last recorded) | Desktop |
+|---|---|---|---|---|---|
+| Home | GitHub stat fixed (D-094) | 6 / 6 / 10 | – | 96 (97) | 100 |
+| Journey | – | 3 / 3 / 25 | – | 98 (96) | 100 |
+| Projects | – | 2 / 2 / 26 | – | 98 (98) | 100 |
+| Project detail `/projects/smartmess` | + reading-progress line | 7 / 7 / 0 | **Yes** | 96 (95) | 100 |
+| About | – | 5 / 5 / 5 | – | 98 (97) | 100 |
+| Skills | – | 4 / 4 / 10 | – | 98 (–) | 100 |
+| Services | – | 3 / 3 / 4 | – | 98 (–) | 100 |
+| Service detail `/services/fullstack-development` | – | 3 / 3 / 6 | – | 87 (never recorded; LCP 3.7 s) | 100 |
+| Blog index | – | 2 / 2 / 2 | – | 98 (97, P5) | 100 |
+| Blog post `/blog/what-is-mcp` | + section reveal (no line mask, D-095) | 8 / 0 / 0 | Yes | 95 (98); runs 98/95/95, TBT varies 70–210 ms in the app chunk, not the reveal | 100 |
+| Contact | – | 2 / 2 / 9 | – | 98 (99) | 100 |
+
+Lighthouse 13.4.1, local `vite preview`. The mobile preset is the mid-range phone profile (4× CPU slowdown, slow 4G). A11y 100, SEO 100 and CLS 0 on every page. BP 96 is the known local `/health` gap. Every mobile score is within ±3 of the last recorded run. The blog post moved from 98 to a 95 median, but its earlier runs were 81/97/98, and its long tasks are now the shared app chunk, not this branch's code. The service-detail page wasn't measured before and wasn't changed (production main scores 92 there); it's logged as a follow-up.
+
+**Verified on every page (`/`, `/journey`, `/projects`, `/projects/smartmess`, `/about`, `/skills`, `/services`, `/services/fullstack-development`, `/blog`, `/blog/what-is-mcp`, `/contact`):** under `prefers-reduced-motion: reduce` reveals are never armed, `scroll-behavior` is `auto`, 0 running animations and 0 hidden elements. A TOC `#hash` jump is instant under reduced motion and smooth otherwise, and it lands on the heading (it used to stop short; D-096). Back/forward restores the exact position (1,500 → 1,500). ⌘K/Ctrl+K navigation opens the new page at the top. Mid-scroll screenshots: `docs/audit/phase-scroll-pass/before/` and `after/` (1440 and 390). Service detail has only an "after", because the "before" pass used a wrong slug.

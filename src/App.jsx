@@ -105,7 +105,11 @@ function ScrollManager() {
     }, [key])
 
     useEffect(() => {
-        if (navType === 'POP') {
+        // An in-page `#hash` link makes a history entry the router didn't create,
+        // so it has the same key ("default") as the page's first entry. Restoring
+        // that key would cut the anchor's scroll short; let the hash scroll win.
+        const inPageAnchor = hash && key === 'default'
+        if (navType === 'POP' && !inPageAnchor) {
             const target = readPositions()[key]
             if (typeof target === 'number') {
                 // Lazy routes grow after first paint: retry until the page is

@@ -6,17 +6,16 @@
 
 // S4 — live colophon footer (DESIGN.md "Signature layer"), site-wide.
 // Lucknow time (ticks per minute, no rAF), availability and "currently building"
-// from siteStatus, last GitHub activity (fetched only once the footer is near the
-// viewport and the browser is idle), copy-email with a toast, a big wordmark and
+// from siteStatus, GitHub activity (the last-known-good value shared with the
+// hero, D-094), copy-email with a toast, a big wordmark and
 // back-to-top. It is also where signed-out visitors find "Sign in" (D-002).
 
-import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 import useAuth from '../hooks/useAuth'
 import TextLink from './ui/TextLink'
 import { siteStatus, isAvailable } from '../data/siteStatus'
-import { timeFormat, numberFormat, formatGitHubDay, useLucknowTime, loadGitHubActivity } from '../lib/liveStatus'
+import { timeFormat, formatGitHubStat, useLucknowTime, useGitHubActivity } from '../lib/liveStatus'
 import { prefersReducedMotion } from '../lib/motion'
 import './Footer.css'
 
@@ -37,52 +36,6 @@ const LEGAL_LINKS = [
     { name: 'Terms of Service', path: '/terms' },
     { name: 'Refund Policy', path: '/refund' },
 ]
-
-/**
- * Last-year contributions and the last active day (src/lib/liveStatus.js).
- * Never blocks: it waits until the footer is within a screen of the viewport,
- * then for idle time. Fallback numbers are not shown (they are not real data);
- * on failure the row is just a profile link.
- */
-function useGitHubActivity(targetRef) {
-    const [state, setState] = useState({ status: 'idle', data: null })
-
-    useEffect(() => {
-        const el = targetRef.current
-        if (!el || typeof IntersectionObserver === 'undefined') return undefined
-        let cancelled = false
-        let idleId = 0
-        let timerId = 0
-
-        const load = () => {
-            setState({ status: 'loading', data: null })
-            loadGitHubActivity()
-                .then((data) => {
-                    if (!cancelled) setState({ status: 'ready', data })
-                })
-                .catch(() => {
-                    if (!cancelled) setState({ status: 'error', data: null })
-                })
-        }
-
-        const observer = new IntersectionObserver((entries) => {
-            if (!entries.some((entry) => entry.isIntersecting)) return
-            observer.disconnect()
-            if ('requestIdleCallback' in window) idleId = window.requestIdleCallback(load, { timeout: 3000 })
-            else timerId = window.setTimeout(load, 300)
-        }, { rootMargin: '0px 0px 100% 0px' })
-        observer.observe(el)
-
-        return () => {
-            cancelled = true
-            observer.disconnect()
-            if (idleId) window.cancelIdleCallback(idleId)
-            window.clearTimeout(timerId)
-        }
-    }, [targetRef])
-
-    return state
-}
 
 function LinkList({ links }) {
     return (
@@ -114,40 +67,30 @@ const backToTop = () => {
     document.getElementById('main-content')?.focus({ preventScroll: true })
 }
 
-// The stat line keeps its space while loading (and stays blank on failure), so
-// the data arriving never shifts the page.
-function GitHubLine({ state }) {
-    const data = state.status === 'ready' ? state.data : null
-    let stat = ' '
-    // Only real numbers: a missing total never prints "NaN" or "undefined".
-    if (data && Number.isFinite(data.total)) {
-        const last = data.lastActive ? `, last on ${formatGitHubDay(data.lastActive)}` : ''
-        stat = `${numberFormat.format(data.total)} contributions in the last year${last}`
-    } else if (data?.lastActive) {
-        stat = `Last contribution ${formatGitHubDay(data.lastActive)}`
-    }
+// Last-known-good value (D-094): the stored copy or the seed. With no real value
+// at all the stat is omitted and the row is just the profile link.
+function GitHubLine({ text }) {
     return (
         <>
-            <span className="colophon__gh-stat">{stat}</span>
+            {text ? <span className="colophon__gh-stat">{text}</span> : null}
             <TextLink href={siteStatus.links.github} external tone="muted">github.com/ggauravky</TextLink>
         </>
     )
 }
 
 GitHubLine.propTypes = {
-    state: PropTypes.shape({ status: PropTypes.string, data: PropTypes.object }).isRequired,
+    text: PropTypes.string,
 }
 
 function Footer() {
     const { isAuthenticated, openAuthDialog } = useAuth()
-    const ref = useRef(null)
     const now = useLucknowTime()
-    const github = useGitHubActivity(ref)
+    const github = formatGitHubStat(useGitHubActivity())
     const available = isAvailable()
     const building = siteStatus.currentlyBuilding
 
     return (
-        <footer ref={ref} className="colophon" aria-labelledby="colophon-title">
+        <footer className="colophon" aria-labelledby="colophon-title">
             <div className="colophon__wrap">
                 <h2 id="colophon-title" className="sr-only">Colophon</h2>
 
@@ -180,7 +123,7 @@ function Footer() {
                         ) : null}
                         <div>
                             <dt>GitHub</dt>
-                            <dd aria-live="polite"><GitHubLine state={github} /></dd>
+                            <dd aria-live="polite"><GitHubLine text={github} /></dd>
                         </div>
                         <div>
                             <dt>Email</dt>

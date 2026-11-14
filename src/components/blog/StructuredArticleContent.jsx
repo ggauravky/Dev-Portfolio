@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import EditorialImage from './EditorialImage'
+import Reveal from '../Reveal'
 
 const createSubheadingId = (sectionId, text, index) => {
   const slug = String(text || '')
@@ -104,13 +105,15 @@ function StructuredArticleContent({ article, onHeadingsChange }) {
   return (
     <div className="article-content article-content-structured">
       {article.sections.map((section) => (
-        <section key={section.id} className="article-section" aria-labelledby={section.id}>
+        // The site's one section reveal (D-095). No line mask here: measuring every
+        // word of a long article cost ~90 ms of main thread on a throttled phone.
+        <Reveal as="section" key={section.id} className="article-section" aria-labelledby={section.id}>
           <h2 id={section.id}>{section.title}</h2>
           {section.blocks.map((block, index) => renderBlock(block, section, index))}
-        </section>
+        </Reveal>
       ))}
 
-      <section className="article-references" aria-labelledby="article-references-title">
+      <Reveal as="section" className="article-references" aria-labelledby="article-references-title">
         <h2 id="article-references-title">Sources and further reading</h2>
         <ol>
           {article.references.map((reference) => (
@@ -120,7 +123,7 @@ function StructuredArticleContent({ article, onHeadingsChange }) {
             </li>
           ))}
         </ol>
-      </section>
+      </Reveal>
 
       {article.disclaimer ? <p className="article-disclaimer">{article.disclaimer}</p> : null}
     </div>

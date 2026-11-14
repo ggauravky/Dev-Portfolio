@@ -8,6 +8,7 @@
 
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
+import './ReadingProgress.css'
 
 function ReadingProgress({ targetRef }) {
     const barRef = useRef(null)

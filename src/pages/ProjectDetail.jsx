@@ -8,9 +8,10 @@
 // title page (S3 arch frontispiece), a margin rail of facts, then numbered
 // chapters built only from fields the project has; a missing field hides its
 // chapter instead of padding it. Copy comes from projectsData.js only.
-// Motion moments: (1) the shared-element arrival from the index (title and
-// preview morph, src/lib/viewTransition.js), (2) line-masked chapter headings,
-// (3) the same morph into the next project. The h1 paints statically.
+// Motion moments (D-095): (1) the shared-element title/preview morph, arriving
+// from the index and leaving for the next project (src/lib/viewTransition.js),
+// (2) the site's section reveal with line-masked chapter headings, (3) the
+// reading-progress line shared with articles. The h1 paints statically.
 
 import { useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -35,6 +36,7 @@ import LazyImage from '../components/LazyImage'
 import Reveal from '../components/Reveal'
 import LineMask from '../components/LineMask'
 import Arch from '../components/Arch'
+import ReadingProgress from '../components/blog/ReadingProgress'
 import { Button, TextLink } from '../components/ui'
 import './ProjectDetail.css'
 
@@ -125,6 +127,7 @@ function ProjectDetail() {
     const { slug } = useParams()
     const navigate = useNavigate()
     const nextTitleRef = useRef(null)
+    const bodyRef = useRef(null)
     const project = projectsData.find((p) => p.slug === slug) || null
 
     const seo = useMemo(() => (project ? projectSeo(project) : NOT_FOUND_SEO), [project])
@@ -194,6 +197,9 @@ function ProjectDetail() {
 
     return (
         <main className="case">
+            {/* Long page: the article's reading-progress line, same component (D-095). */}
+            <ReadingProgress targetRef={bodyRef} />
+
             {/* Title page */}
             <header className="case-head page-wrap page-grid">
                 <p className="page-rail case-head__rail">
@@ -232,7 +238,7 @@ function ProjectDetail() {
             </header>
 
             {/* Margin rail + chapters */}
-            <div className="case-body page-wrap page-grid">
+            <div ref={bodyRef} className="case-body page-wrap page-grid">
                 <aside className="page-rail case-meta" aria-label="Project facts">
                     <dl>
                         <div>

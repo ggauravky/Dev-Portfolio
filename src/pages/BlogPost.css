@@ -18,23 +18,7 @@
   --article-accent: rgb(var(--accent));
 }
 
-/* ── Reading progress (moment 1) ──────────────────────────── */
-.ar-progress {
-  position: fixed;
-  top: var(--chrome-h);
-  left: 0;
-  right: 0;
-  z-index: 40;
-  height: 1px;
-  pointer-events: none;
-}
-
-.ar-progress__bar {
-  height: 100%;
-  background: var(--article-accent);
-  transform: scaleX(0);
-  transform-origin: left center;
-}
+/* Reading progress (moment 1): src/components/blog/ReadingProgress.css */
 
 /* ── Header ───────────────────────────────────────────────── */
 .ar-head {

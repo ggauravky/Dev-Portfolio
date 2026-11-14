@@ -119,6 +119,66 @@
                 }
             }
         },
+        "/api/github-activity": {
+            "get": {
+                "operationId": "getGitHubActivity",
+                "summary": "Last-year GitHub contribution count",
+                "description": "The count shown in the site hero and footer for github.com/ggauravky: contributions in the last year, the day the count runs to (asOf), the last day with a contribution (lastActive) and when it was fetched (updatedAt). CDN-cached for 30 minutes and served stale while it revalidates; an upstream failure returns 502 and is never cached. Supports If-None-Match (304).",
+                "tags": [
+                    "discovery"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current value",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "required": [
+                                        "count",
+                                        "asOf",
+                                        "lastActive",
+                                        "updatedAt"
+                                    ],
+                                    "properties": {
+                                        "count": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "asOf": {
+                                            "type": "string",
+                                            "format": "date"
+                                        },
+                                        "lastActive": {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "format": "date"
+                                        },
+                                        "updatedAt": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "source": {
+                                            "type": "string",
+                                            "enum": [
+                                                "github-graphql",
+                                                "contributions-api"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "304": {
+                        "description": "Unchanged since the ETag sent in If-None-Match"
+                    },
+                    "502": {
+                        "description": "Every upstream failed; nothing was cached"
+                    }
+                }
+            }
+        },
         "/llms.txt": {
             "get": {
                 "operationId": "getLlmsTxt",
