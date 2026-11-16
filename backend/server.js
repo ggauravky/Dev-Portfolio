@@ -129,7 +129,8 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  const requestId = req.id || req.headers["x-request-id"];
+  // req.id is set by requestLogger, which only accepts a well-formed x-request-id.
+  const requestId = req.id;
   logger.error({ err, requestId, path: req.originalUrl }, "Unhandled application error");
   captureException(err, {
     requestId,

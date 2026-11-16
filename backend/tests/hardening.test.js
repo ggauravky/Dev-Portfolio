@@ -120,3 +120,20 @@ test("Sentry events drop request bodies and cookies and redact secret-like keys"
   assert.equal(event.extra.token, "[REDACTED]");
   assert.equal(event.extra.path, "/api/auth/google");
 });
+
+test("Sentry scrubbing leaves the SDK's internal scope objects untouched", () => {
+  class FakeScope {
+    constructor() {
+      this.self = this;
+      this.tags = new Map([["a", 1]]);
+    }
+  }
+  const scope = new FakeScope();
+  const original = { request: { data: { a: 1 } }, sdkProcessingMetadata: { capturedSpanScope: scope } };
+
+  const event = scrubEvent(original);
+
+  assert.equal(event, original);
+  assert.equal(event.sdkProcessingMetadata.capturedSpanScope, scope);
+  assert.ok(scope.tags instanceof Map);
+});

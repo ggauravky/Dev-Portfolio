@@ -7,15 +7,29 @@ const sentryEnabled = Boolean(process.env.SENTRY_DSN);
  * The SDK attaches incoming request bodies by default. Bodies here carry the
  * Google ID token (`credential`, which the SDK's key filter does not match),
  * contact messages, phone numbers and emails, so drop them along with cookies
- * and redact everything else with the logger's secret filter.
+ * and redact secret-like keys in the request headers and our own extras.
+ *
+ * Only these fields are touched, in place. The event also carries the SDK's
+ * internal `sdkProcessingMetadata` (live Scope objects it reads after this hook);
+ * walking or rebuilding it could throw, and Sentry drops events whose hook throws.
  */
 const scrubEvent = (event) => {
   if (!event || typeof event !== "object") return event;
-  if (event.request) {
-    delete event.request.data;
-    delete event.request.cookies;
+  try {
+    if (event.request && typeof event.request === "object") {
+      delete event.request.data;
+      delete event.request.cookies;
+      if (event.request.headers && typeof event.request.headers === "object") {
+        event.request.headers = redactSensitiveData(event.request.headers);
+      }
+    }
+    if (event.extra && typeof event.extra === "object") {
+      event.extra = redactSensitiveData(event.extra);
+    }
+  } catch {
+    // Never let scrubbing drop the event; the body was already removed above.
   }
-  return redactSensitiveData(event);
+  return event;
 };
 
 const initMonitoring = () => {
