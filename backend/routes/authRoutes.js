@@ -26,6 +26,7 @@ const {
   googleSignInValidationRules,
   validate,
 } = require("../middleware/validator");
+const { asyncHandler } = require("../utils/asyncHandler");
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ router.post(
   googleSignIn
 );
 router.get("/me", attachOptionalUser, getCurrentSession);
-router.get("/profile", authRateLimiter, requireAuth, getProfile);
+router.get("/profile", authRateLimiter, requireAuth, asyncHandler(getProfile));
 router.patch(
   "/profile",
   authRateLimiter,
@@ -55,14 +56,14 @@ router.post(
   requireAuth,
   avatarUploadRateLimiter,
   handleAvatarUpload,
-  uploadProfileAvatar
+  asyncHandler(uploadProfileAvatar)
 );
 router.delete(
   "/profile/avatar",
   requireTrustedOrigin,
   requireAuth,
   avatarUploadRateLimiter,
-  deleteProfileAvatar
+  asyncHandler(deleteProfileAvatar)
 );
 router.post("/logout", authRateLimiter, requireTrustedOrigin, attachOptionalUser, logout);
 

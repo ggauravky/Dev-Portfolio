@@ -10,7 +10,10 @@ const { logger } = require("../utils/logger");
 
 const normalizeSlug = (value) => String(value || "").trim().toLowerCase();
 const normalizeTitle = (value) => String(value || "").trim().slice(0, 220);
-const normalizeContent = (value) => String(value || "").trim().slice(0, 120000);
+// The stored content is only a snapshot (nothing reads it back), so keep it small:
+// any signed-in user can create a BlogPost record for a new slug.
+const CONTENT_SNAPSHOT_MAX = 500;
+const normalizeContent = (value) => String(value || "").trim().slice(0, CONTENT_SNAPSHOT_MAX);
 const normalizeName = (value) => String(value || "").trim().slice(0, 120);
 const normalizeEmail = (value) => String(value || "").trim().toLowerCase().slice(0, 320);
 const normalizePicture = (value) => String(value || "").trim().slice(0, 2048);
@@ -32,31 +35,25 @@ const ensureBlogPostExists = async ({ slug, title, content }) => {
   const normalizedTitle = normalizeTitle(title) || buildFallbackTitle(normalizedSlug);
   const normalizedContent = normalizeContent(content);
 
-  let blogPost = await BlogPost.findOne({ slug: normalizedSlug });
+  const existing = await BlogPost.findOne({ slug: normalizedSlug });
+  if (existing) {
+    // Title and content come from the browser, so an existing record is never
+    // overwritten: one user must not be able to retitle a post for everyone.
+    return existing;
+  }
 
-  if (!blogPost) {
-    blogPost = await BlogPost.create({
+  try {
+    return await BlogPost.create({
       slug: normalizedSlug,
       title: normalizedTitle,
-      content: normalizedContent,
+      content: normalizedContent || normalizedTitle,
     });
-    return blogPost;
-  }
-
-  const shouldUpdateTitle = normalizedTitle && normalizedTitle !== blogPost.title;
-  const shouldUpdateContent = normalizedContent && normalizedContent !== blogPost.content;
-
-  if (shouldUpdateTitle || shouldUpdateContent) {
-    if (shouldUpdateTitle) {
-      blogPost.title = normalizedTitle;
+  } catch (error) {
+    if (Number(error?.code) === 11000) {
+      return BlogPost.findOne({ slug: normalizedSlug });
     }
-    if (shouldUpdateContent) {
-      blogPost.content = normalizedContent;
-    }
-    await blogPost.save();
+    throw error;
   }
-
-  return blogPost;
 };
 
 const parseSlugs = (rawSlugs) => {

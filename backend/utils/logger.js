@@ -4,6 +4,7 @@ const { randomUUID } = require("node:crypto");
 
 const isProd = process.env.NODE_ENV === "production";
 const REDACTED = "[REDACTED]";
+const REQUEST_ID_PATTERN = /^[A-Za-z0-9._-]{1,64}$/;
 const SENSITIVE_KEY_PATTERN = /(?:admin[_-]?key|api[_-]?secret|auth[_-]?jwt|authorization|cookie|credential|key[_-]?secret|mongodb[_-]?uri|pass(?:word)?|smtp[_-]?pass|token|webhook[_-]?secret)/i;
 const SECRET_ENV_KEYS = [
   "ADMIN_KEY",
@@ -76,8 +77,10 @@ const logger = pino({
 const requestLogger = pinoHttp({
   logger,
   genReqId: (req, res) => {
-    const existing = req.headers["x-request-id"];
-    const reqId = existing || randomUUID();
+    // Accept an upstream request ID only when it looks like one; otherwise mint our own,
+    // so a client cannot put arbitrary text into logs and error payloads.
+    const existing = String(req.headers["x-request-id"] || "");
+    const reqId = REQUEST_ID_PATTERN.test(existing) ? existing : randomUUID();
     res.setHeader("x-request-id", reqId);
     return reqId;
   },

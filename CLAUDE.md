@@ -24,7 +24,7 @@ There are three deployables:
 2. **Express API** (`backend/server.js`) on Render. It connects to MongoDB, Razorpay, Brevo SMTP (NodeMailer), Cloudinary avatars and Google Identity.
 3. **Vercel serverless functions** (`api/`): `content.js` serves `public/llms-full.txt` and `[...path].js` is the JSON 404 catch-all.
 
-`server.js` mounts only the contact, newsletter, auth, blog, activity and payment routers. `adminRoutes.js` and `feedbackRoutes.js` exist but aren't mounted. There is no AI chat endpoint (removed in `0d4b615`).
+`server.js` mounts only the contact, newsletter, auth, blog, activity and payment routers. There is no AI chat endpoint (removed in `0d4b615`; its leftover admin/feedback/conversation/ML-log routes, controllers and models were deleted on `fix/backend-hardening`). Express 4 doesn't catch async rejections, so wrap any async handler without its own try/catch in `utils/asyncHandler.js`; an unhandled rejection shuts the production process down.
 
 **Adding a client route:** register it in `src/App.jsx`, add its title/description to `STATIC` in `src/lib/seo.js`, and add an explicit rewrite to `/<route>/index.html` in `vercel.json`. The build (`scripts/route-heads.js`) writes `dist/<route>/index.html` with that route's own head (title, canonical, OG, JSON-LD) for every entry in `src/lib/seoRoutes.js`; dynamic routes (`/projects/:slug`, `/blog/:slug`, `/services/:slug`) rewrite to `/<path>/index.html`, so an unknown slug has no file and returns the real 404. A route without a rewrite returns a 404 in production.
 
