@@ -28,7 +28,7 @@ const authRoutes = require("./routes/authRoutes");
 const blogSupportRoutes = require("./routes/blogSupportRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
-const { generalRateLimiter } = require("./middleware/rateLimiter");
+const { RateLimiter, generalRateLimiter } = require("./middleware/rateLimiter");
 const { logger, requestLogger } = require("./utils/logger");
 const { initMonitoring, captureException } = require("./utils/monitoring");
 const { buildPublicErrorPayload } = require("./utils/publicError");
@@ -195,6 +195,7 @@ const gracefulShutdown = async ({ reason = "shutdown", exitCode = 0 } = {}) => {
 
   shutdownInProgress = true;
   logger.info({ reason }, "Graceful shutdown started");
+  RateLimiter.stopSweep();
 
   const closeServerPromise =
     server && typeof server.close === "function"

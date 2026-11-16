@@ -82,13 +82,9 @@ exports.subscribe = async (req, res) => {
       });
     }
 
-    // Get IP address and user agent
-    const ipAddress =
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.socket.remoteAddress ||
-      req.ip ||
-      "unknown";
-    const userAgent = req.headers["user-agent"] || "unknown";
+    // req.ip honours `trust proxy`; the raw first X-Forwarded-For entry is client-controlled.
+    const ipAddress = String(req.ip || req.socket?.remoteAddress || "unknown").slice(0, 80);
+    const userAgent = String(req.headers["user-agent"] || "unknown").slice(0, 300);
 
     // Create new subscriber
     const subscriber = await Newsletter.create({

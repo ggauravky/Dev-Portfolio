@@ -18,6 +18,7 @@ const {
   blogSupportStatusValidationRules,
   validate,
 } = require("../middleware/validator");
+const { asyncHandler } = require("../utils/asyncHandler");
 
 const router = express.Router();
 
@@ -27,9 +28,9 @@ router.get(
   attachOptionalUser,
   blogSupportStatusValidationRules,
   validate,
-  getSupportStatus
+  asyncHandler(getSupportStatus)
 );
-router.get("/support-counts", blogSupportRateLimiter, getSupportCounts);
+router.get("/support-counts", blogSupportRateLimiter, asyncHandler(getSupportCounts));
 router.get("/my-supports", blogSupportRateLimiter, requireAuth, getMySupports);
 router.post(
   "/support",
