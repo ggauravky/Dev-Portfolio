@@ -10,7 +10,8 @@
 // Hosts an answer may link to (the owner's public profiles and the site).
 const SAFE_HOSTS = new Set([
     'ggauravky.vercel.app', 'github.com', 'www.linkedin.com', 'linkedin.com', 'leetcode.com',
-    'www.codechef.com', 'www.geeksforgeeks.org',
+    'www.codechef.com', 'www.geeksforgeeks.org', 'geeksforgeeks.org',
+    'instagram.com', 'www.instagram.com', 'x.com', 'twitter.com',
 ])
 const SITE_HOST = 'ggauravky.vercel.app'
 const PATH_RE = /^\/[\w\-/#.]*$/
@@ -18,6 +19,9 @@ const PATH_RE = /^\/[\w\-/#.]*$/
 /** A safe link target, or null: { href, internal }. */
 export function safeHref(raw) {
     const url = String(raw || '').trim()
+    // Tap to call or write: digits-only tel:, one plain address for mailto:.
+    if (/^tel:\+?\d{6,15}$/.test(url)) return { href: url, internal: false, plain: true }
+    if (/^mailto:[^\s@/?#]+@[^\s@/?#]+\.[a-z]{2,}$/i.test(url)) return { href: url, internal: false, plain: true }
     if (PATH_RE.test(url) && !url.startsWith('//')) return { href: url, internal: true }
     let parsed
     try { parsed = new URL(url) } catch { return null }

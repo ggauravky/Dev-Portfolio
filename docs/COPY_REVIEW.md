@@ -197,3 +197,18 @@ New fixed copy in `src/components/chat/` and `lib/chat/providers.js`. Answers ma
 | 7 | Composer while locked | Placeholder "You can ask again at 17:23" | |
 | 8 | No-model fallback with a close FAQ | "The closest question Gaurav has answered is “…”" followed by that answer | |
 | 9 | Answer actions | "Copy" → "Copied" | |
+
+## Chat: playful replies and contact (2026-11-20, D-110)
+
+Fixed replies in `lib/chat/intents.js` and `lib/chat/handler.js`, sent with no model call. Repeats get the next line.
+
+| # | Trigger | Replies | ⚠ confirm |
+|---|---|---|---|
+| 1 | Hacking or credential requests | "Bold opening move. The only thing you can break into here is Gaurav’s portfolio, one project at a time. If security is your thing, ask how he handles secure logins in his own apps." · "Request denied, politely. If you’ve found a real vulnerability, Gaurav would genuinely like to know: the Contact page is the responsible way in." · "Still a no, and no hard feelings. I’m much more useful for questions about what Gaurav has built." | ⚠ |
+| 2 | Keyboard noise | "That looks like a cat took a walk across the keyboard. Try one of these instead." · "My keyboard-to-English decoder gave up on that one. A real question works much better, like one of these." · "Still unreadable, I’m afraid. Pick a question below and I’ll take it from there." | ⚠ |
+| 3 | Spam and link drops | "This chat only talks about Gaurav’s work, so promotions don’t get very far here. A genuine business enquiry is welcome on the Contact page." · "Noted, and politely ignored. Ask about Gaurav’s projects or services instead." | |
+| 4 | Personal questions | "That’s personal, so it stays with Gaurav. His work, on the other hand, is an open book: projects, internship, skills and services are all fair game." · "Some things aren’t on the site on purpose. Try one of these instead." | ⚠ |
+| 5 | Code or homework requests | "I’m Gaurav’s portfolio guide, not a code genie, so I won’t write or debug code here. For hands-on help, he offers an AI / Data Science Guidance service, and his other services are on the Services page." · "Still no code from me, sorry. Ask how Gaurav built his own projects instead; that I can explain." | |
+| 6 | Compliments | "Thank you, that’s kind. Gaurav designed and built this portfolio himself. Want to see what else he has made?" · "Appreciated. Anything you’d like to dig into next?" | ⚠ |
+| 7 | Nothing matches | "That one’s outside what I know. I only cover Gaurav: his projects, internship, skills, services and how to reach him. Try one of these:" · "Still off my map, I’m afraid. I’m a specialist in Gaurav’s work and nothing else. These I can answer well:" · "I’ll pass on that one too. Here are a few things I’m actually good at:" | |
+| 8 | Contact | "Gaurav’s Instagram: @ggauravky", then "Other ways to find him:" with every profile, the email and the phone, then "For work or hiring, the Contact page (/contact) is the quickest way to reach him." A platform he doesn't list: "Gaurav doesn’t list a Facebook account on the site. Here’s where you can find him:". Read from the ⌘K list, which already shows the phone number publicly. | ⚠ phone in chat |

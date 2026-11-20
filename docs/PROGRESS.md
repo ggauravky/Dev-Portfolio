@@ -330,6 +330,26 @@ Owner's brief: use the final dataset for answering; better formatting and sugges
   - `CACHE_SCHEMA` is 10, so answers cached under the old prompt expire unused.
 - **Gates:** `npm run build` ✓ (index up to date), `test:chat` **60/60** ✓, backend `npm test` 198/198 ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. No knowledge-base text in `dist/`; no `/api/chat` in `public/`.
 
+## Chat assistant: typo-proof answers, contact, playful edge cases (2026-11-20, uncommitted on `main`; to go on a `fix/` branch, D-110)
+Owner's report from the live site: typos ("intenship", "servises") and "insta id" got "I don't have anything on that"; hacking and keyboard-mash messages got flat replies; the chat opened scrolled down.
+- **Root cause (checked on production):** retrieval scores `0.7 × meaning + 0.3 × keywords`, and a typo zeroes the keyword half, so on-topic questions fell under the 0.48 cut-off.
+  - A strong meaning match now counts on its own (cosine ≥ 0.64). Measured live: on-topic questions scored 0.666–0.782, off-topic ones 0.480–0.604.
+  - Keywords get typo correction, plurals and Hinglish filler words.
+- **Contact:**
+  - Instagram, X, LinkedIn, GitHub, LeetCode, GeeksforGeeks, email and phone/WhatsApp come from the site's own ⌘K list, with no model call. The asked platform comes first, as a tappable handle.
+  - A platform he doesn't use is said plainly.
+- **Playful fixed replies** for hacking or password requests, spam and link drops, personal questions, code or homework requests, compliments, keyboard noise and off-topic questions. Each rotates on repeat and offers three questions that work. Copy is in COPY_REVIEW § "Chat: playful replies and contact".
+- **UI:**
+  - The chat opens at the top (it was being pinned to the bottom while the start screen laid out).
+  - Starter rows show an arrow on hover.
+  - Email and phone links are tappable.
+- **Checks:**
+  - 352 generated phrasings (projects × templates, typos, Hinglish, attacks, spam, personal, contact, off-topic): 0 misroutes.
+  - Live: the owner's six cases plus ten more answer as intended. "Current internship" now gives AshokSoft details, and noise after a real answer is still noise.
+  - Headless at 1470×760 and 390: opens at the top, contact links work.
+  - axe-core reports 0 violations.
+- **Gates:** `test:chat` **66/66** ✓, `npm run build` ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
 - Chat: owner reviews P-chat-1…3 and the ⚠ copy rows (`docs/COPY_REVIEW.md` § P-chat-2), adds the Vercel env vars, approves the commit, then checks a Vercel preview deploy (streaming, Atlas logging, the Privacy line).

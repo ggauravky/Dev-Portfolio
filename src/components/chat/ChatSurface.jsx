@@ -64,7 +64,9 @@ function Inline({ parts, onNavigate }) {
         if (part.t === 'link') {
             return part.internal
                 ? <Link key={i} to={part.href} replace className="chat-link" onClick={onNavigate}>{part.v}</Link>
-                : <a key={i} href={part.href} className="chat-link" target="_blank" rel="noopener noreferrer">{part.v}</a>
+                : part.plain
+                    ? <a key={i} href={part.href} className="chat-link">{part.v}</a>
+                    : <a key={i} href={part.href} className="chat-link" target="_blank" rel="noopener noreferrer">{part.v}</a>
         }
         return part.v
     })
@@ -448,12 +450,18 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
 
     // The answer grows inside its row while it is revealed, without a thread
     // change: keep the view pinned to the bottom as the column grows.
+    // With no conversation yet, the chat opens at the top (heading, intro and
+    // starters), never scrolled to the bottom while fonts and starters lay out.
+    const threadLength = useRef(thread.length)
+    threadLength.current = thread.length
     useEffect(() => {
         const col = colRef.current
         const node = scrollRef.current
-        if (!visible || !col || !node || typeof ResizeObserver === 'undefined') return undefined
+        if (!visible || !col || !node) return undefined
+        if (!threadLength.current) node.scrollTop = 0
+        if (typeof ResizeObserver === 'undefined') return undefined
         const observer = new ResizeObserver(() => {
-            if (stickRef.current) node.scrollTop = node.scrollHeight
+            if (stickRef.current && threadLength.current) node.scrollTop = node.scrollHeight
         })
         observer.observe(col)
         return () => observer.disconnect()
@@ -668,6 +676,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                                     <button type="button" className="chat-starter" disabled={locked} onClick={() => ask(starter)}>
                                         <span className="chat-starter__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                                         <span className="chat-starter__text">{starter}</span>
+                                        <span className="chat-starter__go" aria-hidden="true">→</span>
                                     </button>
                                 </li>
                             ))}

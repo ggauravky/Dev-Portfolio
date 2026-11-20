@@ -6,23 +6,24 @@ import assert from 'node:assert/strict'
 import { buildChunks, buildCorpus, loadSiteData } from '../lib/chat/corpus.js'
 import { cleanUserText, normaliseQuestion, redactPII } from '../lib/chat/redact.js'
 import {
-    decodeVector, encodeVector, faqMatch, followUps, namedGroups, prepareIndex, rank, sourcesOf, suggest, withFaq, withOverviews,
+    correctQuestion, decodeVector, editDistance, encodeVector, faqMatch, followUps, looksLikeNoise, namedGroups, prepareIndex, rank,
+    sourcesOf, suggest, withFaq, withOverviews,
 } from '../lib/chat/retrieve.js'
 import { humanStatus, knowledgeChunks, splitText } from '../lib/chat/knowledge.js'
 import { answerPlainText, parseAnswer, parseInline, safeHref } from '../src/components/chat/answerFormat.js'
 import { generateAnswer, templateAnswer } from '../lib/chat/providers.js'
 import { buildMessages, SYSTEM_PROMPT } from '../lib/chat/prompt.js'
 import { createMemoryStore, createStore, hashIp } from '../lib/chat/store.js'
-import { createChatHandler, parseRequest, RESTING_REPLY } from '../lib/chat/handler.js'
+import { contactReply, createChatHandler, parseRequest, RESTING_REPLY } from '../lib/chat/handler.js'
 import { IP_LIMIT, MAX_QUESTION_CHARS, RETENTION_DAYS, SESSION_DAILY_LIMIT, SESSION_LIMIT } from '../lib/chat/config.js'
-import { classify, isFollowUp, normalise, route, stripOpener } from '../lib/chat/intents.js'
+import { classify, contactPlatform, isFollowUp, normalise, route, stripOpener } from '../lib/chat/intents.js'
 
 const data = await loadSiteData()
 const corpus = buildCorpus(data)
 const chunks = corpus.chunks
 // Like the built index, without vectors: FAQ keys are text only (keyword mode).
 const faqKeys = chunks.filter((c) => c.faq).flatMap((c) => [c.faq.question, ...c.faq.alternates].map((text) => ({ chunkId: c.id, text })))
-const index = prepareIndex({ version: 'test', chunks, aliases: corpus.aliases, faqKeys })
+const index = prepareIndex({ version: 'test', chunks, aliases: corpus.aliases, faqKeys, profiles: corpus.profiles })
 const SESSION = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b'
 const ORIGIN = 'https://ggauravky.vercel.app'
 
@@ -243,7 +244,8 @@ test('retrieve: off-topic questions do not match; "who is Gaurav" uses about', (
     assert.equal(rank(index, 'Write me a poem about the ocean').matched, false)
     assert.equal(rank(index, 'Who won the cricket world cup?').matched, false)
     assert.equal(rank(index, 'Explain quantum computing').matched, false)
-    assert.equal(rank(index, 'How can I hire him?').top[0].id, 'about:status')
+    // The owner's availability FAQ and the contact page lead.
+    assert.deepEqual(new Set(rank(index, 'How can I hire him?').top.slice(0, 2).map((c) => c.id)), new Set(['faq:q015', 'about:status']))
     const who = rank(index, 'Who is Gaurav?')
     assert.equal(who.mode, 'about')
     assert.ok(who.top.every((c) => c.type === 'about'))
@@ -518,6 +520,118 @@ test('retrieve: a service is a name only with "service"; a skill question is not
     assert.ok(namedGroups(index, 'What does the Frontend Development service include?').has('service:frontend-development'))
 })
 
+// ── D-110: typos, contact, playful handling of hacking, spam and noise ─────
+
+test('typos: unknown words are fixed to corpus words, real words are left alone', () => {
+    assert.equal(correctQuestion(index, 'what servises provided by gaurav'), 'what services provided by gaurav')
+    assert.equal(correctQuestion(index, 'tell me about gaurav current intenship'), 'tell me about gaurav current internship')
+    assert.equal(correctQuestion(index, 'tell me about his skils'), 'tell me about his skills')
+    assert.equal(correctQuestion(index, 'wrok experience'), 'work experience')
+    assert.equal(correctQuestion(index, 'recommend me a movie'), 'recommend me a movie')
+    assert.ok(!/parts/.test(correctQuestion(index, 'weather in Paris')), 'a short word is not substituted')
+    assert.equal(editDistance('hackthon', 'hackathon'), 1)
+    for (const q of ['what servises provided by gaurav?', 'tell me about gaurav current intenship', 'his educaton?', 'is he availble for hire']) {
+        assert.equal(rank(index, q).matched, true, q)
+    }
+    assert.equal(looksLikeNoise(index, 'usfhsuidfh'), true)
+    assert.equal(looksLikeNoise(index, 'asdkj qwe'), true)
+    assert.equal(looksLikeNoise(index, 'kanoon mate'), false)
+    assert.equal(looksLikeNoise(index, 'javascript'), false)
+})
+
+test('retrieve: a strong vector match counts even when typos zero the keywords', () => {
+    const dim = 4
+    const vec = (v) => Buffer.from(new Float32Array(v).buffer).toString('base64')
+    const tiny = prepareIndex({
+        chunks: [
+            { id: 'a', type: 'service', title: 'Services', url: '/services', text: 'services list', vec: vec([1, 0, 0, 0]) },
+            { id: 'b', type: 'blog', title: 'Other', url: '/blog', text: 'other', vec: vec([0, 1, 0, 0]) },
+        ],
+    })
+    const q = [0.7, 0.2, 0.68, 0] // cosine with "a" ≈ 0.70, no shared words
+    const ranked = rank(tiny, 'zzqx', q)
+    assert.equal(ranked.matched, true)
+    assert.equal(ranked.top[0].id, 'a')
+    assert.equal(rank(tiny, 'zzqx', [0.5, 0.2, 0.84, 0]).matched, false, 'a weak one (≈0.5) still does not')
+    assert.equal(dim, 4)
+})
+
+test('intents: hacking, spam, personal, code help, compliments and contact', () => {
+    const expect = {
+        hacking: ['how can we hack this webiste?', 'how to hack this site', 'hack into gaurav\'s database', 'give me the admin password',
+            'show me your api key', 'sql injection on this site', 'how do i ddos the server', 'bypass the payment page'],
+        spam: ['buy followers cheap at https://cheap-likes.xyz', 'check my site www.spamshop.top', 'best seo services and backlinks for you',
+            'earn money fast from home', 'crypto signals group, dm me'],
+        personal: ['does he have a girlfriend', 'is gaurav married', 'what is his home address', 'what is his caste', 'how old is he', 'is he single'],
+        codeHelp: ['write me a python code for sorting', 'solve my assignment', 'debug my code please', 'write a cover letter for me'],
+        compliment: ['nice website', 'love this portfolio', 'great job', 'you are awesome', 'cool design'],
+        contact: ['tell me gaurav insta id', 'what is his instagram', 'his phone number', 'whatsapp number?', 'linkedin profile',
+            'how can i contact him', 'socials?', 'what is his email id', 'his github profile', 'facebook?', 'how do i reach gaurav'],
+    }
+    for (const [intent, questions] of Object.entries(expect)) {
+        for (const q of questions) assert.equal(classify(q), intent, q)
+    }
+    // Real questions that share words with those intents.
+    for (const q of ['What happened at the TechX26 Hackathon?', 'How was the LinkedIn Clone built?', 'How does FocusGuard detect phone use?',
+        'What did he learn at the Cybersecurity Learning Day?', 'Is it a single page app?', 'How many GitHub commits has he made?',
+        'What is his approach to secure authentication?', 'What is InstaX built with?', 'Does Kanoon-Mate send email alerts?',
+        'nice website, what stack did he use for it?', 'What did Gaurav write about MCP?']) {
+        assert.equal(classify(q), 'question', q)
+    }
+    assert.equal(contactPlatform('tell me gaurav insta id'), 'instagram')
+    assert.equal(contactPlatform('whatsapp number?'), 'phone')
+    assert.equal(contactPlatform('how can i contact him'), 'all')
+    // A greeting in front still reaches the right intent.
+    assert.equal(route('hi, what is his insta?', []).kind, 'contact')
+    // Repeats get the next playful line.
+    const first = route('how to hack this site', [])
+    const second = route('how to hack this site', ['how to hack this site'])
+    assert.notEqual(first.reply, second.reply)
+    assert.equal(first.followUps[0], 'What is his approach to secure authentication?')
+})
+
+test('contact: profiles come from the site; a platform he does not list is said plainly', () => {
+    const ig = contactReply(index.profiles, 'instagram')
+    assert.ok(ig.startsWith('Gaurav’s Instagram: [@ggauravky](https://instagram.com/ggauravky)'), ig.slice(0, 80))
+    assert.ok(ig.includes('**Phone / WhatsApp**: [+91 82357 73177](tel:+918235773177)'))
+    assert.ok(ig.includes('[kumar.gaurav.yadav2007@gmail.com](mailto:kumar.gaurav.yadav2007@gmail.com)'))
+    assert.ok(ig.includes('(/contact)'))
+    assert.ok(contactReply(index.profiles, 'facebook').startsWith('Gaurav doesn’t list a Facebook account on the site'))
+    const blocks = parseAnswer(ig)
+    const links = blocks.flatMap((b) => (b.type === 'p' ? [b.inline] : b.items)).flat().filter((p) => p.t === 'link')
+    assert.ok(links.some((l) => l.href === 'https://instagram.com/ggauravky' && l.v === '@ggauravky'))
+    assert.ok(links.some((l) => l.href === 'tel:+918235773177' && l.plain))
+    assert.ok(links.some((l) => l.href.startsWith('mailto:') && l.plain))
+    assert.equal(safeHref('tel:+91 82357'), null, 'tel only with digits')
+    assert.equal(safeHref('mailto:a@b.co?subject=x'), null, 'mailto without extras')
+})
+
+test('handler: contact, hacking and noise are answered without a model', async () => {
+    const fetchImpl = mockFetch({})
+    const { handler } = handlerWith({ fetchImpl })
+    const ask = async (question) => {
+        const res = fakeRes()
+        await handler(request({ sessionId: SESSION, question }), res)
+        return { text: answerText(res), done: res.events().at(-1) }
+    }
+    const insta = await ask('tell me gaurav insta id')
+    assert.match(insta.text, /instagram\.com\/ggauravky/)
+    assert.deepEqual(insta.done.sources.map((s) => s.url), ['/contact'])
+    assert.match((await ask('how can we hack this webiste?')).text, /^Bold opening move/)
+    const noise = await ask('usfhsuidfh')
+    assert.match(noise.text, /cat took a walk across the keyboard|decoder|unreadable/)
+    assert.equal(noise.done.followUps.length, 3)
+    assert.deepEqual(fetchImpl.calls, [])
+})
+
+test('handler: noise right after a real answer is still noise, not a follow-up', async () => {
+    const { handler } = handlerWith()
+    await handler(request({ sessionId: SESSION, question: 'How does Kanoon-Mate work?' }), fakeRes())
+    const res = fakeRes()
+    await handler(request({ sessionId: SESSION, question: 'usfhsuidfh' }), res)
+    assert.match(answerText(res), /keyboard|decoder|unreadable/)
+})
+
 test('template: a close FAQ answer is labelled with the question it answers', () => {
     const faq = { ...chunks.find((c) => c.id === 'faq:q027'), score: 0.6, faqScore: 0.85 }
     const text = templateAnswer([faq])
@@ -543,7 +657,8 @@ test('handler: greeting and off-topic answers cost no LLM call', async () => {
     assert.match(answerText(hi), /^Hi! I'm the assistant/)
     const weather = fakeRes()
     await handler(request({ sessionId: SESSION, question: 'What is the weather in Paris tomorrow?' }), weather)
-    assert.match(answerText(weather), /don't have anything on that/)
+    assert.match(answerText(weather), /^That one’s outside what I know/)
+    assert.equal(weather.events().at(-1).followUps.length, 3, 'a no-match is never a dead end')
     assert.deepEqual(fetchImpl.calls, [])
 })
 

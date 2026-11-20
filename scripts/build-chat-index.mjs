@@ -40,7 +40,7 @@ const readIndex = () => {
     try { return JSON.parse(readFileSync(INDEX, 'utf8')) } catch { return { chunks: [], faqKeys: [] } }
 }
 
-const { chunks, aliases } = buildCorpus(await loadSiteData())
+const { chunks, aliases, profiles } = buildCorpus(await loadSiteData())
 const faqKeys = chunks
     .filter((c) => c.faq)
     .flatMap((c) => [c.faq.question, ...c.faq.alternates].map((text) => ({ chunkId: c.id, text, hash: hashText(`q:${text}`) })))
@@ -97,6 +97,7 @@ const output = {
     enc: ENC,
     builtAt: new Date().toISOString(),
     aliases,
+    profiles,
     chunks: chunks.map((c) => ({ ...c, vec: fresh.get(`c:${c.id}`) || reuseChunk(c) })),
     faqKeys: faqKeys.map((k) => ({ ...k, vec: fresh.get(`k:${k.hash}`) || reuseKey(k) })),
 }

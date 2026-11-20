@@ -116,7 +116,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 .chat-starters li { border-bottom: 1px solid rgb(var(--rule)); }
 .chat-starter {
   display: grid;
-  grid-template-columns: 176px minmax(0, 1fr);
+  grid-template-columns: 176px minmax(0, 1fr) 24px;
   align-items: baseline;
   width: 100%;
   min-height: 56px;
@@ -136,6 +136,18 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 }
 .chat-starter:hover .chat-starter__text,
 .chat-starter:focus-visible .chat-starter__text { text-decoration-color: rgb(var(--accent)); }
+/* An arrow slides in on hover/focus: the row reads as "ask this". */
+.chat-starter__go {
+  justify-self: end;
+  color: rgb(var(--muted));
+  font: 400 15px/1 var(--font-sans);
+  opacity: 0;
+  transform: translate3d(-8px, 0, 0);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.chat-starter:hover .chat-starter__go,
+.chat-starter:focus-visible .chat-starter__go { opacity: 1; transform: none; color: rgb(var(--paper)); }
+.chat-starter:disabled .chat-starter__go { display: none; }
 
 /* === Thread === */
 .chat-thread { list-style: none; margin: 0; padding: 0; }
@@ -371,7 +383,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 /* === Tablet: a narrower label column === */
 @media (min-width: 768px) and (max-width: 1023px) {
   .chat__head { padding-left: 120px; }
-  .chat-starter,
+  .chat-starter { grid-template-columns: 120px minmax(0, 1fr) 24px; }
   .chat-row { grid-template-columns: 120px minmax(0, 1fr); }
   .chat-lock { padding-left: 120px; }
 }
@@ -390,7 +402,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   .chat-kbd { display: none; }
   .chat__col { padding: 32px 16px 144px; }
   .chat__head { margin-bottom: 32px; padding-left: 0; }
-  .chat-starter { grid-template-columns: 40px minmax(0, 1fr); }
+  .chat-starter { grid-template-columns: 40px minmax(0, 1fr) 16px; }
   .chat-row { grid-template-columns: minmax(0, 1fr); }
   .chat-row__label { padding: 0 0 8px; }
   .chat-row + .chat-row { margin-top: 16px; }
@@ -416,6 +428,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   .chat-follow,
   .chat-lock,
   .chat__latest { animation: none; }
+  .chat-starter__go { transition: none; }
   .chat-caret { animation: none; }
   html.chat-open .chrome,
   html.chat-open .dock-cluster { transition: none; }
