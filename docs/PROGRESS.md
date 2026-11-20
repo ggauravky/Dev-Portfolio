@@ -350,6 +350,42 @@ Owner's report from the live site: typos ("intenship", "servises") and "insta id
   - axe-core reports 0 violations.
 - **Gates:** `test:chat` **66/66** ✓, `npm run build` ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Chat assistant: spelling tolerance everywhere, more playful replies (2026-11-21, uncommitted on `main`, D-111)
+Owner's brief: questions with spelling mistakes should still be understood, and spam or needless messages should get smart, funny replies.
+- **Spelling:**
+  - One shared module, `lib/chat/fuzzy.js`, with conservative rules (`fuzzy.js` header).
+  - Search runs on the corrected question; the model sees the original plus a spelling hint.
+  - The intent layer fixes typos in trigger words and expands chat shorthand ("phne numbr pls", "hw to contct him", "whats his instagarm", "how to hakc ur website" all route correctly).
+- **New playful replies:** "test", jokes, flirting with the bot, and the same question three times in a row. Copy is in COPY_REVIEW § "Chat: shorthand, jokes and repeats".
+- **Checks:**
+  - 132 generated typo variants: 0 misroutes, all on-topic ones still match even without embeddings.
+  - 351 earlier phrasings: 0 misroutes.
+  - 30 correctly spelled questions: untouched.
+  - Live: "wat r his projcts", "tel me abt tasknexs", "which hakathons did he atend", "wht servises does he ofer", "phne numbr pls", "hw to contct him" all answered properly.
+- **Known:** "his skils in frontnd?" retrieves the right sections, but the small free model's answer was thin on that run.
+- **Gates:** `test:chat` **69/69** ✓, `npm run build` ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
+## Chat assistant: recruiter questions, hiring and fit by role (2026-11-21, uncommitted on `main`, D-112)
+Owner's brief: answer "why should I hire you?", "what are your abilities?" and "why hire you as a full-stack / AI / ML / data scientist?" (and the many variations) much better.
+- **Seven hiring summaries** built from the knowledge base: an overall case, plus full-stack, frontend, backend, AI engineer, ML engineer and data scientist.
+  - Each has fitting projects with their own stacks, role skills, experience, education, the related service and an honest level line.
+  - Ideas Gaurav only described are not used as evidence, and there are no inflated project counts.
+- **Routing:**
+  - Hiring and fit questions bring the overall case, plus each role named (up to three).
+  - "you/your/yourself" about his work means Gaurav.
+  - Pay questions get a fixed "discuss directly" reply with links to the service prices and the Contact page.
+  - "Why should I hire Gaurav?" is now a starter.
+- **Answer shape (prompt rule 18):**
+  - One sentence on what he brings, then 3–5 strength-plus-proof bullets.
+  - An honest level, and weaknesses only from his own growth areas.
+  - No counts, and no "production-ready" claims.
+  - It ends with the Contact page.
+- **Checks:**
+  - 248 recruiter phrasings reach the hiring summaries (0 misses).
+  - 350 earlier phrasings and 138 typo variants still route correctly, and 20 correctly spelled questions are untouched.
+  - Live: the owner's three questions (typos included), weaknesses, "tell me about yourself", "is he job ready?", salary and "stand out from other freshers".
+- **Gates:** `test:chat` **72/72** ✓, `npm run build` ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
+
 ## Next step
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
 - Chat: owner reviews P-chat-1…3 and the ⚠ copy rows (`docs/COPY_REVIEW.md` § P-chat-2), adds the Vercel env vars, approves the commit, then checks a Vercel preview deploy (streaming, Atlas logging, the Privacy line).

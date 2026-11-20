@@ -212,3 +212,20 @@ Fixed replies in `lib/chat/intents.js` and `lib/chat/handler.js`, sent with no m
 | 6 | Compliments | "Thank you, that’s kind. Gaurav designed and built this portfolio himself. Want to see what else he has made?" · "Appreciated. Anything you’d like to dig into next?" | ⚠ |
 | 7 | Nothing matches | "That one’s outside what I know. I only cover Gaurav: his projects, internship, skills, services and how to reach him. Try one of these:" · "Still off my map, I’m afraid. I’m a specialist in Gaurav’s work and nothing else. These I can answer well:" · "I’ll pass on that one too. Here are a few things I’m actually good at:" | |
 | 8 | Contact | "Gaurav’s Instagram: @ggauravky", then "Other ways to find him:" with every profile, the email and the phone, then "For work or hiring, the Contact page (/contact) is the quickest way to reach him." A platform he doesn't list: "Gaurav doesn’t list a Facebook account on the site. Here’s where you can find him:". Read from the ⌘K list, which already shows the phone number publicly. | ⚠ phone in chat |
+
+## Chat: shorthand, jokes and repeats (2026-11-21, D-111)
+
+| # | Trigger | Replies | ⚠ confirm |
+|---|---|---|---|
+| 1 | "test", "testing 123", a number | "Test received, loud and clear. Everything’s working, so ask me anything about Gaurav’s work." · "Still working, promise. Try a real question, like one of these." | |
+| 2 | "tell me a joke" | "Why do programmers prefer dark mode? Because light attracts bugs. This site is dark mode only, so you’re safe here. Want to see what Gaurav built instead?" · "I’d tell you a UDP joke, but you might not get it. Ask me about a project instead; those I deliver reliably." · "There are 10 kinds of people: those who read binary, and those who ask about Gaurav’s projects. Be the second kind?" | ⚠ |
+| 3 | Flirting with the assistant ("marry me", "are you single") | "Flattered, but I’m a chatbot in a committed relationship with Gaurav’s portfolio. I can introduce you to his projects, though." · "Still taken, by a very large JSON file about Gaurav’s work. Ask me about it?" | ⚠ |
+| 4 | The same question three times in a row | "Déjà vu: that’s the same message a few times in a row. My answer won’t change, but my patience is unlimited. Try something new:" · "Same question, same answer, I’m afraid. Here’s something different you could ask:" | |
+
+## Chat: recruiter questions (2026-11-21, D-112)
+
+| # | Where | Copy | ⚠ confirm |
+|---|---|---|---|
+| 1 | Starter (replaces "What did Gaurav write about MCP?") | "Why should I hire Gaurav?" | ⚠ |
+| 2 | Pay questions (expected salary, CTC, stipend, hourly rate) | "Pay is best discussed with Gaurav directly, since it depends on the role and the scope. For fixed-price work, his services list their prices on the Services page; for jobs and internships, the Contact page reaches him." · "That one’s for a direct conversation with Gaurav: the Contact page is the way. Fixed-price services show their prices on the Services page." | ⚠ |
+| 3 | Suggested questions from the hiring summaries | "Why should I hire Gaurav?" · "Why hire Gaurav as a full-stack developer?" · "Is Gaurav a good frontend developer?" · "What backend work has Gaurav done?" · "Why hire Gaurav as an AI engineer?" · "What machine learning work has Gaurav done?" · "Can Gaurav work as a data scientist?" | |

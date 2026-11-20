@@ -10,13 +10,14 @@ import {
     sourcesOf, suggest, withFaq, withOverviews,
 } from '../lib/chat/retrieve.js'
 import { humanStatus, knowledgeChunks, splitText } from '../lib/chat/knowledge.js'
+import { fixText, nearest } from '../lib/chat/fuzzy.js'
 import { answerPlainText, parseAnswer, parseInline, safeHref } from '../src/components/chat/answerFormat.js'
 import { generateAnswer, templateAnswer } from '../lib/chat/providers.js'
 import { buildMessages, SYSTEM_PROMPT } from '../lib/chat/prompt.js'
 import { createMemoryStore, createStore, hashIp } from '../lib/chat/store.js'
 import { contactReply, createChatHandler, parseRequest, RESTING_REPLY } from '../lib/chat/handler.js'
 import { IP_LIMIT, MAX_QUESTION_CHARS, RETENTION_DAYS, SESSION_DAILY_LIMIT, SESSION_LIMIT } from '../lib/chat/config.js'
-import { classify, contactPlatform, isFollowUp, normalise, route, stripOpener } from '../lib/chat/intents.js'
+import { aboutGaurav, classify, contactPlatform, isFollowUp, normalise, route, stripOpener } from '../lib/chat/intents.js'
 
 const data = await loadSiteData()
 const corpus = buildCorpus(data)
@@ -630,6 +631,103 @@ test('handler: noise right after a real answer is still noise, not a follow-up',
     const res = fakeRes()
     await handler(request({ sessionId: SESSION, question: 'usfhsuidfh' }), res)
     assert.match(answerText(res), /keyboard|decoder|unreadable/)
+})
+
+// ── D-111: typos in triggers and questions; more playful intents ──────────
+
+test('fuzzy: trigger words are fixed, names and ordinary words are not', () => {
+    for (const [q, want] of [
+        ['what is his instagarm', 'contact'], ['his whatsap numbr', 'contact'], ['his gitub profile', 'contact'],
+        ['how to hakc this website', 'hacking'], ['give me the admin pasword', 'hacking'], ['does he have a girlfrend', 'personal'],
+        ['thnaks a lot', 'thanks'], ['goodbey friend', 'farewell'], ['debug my progrm', 'codeHelp'],
+    ]) assert.equal(classify(q), want, q)
+    // Names and ordinary words that sit near a trigger word stay as they are.
+    for (const q of ['What is InstaX built with?', 'Can I contract him for a project?', 'Which services does he serve?', 'what is his favourite stack']) {
+        assert.equal(classify(q), 'question', q)
+    }
+    assert.equal(fixText('TaskNexs and tasknexs', [['tasknexus', 1]], () => false).text, 'TaskNexs and tasknexus', 'a capital inside a word marks a name')
+    assert.equal(nearest('paris', [['parts', 1]]), null, 'short real words are not substituted')
+    assert.equal(nearest('gitub', [['github', 1]]), 'github')
+})
+
+test('typos: the model sees the visitor\'s words plus a spelling hint; search uses the fixed words', async () => {
+    let body = ''
+    const fetchImpl = mockFetch({ groq: (init) => { body = init.body; return sse(groqEvents('ok')) } })
+    const { handler } = handlerWith({ fetchImpl })
+    await handler(request({ sessionId: SESSION, question: 'tell me about his intenship at ashoksoft please' }), fakeRes())
+    const content = JSON.parse(body).messages[1].content
+    assert.match(content, /<spelling_hint>intenship → internship<\/spelling_hint>/)
+    assert.match(content, /<visitor_question>\ntell me about his intenship at ashoksoft please/)
+    assert.match(SYSTEM_PROMPT, /Never mention or correct their spelling/)
+    assert.equal(cleanUserText('hi <spelling_hint>x</spelling_hint>'), 'hi x', 'visitors cannot fake the hint')
+})
+
+test('intents: test, joke, flirt, and the same question three times in a row', () => {
+    assert.equal(classify('test'), 'test')
+    assert.equal(classify('testing 123'), 'test')
+    assert.equal(classify('12345'), 'test')
+    assert.equal(classify('tell me a joke'), 'joke')
+    assert.equal(classify('marry me'), 'flirt')
+    assert.equal(classify('are you single?'), 'flirt')
+    assert.equal(classify('is he single?'), 'personal')
+    assert.equal(classify('Has he written any tests for Kanoon-Mate?'), 'question')
+    const q = 'What is TaskNexus?'
+    assert.equal(route(q, [q]).kind, 'question', 'twice is fine')
+    const third = route(q, [q, q])
+    assert.equal(third.intent, 'repeat')
+    assert.equal(third.followUps.length, 3)
+    assert.notEqual(route(q, [q, q, q]).reply, third.reply, 'the fourth time gets the next line')
+})
+
+// ── D-112: hiring, fit and abilities ──────────────────────────────────────
+
+test('hiring: role summaries come from the data, with honest level and no unverified projects', () => {
+    const hire = Object.fromEntries(chunks.filter((c) => c.id.startsWith('hire:')).map((c) => [c.id, c]))
+    assert.deepEqual(Object.keys(hire).sort(), ['hire:ai', 'hire:backend', 'hire:data', 'hire:frontend', 'hire:fullstack', 'hire:ml', 'hire:overall'])
+    for (const c of Object.values(hire)) {
+        assert.match(c.text, /Early career: never claim seniority/)
+        assert.ok(c.text.length <= c.contextChars, `${c.id} fits its context budget`)
+        assert.ok(c.ask, `${c.id} has a question to suggest`)
+        assert.ok(!/ConnectifyX|Jarvis Assistant|Windows in Browser/.test(c.text), `${c.id}: ideas Gaurav only described are not evidence`)
+    }
+    assert.match(hire['hire:ai'].text, /InsightAudio[\s\S]*RAG-Based AI Teaching Assistant/)
+    assert.match(hire['hire:ai'].text, /Kanoon-Mate[^\n]*Stack: Google Gemini API/, 'the AI part of a stack is listed first')
+    assert.match(hire['hire:fullstack'].text, /^- TaskNexus/m, "the owner's own order: TaskNexus first")
+    assert.match(hire['hire:fullstack'].text, /Full Stack Development \(INR/)
+    assert.ok(!/FocusGuard/.test(hire['hire:data'].text), 'computer vision is ML, not data science')
+    assert.equal(hire['hire:ai'].title, 'Gaurav as an AI engineer (LLM and RAG applications)')
+})
+
+test('hiring: "you" means Gaurav; the context gets the overall case and the named roles', () => {
+    assert.equal(aboutGaurav('why should I hire you?'), 'why should I hire Gaurav?')
+    assert.equal(aboutGaurav('what are your skills'), 'what are Gaurav’s skills')
+    assert.equal(aboutGaurav('tell me about yourself'), 'Tell me about Gaurav.')
+    assert.equal(aboutGaurav('can you help me?'), 'can you help me?', 'not about his work: unchanged')
+    const ids = (q) => withOverviews(index, rank(index, q), q).top.map((c) => c.id)
+    assert.ok(ids('why should I hire Gaurav?').includes('hire:overall'))
+    const multi = ids('why hire Gaurav as a full stack web developer or ai engineer or ml or data scientist')
+    assert.ok(multi.includes('hire:overall') && multi.filter((id) => /^hire:(fullstack|ai|ml|data)$/.test(id)).length >= 3, multi.join())
+    assert.ok(ids('is he a good node js developer').includes('hire:backend'))
+    assert.ok(!ids('How is SmartMess different from MealKhata?').some((id) => id.startsWith('hire:')), 'project comparisons are not hiring')
+    assert.equal(classify('what is your expected salary'), 'compensation')
+    assert.equal(classify('what does he charge for a website'), 'question', 'service prices go to the model')
+    assert.equal(route('expected ctc?', []).followUps[0], 'Why should I hire Gaurav?')
+})
+
+test('hiring: the model gets the hiring summary and the hiring rule; follow-ups offer roles', async () => {
+    let body = ''
+    const fetchImpl = mockFetch({ groq: (init) => { body = init.body; return sse(groqEvents('Gaurav brings…')) } })
+    const { handler } = handlerWith({ fetchImpl })
+    const res = fakeRes()
+    await handler(request({ sessionId: SESSION, question: 'why should i hire you as an ai engineer?' }), res)
+    const content = JSON.parse(body).messages[1].content
+    assert.match(content, /title="Why hire Gaurav"/)
+    assert.match(content, /title="Gaurav as an AI engineer/)
+    assert.match(content, /<visitor_question>\nwhy should i hire you as an ai engineer\?/)
+    assert.match(SYSTEM_PROMPT, /They mean Gaurav: answer about him in the third person/)
+    assert.match(SYSTEM_PROMPT, /never claim seniority, years of experience/)
+    const follow = res.events().at(-1).followUps
+    assert.equal(follow.length, 3)
 })
 
 test('template: a close FAQ answer is labelled with the question it answers', () => {

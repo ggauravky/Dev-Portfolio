@@ -13,6 +13,6 @@ export const STARTERS = [
     'Where has Gaurav worked?', // knowledge base: faq q006
     'What happened at the TechX26 Hackathon?', // journeyData: techx26-hackathon-2026
     "What's in the Full Stack Development service, and what does it cost?", // servicesData: fullstack-development
-    'What did Gaurav write about MCP?', // blogs: what-is-mcp
+    'Why should I hire Gaurav?', // the hiring summaries built from the knowledge base (D-112)
     'Is he available for internships or work?', // knowledge base: faq q015
 ]
