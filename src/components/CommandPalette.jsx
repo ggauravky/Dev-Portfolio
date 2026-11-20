@@ -19,6 +19,7 @@ import { useRecentSearches } from '../hooks/useRecentSearches'
 import { useFocusTrap } from '../hooks/useFocusTrap'
 import { siteStatus } from '../data/siteStatus'
 import { DOCK_PAGES } from './chrome/Dock'
+import { CHAT_ENABLED, openChat } from './chat/chatEvents'
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -56,6 +57,9 @@ const IDLE_PAGES = DOCK_PAGES.map((page) => ({
 }))
 
 const IDLE_ACTIONS = [
+    ...(CHAT_ENABLED
+        ? [{ id: 'idle-ask', title: 'Ask the site assistant', desc: 'Questions about Gaurav’s work, answered from this site', category: CATEGORIES.ACTIONS, type: 'action', actionId: 'ask' }]
+        : []),
     { id: 'idle-copy-email', title: 'Copy email address', desc: siteStatus.email, category: CATEGORIES.ACTIONS, type: 'action', actionId: 'copy-email' },
     { id: 'idle-resume', title: 'Open resume', desc: 'PDF, opens in a new tab', icon: FileText, category: CATEGORIES.QUICK_ACTIONS, type: 'external', url: siteStatus.resumeUrl },
     { id: 'idle-github', title: 'Open GitHub', desc: siteStatus.links.github.replace('https://', ''), category: CATEGORIES.SOCIAL, type: 'external', url: siteStatus.links.github },
@@ -421,6 +425,12 @@ export default function CommandPalette({ isOpen, onClose }) {
             } else if (cmd.type === 'action') {
                 if (cmd.actionId === 'copy-email') copy(siteStatus.email, 'Email copied')
                 else if (cmd.actionId === 'copy-url') copy(window.location.href, 'Link copied')
+                else if (cmd.actionId === 'ask') {
+                    // Close first, so the palette's focus trap is gone before the chat's starts.
+                    onClose()
+                    setSearch('')
+                    openChat()
+                }
             }
         } catch (_) {
             // Any error during command execution — close gracefully

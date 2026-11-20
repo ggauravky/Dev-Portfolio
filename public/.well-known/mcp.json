@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "name": "Gaurav Kumar Yadav — Portfolio resources",
-  "description": "Index of machine-readable, read-only resources about the developer portfolio of Gaurav Kumar Yadav (ggauravky). There is no live MCP server or chat API; agents should read the resources below over plain HTTPS GET.",
+  "description": "Index of machine-readable, read-only resources about the developer portfolio of Gaurav Kumar Yadav (ggauravky). There is no MCP server and no public API beyond these resources; agents should read the resources below over plain HTTPS GET.",
   "url": "https://ggauravky.vercel.app",
   "contact": "kumar.gaurav.yadav2007@gmail.com",
   "capabilities": [

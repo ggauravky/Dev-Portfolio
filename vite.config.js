@@ -57,6 +57,14 @@ function copyrightBannerPlugin() {
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Dev only: /api/chat goes to the local harness (`npm run chat:dev`, :8787).
+  // In production it is the same-origin Vercel function.
+  server: {
+    proxy: { '/api/chat': 'http://localhost:8787' },
+  },
+  preview: {
+    proxy: { '/api/chat': 'http://localhost:8787' },
+  },
   plugins: [
     // Pre-JS header shells for /projects and /projects/:slug (D-057).
     routeShells(),

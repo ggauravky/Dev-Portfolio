@@ -5,7 +5,7 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType } from 'react-router-dom'
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 import { MotionConfig } from 'framer-motion'
 import PropTypes from 'prop-types'
 
@@ -20,12 +20,15 @@ import RouteWipe from './components/chrome/RouteWipe'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
 import { pingBackend } from './utils/backendPing'
 import { initializeAnalytics, trackPageView } from './utils/analytics'
+import { OPEN_CHAT_EVENT, loadChatSurface } from './components/chat/chatEvents'
 import { About, Blog, BlogPost, Contact, Journey, Projects, ProjectDetail, ServiceDetail, Services, Skills } from './lib/routeChunks'
 
 import Home from './pages/Home'
 
 const loadCommandPalette = () => import('./components/CommandPalette')
 const CommandPalette = lazy(loadCommandPalette)
+// The chat surface is its own lazy chunk, fetched on intent (P-chat-2, D-104).
+const ChatSurface = lazy(loadChatSurface)
 
 // Routes with a static header shell (Projects, case studies and the P5 pages)
 // come from src/lib/routeChunks.js (D-057). Projects is prefetched at once, as
@@ -251,6 +254,20 @@ function App() {
         }
     }, [])
 
+    // Chat: mounted on first open (the chunk was prefetched on intent).
+    const [chat, setChat] = useState({ mounted: false, open: false, question: '', opener: null })
+    useEffect(() => {
+        const onOpen = (event) => setChat({
+            mounted: true,
+            open: true,
+            question: event.detail?.question || '',
+            opener: document.activeElement instanceof HTMLElement ? document.activeElement : null,
+        })
+        window.addEventListener(OPEN_CHAT_EVENT, onOpen)
+        return () => window.removeEventListener(OPEN_CHAT_EVENT, onOpen)
+    }, [])
+    const closeChat = useCallback(() => setChat((c) => ({ ...c, open: false, question: '' })), [])
+
     useEffect(() => {
         const prefetch = () => { loadCommandPalette().catch(() => {}) }
         if ('requestIdleCallback' in window) {
@@ -277,6 +294,11 @@ function App() {
                 {paletteMounted ? (
                     <Suspense fallback={null}>
                         <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />
+                    </Suspense>
+                ) : null}
+                {chat.mounted ? (
+                    <Suspense fallback={null}>
+                        <ChatSurface open={chat.open} question={chat.question} onClose={closeChat} returnFocusTo={chat.opener} />
                     </Suspense>
                 ) : null}
                 <NetworkStatusBanner />

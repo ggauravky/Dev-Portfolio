@@ -1,4 +1,10 @@
 {
+    "functions": {
+        "api/chat.js": {
+            "maxDuration": 30,
+            "includeFiles": "lib/chat/corpus-index.json"
+        }
+    },
     "rewrites": [
         {
             "source": "/umami/script.js",

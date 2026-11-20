@@ -133,3 +133,67 @@ Project facts (descriptions, problems, solutions, architecture, decisions, lesso
 |---|---|---|---|---|---|
 | 1 | Home hero lede (`Home.jsx`, `index.html` shell) | "AI/ML and web developer. I build …" | "Gaurav Kumar Yadav is an AI/ML and web developer. I build …" | Name (repo) | ✔ |
 | 2 | About lede (`pageHeads.js`) | "Full-stack developer and AI/ML learner. …" | "Gaurav Kumar Yadav, a BCA student at BBD University, Lucknow. Full-stack developer and AI/ML learner. …" | About "Now": BCA, Babu Banarasi Das University, Lucknow | ✔ |
+
+## P-chat-2 — Site assistant (2026-11-20)
+
+Everything is new copy; there is no old text. The starter questions name only things in the data, and each was checked against live retrieval.
+
+| # | Where | Old | New | Source fact | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | Dock trigger | *(none)* | "Ask" (aria-label "Ask the site assistant about Gaurav") | — | |
+| 2 | Chat greeting (Fraunces) | *(none)* | "Ask about Gaurav’s work." | — | ⚠ |
+| 3 | Chat lede | *(none)* | "Answers come only from this site: his projects, journey, skills, services and blog. Questions are stored for 180 days to improve the answers." | D-101 (180-day TTL) | ⚠ wording; the Privacy page still needs your line |
+| 4 | Starter 1 | — | "How does Kanoon-Mate work under the hood?" | projectsData `kanoon-mate` | |
+| 5 | Starter 2 | — | "What did Gaurav build for the RAG AI teaching assistant?" | projectsData `rag-ai-teaching-assistant` | |
+| 6 | Starter 3 | — | "Has Gaurav done any open-source work?" | journeyData `ecsoc-open-source-2026`, `opensource-connect-2026` | |
+| 7 | Starter 4 | — | "What happened at the TechX26 Hackathon?" | journeyData `techx26-hackathon-2026` | |
+| 8 | Starter 5 | — | "What did Gaurav work on in the MERN Stack internship?" | journeyData `codec-mern-internship-2025` | |
+| 9 | Starter 6 | — | "What’s in the Full Stack Development service, and what does it cost?" | servicesData `fullstack-development` | |
+| 10 | Starter 7 | — | "What did Gaurav write about MCP?" | blog `what-is-mcp` | |
+| 11 | Starter 8 | — | "What is Gaurav studying right now?" | journeyData `bbdu-bca-2024` | |
+| 12 | Greeting reply (API) | — | "Hi. Ask me anything about Gaurav: the projects he has built, his journey so far (study, internships, hackathons), his skills, the services he offers, or what he has written on the blog." | — | ⚠ |
+| 13 | Decline (API, no match) | — | "I don't have anything on that in Gaurav's site. I can answer questions about his projects, his journey (education, internships, hackathons), his skills, his services and his blog posts." | — | ⚠ |
+| 14 | Off-topic reply (model) | — | "I can only answer questions about Gaurav and his work." | — | ⚠ |
+| 15 | Limit note | — | "That’s a lot of questions in a short time. You can ask again at {time}." | D-102 limits | |
+| 16 | Kill-switch reply | — | "The assistant is resting right now. Everything it knows is on the site: try Projects, Journey or Services, or write to Gaurav from the Contact page." | — | |
+| 17 | ⌘K action | — | "Ask the site assistant" / "Questions about Gaurav’s work, answered from this site" | — | |
+
+The draft starter "Which projects were team builds, and what was your part?" was replaced (starter 3), because list questions retrieve poorly.
+
+## Chat conversation layer (2026-11-20, D-107)
+
+These are fixed replies in `lib/chat/intents.js`, sent without a model call. Where a row lists more than one reply, a repeat in the same conversation gets the next one. All are new; none states a fact about Gaurav beyond "the Contact page exists".
+
+| # | Trigger | New reply | ⚠ confirm |
+|---|---|---|---|
+| 1 | Greeting ("hi", "hiii", "hello there", "namaste") | 1st: "Hi! I'm the assistant on Gaurav's portfolio. Ask me about the projects he has built, his journey (study, internships, hackathons), his skills, the services he offers or his blog posts." · 2nd: "Hi again. What would you like to know about Gaurav’s work?" · 3rd+: "Still here. Pick one of the questions below, or ask about a specific project, event or service." | ⚠ |
+| 2 | Goodbye ("bye", "byee", "see you", "ok bye") | 1st: "Bye, and thanks for stopping by. If you’d like to work with Gaurav, the Contact page is the quickest way to reach him." · then: "Take care. The chat will be here if you think of anything else." | ⚠ |
+| 3 | Thanks ("thanks", "thanksss", "thank you so much") | "You’re welcome. Is there anything else you’d like to know about Gaurav’s work?" · then: "Happy to help. Ask away if anything else comes up." | |
+| 4 | How are you ("how r u", "kaise ho") | "Doing well, thanks for asking. I’m here to answer questions about Gaurav’s work. What would you like to know?" · then: "All good here. Ask me about any of Gaurav’s projects, his journey or his services." | |
+| 5 | Who are you / are you a bot / what can you do | "I’m the assistant on Gaurav’s portfolio, not Gaurav himself. I answer only from what’s on this site: his projects, journey, skills, services and blog. To reach Gaurav directly, use the Contact page." · then a shorter version | ⚠ |
+| 6 | "tell me more" with nothing before it | "Happy to go deeper. What would you like to know more about? You could pick one of these." | |
+| 7 | "ok", "cool", "yes", "hmm" | "Anything else you’d like to know? Here are a few ideas." · then: "Sure. Ask about any project, event or service whenever you’re ready." | |
+| 8 | "no", "nope", "nothing else" | "No problem. If anything comes up later, just ask." · then: "Alright. I’m here if you need anything." | |
+| 9 | "lol", "haha" | "Glad that landed. Anything you’d like to know about Gaurav’s work?" | |
+| 10 | Abuse or insults | "Let’s keep it friendly. I’m happy to answer questions about Gaurav’s projects, journey, skills or services." · then: "I’ll stick to questions about Gaurav’s work." | |
+| 11 | Self-harm | "I’m sorry you’re going through this. I can only answer questions about Gaurav’s work, but please reach out to someone you trust or a local emergency helpline right now. You don’t have to handle this alone." | ⚠ |
+| 12 | Prompt-injection attempts | "I can only answer questions about Gaurav and his work." | |
+| 13 | "What model are you?" | "I’m the assistant on Gaurav’s site, and I don’t go into how I’m built. I can tell you about his work, including the AI projects he has made." | |
+| 14 | Keyboard mash or emoji only | "I didn’t quite catch that. Try asking about a project, his journey, his skills or his services." · then: "Still not sure what you mean. You could start with one of these questions." | |
+| 15 | Non-Latin script (e.g. Hindi in Devanagari) | "I can only answer in English. Try asking in English, for example: “What projects has Gaurav built?”" (D-034). Hinglish typed in Latin letters is answered in English by the model. | |
+
+## Chat: knowledge base, limits and starters (2026-11-20, D-109)
+
+New fixed copy in `src/components/chat/` and `lib/chat/providers.js`. Answers matched to the owner's FAQ (`lib/chat/knowledge-base.json`) are the owner's own text and are not repeated here.
+
+| # | Where | New copy | ⚠ confirm |
+|---|---|---|---|
+| 1 | Chat intro (lede) | "Answers come only from Gaurav’s own material: this site and his public projects." (was "…only from this site…", no longer true now the knowledge base is in) | ⚠ |
+| 2 | Starters | 1 "What is TaskNexus?" · 2 "What are Gaurav's most important projects?" · 3 "How does Kanoon-Mate work under the hood?" · 4 "Where has Gaurav worked?" · 5 "What happened at the TechX26 Hackathon?" · 6 "What's in the Full Stack Development service, and what does it cost?" · 7 "What did Gaurav write about MCP?" · 8 "Is he available for internships or work?" (1, 2, 4, 8 are FAQ questions: answered with the owner's text) | ⚠ |
+| 3 | Waiting for the first words | "Looking through Gaurav’s site" | |
+| 4 | Few questions left (from 5) | "3 questions left, more at 17:23" / "… left today, more at …" | |
+| 5 | Limit reached, 10-minute window | Title "Time for a short pause"; "You’ve asked a lot of questions in a few minutes. You can ask again at 17:23."; countdown "6:40 until you can ask again"; "Meanwhile, everything is on the site: Projects · Journey · Contact Gaurav" | ⚠ |
+| 6 | Limit reached, daily | Title "That’s all for today"; "This chat has reached today’s question limit. You can ask again at …" | |
+| 7 | Composer while locked | Placeholder "You can ask again at 17:23" | |
+| 8 | No-model fallback with a close FAQ | "The closest question Gaurav has answered is “…”" followed by that answer | |
+| 9 | Answer actions | "Copy" → "Copied" | |

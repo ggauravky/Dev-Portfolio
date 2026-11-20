@@ -17,6 +17,7 @@ import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { useMagnetic } from '../../hooks/useMagnetic'
 import { siteStatus, isAvailable } from '../../data/siteStatus'
 import { SPRING } from '../../lib/motion'
+import ChatTrigger from '../chat/ChatTrigger'
 import './Dock.css'
 
 // If the chunk fails, the dock still works: it just doesn't morph.
@@ -253,6 +254,7 @@ function Dock() {
 
     return (
         <LazyMotion features={loadFeatures} strict>
+            <div className={`dock-cluster ${open ? 'has-open-dock' : ''}`}>
             <nav
                 ref={rootRef}
                 aria-label="Main"
@@ -358,6 +360,9 @@ function Dock() {
                     ) : null}
                 </m.div>
             </nav>
+            {/* A sibling, not a menu item: hovering it must not open the dock. */}
+            <ChatTrigger />
+            </div>
         </LazyMotion>
     )
 }

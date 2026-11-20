@@ -6,13 +6,52 @@
  * no blur. Accent marks only the current page and the availability dot.
  */
 
-.dock {
+/* The dock and the chat trigger ("Ask") sit together, centred at the bottom. */
+.dock-cluster {
   position: fixed;
   left: 50%;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   transform: translateX(-50%);
+}
+
+.dock {
   transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+/* === Chat trigger: a second, shorter dock segment === */
+.chat-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 54px; /* the dock pill's outer height: 44 + 2×4 padding + 2×1 border */
+  padding: 0 20px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: 27px; /* design-allow: dock pill */
+  background: rgb(var(--ink-raised));
+  color: rgb(var(--paper));
+  font: 400 14px/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chat-trigger:hover { background: rgb(var(--paper) / 0.06); }
+.chat-trigger.is-hinting { animation: chat-hint var(--dur-slow) var(--ease-out) 1; }
+@keyframes chat-hint {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-trigger.is-hinting { animation: none; }
+}
+/* While the full menu is open there is no room beside it (it stacks on small
+   screens and nearly fills 1024–1279px), so the trigger steps aside. */
+@media (max-width: 1279px) {
+  .dock-cluster.has-open-dock .chat-trigger { display: none; }
 }
 
 .dock-panel {
