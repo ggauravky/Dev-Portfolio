@@ -72,6 +72,26 @@ npm run dev
    - `VITE_API_URL`: Render backend origin, without a trailing `/api` path.
 4. Deployment Output: Built to `dist/` automatically.
 
+### Site assistant (`POST /api/chat`, Vercel function)
+Server-only variables, set in Vercel for Production and Preview. None of them is a `VITE_*` variable.
+
+| Variable | Required | Notes |
+|---|---|---|
+| `GROQ_API_KEY` | for LLM answers | Groq console. Turn on **Zero Data Retention** under Data Controls. |
+| `GEMINI_API_KEY` | for embeddings and the fallback model | Google AI Studio. Also put it in a local, gitignored `.env.local` to run `npm run chat:index`. |
+| `CHAT_IP_HASH_SALT` | yes | 32+ random bytes (e.g. `openssl rand -hex 32`). It salts the stored IP hash. |
+| `CHAT_MONGODB_URI` | for logging and shared limits | Use a separate Atlas user with `readWrite` on the `portfolio_chat` database only. Atlas Network Access must allow Vercel's dynamic IPs. |
+| `CHAT_ALLOWED_ORIGINS` | no | A comma-separated list of exact origins. It defaults to `https://ggauravky.vercel.app`. |
+| `CHAT_ENABLED` | no | `0` makes the API reply with a "resting" message (kill switch). |
+
+When a variable is missing, the chat degrades instead of failing:
+- With no Groq key, Gemini answers.
+- With no LLM key at all, the answer is a template built from the matching pages.
+- With no Gemini key, retrieval is keyword-only.
+- With no Mongo URI, limits are per instance and turns are not logged.
+
+To run it locally: `npm run chat:dev` starts a harness on `:8787`. Send it a JSON body with `curl -N` and `Origin: http://localhost:5173`.
+
 ---
 
 ## 3. Production Build Verification

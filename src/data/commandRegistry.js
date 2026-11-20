@@ -597,6 +597,19 @@ export const STATIC_COMMANDS = [
         aliases: ['share portfolio', 'portfolio link', 'clipboard url'],
         keywords: ['copy url', 'share portfolio', 'copy link', 'share site', 'portfolio link', 'url', 'link', 'share', 'clipboard url', 'share link'],
     },
+    // The site assistant (D-104). Hidden when VITE_CHAT_ENABLED=false.
+    ...(import.meta.env?.VITE_CHAT_ENABLED === 'false' ? [] : [{
+        id: 'action-ask',
+        title: 'Ask the site assistant',
+        category: CATEGORIES.ACTIONS,
+        desc: 'Questions about Gaurav’s work, answered from this site',
+        type: 'action',
+        actionId: 'ask',
+        badge: 'Action',
+        priority: 74,
+        aliases: ['ask', 'assistant', 'question'],
+        keywords: ['ask', 'assistant', 'ask a question', 'question', 'help', 'ai', 'chatbot', 'ask gaurav', 'site assistant'],
+    }]),
 ]
 
 // ─── DYNAMIC GENERATORS ───────────────────────────────────────────────────────

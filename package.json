@@ -6,17 +6,21 @@
     "scripts": {
         "dev": "vite",
         "generate:image-variants": "node scripts/generate-image-variants.js",
-        "build": "node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && vite build",
+        "build": "node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && node scripts/build-chat-index.mjs --check && vite build",
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js",
         "test:blog": "node --test scripts/blog-data.test.mjs",
         "test:github": "node --test scripts/github-activity.test.mjs",
-        "check:design": "node scripts/check-design.mjs"
+        "check:design": "node scripts/check-design.mjs",
+        "chat:index": "node scripts/build-chat-index.mjs",
+        "chat:dev": "node scripts/chat-dev-server.mjs",
+        "test:chat": "node --test scripts/chat.test.mjs"
     },
     "dependencies": {
         "cmdk": "^1.1.1",
         "framer-motion": "^12.34.3",
         "lucide-react": "^1.25.0",
+        "mongodb": "^6.22.0",
         "prop-types": "^15.8.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

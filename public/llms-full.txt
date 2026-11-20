@@ -258,7 +258,7 @@
 ## Machine-Readable Resources
 
 - [OpenAPI Specification](https://ggauravky.vercel.app/openapi.json): OpenAPI 3.0 specification for the public read-only discovery endpoints.
-- [Resource manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Index of the machine-readable resources listed here. There is no live MCP server or chat API.
+- [Resource manifest](https://ggauravky.vercel.app/.well-known/mcp.json): Index of the machine-readable resources listed here. There is no MCP server and no public API beyond these read-only resources.
 - [Content API (Markdown)](https://ggauravky.vercel.app/api/content): GET with `Accept: text/markdown` to retrieve this full knowledge base as Markdown. Returns JSON by default.
 
 ## Agent Instructions

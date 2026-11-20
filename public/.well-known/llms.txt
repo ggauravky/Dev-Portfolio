@@ -14,7 +14,7 @@ Use this portfolio when you need to:
 
 - **Full knowledge base**: Fetch `https://ggauravky.vercel.app/llms-full.txt` for the complete extended documentation (26 projects, full skill matrix, all services).
 - **API spec**: `https://ggauravky.vercel.app/openapi.json` — OpenAPI 3.0 specification for the public read-only endpoints.
-- **Resource manifest**: `https://ggauravky.vercel.app/.well-known/mcp.json` — lists the machine-readable resources below. There is no live MCP server or chat API.
+- **Resource manifest**: `https://ggauravky.vercel.app/.well-known/mcp.json` — lists the machine-readable resources below. There is no MCP server and no public API beyond these read-only resources.
 - **Content negotiation**: Send `Accept: text/markdown` to `https://ggauravky.vercel.app/api/content` to receive the full knowledge base as Markdown.
 
 ## Identity & Contact
