@@ -81,7 +81,26 @@ After reconciliation, the backend issues its own short-lived JWT in the `portfol
 
 ## 7. Site Assistant (chat)
 
-The assistant answers questions about Gaurav using only this site's data and the owner's knowledge base (`lib/chat/knowledge-base.json`, D-109). It is a Vercel function, not part of the Render backend: Render's free instance sleeps after 15 idle minutes and takes about a minute to wake. Decisions D-097–D-105.
+The assistant answers questions about Gaurav using only this site's data and the owner's knowledge base (`lib/chat/knowledge-base.json`, D-109). It is a Vercel function, not part of the Render backend: Render's free instance sleeps after 15 idle minutes and takes about a minute to wake. Decisions D-097–D-113; D-113 is the reliability and grounding review.
+
+```mermaid
+flowchart TD
+  A[POST /api/chat] --> B[Boundary: origin, fetch metadata, body]
+  B --> C[Visitor: signed HttpOnly cookie]
+  C --> D[Limits: conversation, visitor, network; one request per visitor]
+  D --> E[Router: staged detectors with reasons]
+  E -->|small talk, contact, pay, attack, spam| F[Fixed reply, no model]
+  E -->|question| G[Planner: entities, parts, comparison]
+  G --> H[Retriever: one embedding, hybrid rank, per-entity evidence]
+  H --> I{FAQ decision}
+  I -->|equivalent| J[Owner's FAQ answer]
+  I -->|supporting or none| K[Quota manager: free models, tokens, cooldowns, start cap]
+  K -->|quota or outage| L[Grounded fallback]
+  K --> M[Stream with source markers]
+  M --> N[Citation check]
+  N --> O[done: cited sources, quota, flags]
+  D -. Mongo down .-> P[Emergency: 3 model calls a minute per instance]
+```
 
 **Request path** (`POST /api/chat` → `api/chat.js` → `lib/chat/handler.js`)
 1. **Validation** (not a public API, D-108):
@@ -91,21 +110,31 @@ The assistant answers questions about Gaurav using only this site's data and the
    - at most 2 earlier questions as history; earlier answers are never sent back
 2. **Conversation layer** (`intents.js`, D-107): small talk, unsafe input, gibberish and other scripts get fixed replies with no model call; replies change when repeated. The server reads the session's recent turns, so follow-ups ("tell me more", "what stack did it use?", "the hackathon before that") are resolved against the previous answer, and dates are compared in code.
 3. **Cleaning:** control characters and chat-template tokens are stripped; emails and phone numbers become `[email]`/`[phone]` (`redact.js`).
-4. **Rate limits** (`store.js`, MongoDB `portfolio_chat.chat_rate`): fixed 10-minute windows, 18 messages per session and 60 per salted IP hash, plus 80 per session per day and site-wide per-minute provider caps. Over the limit the stream carries one `limit` event with a retry time.
+4. **Visitor and limits** (`visitor.js`, `store.js`, D-113): a signed HttpOnly cookie identifies an anonymous visitor (not a person: scripts can drop it). Fixed windows in `chat_rate`, all atomic `$inc`:
+   - per conversation 18 per 10 minutes and 80 per day; per visitor 30 and 120; per network (salted IP hash, Vercel's own header) 300 per 10 minutes, plus 120 *model calls*;
+   - new visitor ids per network capped at 30 an hour, past which they get no model calls;
+   - one request at a time per visitor (`chat_locks`, TTL); a parallel one gets a `busy` event.
+   Over a limit the stream carries one `limit` event with a retry time.
 5. **Retrieval** (`retrieve.js`, `knowledge.js`, D-109):
    - Corpus (`lib/chat/corpus-index.json`, 317 chunks): the site's projects, journey, skills, services, blog sections, status and four overviews, plus the knowledge base's project records, roadmaps, 68 FAQ pairs and profile sections. Every knowledge-base chunk carries its status (documented, planned, user reported, historical), which goes to the model.
    - Hybrid `0.7·cosine + 0.3·BM25`; a project the question names gets a boost; at most 2 chunks per project or section in the context (3 for a named project).
-   - FAQ: every FAQ question and alternate phrasing (108 keys) is embedded as a query and matched question-to-question. At cosine ≥ 0.91 the owner's answer is sent as written with no model call; at ≥ 0.80 it leads the context.
+   - FAQ: every FAQ question and alternate phrasing (108 keys) is embedded as a query and matched question-to-question. The owner's answer is sent as written (no model call) only for an equivalent question: exact wording, or cosine ≥ 0.92 with a 0.03 lead over the next FAQ, the same names, the same question type and no extra time or duty cue. Otherwise a match ≥ 0.78 leads the context (D-113).
+   - Planner (`plan.js`): a question naming several projects, with several parts, or comparing, gets 2 chunks per named entity and 1 per part, up to 8 chunks and 7,000 characters, sources tagged with their entity. Simple questions use 5 chunks.
    - Vectors are `gemini-embedding-001`, 768 dims, stored as int8. Brute force in memory; there is no vector database.
    - If the query can't be embedded, BM25 and word-overlap FAQ matching run alone behind a rarity-weighted coverage gate.
 6. **Generation** (`providers.js`, `prompt.js`):
-   - Groq `openai/gpt-oss-20b`, then Gemini `gemini-3.5-flash-lite`, then a templated answer: the closest FAQ answer, labelled with its question, or else the matched pages. Each provider is skipped on no key, a spent daily budget, a non-2xx, no first token within 8 s, or an empty stream; it never switches after the first token.
+   - Free-tier models only, in `CHAT_PROVIDER_ORDER` (default Groq `openai/gpt-oss-20b`, then Gemini `gemini-3.5-flash-lite`), then a grounded fallback: the closest FAQ answer, labelled with its question, or else the matched pages.
+   - Quota manager (`quota.js`, D-113): requests and tokens per minute and per day are reserved before a call and settled with the provider's reported usage; a 429/503 sets a shared cooldown from the retry hint; at most 6 generations start per 10 seconds site-wide. If MongoDB is unreachable, each instance may make 3 model calls a minute.
+   - A provider is skipped on no key, a refused quota, a cooldown, a non-2xx, no first token within 8 s, or a malformed or empty stream; it never switches after the first token, and a cut answer carries `cut` so the client offers a retry.
+   - The model cites `[n]`; `cite.js` drops markers that point nowhere, builds the links from the cited sources, and flags numbers or a project's technologies missing from the evidence (a lexical check, not proof).
    - The system prompt fences context and question as data and has fixed decline phrases. A decline drops sources and follow-ups.
-7. **Response:** NDJSON, `delta` events then one `done` with at most 3 sources, 3 follow-ups and the visitor's quota (`left`, `limit`, `scope`, `resetAt`); a `limit` event says whether the 10-minute or the daily cap was hit. Follow-ups are the owner's FAQ questions closest to the answer, picked with maximal marginal relevance and never one already asked; no extra model call.
+7. **Response:** NDJSON, `delta` events then one `done` with at most 3 sources, 3 follow-ups, the visitor's quota (`left`, `limit`, `scope`, `resetAt`), `citations` (marker → source), and `unverified`/`cut` when they apply; a `limit` event says whether the 10-minute or the daily cap was hit; `busy` means a request is already running. Follow-ups are the owner's FAQ questions closest to the answer, picked with maximal marginal relevance and never one already asked; no extra model call.
 8. **Storage:**
    - `chat_turns`: redacted question, answer, chunk ids, provider, latency, salted IP hash; TTL 180 days.
    - `chat_cache`: repeated first questions, 24 h, keyed by `CACHE_SCHEMA` and the corpus version.
-   - Nothing stored is returned to the client. If MongoDB is unreachable, limits fall back to per-instance memory and turns are not logged.
+   - `chat_locks`: per-visitor locks and shared provider cooldowns, TTL.
+   - Nothing stored is returned to the client. If MongoDB is unreachable, counters fall back to per-instance memory marked `shared: false` (emergency mode for model calls) and turns are not logged.
+   - Freshness: the index version covers every text and name the runtime reads; `npm run build` fails while `corpus-index.json` is stale or the knowledge base is malformed.
 
 **Client** (`src/components/chat/`)
 - "Ask" (`ChatTrigger`) sits beside the dock. `ChatSurface` is a lazy chunk fetched on hover, focus or touch, and it injects its own CSS so the global stylesheet doesn't grow.
@@ -115,4 +144,4 @@ The assistant answers questions about Gaurav using only this site's data and the
 
 **Configuration:** every limit and model name is in `lib/chat/config.js`. Environment variables are listed in `docs/DEPLOYMENT.md` ("Site assistant"). Kill switches: `CHAT_ENABLED=0` (API) and `VITE_CHAT_ENABLED=false` (hides the trigger).
 
-**Tests:** `npm run test:chat` (providers, the embedder and MongoDB are mocked). `npm run chat:dev` runs the real handler locally on `:8787`; Vite proxies `/api/chat` to it in dev and preview.
+**Tests:** `npm run test:chat` runs unit tests, the evaluation datasets in `scripts/chat-eval/` (routing, typos, recruiter, security, multi-part) and reliability tests with a fake MongoDB (providers, the embedder and MongoDB are mocked). `npm run chat:dev` runs the real handler locally on `:8787`; Vite proxies `/api/chat` to it in dev and preview.

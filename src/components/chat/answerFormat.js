@@ -33,10 +33,10 @@ export function safeHref(raw) {
     return { href: parsed.href, internal: false }
 }
 
-// **bold** | [label](url) | (/site/path) | bare https URL
-const INLINE_RE = /\*\*([^*\n]+?)\*\*|\[([^\]\n]{1,120})\]\(([^)\s]+)\)|\((\/[\w\-/#.]*)\)|(https?:\/\/[^\s)<>"]+)/g
+// **bold** | [label](url) | (/site/path) | bare https URL | citation [2] or [1, 3]
+const INLINE_RE = /\*\*([^*\n]+?)\*\*|\[([^\]\n]{1,120})\]\(([^)\s]+)\)|\((\/[\w\-/#.]*)\)|(https?:\/\/[^\s)<>"]+)|\s?\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\](?!\()/g
 
-/** Inline text → [{ t: 'text'|'strong'|'link', v, href?, internal? }]. */
+/** Inline text → [{ t: 'text'|'strong'|'link'|'cite', v, href?, internal?, n? }]. */
 export function parseInline(text) {
     const out = []
     let last = 0
@@ -47,7 +47,10 @@ export function parseInline(text) {
     }
     for (const m of String(text).matchAll(INLINE_RE)) {
         if (m.index > last) push({ t: 'text', v: text.slice(last, m.index) })
-        if (m[1] !== undefined) {
+        if (m[6] !== undefined) {
+            // Source markers (D-113): one part per number.
+            for (const n of m[6].split(',')) out.push({ t: 'cite', v: n.trim(), n: Number(n) })
+        } else if (m[1] !== undefined) {
             push({ t: 'strong', v: m[1] })
         } else if (m[2] !== undefined) {
             const link = safeHref(m[3])
@@ -125,6 +128,6 @@ export function parseAnswer(text) {
 /** The answer as plain text (for Copy): markup removed, links kept as text. */
 export const answerPlainText = (text) => parseAnswer(text)
     .map((block) => (block.type === 'p'
-        ? block.inline.map((part) => part.v).join('')
-        : block.items.map((item, i) => `${block.type === 'ol' ? `${i + 1}.` : '-'} ${item.map((part) => part.v).join('')}`).join('\n')))
+        ? block.inline.filter((part) => part.t !== 'cite').map((part) => part.v).join('')
+        : block.items.map((item, i) => `${block.type === 'ol' ? `${i + 1}.` : '-'} ${item.filter((part) => part.t !== 'cite').map((part) => part.v).join('')}`).join('\n')))
     .join('\n\n')

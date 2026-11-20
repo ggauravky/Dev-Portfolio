@@ -64,7 +64,7 @@ async function collect(stream) {
     let text = ''
     let provider = null
     for await (const part of stream) {
-        if (typeof part === 'object') provider = part.provider
+        if (typeof part === 'object') { if (part.provider) provider = part.provider }
         else text += part
     }
     return { text, provider }
@@ -365,7 +365,7 @@ test('providers: a failure after the first token ends the reply, no switch', asy
 test('providers: no keys, spent budget, or no match → template without LLM calls', async () => {
     const fetchImpl = mockFetch({})
     assert.equal((await collect(generateAnswer(baseArgs(fetchImpl, { keys: {} })))).provider, 'template')
-    assert.equal((await collect(generateAnswer(baseArgs(fetchImpl, { allow: async () => false })))).provider, 'template')
+    assert.equal((await collect(generateAnswer(baseArgs(fetchImpl, { quota: { reserve: async () => ({ ok: false, reason: 'test' }) } })))).provider, 'template')
     const offTopic = await collect(generateAnswer(baseArgs(fetchImpl, { matched: false, chunks: [] })))
     assert.equal(offTopic.provider, 'template')
     assert.match(offTopic.text, /don't have anything on that/)
@@ -430,13 +430,30 @@ test('hashIp: salted, stable, never the raw IP', () => {
 
 // ── handler ───────────────────────────────────────────────────────────────
 
+// General handler tests don't exercise the free-tier quotas (their own tests
+// do, with `quota: 'real'`): mocked providers report no token usage, so the
+// estimates would pile up across a test's turns.
+const OPEN_QUOTA = {
+    reserve: async () => ({ ok: true, reserved: 0 }), settle: async () => {}, cooldown: async () => {}, state: { emergency: false },
+}
+
+// Like one browser: the visitor cookie the server sets is sent back (D-113).
+// `jar: false` behaves like a script that drops cookies.
 const handlerWith = (overrides = {}) => {
     const store = overrides.store || createMemoryStore()
     const fetchImpl = overrides.fetchImpl || mockFetch({ groq: () => sse(groqEvents('Gaurav built ', 'Kanoon-Mate.')) })
-    const handler = createChatHandler({
-        env: env(overrides.env), store, fetchImpl, index, log: () => {},
-        embed: overrides.embed || (async () => null), firstTokenMs: 60, idleMs: 60,
+    const raw = createChatHandler({
+        env: env(overrides.env), store, fetchImpl, index, log: overrides.log || (() => {}),
+        quota: overrides.quota === 'real' ? undefined : overrides.quota || OPEN_QUOTA,
+        embed: overrides.embed || (async () => null), firstTokenMs: 60, idleMs: 60, now: overrides.now,
     })
+    let cookie = ''
+    const handler = async (req, res) => {
+        if (overrides.jar !== false && cookie && !req.headers.cookie) req.headers.cookie = cookie
+        await raw(req, res)
+        const set = res.headers['set-cookie']
+        if (set && overrides.jar !== false) cookie = String(set).split(';')[0]
+    }
     return { handler, store, fetchImpl }
 }
 
@@ -861,7 +878,9 @@ test('intents: a greeting or thanks in front of a question is stripped', () => {
     assert.equal(stripOpener('Hi, what projects has Gaurav built?'), 'what projects has Gaurav built?')
     assert.equal(stripOpener('thanks! and what about Kanoon-Mate?'), 'and what about Kanoon-Mate?')
     assert.equal(stripOpener('Hello there'), null)
-    assert.deepEqual(route('Hey! How does Kanoon-Mate work?', []), { kind: 'question', question: 'How does Kanoon-Mate work?' })
+    const routed = route('Hey! How does Kanoon-Mate work?', [])
+    assert.deepEqual({ kind: routed.kind, question: routed.question }, { kind: 'question', question: 'How does Kanoon-Mate work?' })
+    assert.equal(routed.reason, 'question', 'every routing decision carries a reason (D-113)')
 })
 
 test('intents: follow-up detection', () => {
@@ -961,10 +980,10 @@ test('handler: a session is capped per day across windows', async () => {
 
 test('handler: past the per-minute provider cap, the template answers', async () => {
     const store = createMemoryStore()
-    for (let i = 0; i < 30; i += 1) await store.count('pm:groq', 60 * 1000)
-    for (let i = 0; i < 30; i += 1) await store.count('pm:gemini', 60 * 1000)
+    for (let i = 0; i < 30; i += 1) await store.count('q:groq:rpm', 60 * 1000)
+    for (let i = 0; i < 30; i += 1) await store.count('q:gemini:rpm', 60 * 1000)
     const fetchImpl = mockFetch({})
-    const { handler } = handlerWith({ store, fetchImpl })
+    const { handler } = handlerWith({ store, fetchImpl, quota: 'real' })
     const res = fakeRes()
     await handler(request({ sessionId: SESSION, question: 'What happened at the TechX26 Hackathon?' }), res)
     assert.match(answerText(res), /^Here's what the site has on that:/)

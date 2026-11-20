@@ -229,3 +229,11 @@ Fixed replies in `lib/chat/intents.js` and `lib/chat/handler.js`, sent with no m
 | 1 | Starter (replaces "What did Gaurav write about MCP?") | "Why should I hire Gaurav?" | ⚠ |
 | 2 | Pay questions (expected salary, CTC, stipend, hourly rate) | "Pay is best discussed with Gaurav directly, since it depends on the role and the scope. For fixed-price work, his services list their prices on the Services page; for jobs and internships, the Contact page reaches him." · "That one’s for a direct conversation with Gaurav: the Contact page is the way. Fixed-price services show their prices on the Services page." | ⚠ |
 | 3 | Suggested questions from the hiring summaries | "Why should I hire Gaurav?" · "Why hire Gaurav as a full-stack developer?" · "Is Gaurav a good frontend developer?" · "What backend work has Gaurav done?" · "Why hire Gaurav as an AI engineer?" · "What machine learning work has Gaurav done?" · "Can Gaurav work as a data scientist?" | |
+
+## Chat: reliability notes (2026-11-21, D-113)
+
+| # | Where | Copy | ⚠ confirm |
+|---|---|---|---|
+| 1 | A second question while one is still being answered | "Still answering your previous question. Try again in a moment." | |
+| 2 | Under an answer whose details didn't all match a source | "Some details here couldn’t be matched to Gaurav’s sources, so check the linked pages." | ⚠ |
+| 3 | Under an answer cut short by a provider failure | Button "Try again" (after the existing "(The answer was cut short. Please ask again.)") | |

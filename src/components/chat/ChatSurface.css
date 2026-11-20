@@ -181,6 +181,18 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 .chat-row__a li + li { margin-top: 8px; }
 .chat-row__a li::marker { color: rgb(var(--muted)); font-variant-numeric: tabular-nums; }
 .chat-strong { color: rgb(var(--paper)); font-weight: 600; }
+/* Source markers (D-113): small, muted, linked to the cited page. */
+.chat-cite {
+  margin-left: 2px;
+  color: rgb(var(--muted));
+  font: 400 0.68em/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.chat-cite + .chat-cite::before { content: ","; margin-right: 1px; }
+.chat-cite .chat-link { color: inherit; text-underline-offset: 2px; }
+.chat-cite .chat-link:hover,
+.chat-cite .chat-link:focus-visible { color: rgb(var(--paper)); }
+.chat-unverified { margin-top: 8px; font-size: 13px; }
 
 .chat-note { color: rgb(var(--muted)); }
 .chat-row__a .chat-note + .chat-note { margin-top: 8px; }

@@ -5,8 +5,10 @@
 // knowledge base (D-100, D-109).
 //   npm run chat:index           embed new or changed texts (needs GEMINI_API_KEY
 //                                in the environment or .env.local), write the file
-//   npm run chat:index -- --check  no network, no writes: warn when the committed
-//                                index is out of date (runs inside `npm run build`)
+//   npm run chat:index -- --check  no network, no writes: FAIL (exit 1) when the
+//                                committed index is out of date or the knowledge
+//                                base is malformed (runs inside `npm run build`, so
+//                                a stale index can't be deployed, D-113)
 // Without a key it still writes every chunk, keeping vectors whose text is
 // unchanged; chunks without a vector make the API fall back to keyword search.
 //
@@ -19,7 +21,8 @@
 // cosine ranking is unchanged to about two decimal places.
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { buildCorpus, hashText, loadSiteData } from '../lib/chat/corpus.js'
+import { buildCorpus, corpusVersion, faqKeysOf, loadSiteData } from '../lib/chat/corpus.js'
+import { validateKnowledgeBase } from '../lib/chat/knowledge.js'
 import { embedDocuments } from '../lib/chat/providers.js'
 import { EMBED_DIM, EMBED_MODEL } from '../lib/chat/config.js'
 import { encodeVector } from '../lib/chat/retrieve.js'
@@ -40,26 +43,32 @@ const readIndex = () => {
     try { return JSON.parse(readFileSync(INDEX, 'utf8')) } catch { return { chunks: [], faqKeys: [] } }
 }
 
-const { chunks, aliases, profiles } = buildCorpus(await loadSiteData())
-const faqKeys = chunks
-    .filter((c) => c.faq)
-    .flatMap((c) => [c.faq.question, ...c.faq.alternates].map((text) => ({ chunkId: c.id, text, hash: hashText(`q:${text}`) })))
+const data = await loadSiteData()
+const problems = validateKnowledgeBase(data.kb)
+if (problems.length) {
+    console.error(`[chat:index] lib/chat/knowledge-base.json has ${problems.length} problem(s):\n  ${problems.slice(0, 20).join('\n  ')}`)
+    process.exit(1)
+}
+const { chunks, aliases, profiles } = buildCorpus(data)
+const faqKeys = faqKeysOf(chunks)
 
 const previous = readIndex()
 const reusable = previous.model === EMBED_MODEL && previous.dim === EMBED_DIM && previous.enc === ENC
 const oldChunks = new Map((previous.chunks || []).map((c) => [c.id, c]))
 const oldKeys = new Map((previous.faqKeys || []).map((k) => [k.hash, k]))
-const version = hashText([...chunks.map((c) => c.hash), ...faqKeys.map((k) => k.hash)].join(''))
+// Everything the runtime reads: chunk texts, FAQ keys, project names, profiles.
+const version = corpusVersion({ chunks, faqKeys, aliases, profiles })
 
 if (check) {
     const stale = chunks.filter((c) => oldChunks.get(c.id)?.hash !== c.hash).length
         + faqKeys.filter((k) => !oldKeys.has(k.hash)).length
     const unembedded = (previous.chunks || []).filter((c) => !c.vec).length
     if (previous.version !== version || unembedded) {
-        console.warn(`[chat:index] lib/chat/corpus-index.json is out of date: ${stale} new/changed texts, ${unembedded} chunks without vectors. Run \`npm run chat:index\` with GEMINI_API_KEY set.`)
-    } else {
-        console.log(`[chat:index] up to date (${chunks.length} chunks, ${faqKeys.length} FAQ keys, version ${version}).`)
+        console.error(`[chat:index] lib/chat/corpus-index.json is out of date: ${stale} new/changed texts, ${unembedded} chunks without vectors.`)
+        console.error('[chat:index] Run `npm run chat:index` locally (needs GEMINI_API_KEY in .env.local; only changed texts are re-embedded), then commit lib/chat/corpus-index.json.')
+        process.exit(1)
     }
+    console.log(`[chat:index] up to date (${chunks.length} chunks, ${faqKeys.length} FAQ keys, version ${version}).`)
     process.exit(0)
 }
 

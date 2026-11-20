@@ -46,6 +46,7 @@ const ERRORS = {
     EMPTY_QUESTION: 'Type a question first.',
     NETWORK: "The assistant couldn't be reached. Check your connection and try again.",
     DEFAULT: 'Something went wrong on the assistant’s side. Please try again.',
+    BUSY: 'Still answering your previous question. Try again in a moment.',
 }
 
 /** Map a failed request to an ERRORS key: a known server code, a fetch failure, or the default. */
@@ -58,8 +59,31 @@ function errorCode(error) {
 // in → open and out → closed when the wipe ends (or its fail-safe timer fires).
 const SETTLED = { in: 'open', out: 'closed' }
 
-function Inline({ parts, onNavigate }) {
+/**
+ * A source marker: a small superscript linking to the cited page once the
+ * answer is done; while it streams, just the number; a number the server
+ * didn't confirm is hidden (D-113).
+ */
+function Cite({ n, citations, settled, onNavigate }) {
+    const source = citations?.[n]
+    if (!source) return settled ? null : <sup className="chat-cite">{n}</sup>
+    const link = safeHref(source.url)
+    const label = `Source ${n}: ${source.title}`
+    if (!link) return <sup className="chat-cite" title={source.title}>{n}</sup>
+    return (
+        <sup className="chat-cite">
+            {link.internal
+                ? <Link to={link.href} replace className="chat-link" aria-label={label} title={source.title} onClick={onNavigate}>{n}</Link>
+                : <a href={link.href} className="chat-link" aria-label={`${label} (opens in a new tab)`} title={source.title} target="_blank" rel="noopener noreferrer">{n}</a>}
+        </sup>
+    )
+}
+
+Cite.propTypes = { n: PropTypes.number.isRequired, citations: PropTypes.object, settled: PropTypes.bool, onNavigate: PropTypes.func.isRequired }
+
+function Inline({ parts, onNavigate, citations, settled }) {
     return parts.map((part, i) => {
+        if (part.t === 'cite') return <Cite key={i} n={part.n} citations={citations} settled={settled} onNavigate={onNavigate} />
         if (part.t === 'strong') return <strong key={i} className="chat-strong">{part.v}</strong>
         if (part.t === 'link') {
             return part.internal
@@ -73,14 +97,15 @@ function Inline({ parts, onNavigate }) {
 }
 
 /** Paragraphs, lists, bold names and safe links (answerFormat.js); no innerHTML. */
-function AnswerText({ text, onNavigate }) {
+function AnswerText({ text, onNavigate, citations, settled }) {
     const blocks = useMemo(() => parseAnswer(text), [text])
+    const inline = (parts) => <Inline parts={parts} onNavigate={onNavigate} citations={citations} settled={settled} />
     return blocks.map((block, i) => {
-        if (block.type === 'p') return <p key={i}><Inline parts={block.inline} onNavigate={onNavigate} /></p>
+        if (block.type === 'p') return <p key={i}>{inline(block.inline)}</p>
         const List = block.type === 'ol' ? 'ol' : 'ul'
         return (
             <List key={i}>
-                {block.items.map((item, j) => <li key={j}><Inline parts={item} onNavigate={onNavigate} /></li>)}
+                {block.items.map((item, j) => <li key={j}>{inline(item)}</li>)}
             </List>
         )
     })
@@ -144,9 +169,16 @@ function TurnBody({ turn, isLast, onRetry, onNavigate, reveal }) {
     return (
         <>
             {waiting ? <p className="chat-note chat-searching">Looking through Gaurav’s site</p> : null}
-            {reveal.visible ? <AnswerText text={reveal.visible} onNavigate={onNavigate} /> : null}
+            {reveal.visible ? (
+                <AnswerText text={reveal.visible} onNavigate={onNavigate} citations={turn.citations} settled={turn.status === 'done' && reveal.done} />
+            ) : null}
             {turn.status === 'streaming' || !reveal.done ? <span className="chat-caret" aria-hidden="true" /> : null}
             {turn.status === 'stopped' ? <p className="chat-note">Stopped.</p> : null}
+            {turn.status === 'done' && turn.cut && isLast ? (
+                <p className="chat-note">
+                    <button type="button" className="chat-inline-btn" onClick={() => onRetry(turn)}>Try again</button>
+                </p>
+            ) : null}
         </>
     )
 }
@@ -226,6 +258,11 @@ function Turn({ turn, onAsk, onRetry, onNavigate, isLast, locked }) {
                             ) : <span />}
                             <CopyButton text={turn.a} />
                         </div>
+                    ) : null}
+                    {settled && turn.unverified ? (
+                        <p className="chat-note chat-unverified">
+                            Some details here couldn’t be matched to Gaurav’s sources, so check the linked pages.
+                        </p>
                     ) : null}
 
                     {isLast && settled && turn.followUps?.length ? (
@@ -546,14 +583,18 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                     answer += text
                     update(id, (t) => ({ a: t.a + text }))
                 },
-                onDone: ({ sources, followUps, quota: left }) => {
-                    update(id, { status: 'done', sources, followUps })
+                onDone: ({ sources, followUps, quota: left, citations, unverified, cut }) => {
+                    update(id, { status: 'done', sources, followUps, citations, unverified, cut })
                     setAnnounce(answer)
                     if (left && typeof left.left === 'number') {
                         // The last question of the window: lock now, not after a refused one.
                         setQuota(left.left > 0 ? left : { ...left, until: left.resetAt })
                         setNow(Date.now())
                     }
+                },
+                onBusy: () => {
+                    update(id, { status: 'error', error: 'BUSY' })
+                    setAnnounce(ERRORS.BUSY)
                 },
                 onLimit: (retryAt, scope) => {
                     update(id, { status: 'limit', retryAt, scope })

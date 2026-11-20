@@ -1,0 +1,1157 @@
+[
+ {
+  "q": "why should i hire you",
+  "expect": "hire"
+ },
+ {
+  "q": "why should i hire him",
+  "expect": "hire"
+ },
+ {
+  "q": "why should i hire gaurav",
+  "expect": "hire"
+ },
+ {
+  "q": "why should i hire u",
+  "expect": "hire"
+ },
+ {
+  "q": "why i hire you",
+  "expect": "hire"
+ },
+ {
+  "q": "why i hire him",
+  "expect": "hire"
+ },
+ {
+  "q": "why i hire gaurav",
+  "expect": "hire"
+ },
+ {
+  "q": "why i hire u",
+  "expect": "hire"
+ },
+ {
+  "q": "why would we hire you",
+  "expect": "hire"
+ },
+ {
+  "q": "why would we hire him",
+  "expect": "hire"
+ },
+ {
+  "q": "why would we hire gaurav",
+  "expect": "hire"
+ },
+ {
+  "q": "why would we hire u",
+  "expect": "hire"
+ },
+ {
+  "q": "give me 3 reasons to hire you",
+  "expect": "hire"
+ },
+ {
+  "q": "give me 3 reasons to hire him",
+  "expect": "hire"
+ },
+ {
+  "q": "give me 3 reasons to hire gaurav",
+  "expect": "hire"
+ },
+ {
+  "q": "give me 3 reasons to hire u",
+  "expect": "hire"
+ },
+ {
+  "q": "convince me to hire you",
+  "expect": "hire"
+ },
+ {
+  "q": "convince me to hire him",
+  "expect": "hire"
+ },
+ {
+  "q": "convince me to hire gaurav",
+  "expect": "hire"
+ },
+ {
+  "q": "convince me to hire u",
+  "expect": "hire"
+ },
+ {
+  "q": "why is you a good candidate",
+  "expect": "hire"
+ },
+ {
+  "q": "why is him a good candidate",
+  "expect": "hire"
+ },
+ {
+  "q": "why is gaurav a good candidate",
+  "expect": "hire"
+ },
+ {
+  "q": "why is u a good candidate",
+  "expect": "hire"
+ },
+ {
+  "q": "is you worth hiring",
+  "expect": "hire"
+ },
+ {
+  "q": "is him worth hiring",
+  "expect": "hire"
+ },
+ {
+  "q": "is gaurav worth hiring",
+  "expect": "hire"
+ },
+ {
+  "q": "is u worth hiring",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes you stand out",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes him stand out",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes gaurav stand out",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes u stand out",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes you different from other candidates",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes him different from other candidates",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes gaurav different from other candidates",
+  "expect": "hire"
+ },
+ {
+  "q": "what makes u different from other candidates",
+  "expect": "hire"
+ },
+ {
+  "q": "what value can you bring to my team",
+  "expect": "hire"
+ },
+ {
+  "q": "what value can him bring to my team",
+  "expect": "hire"
+ },
+ {
+  "q": "what value can gaurav bring to my team",
+  "expect": "hire"
+ },
+ {
+  "q": "what value can u bring to my team",
+  "expect": "hire"
+ },
+ {
+  "q": "what can you offer my company",
+  "expect": "hire"
+ },
+ {
+  "q": "what can him offer my company",
+  "expect": "hire"
+ },
+ {
+  "q": "what can gaurav offer my company",
+  "expect": "hire"
+ },
+ {
+  "q": "what can u offer my company",
+  "expect": "hire"
+ },
+ {
+  "q": "is you a good fit for my startup",
+  "expect": "hire"
+ },
+ {
+  "q": "is him a good fit for my startup",
+  "expect": "hire"
+ },
+ {
+  "q": "is gaurav a good fit for my startup",
+  "expect": "hire"
+ },
+ {
+  "q": "is u a good fit for my startup",
+  "expect": "hire"
+ },
+ {
+  "q": "pitch you to me in 3 lines",
+  "expect": "hire"
+ },
+ {
+  "q": "pitch him to me in 3 lines",
+  "expect": "hire"
+ },
+ {
+  "q": "pitch gaurav to me in 3 lines",
+  "expect": "hire"
+ },
+ {
+  "q": "pitch u to me in 3 lines",
+  "expect": "hire"
+ },
+ {
+  "q": "why hire you as a full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "why hire him as a full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "why hire you as a full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "why hire him as a full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "why hire you as a mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "why hire him as a mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "why hire you as a software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "why hire him as a software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "why hire you as a frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "why hire him as a frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "why hire you as a react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "why hire him as a react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "why hire you as a backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "why hire him as a backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "why hire you as a node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "why hire him as a node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "why hire you as a ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "why hire him as a ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "why hire you as a genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "why hire him as a genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "why hire you as a llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "why hire him as a llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "why hire you as a ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "why hire him as a ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "why hire you as a machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "why hire him as a machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "why hire you as a data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "why hire him as a data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "why hire you as a data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "why hire him as a data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "why hire you as a intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "why hire him as a intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "is you a good full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "is him a good full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "is you a good full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "is him a good full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "is you a good mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "is him a good mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "is you a good software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "is him a good software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "is you a good frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "is him a good frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "is you a good react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "is him a good react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "is you a good backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "is him a good backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "is you a good node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "is him a good node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "is you a good ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "is him a good ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "is you a good genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "is him a good genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "is you a good llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "is him a good llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "is you a good ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "is him a good ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "is you a good machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "is him a good machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "is you a good data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "is him a good data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "is you a good data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "is him a good data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "is you a good intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "is him a good intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "can you work as a full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "can him work as a full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "can you work as a full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "can him work as a full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "can you work as a mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "can him work as a mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "can you work as a software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "can him work as a software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "can you work as a frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "can him work as a frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "can you work as a react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "can him work as a react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "can you work as a backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "can him work as a backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "can you work as a node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "can him work as a node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "can you work as a ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "can him work as a ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "can you work as a genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "can him work as a genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "can you work as a llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "can him work as a llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "can you work as a ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "can him work as a ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "can you work as a machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "can him work as a machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "can you work as a data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "can him work as a data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "can you work as a data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "can him work as a data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "can you work as a intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "can him work as a intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "is gaurav fit for a full stack developer role",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "is gaurav fit for a full stack developer role",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "is gaurav fit for a full stack web developer role",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "is gaurav fit for a full stack web developer role",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "is gaurav fit for a mern developer role",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "is gaurav fit for a mern developer role",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "is gaurav fit for a software engineer role",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "is gaurav fit for a software engineer role",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "is gaurav fit for a frontend developer role",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "is gaurav fit for a frontend developer role",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "is gaurav fit for a react developer role",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "is gaurav fit for a react developer role",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "is gaurav fit for a backend developer role",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "is gaurav fit for a backend developer role",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "is gaurav fit for a node js developer role",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "is gaurav fit for a node js developer role",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "is gaurav fit for a ai engineer role",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "is gaurav fit for a ai engineer role",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "is gaurav fit for a genai developer role",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "is gaurav fit for a genai developer role",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "is gaurav fit for a llm engineer role",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "is gaurav fit for a llm engineer role",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "is gaurav fit for a ml engineer role",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "is gaurav fit for a ml engineer role",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "is gaurav fit for a machine learning engineer role",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "is gaurav fit for a machine learning engineer role",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "is gaurav fit for a data scientist role",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "is gaurav fit for a data scientist role",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "is gaurav fit for a data analyst role",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "is gaurav fit for a data analyst role",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "is gaurav fit for a intern role",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "is gaurav fit for a intern role",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "would he be a good full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "would he be a good full stack developer",
+  "expect": "hire",
+  "role": "full stack developer"
+ },
+ {
+  "q": "would he be a good full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "would he be a good full stack web developer",
+  "expect": "hire",
+  "role": "full stack web developer"
+ },
+ {
+  "q": "would he be a good mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "would he be a good mern developer",
+  "expect": "hire",
+  "role": "mern developer"
+ },
+ {
+  "q": "would he be a good software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "would he be a good software engineer",
+  "expect": "hire",
+  "role": "software engineer"
+ },
+ {
+  "q": "would he be a good frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "would he be a good frontend developer",
+  "expect": "hire",
+  "role": "frontend developer"
+ },
+ {
+  "q": "would he be a good react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "would he be a good react developer",
+  "expect": "hire",
+  "role": "react developer"
+ },
+ {
+  "q": "would he be a good backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "would he be a good backend developer",
+  "expect": "hire",
+  "role": "backend developer"
+ },
+ {
+  "q": "would he be a good node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "would he be a good node js developer",
+  "expect": "hire",
+  "role": "node js developer"
+ },
+ {
+  "q": "would he be a good ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "would he be a good ai engineer",
+  "expect": "hire",
+  "role": "ai engineer"
+ },
+ {
+  "q": "would he be a good genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "would he be a good genai developer",
+  "expect": "hire",
+  "role": "genai developer"
+ },
+ {
+  "q": "would he be a good llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "would he be a good llm engineer",
+  "expect": "hire",
+  "role": "llm engineer"
+ },
+ {
+  "q": "would he be a good ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "would he be a good ml engineer",
+  "expect": "hire",
+  "role": "ml engineer"
+ },
+ {
+  "q": "would he be a good machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "would he be a good machine learning engineer",
+  "expect": "hire",
+  "role": "machine learning engineer"
+ },
+ {
+  "q": "would he be a good data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "would he be a good data scientist",
+  "expect": "hire",
+  "role": "data scientist"
+ },
+ {
+  "q": "would he be a good data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "would he be a good data analyst",
+  "expect": "hire",
+  "role": "data analyst"
+ },
+ {
+  "q": "would he be a good intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "would he be a good intern",
+  "expect": "hire",
+  "role": "intern"
+ },
+ {
+  "q": "what are your abilities",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are you abilities",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are your skills",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are you good at",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what is your expertise",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are your strengths",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are your weaknesses",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are his strengths and weaknesses",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what are your capabilities",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "tell me about yourself",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "introduce yourself",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what can gaurav do",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what is he best at",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "how good is he at coding",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what is your tech stack",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what technologies do you know",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what experience do you have",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "how experienced is he",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "is he job ready",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "can he lead a team",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "does he work well in a team",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "how fast does he learn",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "rate his skills",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "is he better than other freshers",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "what kind of developer are you",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "why should we choose gaurav over others",
+  "expect": "hire-or-about"
+ },
+ {
+  "q": "why i hire you as a full stack web developer or ai engineer or ml or data scientist",
+  "expect": "hire",
+  "role": "multi"
+ },
+ {
+  "q": "should i hire him for frontend or backend",
+  "expect": "hire",
+  "role": "multi"
+ },
+ {
+  "q": "is he more of an ai engineer or a full stack developer",
+  "expect": "hire",
+  "role": "multi"
+ },
+ {
+  "q": "what is your expected salary",
+  "expect": "compensation"
+ },
+ {
+  "q": "expected ctc?",
+  "expect": "compensation"
+ },
+ {
+  "q": "what stipend do you expect",
+  "expect": "compensation"
+ },
+ {
+  "q": "what is his hourly rate",
+  "expect": "compensation"
+ },
+ {
+  "q": "how much would he charge",
+  "expect": "compensation"
+ },
+ {
+  "q": "what does he charge for a website",
+  "expect": "question"
+ },
+ {
+  "q": "how much does the full stack service cost",
+  "expect": "question"
+ }
+]
