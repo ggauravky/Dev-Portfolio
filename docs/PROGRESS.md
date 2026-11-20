@@ -220,7 +220,7 @@ Polish and the end-of-phase gate (D-106). The chat is complete pending the owner
 5. **"Purple-gradient, glowing 'AI' theming."** The chat uses the same ink, paper, Fraunces greeting and hairlines as every page. Lime is only the streaming caret, link focus/hover and a 1px focus line, and the only motion is the site's wipe, a row rise and the caret.
 Still templated: the follow-up phrasing ("How was X built?", "Tell me about X") is formulaic, because it is generated from chunk types without a model call. It's honest and cheap; rewording it per type is a possible later tweak.
 
-## Chat assistant: answer quality, conversation and lockdown (2026-11-20, branch `feat/chat-assistant`, uncommitted)
+## Chat assistant: answer quality, conversation and lockdown (2026-11-20, branch `feat/chat-assistant`, committed in 8deb14e)
 Owner's brief: handle every kind of message properly and safely ("hii", then "hii" again, "byee"…), better answers, and no open API. D-107, D-108.
 - **Conversation layer** (`lib/chat/intents.js`, no model call):
   - It covers greetings, thanks, goodbyes, "ok", "who are you", "how are you", "tell me more" with nothing before it, laughter, gibberish, non-Latin script, abuse, self-harm, prompt injection and model questions.
@@ -268,7 +268,70 @@ Owner's brief: handle every kind of message properly and safely ("hii", then "hi
 - **QA on the production build:** the functional script passes (trap, Esc, Back, caret, sources, follow-ups, reload, length error, source navigation, 390 layout, reduced motion, no page errors). axe-core reports 0 violations (1440/390, empty and answered). ⌘K "Ask" works twice in a row, and history Back returns in one step.
 - **Gates:** `npm run build` ✓, `test:chat` **50/50** ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. No chat code in `dist/`, and no `/api/chat` in `public/`.
 
+## Chat assistant: knowledge base, FAQ-first answers, format and limits UI (2026-11-20, branch `feat/chat-assistant`, uncommitted, D-109)
+Owner's brief: use the final dataset for answering; better formatting and suggestions; better UI on phone and laptop, smooth motion; show the limit properly.
+- **Knowledge base:**
+  - The dataset is now `lib/chat/knowledge-base.json`. It was checked before use: no Devanagari, no secrets, and the only email is the public one.
+  - `lib/chat/knowledge.js` turns it into chunks:
+    - project and roadmap records, split on sentences
+    - 68 FAQ pairs
+    - identity, approach, education, experience (with the "not to be discussed" note), community (with claim status), skills, GitHub (unverified metrics marked), links, decisions and project relationships
+  - The corpus grows from 84 to 317 chunks; the index is 855 KB as int8.
+  - 14 projects that aren't on the Projects page are listed in the projects overview with their status.
+- **Answering:**
+  - **Status-aware prompt:** planned work is never presented as built; user-reported claims are attributed; there are no launch claims; disclosure notes are respected.
+  - **Retrieval:** a project's name gives it a boost, and a cap per project keeps one project from filling the context.
+  - **FAQ matching:** questions are matched question-to-question against 108 keys.
+    - At ≥ 0.91, the owner's answer is sent with no model call: instant, free and exact.
+    - At ≥ 0.80, the FAQ answer leads the context.
+    - The thresholds were measured on 22 held-out questions.
+  - **No-model fallback:** it gives the closest FAQ answer, labelled as such.
+  - **Follow-up detection:** "he/his/him" no longer marks a follow-up, and a question that names a project stands on its own.
+- **Suggestions:** the owner's FAQ questions nearest the answer, picked with maximal marginal relevance, never one already asked, and never about the assistant itself. Starters lead with TaskNexus; four of them are FAQ questions.
+- **Format:**
+  - Answers can use paragraphs, short bullets, numbered lists and bold project names.
+  - Links go only to site paths and the owner's profile hosts. The formatter (`answerFormat.js`) parses them to data and renders them without `innerHTML`.
+  - Streaming text is revealed at an even pace (instant under reduced motion).
+  - Sources and Copy share one line, and follow-ups appear once the answer is complete.
+  - A "Latest ↓" button appears after scrolling up.
+- **Limits UI:**
+  - Every answer carries the quota.
+  - From 5 left, a hairline meter shows "3 questions left, more at 17:23".
+  - At a limit, the composer locks with a live countdown, a "short pause" or "today" message, and links to Projects, Journey and Contact. The lock survives a reload and lifts by itself at the reset time.
+- **Phone and tablet:**
+  - Follow-ups stack full width.
+  - Tighter rows and 16 px text on phones.
+  - A 120 px label column on tablets.
+  - No horizontal scroll at 390.
+- **QA:**
+  - Headless at 1440 and 390: FAQ answer, mid-reveal caret, sources, Copy → Copied, 3 related follow-ups, quota line, lock countdown ticking, daily variant, unlock at expiry, no horizontal scroll.
+  - axe-core reports 0 violations in the answer, quota and lock states at both sizes.
+- **Live battery** (real Groq, Gemini and Atlas through the harness; 3 conversations, 26 messages, paced):
+  - FAQ questions answered with the owner's text in under 1 s with no model call: "What is TaskNexus?", "Where has Gaurav worked?", "How is SmartMess different from MealKhata?".
+  - Other questions:
+    - "is TaskNexus live?" → "not confirmed as a live production launch"
+    - commits → "about 3,000+, reported, not independently verified"
+    - "Has he won any hackathon?" → runner-up claims labelled as reported and unverified
+    - "the hackathon before that?" → xto10x (Jun 2025)
+    - AshokSoft → public summary only
+    - service price → INR 3499–3999 from the site
+    - Rust and "capital of France" → declined
+  - Found and fixed (re-checked live):
+    - "he/his/him" made "What are his most important projects?", "How many commits has he made?" and "Has he won any hackathon?" into follow-ups of the previous answer, skipping the FAQ.
+    - "…and what does **it** cost?" did the same for a named service.
+    - With the embedding timed out, "won" did not reach the "winner" FAQ.
+- **Known:** "What are his most important projects?" lists the owner's FAQ list of 11 in one sentence, against the 5-item cap. Kanoon-Mate's follow-ups are other AI projects, because the dataset has only one Kanoon-Mate FAQ.
+- **Pre-push review fixes** (each covered by a test or a headless check):
+  - Service names count only with "service", so "is he good at frontend development?" is a skills question.
+  - "The hackathon before the TechX26 Hackathon?" is resolved from dates even with no previous turn; `<resolved_reference>` is now sent without one.
+  - The no-model fallback gives the closest FAQ answer when only FAQ entries matched, instead of "nothing found".
+  - A quota line or lock from a window that has already reset is ignored on reload.
+  - While locked, starters and follow-ups are disabled, and focus goes to the heading on open or to the notice when a lock starts. Checked for real: 18 greetings count down 5 → 1, then lock.
+  - `CACHE_SCHEMA` is 10, so answers cached under the old prompt expire unused.
+- **Gates:** `npm run build` ✓ (index up to date), `test:chat` **60/60** ✓, backend `npm test` 198/198 ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. No knowledge-base text in `dist/`; no `/api/chat` in `public/`.
+
 ## Next step
+- Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
 - Chat: owner reviews P-chat-1…3 and the ⚠ copy rows (`docs/COPY_REVIEW.md` § P-chat-2), adds the Vercel env vars, approves the commit, then checks a Vercel preview deploy (streaming, Atlas logging, the Privacy line).
 - Chat: the owner adds `GROQ_API_KEY`, `GEMINI_API_KEY` (the current one), `CHAT_IP_HASH_SALT` and `CHAT_MONGODB_URI` in **Vercel** (see `docs/DEPLOYMENT.md`, "Site assistant") and reviews P-chat-1. Then P-chat-2 (UI).
 0. Owner reviews `feat/seo-ai-visibility` (`docs/SEO_AUDIT.md`), approves the commit, then checks the Vercel preview (per-route heads, slug 404s).

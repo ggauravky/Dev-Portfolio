@@ -7,6 +7,7 @@
 
 const SESSION_KEY = 'gky_chat_session'
 const THREAD_KEY = 'gky_chat_thread_v1'
+const QUOTA_KEY = 'gky_chat_quota_v1'
 export const MAX_TURNS = 30
 
 const storage = () => {
@@ -70,4 +71,25 @@ export function writeThread(turns) {
 
 export const clearThread = () => {
     try { storage()?.removeItem(THREAD_KEY) } catch { /* ignore */ }
+}
+
+/**
+ * What the visitor has left ({ left, limit, resetAt }) and, once a limit is
+ * hit, until when the composer is locked ({ until, scope }). Kept per tab so a
+ * reload still shows the lock; the server enforces it either way.
+ */
+export function readQuota() {
+    try {
+        const value = JSON.parse(storage()?.getItem(QUOTA_KEY) || 'null')
+        if (!value || typeof value !== 'object') return {}
+        // A window that has already reset (or a lock that has ended) says nothing now.
+        const ends = Date.parse(value.until || value.resetAt || '') || 0
+        return ends > Date.now() ? value : {}
+    } catch {
+        return {}
+    }
+}
+
+export function writeQuota(value) {
+    try { storage()?.setItem(QUOTA_KEY, JSON.stringify(value || {})) } catch { /* ignore */ }
 }

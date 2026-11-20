@@ -7,14 +7,15 @@
 // where the dock was. Lazy chunk: nothing here loads until the visitor shows
 // intent. Motion moments: the wipe, rows entering, the streaming caret.
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { prefersReducedMotion } from '../../lib/motion'
 import { STARTERS } from './starters'
 import { streamChat } from './chatStream'
-import { clearThread, getSessionId, interrupted, readThread, resetSession, writeThread } from './chatStore'
+import { clearThread, getSessionId, interrupted, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
+import { answerPlainText, parseAnswer, safeHref } from './answerFormat'
 // cssCodeSplit is off (D-046), so a plain import would put this CSS in the one
 // render-blocking stylesheet on every page. It ships with this lazy chunk instead.
 import chatCss from './ChatSurface.css?inline'
@@ -57,61 +58,75 @@ function errorCode(error) {
 // in → open and out → closed when the wipe ends (or its fail-safe timer fires).
 const SETTLED = { in: 'open', out: 'closed' }
 
-// Site paths in parentheses and full URLs become links; everything else is text.
-const LINK_RE = /(\((\/[\w\-/#.]*)\))|(https?:\/\/[^\s)]+)/g
-
-function Linked({ text, onNavigate }) {
-    const parts = []
-    let last = 0
-    for (const match of text.matchAll(LINK_RE)) {
-        if (match.index > last) parts.push(text.slice(last, match.index))
-        if (match[2]) {
-            parts.push('(')
-            parts.push(<Link key={match.index} to={match[2]} replace className="chat-link" onClick={onNavigate}>{match[2]}</Link>)
-            parts.push(')')
-        } else {
-            parts.push(<a key={match.index} href={match[3]} className="chat-link" target="_blank" rel="noopener noreferrer">{match[3]}</a>)
+function Inline({ parts, onNavigate }) {
+    return parts.map((part, i) => {
+        if (part.t === 'strong') return <strong key={i} className="chat-strong">{part.v}</strong>
+        if (part.t === 'link') {
+            return part.internal
+                ? <Link key={i} to={part.href} replace className="chat-link" onClick={onNavigate}>{part.v}</Link>
+                : <a key={i} href={part.href} className="chat-link" target="_blank" rel="noopener noreferrer">{part.v}</a>
         }
-        last = match.index + match[0].length
-    }
-    if (last < text.length) parts.push(text.slice(last))
-    return parts
-}
-
-// Models sometimes add markdown despite the prompt; show it as plain text.
-const plain = (text) => text
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/__(.+?)__/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/`([^`]+)`/g, '$1')
-
-/** Plain-text answer → paragraphs and "- " lists. */
-function AnswerText({ text, onNavigate }) {
-    const blocks = plain(text).split(/\n{2,}/)
-    return blocks.map((block, i) => {
-        const lines = block.split('\n')
-        const items = lines.filter((line) => /^\s*[-•]\s+/.test(line))
-        if (items.length && items.length >= lines.length - 1) {
-            const lead = lines.find((line) => !/^\s*[-•]\s+/.test(line))
-            return (
-                <div key={i}>
-                    {lead ? <p><Linked text={lead} onNavigate={onNavigate} /></p> : null}
-                    <ul>
-                        {items.map((line, j) => <li key={j}><Linked text={line.replace(/^\s*[-•]\s+/, '')} onNavigate={onNavigate} /></li>)}
-                    </ul>
-                </div>
-            )
-        }
-        return <p key={i}><Linked text={block} onNavigate={onNavigate} /></p>
+        return part.v
     })
 }
 
+/** Paragraphs, lists, bold names and safe links (answerFormat.js); no innerHTML. */
+function AnswerText({ text, onNavigate }) {
+    const blocks = useMemo(() => parseAnswer(text), [text])
+    return blocks.map((block, i) => {
+        if (block.type === 'p') return <p key={i}><Inline parts={block.inline} onNavigate={onNavigate} /></p>
+        const List = block.type === 'ol' ? 'ol' : 'ul'
+        return (
+            <List key={i}>
+                {block.items.map((item, j) => <li key={j}><Inline parts={item} onNavigate={onNavigate} /></li>)}
+            </List>
+        )
+    })
+}
+
+/**
+ * Text arrives in bursts (a model's tokens, or a whole FAQ answer at once).
+ * Reveal it at an even pace instead: each frame shows a share of what is left,
+ * so it catches up within about a third of a second and never lags far behind.
+ * Turns restored from storage, and reduced motion, show everything at once.
+ */
+function useSmoothText(text, live) {
+    const [shown, setShown] = useState(live ? 0 : text.length)
+    const shownRef = useRef(shown)
+    useEffect(() => {
+        if (prefersReducedMotion() || shownRef.current >= text.length) {
+            shownRef.current = text.length
+            setShown(text.length)
+            return undefined
+        }
+        let frame = 0
+        const step = () => {
+            const left = text.length - shownRef.current
+            if (left <= 0) return
+            shownRef.current += Math.max(2, Math.ceil(left / 18))
+            setShown(Math.min(shownRef.current, text.length))
+            frame = requestAnimationFrame(step)
+        }
+        frame = requestAnimationFrame(step)
+        return () => cancelAnimationFrame(frame)
+    }, [text])
+    if (shown >= text.length) return { visible: text, done: true }
+    // Cut on a word boundary so half-words don't flicker.
+    const cut = text.slice(0, shown)
+    return { visible: cut.replace(/\S*$/, '') || cut, done: false }
+}
+
+const LIMIT_NOTES = {
+    window: 'That’s the limit for a short burst of questions.',
+    day: 'That’s today’s limit of questions for this chat.',
+}
+
 /** The answer itself, or the note that replaces it (rate limit, error). */
-function TurnBody({ turn, isLast, onRetry, onNavigate }) {
+function TurnBody({ turn, isLast, onRetry, onNavigate, reveal }) {
     if (turn.status === 'limit') {
         return (
             <p className="chat-note">
-                That’s a lot of questions in a short time. You can ask again at {timeFormat(turn.retryAt)}.
+                {LIMIT_NOTES[turn.scope] || LIMIT_NOTES.window} You can ask again at {timeFormat(turn.retryAt)}.
             </p>
         )
     }
@@ -123,10 +138,12 @@ function TurnBody({ turn, isLast, onRetry, onNavigate }) {
             </p>
         )
     }
+    const waiting = turn.status === 'streaming' && !turn.a
     return (
         <>
-            {turn.a ? <AnswerText text={turn.a} onNavigate={onNavigate} /> : null}
-            {turn.status === 'streaming' ? <span className="chat-caret" aria-hidden="true" /> : null}
+            {waiting ? <p className="chat-note chat-searching">Looking through Gaurav’s site</p> : null}
+            {reveal.visible ? <AnswerText text={reveal.visible} onNavigate={onNavigate} /> : null}
+            {turn.status === 'streaming' || !reveal.done ? <span className="chat-caret" aria-hidden="true" /> : null}
             {turn.status === 'stopped' ? <p className="chat-note">Stopped.</p> : null}
         </>
     )
@@ -137,37 +154,82 @@ TurnBody.propTypes = {
     isLast: PropTypes.bool,
     onRetry: PropTypes.func.isRequired,
     onNavigate: PropTypes.func.isRequired,
+    reveal: PropTypes.shape({ visible: PropTypes.string, done: PropTypes.bool }).isRequired,
 }
 
-function Turn({ turn, onAsk, onRetry, onNavigate, isLast }) {
+function CopyButton({ text }) {
+    const [copied, setCopied] = useState(false)
+    useEffect(() => {
+        if (!copied) return undefined
+        const timer = setTimeout(() => setCopied(false), 1600)
+        return () => clearTimeout(timer)
+    }, [copied])
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(answerPlainText(text))
+            setCopied(true)
+        } catch { /* clipboard blocked: nothing to do */ }
+    }
+    return (
+        <button type="button" className="chat-text-btn chat-copy" onClick={copy}>
+            <span aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
+        </button>
+    )
+}
+
+CopyButton.propTypes = { text: PropTypes.string.isRequired }
+
+function SourceLink({ source, onNavigate }) {
+    const link = safeHref(source.url)
+    if (!link) return <span>{source.title}</span>
+    return link.internal
+        ? <Link to={link.href} replace className="chat-link" onClick={onNavigate}>{source.title}</Link>
+        : (
+            <a href={link.href} className="chat-link" target="_blank" rel="noopener noreferrer">
+                {source.title}<span className="sr-only"> (opens in a new tab)</span>
+            </a>
+        )
+}
+
+SourceLink.propTypes = { source: PropTypes.object.isRequired, onNavigate: PropTypes.func.isRequired }
+
+function Turn({ turn, onAsk, onRetry, onNavigate, isLast, locked }) {
     const streaming = turn.status === 'streaming'
+    const reveal = useSmoothText(turn.a || '', streaming)
+    // Sources and follow-ups appear once the answer has finished showing.
+    const settled = turn.status === 'done' && reveal.done
     return (
         <li className="chat-turn">
             <div className="chat-row chat-row--q">
                 <span className="chat-row__label">You asked</span>
                 <p className="chat-row__q">{turn.q}</p>
             </div>
-            <div className="chat-row chat-row--a" aria-busy={streaming}>
+            <div className="chat-row chat-row--a" aria-busy={streaming || !reveal.done}>
                 <span className="chat-row__label">Answer</span>
                 <div className="chat-row__a">
-                    <TurnBody turn={turn} isLast={isLast} onRetry={onRetry} onNavigate={onNavigate} />
+                    <TurnBody turn={turn} isLast={isLast} onRetry={onRetry} onNavigate={onNavigate} reveal={reveal} />
 
-                    {turn.status === 'done' && turn.sources?.length ? (
-                        <p className="chat-sources">
-                            <span className="chat-sources__label">From</span>
-                            {turn.sources.map((source, i) => (
-                                <span key={source.url}>
-                                    {i ? <span className="chat-sources__sep" aria-hidden="true"> · </span> : null}
-                                    <Link to={source.url} replace className="chat-link" onClick={onNavigate}>{source.title}</Link>
-                                </span>
-                            ))}
-                        </p>
+                    {settled && turn.a ? (
+                        <div className="chat-meta">
+                            {turn.sources?.length ? (
+                                <p className="chat-sources">
+                                    <span className="chat-sources__label">From</span>
+                                    {turn.sources.map((source, i) => (
+                                        <span key={source.url}>
+                                            {i ? <span className="chat-sources__sep" aria-hidden="true"> · </span> : null}
+                                            <SourceLink source={source} onNavigate={onNavigate} />
+                                        </span>
+                                    ))}
+                                </p>
+                            ) : <span />}
+                            <CopyButton text={turn.a} />
+                        </div>
                     ) : null}
 
-                    {isLast && turn.status === 'done' && turn.followUps?.length ? (
+                    {isLast && settled && turn.followUps?.length ? (
                         <div className="chat-follow" role="group" aria-label="Ask next">
                             {turn.followUps.map((question) => (
-                                <button key={question} type="button" className="chat-chip" onClick={() => onAsk(question)}>
+                                <button key={question} type="button" className="chat-chip" disabled={locked} onClick={() => onAsk(question)}>
                                     {question}
                                 </button>
                             ))}
@@ -185,7 +247,77 @@ Turn.propTypes = {
     onRetry: PropTypes.func.isRequired,
     onNavigate: PropTypes.func.isRequired,
     isLast: PropTypes.bool,
+    locked: PropTypes.bool,
 }
+
+const pad = (n) => String(n).padStart(2, '0')
+const countdown = (ms) => {
+    const total = Math.max(0, Math.ceil(ms / 1000))
+    const h = Math.floor(total / 3600)
+    const m = Math.floor((total % 3600) / 60)
+    return h ? `${h}:${pad(m)}:${pad(total % 60)}` : `${m}:${pad(total % 60)}`
+}
+
+/** Shown at the end of the thread while the composer is locked by a limit. */
+function LimitNotice({ until, now, scope, onNavigate }) {
+    const at = timeFormat(new Date(until).toISOString())
+    return (
+        <section className="chat-lock" aria-labelledby="chat-lock-title">
+            <h3 id="chat-lock-title" className="chat-lock__title" tabIndex={-1}>
+                {scope === 'day' ? 'That’s all for today' : 'Time for a short pause'}
+            </h3>
+            <p className="chat-lock__text">
+                {scope === 'day'
+                    ? 'This chat has reached today’s question limit.'
+                    : 'You’ve asked a lot of questions in a few minutes.'}
+                {' '}You can ask again at {at}.
+            </p>
+            <p className="chat-lock__time" aria-hidden="true">
+                <span className="chat-lock__count">{countdown(until - now)}</span>
+                <span className="chat-lock__unit">until you can ask again</span>
+            </p>
+            <p className="chat-lock__more">
+                Meanwhile, everything is on the site:{' '}
+                <Link to="/projects" replace className="chat-link" onClick={onNavigate}>Projects</Link>
+                <span aria-hidden="true"> · </span>
+                <Link to="/journey" replace className="chat-link" onClick={onNavigate}>Journey</Link>
+                <span aria-hidden="true"> · </span>
+                <Link to="/contact" replace className="chat-link" onClick={onNavigate}>Contact Gaurav</Link>
+            </p>
+        </section>
+    )
+}
+
+LimitNotice.propTypes = {
+    until: PropTypes.number.isRequired,
+    now: PropTypes.number.isRequired,
+    scope: PropTypes.string,
+    onNavigate: PropTypes.func.isRequired,
+}
+
+const QUOTA_FROM = 5 // the meter shows once this many questions or fewer are left
+
+/** "3 questions left" with a hairline meter, once few are left. */
+function QuotaLine({ quota, locked }) {
+    if (locked || typeof quota.left !== 'number' || quota.left > QUOTA_FROM || !quota.limit) return null
+    // The window reset while the chat stayed open: the count is old news.
+    if (quota.resetAt && Date.parse(quota.resetAt) <= Date.now()) return null
+    const share = Math.max(0, Math.min(1, quota.left / quota.limit))
+    const when = quota.resetAt ? timeFormat(quota.resetAt) : ''
+    return (
+        <p className="chat__quota">
+            <span className="chat__quota-meter" aria-hidden="true">
+                <span style={{ transform: `scaleX(${share})` }} />
+            </span>
+            <span>
+                {quota.left === 1 ? '1 question left' : `${quota.left} questions left`}
+                {when ? `${quota.scope === 'day' ? ' today' : ''}, more at ${when}` : ''}
+            </span>
+        </p>
+    )
+}
+
+QuotaLine.propTypes = { quota: PropTypes.object.isRequired, locked: PropTypes.bool }
 
 // Keeps the surface the height of the visible viewport, so the on-screen
 // keyboard never covers the composer (iOS/Android).
@@ -214,9 +346,14 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     const [draft, setDraft] = useState('')
     const [inputError, setInputError] = useState('')
     const [announce, setAnnounce] = useState('')
+    // { left, limit, scope, resetAt } from the last answer; `until` once a limit is hit.
+    const [quota, setQuota] = useState(readQuota)
+    const [now, setNow] = useState(() => Date.now())
+    const [atBottom, setAtBottom] = useState(true)
 
     const rootRef = useRef(null)
     const scrollRef = useRef(null)
+    const colRef = useRef(null)
     const inputRef = useRef(null)
     const abortRef = useRef(null)
     const stickRef = useRef(true)
@@ -224,6 +361,8 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
 
     const visible = phase !== 'closed'
     const streaming = thread.some((t) => t.status === 'streaming')
+    const lockedUntil = quota.until ? Date.parse(quota.until) || 0 : 0
+    const locked = lockedUntil > now
 
     // ── open / close lifecycle ─────────────────────────────────────────────
     useEffect(() => {
@@ -291,7 +430,8 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     const [touchFirst] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches)
     useFocusTrap(rootRef, visible, {
         onEscape: () => (abortRef.current ? abortRef.current.abort() : close()),
-        initialFocusRef: touchFirst ? headingRef : inputRef,
+        // A locked composer can't take focus: start on the heading instead.
+        initialFocusRef: touchFirst || locked ? headingRef : inputRef,
         returnFocusTo,
     })
     useVisualViewport(rootRef, visible)
@@ -306,10 +446,59 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
         if (node && thread.length && stickRef.current) node.scrollTop = node.scrollHeight
     }, [thread])
 
+    // The answer grows inside its row while it is revealed, without a thread
+    // change: keep the view pinned to the bottom as the column grows.
+    useEffect(() => {
+        const col = colRef.current
+        const node = scrollRef.current
+        if (!visible || !col || !node || typeof ResizeObserver === 'undefined') return undefined
+        const observer = new ResizeObserver(() => {
+            if (stickRef.current) node.scrollTop = node.scrollHeight
+        })
+        observer.observe(col)
+        return () => observer.disconnect()
+    }, [visible])
+
     const onScroll = () => {
         const node = scrollRef.current
-        if (node) stickRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 80
+        if (!node) return
+        stickRef.current = node.scrollHeight - node.scrollTop - node.clientHeight < 80
+        if (stickRef.current !== atBottom) setAtBottom(stickRef.current)
     }
+
+    const toLatest = () => {
+        const node = scrollRef.current
+        if (!node) return
+        stickRef.current = true
+        setAtBottom(true)
+        node.scrollTo({ top: node.scrollHeight, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+    }
+
+    // When a lock starts, the composer is disabled under the caret: move focus
+    // to the notice so keyboard and screen-reader users land on the reason.
+    const wasLocked = useRef(locked)
+    useEffect(() => {
+        if (locked && !wasLocked.current) {
+            requestAnimationFrame(() => document.getElementById('chat-lock-title')?.focus({ preventScroll: false }))
+        }
+        wasLocked.current = locked
+    }, [locked])
+
+    // ── limits: remember what is left; while locked, count down each second ──
+    useEffect(() => { writeQuota(quota) }, [quota])
+    useEffect(() => {
+        if (!lockedUntil || lockedUntil <= Date.now()) return undefined
+        const timer = window.setInterval(() => {
+            const t = Date.now()
+            setNow(t)
+            if (t >= lockedUntil) {
+                window.clearInterval(timer)
+                setQuota((q) => ({ ...q, until: null, left: undefined }))
+                setAnnounce('You can ask questions again.')
+            }
+        }, 1000)
+        return () => window.clearInterval(timer)
+    }, [lockedUntil])
 
     // ── asking ─────────────────────────────────────────────────────────────
     const update = (id, patch) => setThread((turns) => turns.map((t) => (t.id === id ? { ...t, ...(typeof patch === 'function' ? patch(t) : patch) } : t)))
@@ -317,6 +506,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     const ask = useCallback(async (raw, replaceId = null) => {
         const q = String(raw || '').trim()
         if (abortRef.current) return
+        if (quota.until && Date.parse(quota.until) > Date.now()) return
         if (!q) {
             setInputError(ERRORS.EMPTY_QUESTION)
             return
@@ -348,13 +538,20 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                     answer += text
                     update(id, (t) => ({ a: t.a + text }))
                 },
-                onDone: ({ sources, followUps }) => {
+                onDone: ({ sources, followUps, quota: left }) => {
                     update(id, { status: 'done', sources, followUps })
                     setAnnounce(answer)
+                    if (left && typeof left.left === 'number') {
+                        // The last question of the window: lock now, not after a refused one.
+                        setQuota(left.left > 0 ? left : { ...left, until: left.resetAt })
+                        setNow(Date.now())
+                    }
                 },
-                onLimit: (retryAt) => {
-                    update(id, { status: 'limit', retryAt })
-                    setAnnounce(`Too many questions for now. You can ask again at ${timeFormat(retryAt)}.`)
+                onLimit: (retryAt, scope) => {
+                    update(id, { status: 'limit', retryAt, scope })
+                    setQuota((q) => ({ ...q, left: 0, scope, until: retryAt }))
+                    setNow(Date.now())
+                    setAnnounce(`You have reached the question limit. You can ask again at ${timeFormat(retryAt)}.`)
                 },
             })
         } catch (error) {
@@ -369,7 +566,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
             abortRef.current = null
             if (!touchFirst) requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }))
         }
-    }, [thread, touchFirst])
+    }, [thread, touchFirst, quota.until])
 
     // A question passed in (⌘K, a deep link) is asked once the surface is up.
     // The guard resets on close, so the same question can be passed in again,
@@ -410,13 +607,13 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     const submit = (event) => {
         event.preventDefault()
         if (streaming) stop()
-        else ask(draft)
+        else if (!locked) ask(draft)
     }
 
     const onKeyDown = (event) => {
         if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
             event.preventDefault()
-            if (!streaming) ask(draft)
+            if (!streaming && !locked) ask(draft)
         }
     }
 
@@ -455,11 +652,11 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
             </div>
 
             <div ref={scrollRef} className="chat__scroll" onScroll={onScroll}>
-                <div className="chat__col">
+                <div ref={colRef} className="chat__col">
                     <header className="chat__head">
                         <h2 id="chat-title" ref={headingRef} tabIndex={-1} className="chat__greeting">Ask about Gaurav’s work.</h2>
                         <p className="chat__lede">
-                            Answers come only from this site: his projects, journey, skills, services and blog.
+                            Answers come only from Gaurav’s own material: this site and his public projects.
                             Questions are stored for 180 days to improve the answers.
                         </p>
                     </header>
@@ -468,7 +665,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                         <ol className="chat-starters" aria-label="Questions to start with">
                             {STARTERS.map((starter, i) => (
                                 <li key={starter}>
-                                    <button type="button" className="chat-starter" onClick={() => ask(starter)}>
+                                    <button type="button" className="chat-starter" disabled={locked} onClick={() => ask(starter)}>
                                         <span className="chat-starter__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                                         <span className="chat-starter__text">{starter}</span>
                                     </button>
@@ -485,12 +682,21 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                                     onAsk={ask}
                                     onRetry={retry}
                                     onNavigate={onNavigate}
+                                    locked={locked}
                                 />
                             ))}
                         </ol>
                     )}
+
+                    {locked ? <LimitNotice until={lockedUntil} now={now} scope={quota.scope} onNavigate={onNavigate} /> : null}
                 </div>
             </div>
+
+            {!atBottom && thread.length ? (
+                <button type="button" className="chat__latest" onClick={toLatest}>
+                    Latest <span aria-hidden="true">↓</span>
+                </button>
+            ) : null}
 
             <form className="chat__composer" onSubmit={submit}>
                 <label htmlFor="chat-input" className="sr-only">Your question about Gaurav</label>
@@ -502,7 +708,8 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                     value={draft}
                     name="question"
                     autoComplete="off"
-                    placeholder="Ask about a project, the journey, skills or services…"
+                    placeholder={locked ? `You can ask again at ${timeFormat(new Date(lockedUntil).toISOString())}` : 'Ask about a project, the journey, skills or services…'}
+                    disabled={locked}
                     maxLength={MAX_CHARS + 50}
                     aria-describedby={inputError ? 'chat-input-error' : undefined}
                     aria-invalid={inputError ? true : undefined}
@@ -517,10 +724,12 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                         {draft.length}/{MAX_CHARS}
                     </span>
                 ) : null}
-                <button type="submit" className="chat__send">
+                <button type="submit" className="chat__send" disabled={locked && !streaming}>
                     {streaming ? 'Stop' : 'Ask'}
                 </button>
-                {inputError ? <p id="chat-input-error" className="chat__error" role="alert">{inputError}</p> : null}
+                {inputError
+                    ? <p id="chat-input-error" className="chat__error" role="alert">{inputError}</p>
+                    : <QuotaLine quota={quota} locked={locked} />}
             </form>
 
             <div className="sr-only" aria-live="polite" aria-atomic="true">{announce}</div>

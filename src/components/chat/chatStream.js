@@ -2,8 +2,8 @@
 // Source: https://github.com/ggauravky/Dev-Portfolio
 //
 // Client for POST /api/chat (D-103 protocol): NDJSON lines
-//   {"t":"delta","v":"…"} … {"t":"done","sources":[…],"followUps":[…]}
-//   or {"t":"limit","retryAt":"ISO"}
+//   {"t":"delta","v":"…"} … {"t":"done","sources":[…],"followUps":[…],"quota":{left,limit,resetAt}}
+//   or {"t":"limit","retryAt":"ISO","scope":"window"|"day"}
 // Calls onDelta / onDone / onLimit; rejects on network or HTTP errors.
 
 export const CHAT_URL = '/api/chat'
@@ -32,8 +32,13 @@ export async function streamChat({ sessionId, question, history, signal, onDelta
         let event
         try { event = JSON.parse(line) } catch { return }
         if (event.t === 'delta' && typeof event.v === 'string') onDelta?.(event.v)
-        else if (event.t === 'done') { finished = true; onDone?.({ sources: event.sources || [], followUps: event.followUps || [] }) }
-        else if (event.t === 'limit') { finished = true; onLimit?.(event.retryAt) }
+        else if (event.t === 'done') {
+            finished = true
+            onDone?.({ sources: event.sources || [], followUps: event.followUps || [], quota: event.quota || null })
+        } else if (event.t === 'limit') {
+            finished = true
+            onLimit?.(event.retryAt, event.scope === 'day' ? 'day' : 'window')
+        }
     }
     for (;;) {
         const { value, done } = await reader.read()

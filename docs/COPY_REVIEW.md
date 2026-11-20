@@ -181,3 +181,19 @@ These are fixed replies in `lib/chat/intents.js`, sent without a model call. Whe
 | 13 | "What model are you?" | "I’m the assistant on Gaurav’s site, and I don’t go into how I’m built. I can tell you about his work, including the AI projects he has made." | |
 | 14 | Keyboard mash or emoji only | "I didn’t quite catch that. Try asking about a project, his journey, his skills or his services." · then: "Still not sure what you mean. You could start with one of these questions." | |
 | 15 | Non-Latin script (e.g. Hindi in Devanagari) | "I can only answer in English. Try asking in English, for example: “What projects has Gaurav built?”" (D-034). Hinglish typed in Latin letters is answered in English by the model. | |
+
+## Chat: knowledge base, limits and starters (2026-11-20, D-109)
+
+New fixed copy in `src/components/chat/` and `lib/chat/providers.js`. Answers matched to the owner's FAQ (`lib/chat/knowledge-base.json`) are the owner's own text and are not repeated here.
+
+| # | Where | New copy | ⚠ confirm |
+|---|---|---|---|
+| 1 | Chat intro (lede) | "Answers come only from Gaurav’s own material: this site and his public projects." (was "…only from this site…", no longer true now the knowledge base is in) | ⚠ |
+| 2 | Starters | 1 "What is TaskNexus?" · 2 "What are Gaurav's most important projects?" · 3 "How does Kanoon-Mate work under the hood?" · 4 "Where has Gaurav worked?" · 5 "What happened at the TechX26 Hackathon?" · 6 "What's in the Full Stack Development service, and what does it cost?" · 7 "What did Gaurav write about MCP?" · 8 "Is he available for internships or work?" (1, 2, 4, 8 are FAQ questions: answered with the owner's text) | ⚠ |
+| 3 | Waiting for the first words | "Looking through Gaurav’s site" | |
+| 4 | Few questions left (from 5) | "3 questions left, more at 17:23" / "… left today, more at …" | |
+| 5 | Limit reached, 10-minute window | Title "Time for a short pause"; "You’ve asked a lot of questions in a few minutes. You can ask again at 17:23."; countdown "6:40 until you can ask again"; "Meanwhile, everything is on the site: Projects · Journey · Contact Gaurav" | ⚠ |
+| 6 | Limit reached, daily | Title "That’s all for today"; "This chat has reached today’s question limit. You can ask again at …" | |
+| 7 | Composer while locked | Placeholder "You can ask again at 17:23" | |
+| 8 | No-model fallback with a close FAQ | "The closest question Gaurav has answered is “…”" followed by that answer | |
+| 9 | Answer actions | "Copy" → "Copied" | |

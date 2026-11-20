@@ -3,9 +3,13 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { buildChunks, loadSiteData } from '../lib/chat/corpus.js'
+import { buildChunks, buildCorpus, loadSiteData } from '../lib/chat/corpus.js'
 import { cleanUserText, normaliseQuestion, redactPII } from '../lib/chat/redact.js'
-import { followUps, prepareIndex, rank, sourcesOf } from '../lib/chat/retrieve.js'
+import {
+    decodeVector, encodeVector, faqMatch, followUps, namedGroups, prepareIndex, rank, sourcesOf, suggest, withFaq, withOverviews,
+} from '../lib/chat/retrieve.js'
+import { humanStatus, knowledgeChunks, splitText } from '../lib/chat/knowledge.js'
+import { answerPlainText, parseAnswer, parseInline, safeHref } from '../src/components/chat/answerFormat.js'
 import { generateAnswer, templateAnswer } from '../lib/chat/providers.js'
 import { buildMessages, SYSTEM_PROMPT } from '../lib/chat/prompt.js'
 import { createMemoryStore, createStore, hashIp } from '../lib/chat/store.js'
@@ -14,8 +18,11 @@ import { IP_LIMIT, MAX_QUESTION_CHARS, RETENTION_DAYS, SESSION_DAILY_LIMIT, SESS
 import { classify, isFollowUp, normalise, route, stripOpener } from '../lib/chat/intents.js'
 
 const data = await loadSiteData()
-const chunks = buildChunks(data)
-const index = prepareIndex({ version: 'test', chunks })
+const corpus = buildCorpus(data)
+const chunks = corpus.chunks
+// Like the built index, without vectors: FAQ keys are text only (keyword mode).
+const faqKeys = chunks.filter((c) => c.faq).flatMap((c) => [c.faq.question, ...c.faq.alternates].map((text) => ({ chunkId: c.id, text })))
+const index = prepareIndex({ version: 'test', chunks, aliases: corpus.aliases, faqKeys })
 const SESSION = '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b'
 const ORIGIN = 'https://ggauravky.vercel.app'
 
@@ -102,18 +109,94 @@ const answerText = (res) => res.events().filter((e) => e.t === 'delta').map((e) 
 
 test('corpus: one chunk per project, journey entry, skill group and service', () => {
     const count = (type) => chunks.filter((c) => c.type === type).length
-    assert.equal(count('project'), data.projects.length)
+    assert.equal(chunks.filter((c) => c.id.startsWith('project:')).length, data.projects.length)
     assert.equal(count('journey'), data.journey.length)
-    assert.equal(count('skills'), data.skillGroups.length)
+    assert.equal(chunks.filter((c) => c.id.startsWith('skills:')).length, data.skillGroups.length)
     assert.equal(count('service'), data.services.length)
     assert.ok(count('blog') >= data.blogs.length)
     assert.ok(count('about') >= 2)
     assert.equal(new Set(chunks.map((c) => c.id)).size, chunks.length, 'ids are unique')
     for (const chunk of chunks) {
         assert.ok(chunk.title && chunk.text && chunk.hash, chunk.id)
-        assert.match(chunk.url, /^\//, `${chunk.id} has a site-relative url`)
+        assert.match(chunk.url, /^(\/|https:\/\/|$)/, `${chunk.id} links to the site, an https page, or nothing`)
+        assert.ok(chunk.group, `${chunk.id} has a group`)
     }
-    assert.ok(!chunks.some((c) => /Origin Token/i.test(c.text)), 'llms-full token is dropped')
+})
+
+test('knowledge base (D-109): records, FAQ and profile become chunks with status', () => {
+    const kb = data.kb
+    assert.equal(chunks.filter((c) => c.type === 'faq').length, kb.faq.length)
+    const faq = chunks.find((c) => c.id === 'faq:q023')
+    assert.equal(faq.faq.question, 'What is TaskNexus?')
+    assert.equal(faq.group, 'tasknexus')
+    // A project with a site page links there; one without, to its repository or nothing.
+    assert.equal(chunks.find((c) => c.id === 'kb:proj:kanoon-mate:overview:1').url, '/projects/kanoon-mate')
+    assert.equal(chunks.find((c) => c.id.startsWith('kb:proj:linkedin-clone')).group, 'mern-linkedin-clone')
+    assert.ok(chunks.filter((c) => c.id.startsWith('kb:')).every((c) => c.text.length <= 1000), 'long records are split')
+    assert.ok(chunks.find((c) => c.id === 'kb:proj:tasknexus:overview:1').status.includes('documented'))
+    assert.ok(chunks.find((c) => c.id === 'kb:experience').text.includes('Not to be discussed'), 'disclosure notes reach the model')
+    assert.equal(humanStatus('user_reported_details_unverified'), 'user reported details unverified')
+    assert.deepEqual(splitText('One. Two. Three.', 9), ['One. Two.', 'Three.'])
+    assert.deepEqual(knowledgeChunks(null), { chunks: [], aliases: {} })
+    // Projects not on the Projects page are still listed, with their status.
+    assert.match(chunks.find((c) => c.id === 'overview:projects').text, /Not on the Projects page but in Gaurav's records \(\d+\), with status: .*TaskNexus/)
+})
+
+test('retrieve: names boost their project; one project cannot fill the context', () => {
+    assert.ok(namedGroups(index, 'how does kanoon mate work?').has('kanoon-mate'))
+    assert.ok(namedGroups(index, 'Tell me about TaskNexus V2').has('tasknexus'))
+    assert.equal(namedGroups(index, 'what is a task?').size, 0)
+    assert.ok(namedGroups(index, 'What is in the Full Stack Development service, and what does it cost?').has('service:fullstack-development'))
+    const ranked = rank(index, 'What features does TaskNexus have?')
+    assert.equal(ranked.top[0].group, 'tasknexus')
+    assert.ok(ranked.top.filter((c) => c.group === 'tasknexus').length <= 3, 'named project: at most GROUP_CAP + 1')
+})
+
+test('retrieve: FAQ question-to-question match, direct and in context', () => {
+    const exact = faqMatch(index, 'What is TaskNexus?')
+    assert.equal(exact.chunk.id, 'faq:q023')
+    assert.equal(exact.via, 'keyword')
+    assert.ok(exact.score >= 0.9)
+    const ranked = withFaq(rank(index, 'What is TaskNexus?'), exact)
+    assert.equal(ranked.top[0].id, 'faq:q023')
+    assert.ok(ranked.top[0].faqScore)
+    assert.ok(faqMatch(index, 'what is the capital of france').score < 0.6)
+    // Without a query vector, synonyms still reach the FAQ ("won" → "winner").
+    const won = faqMatch(index, 'Has he won any hackathon?')
+    assert.equal(won.chunk.id, 'faq:q060')
+    assert.equal(withFaq(rank(index, 'Has he won any hackathon?'), won).matched, true)
+    // int8 vectors decode to the same direction.
+    const v = [0.5, -0.25, 0.125, 0]
+    const back = decodeVector(encodeVector(v), 'i8')
+    const norm = Math.hypot(...v)
+    v.forEach((x, i) => assert.ok(Math.abs(back[i] - x / norm) < 0.01))
+})
+
+test('suggest: FAQ questions related to the answer, none already asked', () => {
+    const ranked = rank(index, 'What is TaskNexus?')
+    const asked = ['What is TaskNexus?', 'Is TaskNexus a freelance marketplace?']
+    const next = suggest({ index, ranked, asked })
+    assert.equal(next.length, 3)
+    assert.ok(next.every((q) => !asked.includes(q)))
+    assert.ok(next.some((q) => /TaskNexus/.test(q)), next.join(' | '))
+    assert.ok(!next.some((q) => /chatbot|reuse his projects/i.test(q)), 'no questions about the assistant itself')
+})
+
+test('answer format: lists, bold, safe links only', () => {
+    const blocks = parseAnswer('Gaurav built **Kanoon-Mate**.\n- One (/projects/kanoon-mate)\n- Two\n\n1. First\n2. Second')
+    assert.deepEqual(blocks.map((b) => b.type), ['p', 'ul', 'ol'])
+    assert.deepEqual(blocks[0].inline[1], { t: 'strong', v: 'Kanoon-Mate' })
+    assert.ok(blocks[1].items[0].some((p) => p.t === 'link' && p.href === '/projects/kanoon-mate' && p.internal))
+    assert.equal(safeHref('https://github.com/ggauravky/x').internal, false)
+    assert.equal(safeHref('https://ggauravky.vercel.app/contact').href, '/contact')
+    assert.equal(safeHref('https://evil.example/x'), null)
+    assert.equal(safeHref('javascript:alert(1)'), null)
+    assert.equal(safeHref('//evil.example'), null)
+    assert.ok(parseInline('see [here](https://evil.example)').every((p) => p.t === 'text'))
+    assert.ok(parseInline('code at https://github.com/ggauravky.').some((p) => p.t === 'link' && p.href === 'https://github.com/ggauravky'))
+    // While streaming, a half-written "**Kan" never shows its asterisks.
+    assert.equal(answerPlainText('Built **Kan'), 'Built Kan')
+    assert.equal(answerPlainText('A **b** c\n- d'), 'A b c\n\n- d')
 })
 
 test('corpus: hashes are stable and change with the text', () => {
@@ -147,7 +230,7 @@ test('parseRequest: validates session, length and history', () => {
 // ── retrieval ─────────────────────────────────────────────────────────────
 
 test('retrieve (keyword): finds the right chunk for specific questions', () => {
-    assert.ok(rank(index, 'How does Kanoon-Mate work under the hood?').top.slice(0, 2).some((c) => c.id === 'project:kanoon-mate'))
+    assert.ok(rank(index, 'How does Kanoon-Mate work under the hood?').top.slice(0, 2).every((c) => c.group === 'kanoon-mate'))
     assert.equal(rank(index, 'What happened at the TechX26 Hackathon?').top[0].type, 'journey')
     assert.equal(rank(index, 'What did you write about MCP?').top[0].type, 'blog')
     assert.equal(rank(index, "What's in the Full Stack Development service?").top[0].type, 'service')
@@ -395,7 +478,50 @@ test('handler: the message after SESSION_LIMIT gets an in-chat limit event', asy
     const events = last.events()
     assert.equal(last.statusCode, 200)
     assert.equal(events[0].t, 'limit')
+    assert.equal(events[0].scope, 'window')
     assert.ok(Date.parse(events[0].retryAt) > Date.now())
+})
+
+test('handler: every answer says how many questions are left', async () => {
+    const { handler } = handlerWith()
+    const res = fakeRes()
+    await handler(request({ sessionId: SESSION, question: 'hi' }), res)
+    const done = res.events().at(-1)
+    assert.equal(done.t, 'done')
+    assert.deepEqual({ left: done.quota.left, limit: done.quota.limit, scope: done.quota.scope }, { left: SESSION_LIMIT - 1, limit: SESSION_LIMIT, scope: 'window' })
+    assert.ok(Date.parse(done.quota.resetAt) > Date.now())
+})
+
+test('handler: a FAQ question gets the owner\'s answer with no model call (D-109)', async () => {
+    const fetchImpl = mockFetch({})
+    const { handler, store } = handlerWith({ fetchImpl })
+    const res = fakeRes()
+    await handler(request({ sessionId: SESSION, question: 'What is TaskNexus?' }), res)
+    assert.equal(answerText(res), chunks.find((c) => c.id === 'faq:q023').faq.answer)
+    assert.deepEqual(fetchImpl.calls, [], 'no provider was called')
+    const done = res.events().at(-1)
+    assert.ok(done.sources.length >= 1)
+    assert.ok(done.followUps.length === 3 && !done.followUps.includes('What is TaskNexus?'))
+    assert.equal(store.turns.at(-1).provider, 'faq')
+})
+
+test('handler: "before the <named entry>" is resolved from dates with no previous turn', async () => {
+    let body = ''
+    const fetchImpl = mockFetch({ groq: (init) => { body = init.body; return sse(groqEvents('ok')) } })
+    const { handler } = handlerWith({ fetchImpl })
+    await handler(request({ sessionId: SESSION, question: 'Which hackathon came before the TechX26 Hackathon?' }), fakeRes())
+    assert.match(JSON.parse(body).messages[1].content, /<resolved_reference>The hackathon before TechX26 Hackathon \(Feb 2026\) is xto10x/)
+})
+
+test('retrieve: a service is a name only with "service"; a skill question is not', () => {
+    assert.equal(namedGroups(index, 'Is he good at frontend development?').size, 0)
+    assert.ok(namedGroups(index, 'What does the Frontend Development service include?').has('service:frontend-development'))
+})
+
+test('template: a close FAQ answer is labelled with the question it answers', () => {
+    const faq = { ...chunks.find((c) => c.id === 'faq:q027'), score: 0.6, faqScore: 0.85 }
+    const text = templateAnswer([faq])
+    assert.match(text, /^The closest question Gaurav has answered is “What features are already in TaskNexus V2\?”/)
 })
 
 test('handler: the IP backstop limits many sessions from one IP', async () => {
@@ -529,6 +655,9 @@ test('intents: follow-up detection', () => {
     assert.equal(isFollowUp('what stack did it use?'), true)
     assert.equal(isFollowUp('and the second one?'), true)
     assert.equal(isFollowUp('How does Kanoon-Mate work under the hood?'), false)
+    // "he/his/him" mean Gaurav on this site: a new question, not a follow-up.
+    assert.equal(isFollowUp('What are his most important projects?'), false)
+    assert.equal(isFollowUp('Where has he worked before?'), false)
     assert.equal(route('tell me more', [], { hasPrevious: true }).kind, 'more')
     assert.equal(route('tell me more', [], { hasPrevious: false }).kind, 'reply')
 })
@@ -540,7 +669,8 @@ test('corpus: overview chunks answer list questions; ranking comes from src/lib/
     assert.match(projects.text, /Team projects \(\d+\):/)
     assert.ok(chunks.find((c) => c.id === 'overview:journey'))
     assert.equal(data.caseStudySlugs.length, 6)
-    assert.equal(rank(index, 'Which projects were team builds?').top.slice(0, 3).some((c) => c.id === 'overview:projects'), true)
+    const q = 'Which projects were team builds?'
+    assert.equal(withOverviews(index, rank(index, q), q).top.some((c) => c.id === 'overview:projects'), true)
 })
 
 // ── Handler: memory, follow-ups, limits, caller (D-107, D-108) ────────────

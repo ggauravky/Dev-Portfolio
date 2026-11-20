@@ -81,7 +81,7 @@ After reconciliation, the backend issues its own short-lived JWT in the `portfol
 
 ## 7. Site Assistant (chat)
 
-The assistant answers questions about Gaurav using only this site's data. It is a Vercel function, not part of the Render backend: Render's free instance sleeps after 15 idle minutes and takes about a minute to wake. Decisions D-097–D-105.
+The assistant answers questions about Gaurav using only this site's data and the owner's knowledge base (`lib/chat/knowledge-base.json`, D-109). It is a Vercel function, not part of the Render backend: Render's free instance sleeps after 15 idle minutes and takes about a minute to wake. Decisions D-097–D-105.
 
 **Request path** (`POST /api/chat` → `api/chat.js` → `lib/chat/handler.js`)
 1. **Validation** (not a public API, D-108):
@@ -92,14 +92,16 @@ The assistant answers questions about Gaurav using only this site's data. It is 
 2. **Conversation layer** (`intents.js`, D-107): small talk, unsafe input, gibberish and other scripts get fixed replies with no model call; replies change when repeated. The server reads the session's recent turns, so follow-ups ("tell me more", "what stack did it use?", "the hackathon before that") are resolved against the previous answer, and dates are compared in code.
 3. **Cleaning:** control characters and chat-template tokens are stripped; emails and phone numbers become `[email]`/`[phone]` (`redact.js`).
 4. **Rate limits** (`store.js`, MongoDB `portfolio_chat.chat_rate`): fixed 10-minute windows, 18 messages per session and 60 per salted IP hash, plus 80 per session per day and site-wide per-minute provider caps. Over the limit the stream carries one `limit` event with a retry time.
-5. **Retrieval** (`retrieve.js`):
-   - Hybrid: `0.7·cosine + 0.3·BM25` over `lib/chat/corpus-index.json`, 84 chunks: projects, journey, skills, services, blog sections, about text, and four overviews for list questions, embedded with `gemini-embedding-001` at 768 dims by `npm run chat:index`.
-   - Brute force in memory; there is no vector database.
-   - If the query can't be embedded, BM25 runs alone behind a rarity-weighted coverage gate.
+5. **Retrieval** (`retrieve.js`, `knowledge.js`, D-109):
+   - Corpus (`lib/chat/corpus-index.json`, 317 chunks): the site's projects, journey, skills, services, blog sections, status and four overviews, plus the knowledge base's project records, roadmaps, 68 FAQ pairs and profile sections. Every knowledge-base chunk carries its status (documented, planned, user reported, historical), which goes to the model.
+   - Hybrid `0.7·cosine + 0.3·BM25`; a project the question names gets a boost; at most 2 chunks per project or section in the context (3 for a named project).
+   - FAQ: every FAQ question and alternate phrasing (108 keys) is embedded as a query and matched question-to-question. At cosine ≥ 0.91 the owner's answer is sent as written with no model call; at ≥ 0.80 it leads the context.
+   - Vectors are `gemini-embedding-001`, 768 dims, stored as int8. Brute force in memory; there is no vector database.
+   - If the query can't be embedded, BM25 and word-overlap FAQ matching run alone behind a rarity-weighted coverage gate.
 6. **Generation** (`providers.js`, `prompt.js`):
-   - Groq `openai/gpt-oss-20b`, then Gemini `gemini-3.5-flash-lite`, then a templated answer built from the matched chunks. Each provider is skipped on no key, a spent daily budget, a non-2xx, no first token within 8 s, or an empty stream; it never switches after the first token.
+   - Groq `openai/gpt-oss-20b`, then Gemini `gemini-3.5-flash-lite`, then a templated answer: the closest FAQ answer, labelled with its question, or else the matched pages. Each provider is skipped on no key, a spent daily budget, a non-2xx, no first token within 8 s, or an empty stream; it never switches after the first token.
    - The system prompt fences context and question as data and has fixed decline phrases. A decline drops sources and follow-ups.
-7. **Response:** NDJSON, `delta` events then one `done` with at most 3 sources and 3 follow-ups. Follow-ups are the chunks most similar to the answer's main chunk; no extra model call.
+7. **Response:** NDJSON, `delta` events then one `done` with at most 3 sources, 3 follow-ups and the visitor's quota (`left`, `limit`, `scope`, `resetAt`); a `limit` event says whether the 10-minute or the daily cap was hit. Follow-ups are the owner's FAQ questions closest to the answer, picked with maximal marginal relevance and never one already asked; no extra model call.
 8. **Storage:**
    - `chat_turns`: redacted question, answer, chunk ids, provider, latency, salted IP hash; TTL 180 days.
    - `chat_cache`: repeated first questions, 24 h, keyed by `CACHE_SCHEMA` and the corpus version.
@@ -108,7 +110,8 @@ The assistant answers questions about Gaurav using only this site's data. It is 
 **Client** (`src/components/chat/`)
 - "Ask" (`ChatTrigger`) sits beside the dock. `ChatSurface` is a lazy chunk fetched on hover, focus or touch, and it injects its own CSS so the global stylesheet doesn't grow.
 - Opening it wipes the site into the chat state: the chrome and dock recede, `#main-content` becomes `inert`, and a focus trap applies. Esc stops a stream, then closes; the browser Back closes it.
-- The thread is kept in `sessionStorage`.
+- The thread is kept in `sessionStorage`, and so is the quota: from 5 questions left a hairline meter shows the count, and once a limit is hit the composer is locked with a countdown until it resets (D-109).
+- Answers use a small format (`answerFormat.js`): paragraphs, lists, bold names and links only to site paths and the owner's known profile hosts, parsed to data and rendered without `innerHTML`. Text is revealed at an even pace while it streams.
 
 **Configuration:** every limit and model name is in `lib/chat/config.js`. Environment variables are listed in `docs/DEPLOYMENT.md` ("Site assistant"). Kill switches: `CHAT_ENABLED=0` (API) and `VITE_CHAT_ENABLED=false` (hides the trigger).
 
