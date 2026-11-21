@@ -78,8 +78,9 @@ Server-only variables, set in Vercel for Production and Preview. None of them is
 | Variable | Required | Notes |
 |---|---|---|
 | `GROQ_API_KEY` | for LLM answers | Groq console. Turn on **Zero Data Retention** under Data Controls. |
-| `GEMINI_API_KEY` | for embeddings and the fallback model | Google AI Studio. Also put it in a local, gitignored `.env.local` to run `npm run chat:index`. |
-| `CHAT_IP_HASH_SALT` | yes | 32+ random bytes (e.g. `openssl rand -hex 32`). It salts the stored IP hash. |
+| `GEMINI_API_KEY` | for embeddings and the fallback model | Google AI Studio. Also put it in a local, gitignored `.env.local` to run `npm run chat:index`. **Use a key from a project without billing:** a key from a billed project is charged, and the API can't tell the chat which kind it is. |
+| `CHAT_IP_HASH_SALT` | yes | 32+ random bytes (e.g. `openssl rand -hex 32`). It salts the stored IP hash and is the key the anonymous visitor cookie is signed with (derived with HKDF, D-113). Without it, cookies only verify on the instance that issued them. Rotating it gives every visitor a new id. |
+| `CHAT_PROVIDER_ORDER` | no | Which free-tier models answer, in order: `groq,gemini` (default), `gemini,groq`, `groq`, `gemini`, or `none` (answers without a model only). Only models in `PROVIDERS` in `lib/chat/config.js` can be named. |
 | `CHAT_MONGODB_URI` | for logging and shared limits | Use a separate Atlas user with `readWrite` on the `portfolio_chat` database only. Atlas Network Access must allow Vercel's dynamic IPs. |
 | `CHAT_ALLOWED_ORIGINS` | no | A comma-separated list of exact origins. It defaults to `https://ggauravky.vercel.app`. |
 | `CHAT_ENABLED` | no | `0` makes the API reply with a "resting" message (kill switch). |
@@ -88,7 +89,11 @@ When a variable is missing, the chat degrades instead of failing:
 - With no Groq key, Gemini answers.
 - With no LLM key at all, the answer is a template built from the matching pages.
 - With no Gemini key, retrieval is keyword-only.
-- With no Mongo URI, limits are per instance and turns are not logged.
+- With no Mongo URI, or while Atlas is unreachable, counters are per instance and turns are not logged. Model calls then drop to an emergency allowance of 3 per minute per instance (D-113); FAQ answers, fixed replies and the grounded fallback continue.
+
+**Free-tier quotas (D-113).** Each model call reserves its estimated tokens and a request against shared per-minute and per-day counters in Atlas, then settles with the usage the provider reports. A 429 sets a shared cooldown from the provider's retry hint. At most 6 generations start in any 10 seconds site-wide. Past a limit the next provider answers, then the grounded fallback. Limits are in `PROVIDERS` in `lib/chat/config.js`; Groq's were read from its own response headers (1,000 requests/day, 8,000 tokens/min for `openai/gpt-oss-20b`), Gemini's are estimates ⚠ (AI Studio shows the real ones per project).
+
+**Index freshness.** `npm run build` runs `node scripts/build-chat-index.mjs --check` and **fails** when `lib/chat/corpus-index.json` doesn't match the site data and `lib/chat/knowledge-base.json`, or when the knowledge base is malformed. Fix: run `npm run chat:index` locally (only changed texts are re-embedded) and commit the index.
 
 To run it locally: `npm run chat:dev` starts a harness on `:8787`. Send it a JSON body with `curl -N` and `Origin: http://localhost:5173`.
 

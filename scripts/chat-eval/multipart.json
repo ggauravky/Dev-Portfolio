@@ -1,0 +1,13 @@
+[
+ { "q": "Compare TaskNexus, MealKhata and InstaX in terms of database, authentication and architecture.", "entities": ["tasknexus", "mealkhata", "instax"] },
+ { "q": "What was the original idea behind TaskNexus, how did it evolve, and what does he plan to build next?", "entities": ["tasknexus"], "minParts": 3 },
+ { "q": "Which projects use MongoDB, which use PostgreSQL, and why?", "minParts": 2 },
+ { "q": "Tell me about Gaurav's internship, strongest projects and AI skills.", "minParts": 3 },
+ { "q": "Compare his backend, frontend and AI development experience.", "minParts": 3 },
+ { "q": "How is SmartMess different from MealKhata?", "entities": ["smartmess", "mealkhata"] },
+ { "q": "Kanoon-Mate vs InsightAudio: which one uses RAG?", "entities": ["kanoon-mate", "insightaudio"] },
+ { "q": "What stack does TrueCert use, and how does BuildMyTeam handle teams?", "entities": ["truecert", "buildmyteam"] },
+ { "q": "What is TaskNexus?", "simple": true },
+ { "q": "What are his skills?", "simple": true },
+ { "q": "How does Kanoon-Mate work under the hood?", "simple": true }
+]

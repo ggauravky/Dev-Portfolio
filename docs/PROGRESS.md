@@ -386,7 +386,58 @@ Owner's brief: answer "why should I hire you?", "what are your abilities?" and "
   - Live: the owner's three questions (typos included), weaknesses, "tell me about yourself", "is he job ready?", salary and "stand out from other freshers".
 - **Gates:** `test:chat` **72/72** ✓, `npm run build` ✓, `test:blog` 14/14 ✓, `test:github` 16/16 ✓, `check:design --all` 0 ✓, `git diff --check` ✓.
 
+## Chat assistant: architecture review, reliability and grounding (2026-11-21, branch `fix/chat-reliability`, uncommitted, D-113)
+Owner's brief: audit and fix nine areas (shared limits under MongoDB failure, free-tier quotas, abuse protection, keyword misroutes, multi-part questions, FAQ false matches, index staleness, claim-level citations, shared-IP fairness), free tier only, no new infrastructure.
+- **Confirmed and fixed:**
+  - backspace bytes in the page-link regexes
+  - security topics refused as hacking
+  - the stale index only warning
+  - Mongo failure disabling shared quotas
+  - request-only budgets
+  - browser-made identity with a strict shared-IP cap
+  - single-threshold FAQ answers
+  - top-5-only retrieval
+  - name-based links
+- **Not confirmed:** a counter upsert race (MongoDB retries it; one retry added anyway).
+- **New modules:**
+  - `lib/chat/visitor.js`: signed HttpOnly cookie
+  - `quota.js`: free-tier quota manager
+  - `plan.js`: retrieval planner
+  - `cite.js`: citation checking
+- **Changed:**
+  - store: shared flag, locks, cooldowns
+  - handler: layered limits, per-visitor lock, emergency mode, planner, FAQ decision, citations, logging
+  - intents: staged router with reasons
+  - retrieve: FAQ decision, ranking for the planner
+  - providers: provider order, usage, cooldowns, cut flag
+  - index build: versioning, validation, failing check
+  - client: citation superscripts, busy and cut-answer retry, unverified note
+- **Tests** (`npm run test:chat`):
+  - 95 pass.
+  - Five evaluation datasets in `scripts/chat-eval/`, all at 100%: routing 350, typos 138, recruiter 248, security 37, multipart 11.
+  - 18 reliability tests: fairness, cookie rotation, busy lock, 50 parallel visitors capped at 6 model calls, token reserve/settle, shared 429 cooldown, malformed and cut streams, provider configurations, Mongo down → 3 calls → recovery, atomic counters and locks, conversation isolation, FAQ decision gates, freshness, cache invalidation, citations, byte scan.
+- **Live** (Groq, Gemini, Atlas):
+  - "prevent SQL injection" answered (honestly: no detail on the site); "exploit his website" refused.
+  - Three-project comparison correct per project.
+  - "Where has he worked?" → FAQ; "currently / when / responsibilities" → model answers with citations.
+  - Prices cited.
+  - Contact and greetings unchanged.
+- **UI:** headless desktop and phone: superscripts link to the cited pages, Copy drops them, opens at the top, lock flows unchanged. axe reports 0 violations in 6 states.
+- **Gates:** `npm run build` ✓ (fails on a stale index by design; passes after `npm run chat:index`), `test:blog` 14/14 ✓, `test:github` 16/16 ✓, backend `npm test` 198/198 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. No linter is configured.
+- **Remaining:**
+  - Citations are a lexical check: a sentence naming several projects isn't checked per project. In a live comparison the model wrote "Clerk-style" tokens for TaskNexus.
+  - Gemini's free limits are estimates.
+  - Cross-instance behaviour and Vercel cold starts need a preview deploy to verify.
+
+
+## Chat assistant: redesign and review fixes (2026-11-21, branch `fix/chat-reliability`, uncommitted, D-114)
+Owner's brief: review the code and fix errors; redesign the chat as a simple pill "Ask" and a flowing thread. Owner chose a centred start with a flowing thread, and a search-box trigger.
+- **Review:** 10 findings, all fixed (citation commas, token release on refuse/fail, per-instance emergency counter, lock before counters, newcomer AI bucket, turns keyed by visitor+session hash, complex budget after overviews, client citation regex vs array indexes, hiring cue words). Tests added for each; `npm run test:chat` 99/99.
+- **UI:** `ChatTrigger.jsx`, `Dock.css`, `ChatSurface.jsx`, `ChatSurface.css` rewritten: centred start screen, the ask box glides to the bottom, question bubble, plain answer, source chips, "Ask next" rows, pill ask box with a round send/stop button.
+- **QA:** headless 1440 and 390: focus lands in the ask box, glide runs and ends at 0, no horizontal scroll, no console errors; list bullets on chips and rows fixed; `check:design --all` 0.
+
 ## Next step
+- Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
 - Chat: owner reviews P-chat-1…3 and the ⚠ copy rows (`docs/COPY_REVIEW.md` § P-chat-2), adds the Vercel env vars, approves the commit, then checks a Vercel preview deploy (streaming, Atlas logging, the Privacy line).
 - Chat: the owner adds `GROQ_API_KEY`, `GEMINI_API_KEY` (the current one), `CHAT_IP_HASH_SALT` and `CHAT_MONGODB_URI` in **Vercel** (see `docs/DEPLOYMENT.md`, "Site assistant") and reviews P-chat-1. Then P-chat-2 (UI).

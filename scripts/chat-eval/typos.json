@@ -1,0 +1,599 @@
+[
+ {
+  "q": "what is his instgram",
+  "intent": "contact"
+ },
+ {
+  "q": "what is his instgaram",
+  "intent": "contact"
+ },
+ {
+  "q": "what is his innstagram",
+  "intent": "contact"
+ },
+ {
+  "q": "his whtsapp number",
+  "intent": "contact"
+ },
+ {
+  "q": "his whastapp number",
+  "intent": "contact"
+ },
+ {
+  "q": "his whatssapp number",
+  "intent": "contact"
+ },
+ {
+  "q": "his whatsapp nmber",
+  "intent": "contact"
+ },
+ {
+  "q": "his whatsapp numbre",
+  "intent": "contact"
+ },
+ {
+  "q": "his whatsapp numbber",
+  "intent": "contact"
+ },
+ {
+  "q": "linedin profile please",
+  "intent": "contact"
+ },
+ {
+  "q": "liknedin profile please",
+  "intent": "contact"
+ },
+ {
+  "q": "linkeddin profile please",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin profle please",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin porfile please",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin proffile please",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin profile pease",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin profile plesae",
+  "intent": "contact"
+ },
+ {
+  "q": "linkedin profile pllease",
+  "intent": "contact"
+ },
+ {
+  "q": "give me his teleram",
+  "intent": "contact"
+ },
+ {
+  "q": "give me his telgeram",
+  "intent": "contact"
+ },
+ {
+  "q": "give me his tellegram",
+  "intent": "contact"
+ },
+ {
+  "q": "fcebook account?",
+  "intent": "contact"
+ },
+ {
+  "q": "faceboko account?",
+  "intent": "contact"
+ },
+ {
+  "q": "faceboook account?",
+  "intent": "contact"
+ },
+ {
+  "q": "facebook acount?",
+  "intent": "contact"
+ },
+ {
+  "q": "facebook accuont?",
+  "intent": "contact"
+ },
+ {
+  "q": "facebook accountt?",
+  "intent": "contact"
+ },
+ {
+  "q": "how can i cntact him",
+  "intent": "contact"
+ },
+ {
+  "q": "how can i conatct him",
+  "intent": "contact"
+ },
+ {
+  "q": "how can i conttact him",
+  "intent": "contact"
+ },
+ {
+  "q": "his gitub profile",
+  "intent": "contact"
+ },
+ {
+  "q": "his gihtub profile",
+  "intent": "contact"
+ },
+ {
+  "q": "his giithub profile",
+  "intent": "contact"
+ },
+ {
+  "q": "his github profie",
+  "intent": "contact"
+ },
+ {
+  "q": "his github proifle",
+  "intent": "contact"
+ },
+ {
+  "q": "his github proofile",
+  "intent": "contact"
+ },
+ {
+  "q": "how to hack this webite",
+  "intent": "hacking"
+ },
+ {
+  "q": "how to hack this wesbite",
+  "intent": "hacking"
+ },
+ {
+  "q": "how to hack this weebsite",
+  "intent": "hacking"
+ },
+ {
+  "q": "give me the admin passwrd",
+  "intent": "hacking"
+ },
+ {
+  "q": "give me the admin paswsord",
+  "intent": "hacking"
+ },
+ {
+  "q": "give me the admin passsword",
+  "intent": "hacking"
+ },
+ {
+  "q": "bpass the payment page",
+  "intent": "hacking"
+ },
+ {
+  "q": "bypass the payment page",
+  "intent": "hacking"
+ },
+ {
+  "q": "byypass the payment page",
+  "intent": "hacking"
+ },
+ {
+  "q": "bypass the paymet page",
+  "intent": "hacking"
+ },
+ {
+  "q": "bypass the payemnt page",
+  "intent": "hacking"
+ },
+ {
+  "q": "bypass the payyment page",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injecion on this website",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injcetion on this website",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injectiion on this website",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injection on this webste",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injection on this wbesite",
+  "intent": "hacking"
+ },
+ {
+  "q": "sql injection on this webbsite",
+  "intent": "hacking"
+ },
+ {
+  "q": "does he have a girlriend",
+  "intent": "personal"
+ },
+ {
+  "q": "does he have a grilfriend",
+  "intent": "personal"
+ },
+ {
+  "q": "does he have a giirlfriend",
+  "intent": "personal"
+ },
+ {
+  "q": "is garav married",
+  "intent": "personal"
+ },
+ {
+  "q": "is gauarv married",
+  "intent": "personal"
+ },
+ {
+  "q": "is gaurrav married",
+  "intent": "personal"
+ },
+ {
+  "q": "is gaurav marrid",
+  "intent": "personal"
+ },
+ {
+  "q": "is gaurav married",
+  "intent": "personal"
+ },
+ {
+  "q": "is gaurav marrried",
+  "intent": "personal"
+ },
+ {
+  "q": "his home addess",
+  "intent": "personal"
+ },
+ {
+  "q": "his home adderss",
+  "intent": "personal"
+ },
+ {
+  "q": "his home addresss",
+  "intent": "personal"
+ },
+ {
+  "q": "what is his saary",
+  "intent": "compensation"
+ },
+ {
+  "q": "what is his saalry",
+  "intent": "compensation"
+ },
+ {
+  "q": "what is his sallary",
+  "intent": "compensation"
+ },
+ {
+  "q": "exected stipend",
+  "intent": "compensation"
+ },
+ {
+  "q": "expecetd stipend",
+  "intent": "compensation"
+ },
+ {
+  "q": "exxpected stipend",
+  "intent": "compensation"
+ },
+ {
+  "q": "expected stpend",
+  "intent": "compensation"
+ },
+ {
+  "q": "expected stipned",
+  "intent": "compensation"
+ },
+ {
+  "q": "expected stipennd",
+  "intent": "compensation"
+ },
+ {
+  "q": "write me pythn code",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "write me pythno code",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "write me pythoon code",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "solve my homewrk",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "solve my homeowrk",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "solve my homewwork",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "debug my pogram",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "debug my prgoram",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "debug my proogram",
+  "intent": "codeHelp"
+ },
+ {
+  "q": "tanks a lot",
+  "intent": "thanks"
+ },
+ {
+  "q": "thnaks a lot",
+  "intent": "thanks"
+ },
+ {
+  "q": "thannks a lot",
+  "intent": "thanks"
+ },
+ {
+  "q": "goodye friend",
+  "intent": "farewell"
+ },
+ {
+  "q": "godobye friend",
+  "intent": "farewell"
+ },
+ {
+  "q": "goodbyye friend",
+  "intent": "farewell"
+ },
+ {
+  "q": "goodbye fiend",
+  "intent": "farewell"
+ },
+ {
+  "q": "goodbye freind",
+  "intent": "farewell"
+ },
+ {
+  "q": "goodbye frieend",
+  "intent": "farewell"
+ },
+ {
+  "q": "tell me about his curent internship",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about his crurent internship",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about his currennt internship",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about his current intenship",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about his current internsihp",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about his current internnship",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what serices does he provide",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what srevices does he provide",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what servicces does he provide",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what services does he provie",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what services does he prvoide",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what services does he prrovide",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hakathons has he attended",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hackatohns has he attended",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hackathhons has he attended",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hackathons has he atteded",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hackathons has he attendde",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "which hackathons has he atttended",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what are his skils",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what are his siklls",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what are his skkills",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about tsknexus",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about tsaknexus",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "tell me about tasknnexus",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "how does kanon mate work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "how does kanono mate work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "how does kaanoon mate work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what is smarmess",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what is samrtmess",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what is smaartmess",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what blogs has he writen",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what blogs has he wirtten",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what blogs has he wriitten",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he avilable for freelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he avaliable for freelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he availabble for freelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he available for feelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he available for freelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "is he available for frreelance work",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what technolgies does he know",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what tcehnologies does he know",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "what technoologies does he know",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "show me his pojects",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "show me his proejcts",
+  "intent": "question",
+  "onTopic": true
+ },
+ {
+  "q": "show me his projjects",
+  "intent": "question",
+  "onTopic": true
+ }
+]

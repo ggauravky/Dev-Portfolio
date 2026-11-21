@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 //
-// "Ask" — the chat trigger, a second segment beside the dock pill (D-104).
-// Same height, hairline and radius as the dock. Hover, focus or touch fetches
+// The chat trigger, a second pill beside the dock (D-104). Since D-114 it reads
+// like a search box, "Ask about my work" with a search mark ("Ask" on narrow
+// screens). Same height, hairline and radius as the dock. Hover, focus or touch fetches
 // the chat chunk; a click opens it. On a first visit it gives one quiet pulse
 // (paper hairline, not lime), never under reduced motion.
 
@@ -45,7 +46,12 @@ function ChatTrigger() {
             onAnimationEnd={() => setHint(false)}
             onClick={() => openChat()}
         >
-            Ask
+            <svg className="chat-trigger__icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                <circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10.6 10.6 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            <span className="chat-trigger__long">Ask about my work</span>
+            <span className="chat-trigger__short" aria-hidden="true">Ask</span>
         </button>
     )
 }
