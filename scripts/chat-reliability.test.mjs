@@ -13,7 +13,9 @@ import { prepareIndex, faqDecision, questionType } from '../lib/chat/retrieve.js
 import { createChatHandler } from '../lib/chat/handler.js'
 import { createMemoryStore, createStore } from '../lib/chat/store.js'
 import { activeProviders, createQuota, estimateTokens, retryHintMs } from '../lib/chat/quota.js'
-import { parseProviderOrder, EMERGENCY_AI_PER_MINUTE, GEN_STARTS_PER_10S, NEW_VISITORS_PER_IP_HOUR, VISITOR_COOKIE } from '../lib/chat/config.js'
+import { parseProviderOrder, EMERGENCY_AI_PER_MINUTE, GEN_STARTS_PER_10S, NEWCOMER_AI_LIMIT, NEW_VISITORS_PER_IP_HOUR, VISITOR_COOKIE } from '../lib/chat/config.js'
+import { parseInline } from '../src/components/chat/answerFormat.js'
+import { HIRING } from '../lib/chat/retrieve.js'
 import { signVisitor, verifyVisitor } from '../lib/chat/visitor.js'
 import { validateCitations } from '../lib/chat/cite.js'
 import { validateKnowledgeBase } from '../lib/chat/knowledge.js'
@@ -171,11 +173,18 @@ test('shared Wi-Fi: 40 visitors on one network are not limited (fairness)', asyn
     assert.equal(limited, 0, '80 requests from 40 visitors behind one IP all answered (the old per-IP cap of 60 would have blocked)')
 })
 
-test('cookie rotation: past the new-visitor cap per network, no model calls', async () => {
+test('cookie rotation: past the new-visitor cap, first questions share one small bucket', async () => {
     const fetchImpl = mockFetch({ groq: () => sse(groqText('answer')) })
-    const { handler } = makeHandler({ fetchImpl })
-    for (let i = 0; i < NEW_VISITORS_PER_IP_HOUR + 8; i += 1) await ask(handler, 'How does Kanoon-Mate work under the hood?')
-    assert.ok(fetchImpl.calls.filter((c) => c === 'groq').length <= NEW_VISITORS_PER_IP_HOUR, `model calls: ${fetchImpl.calls.length}`)
+    // An open provider quota, so only the per-network newcomer rules apply.
+    const open = { reserve: async () => ({ ok: true, reserved: 0 }), settle: async () => {}, release: async () => {}, cooldown: async () => {}, state: { emergency: false } }
+    const handler = createChatHandler({ env: env(), store: createMemoryStore(), fetchImpl, index, log: () => {}, quota: open, embed: async () => null, firstTokenMs: 200, idleMs: 200 })
+    // Distinct questions (a repeat would be served from the cache), no cookies kept.
+    const total = NEW_VISITORS_PER_IP_HOUR + NEWCOMER_AI_LIMIT + 15
+    for (let i = 0; i < total; i += 1) {
+        await ask(handler, `How does Kanoon-Mate work under the hood? (${i})`, { session: `${String(i).padStart(8, '0')}-5a4d-4e6f-9b7a-1c2d3e4f5a6b` })
+    }
+    const calls = fetchImpl.calls.filter((c) => c === 'groq').length
+    assert.equal(calls, NEW_VISITORS_PER_IP_HOUR + NEWCOMER_AI_LIMIT, 'after the cap, newcomers share the bucket, then get no model calls')
 })
 
 test('one request at a time per visitor: a parallel one gets "busy"', async () => {
@@ -405,4 +414,44 @@ test('integrity: no stray control bytes in chat code; service prices only from t
     const bad = files.filter((f) => readFileSync(f).includes(0x08))
     assert.deepEqual(bad, [], 'a backspace byte broke the page-link regexes once (D-113)')
     assert.ok(!corpus.chunks.some((c) => /historical repository service data|historical listing/i.test(c.text)), 'the knowledge base\'s historical prices are not indexed')
+})
+
+// ── Code-review regressions (2026-11-21) ──────────────────────────────────
+
+test('review: a number written with a comma in the source is not flagged', () => {
+    const chunks = [{ id: 'g', type: 'about', title: 'GitHub', url: '/', group: 'github', text: 'Commits: about 3,000+ (reported).' }]
+    assert.deepEqual(validateCitations('He has made about 3,000+ commits [1].', chunks).flags, [])
+})
+
+test('review: refused and failed calls give their token reservation back', async () => {
+    const store = createMemoryStore()
+    const quota = createQuota({ store })
+    for (let i = 0; i < 30; i += 1) await store.count('q:groq:rpm', 60 * 1000)
+    assert.equal((await quota.reserve('groq', { tokens: 3000 })).ok, false)
+    assert.equal((await store.count('q:groq:tpm', 60 * 1000, 0)).count, 0, 'refused: nothing reserved')
+    const failing = mockFetch({ gemini: () => new Response('down', { status: 503 }) })
+    const fresh = createMemoryStore()
+    const handler = createChatHandler({ env: env({ providerOrder: ['gemini'] }), store: fresh, fetchImpl: failing, index, log: () => {}, embed: async () => null, firstTokenMs: 200, idleMs: 200 })
+    await ask(handler, 'How does Kanoon-Mate work under the hood?', { cookie: cookieFor('6'.repeat(32)) })
+    assert.equal((await fresh.count('q:gemini:tpm', 60 * 1000, 0)).count, 0, 'failed: nothing left reserved')
+})
+
+test('review: a "busy" reply spends no quota; turns are not linkable across conversations', async () => {
+    const fetchImpl = mockFetch({ groq: () => sse(groqText('slow ', 'answer'), { delayMs: 40 }) })
+    const { handler, store } = makeHandler({ fetchImpl })
+    const id = '7'.repeat(32)
+    await Promise.all([
+        ask(handler, 'How does Kanoon-Mate work under the hood?', { cookie: cookieFor(id) }),
+        ask(handler, 'What is InstaX built with?', { cookie: cookieFor(id) }),
+    ])
+    assert.equal((await store.count(`v:${id}`, 10 * 60 * 1000, 0)).count, 1, 'only the answered request was counted')
+    const turn = store.turns.at(-1)
+    assert.equal(turn.visitorId, undefined, 'the cookie id is not stored')
+    assert.match(turn.owner, /^[0-9a-f]{32}$/, 'a per-conversation hash instead')
+})
+
+test('review: text like array[0] is not a citation; seniority words need a subject', () => {
+    assert.deepEqual(parseInline('uses buffer[0] here').map((p) => p.t), ['text'])
+    assert.equal(HIRING.test('Is TaskNexus built for junior developers?'), false)
+    assert.equal(HIRING.test('is he a fresher?'), true)
 })

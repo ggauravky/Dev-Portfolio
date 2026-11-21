@@ -138,6 +138,7 @@ flowchart TD
 
 **Client** (`src/components/chat/`)
 - "Ask" (`ChatTrigger`) sits beside the dock. `ChatSurface` is a lazy chunk fetched on hover, focus or touch, and it injects its own CSS so the global stylesheet doesn't grow.
+- Layout (D-114): a start screen with one question, the ask box centred and suggested questions under it; after the first question the ask box glides to the bottom and the thread reads as flowing text (question bubble, plain answer, source chips, "Ask next" rows).
 - Opening it wipes the site into the chat state: the chrome and dock recede, `#main-content` becomes `inert`, and a focus trap applies. Esc stops a stream, then closes; the browser Back closes it.
 - The thread is kept in `sessionStorage`, and so is the quota: from 5 questions left a hairline meter shows the count, and once a limit is hit the composer is locked with a countdown until it resets (D-109).
 - Answers use a small format (`answerFormat.js`): paragraphs, lists, bold names and links only to site paths and the owner's known profile hosts, parsed to data and rendered without `innerHTML`. Text is revealed at an even pace while it streams.

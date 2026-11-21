@@ -34,7 +34,8 @@ export function safeHref(raw) {
 }
 
 // **bold** | [label](url) | (/site/path) | bare https URL | citation [2] or [1, 3]
-const INLINE_RE = /\*\*([^*\n]+?)\*\*|\[([^\]\n]{1,120})\]\(([^)\s]+)\)|\((\/[\w\-/#.]*)\)|(https?:\/\/[^\s)<>"]+)|\s?\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\](?!\()/g
+// (a citation never follows a letter or digit: "array[0]" stays text)
+const INLINE_RE = /\*\*([^*\n]+?)\*\*|\[([^\]\n]{1,120})\]\(([^)\s]+)\)|\((\/[\w\-/#.]*)\)|(https?:\/\/[^\s)<>"]+)|\s?(?<![A-Za-z0-9_])\[(\d{1,2}(?:\s*,\s*\d{1,2})*)\](?!\()/g
 
 /** Inline text → [{ t: 'text'|'strong'|'link'|'cite', v, href?, internal?, n? }]. */
 export function parseInline(text) {

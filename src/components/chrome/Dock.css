@@ -22,23 +22,37 @@
   transition: opacity var(--dur-fast) var(--ease-out);
 }
 
-/* === Chat trigger: a second, shorter dock segment === */
+/* === Chat trigger: a second pill that reads like a search box (D-114) === */
 .chat-trigger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  gap: 10px;
   min-width: 64px;
   height: 54px; /* the dock pill's outer height: 44 + 2×4 padding + 2×1 border */
-  padding: 0 20px;
+  padding: 0 22px 0 18px;
   border: 1px solid rgb(var(--rule));
   border-radius: 27px; /* design-allow: dock pill */
   background: rgb(var(--ink-raised));
-  color: rgb(var(--paper));
+  color: rgb(var(--muted));
   font: 400 14px/1 var(--font-sans);
   white-space: nowrap;
   cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
-.chat-trigger:hover { background: rgb(var(--paper) / 0.06); }
+.chat-trigger__icon { flex: 0 0 auto; color: rgb(var(--paper)); }
+.chat-trigger__short { display: none; color: rgb(var(--paper)); }
+.chat-trigger:hover,
+.chat-trigger:focus-visible { border-color: rgb(var(--muted) / 0.7); color: rgb(var(--paper)); }
+/* Narrow screens: the dock needs the room, so the trigger is just "Ask". */
+@media (max-width: 767px) {
+  .chat-trigger { gap: 8px; padding: 0 18px 0 16px; }
+  .chat-trigger__long { display: none; }
+  .chat-trigger__short { display: inline; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-trigger { transition: none; }
+}
 .chat-trigger.is-hinting { animation: chat-hint var(--dur-slow) var(--ease-out) 1; }
 @keyframes chat-hint {
   0% { transform: scale(1); }

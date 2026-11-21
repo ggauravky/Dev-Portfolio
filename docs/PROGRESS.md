@@ -429,6 +429,13 @@ Owner's brief: audit and fix nine areas (shared limits under MongoDB failure, fr
   - Gemini's free limits are estimates.
   - Cross-instance behaviour and Vercel cold starts need a preview deploy to verify.
 
+
+## Chat assistant: redesign and review fixes (2026-11-21, branch `fix/chat-reliability`, uncommitted, D-114)
+Owner's brief: review the code and fix errors; redesign the chat as a simple pill "Ask" and a flowing thread. Owner chose a centred start with a flowing thread, and a search-box trigger.
+- **Review:** 10 findings, all fixed (citation commas, token release on refuse/fail, per-instance emergency counter, lock before counters, newcomer AI bucket, turns keyed by visitor+session hash, complex budget after overviews, client citation regex vs array indexes, hiring cue words). Tests added for each; `npm run test:chat` 99/99.
+- **UI:** `ChatTrigger.jsx`, `Dock.css`, `ChatSurface.jsx`, `ChatSurface.css` rewritten: centred start screen, the ask box glides to the bottom, question bubble, plain answer, source chips, "Ask next" rows, pill ask box with a round send/stop button.
+- **QA:** headless 1440 and 390: focus lands in the ask box, glide runs and ends at 0, no horizontal scroll, no console errors; list bullets on chips and rows fixed; `check:design --all` 0.
+
 ## Next step
 - Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.

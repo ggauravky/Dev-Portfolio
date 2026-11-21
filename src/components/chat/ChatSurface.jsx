@@ -1,11 +1,15 @@
 // Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
 // Source: https://github.com/ggauravky/Dev-Portfolio
 //
-// The chat state of the site (P-chat-2, D-104). Opening it wipes an ink-raised
-// panel up from the dock (the route wipe in reverse, --dur-slow), the chrome
-// and dock recede, and the page underneath becomes inert. The composer sits
-// where the dock was. Lazy chunk: nothing here loads until the visitor shows
-// intent. Motion moments: the wipe, rows entering, the streaming caret.
+// The chat state of the site (P-chat-2, D-104, redesigned in D-114). Opening
+// it wipes an ink-raised panel up from the dock (the route wipe in reverse),
+// the chrome and dock recede, and the page underneath becomes inert.
+// Start screen: one question in Fraunces, the ask box in the middle,
+// suggested questions under it. After the first question the ask box glides
+// to the bottom and the conversation reads as flowing text: the visitor's
+// question as a quiet bubble, the answer as plain text with small source
+// chips, then "Ask next". Lazy chunk: nothing here loads until the visitor
+// shows intent. Motion moments: the wipe, the ask box's glide, the caret.
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -234,47 +238,43 @@ function Turn({ turn, onAsk, onRetry, onNavigate, isLast, locked }) {
     const settled = turn.status === 'done' && reveal.done
     return (
         <li className="chat-turn">
-            <div className="chat-row chat-row--q">
-                <span className="chat-row__label">You asked</span>
-                <p className="chat-row__q">{turn.q}</p>
-            </div>
-            <div className="chat-row chat-row--a" aria-busy={streaming || !reveal.done}>
-                <span className="chat-row__label">Answer</span>
-                <div className="chat-row__a">
-                    <TurnBody turn={turn} isLast={isLast} onRetry={onRetry} onNavigate={onNavigate} reveal={reveal} />
+            <p className="chat-q"><span className="sr-only">You asked: </span>{turn.q}</p>
+            <div className="chat-a" aria-busy={streaming || !reveal.done}>
+                <span className="sr-only">Answer: </span>
+                <TurnBody turn={turn} isLast={isLast} onRetry={onRetry} onNavigate={onNavigate} reveal={reveal} />
 
-                    {settled && turn.a ? (
-                        <div className="chat-meta">
-                            {turn.sources?.length ? (
-                                <p className="chat-sources">
-                                    <span className="chat-sources__label">From</span>
-                                    {turn.sources.map((source, i) => (
-                                        <span key={source.url}>
-                                            {i ? <span className="chat-sources__sep" aria-hidden="true"> · </span> : null}
-                                            <SourceLink source={source} onNavigate={onNavigate} />
-                                        </span>
-                                    ))}
-                                </p>
-                            ) : <span />}
-                            <CopyButton text={turn.a} />
-                        </div>
-                    ) : null}
-                    {settled && turn.unverified ? (
-                        <p className="chat-note chat-unverified">
-                            Some details here couldn’t be matched to Gaurav’s sources, so check the linked pages.
-                        </p>
-                    ) : null}
+                {settled && turn.a ? (
+                    <div className="chat-meta">
+                        {turn.sources?.length ? (
+                            <ul className="chat-sources" aria-label="Sources">
+                                {turn.sources.map((source) => (
+                                    <li key={source.url}><SourceLink source={source} onNavigate={onNavigate} /></li>
+                                ))}
+                            </ul>
+                        ) : <span />}
+                        <CopyButton text={turn.a} />
+                    </div>
+                ) : null}
+                {settled && turn.unverified ? (
+                    <p className="chat-note chat-unverified">
+                        Some details here couldn’t be matched to Gaurav’s sources, so check the linked pages.
+                    </p>
+                ) : null}
 
-                    {isLast && settled && turn.followUps?.length ? (
-                        <div className="chat-follow" role="group" aria-label="Ask next">
+                {isLast && settled && turn.followUps?.length ? (
+                    <div className="chat-next" role="group" aria-labelledby={`next-${turn.id}`}>
+                        <p id={`next-${turn.id}`} className="chat-next__label">Ask next</p>
+                        <ul className="chat-next__list">
                             {turn.followUps.map((question) => (
-                                <button key={question} type="button" className="chat-chip" disabled={locked} onClick={() => onAsk(question)}>
-                                    {question}
-                                </button>
+                                <li key={question}>
+                                    <button type="button" className="chat-next__item" disabled={locked} onClick={() => onAsk(question)}>
+                                        {question}
+                                    </button>
+                                </li>
                             ))}
-                        </div>
-                    ) : null}
-                </div>
+                        </ul>
+                    </div>
+                ) : null}
             </div>
         </li>
     )
@@ -653,43 +653,114 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
         onClose()
     }
 
-    const submit = (event) => {
-        event.preventDefault()
-        if (streaming) stop()
-        else if (!locked) ask(draft)
+    // The ask box starts in the middle of the start screen and, on the first
+    // question, glides to its place at the bottom (the one motion moment of
+    // the chat besides the opening wipe and the caret). FLIP: measure before,
+    // measure after, animate the difference with a transform.
+    const composerRef = useRef(null)
+    const glideFrom = useRef(null)
+    const empty = thread.length === 0
+    useLayoutEffect(() => {
+        const node = composerRef.current
+        const from = glideFrom.current
+        glideFrom.current = null
+        if (!node || from === null || empty || prefersReducedMotion()) return
+        const dy = from - node.getBoundingClientRect().top
+        if (Math.abs(dy) < 4) return
+        node.style.transition = 'none'
+        node.style.setProperty('--glide', `${dy}px`)
+        node.getBoundingClientRect() // commit the start position
+        node.style.transition = ''
+        node.style.setProperty('--glide', '0px')
+    }, [empty])
+    const askFromStart = (text) => {
+        if (empty && composerRef.current) glideFrom.current = composerRef.current.getBoundingClientRect().top
+        ask(text)
     }
 
-    const onKeyDown = (event) => {
-        if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-            event.preventDefault()
-            if (!streaming && !locked) ask(draft)
-        }
-    }
-
-    // Auto-grow the composer up to ~4 lines.
+    // Auto-grow the composer up to ~4 lines (again when it moves).
     useLayoutEffect(() => {
         const node = inputRef.current
         if (!node) return
         node.style.height = 'auto'
         node.style.height = `${Math.min(node.scrollHeight, 112)}px`
-    }, [draft, visible])
+    }, [draft, visible, empty])
 
     if (!visible) return null
 
-    const empty = thread.length === 0
     const lastId = thread[thread.length - 1]?.id
+    const sendLabel = streaming ? 'Stop answering' : 'Ask'
+
+    const composer = (
+        <form
+            ref={composerRef}
+            className={`chat__composer ${empty ? 'chat__composer--home' : 'chat__composer--dock'}`}
+            onSubmit={(event) => {
+                event.preventDefault()
+                if (streaming) stop()
+                else if (!locked) askFromStart(draft)
+            }}
+        >
+            <label htmlFor="chat-input" className="sr-only">Your question about Gaurav</label>
+            <textarea
+                id="chat-input"
+                ref={inputRef}
+                className="chat__input"
+                rows={1}
+                value={draft}
+                name="question"
+                autoComplete="off"
+                placeholder={locked
+                    ? `You can ask again at ${timeFormat(new Date(lockedUntil).toISOString())}`
+                    : empty ? 'Ask about a project, his skills, hiring…' : 'Ask a follow-up…'}
+                disabled={locked}
+                maxLength={MAX_CHARS + 50}
+                aria-describedby={inputError ? 'chat-input-error' : undefined}
+                aria-invalid={inputError ? true : undefined}
+                onChange={(event) => {
+                    setDraft(event.target.value)
+                    if (inputError && event.target.value.length <= MAX_CHARS) setInputError('')
+                }}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                        event.preventDefault()
+                        if (!streaming && !locked) askFromStart(draft)
+                    }
+                }}
+            />
+            {draft.length >= COUNTER_FROM ? (
+                <span className={`chat__count ${draft.length > MAX_CHARS ? 'is-over' : ''}`} aria-hidden="true">
+                    {draft.length}/{MAX_CHARS}
+                </span>
+            ) : null}
+            <button type="submit" className={`chat__send ${streaming ? 'is-stop' : ''}`} disabled={(locked && !streaming) || (!streaming && !draft.trim())} aria-label={sendLabel} title={sendLabel}>
+                {streaming ? (
+                    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="3" y="3" width="10" height="10" rx="1.5" fill="currentColor" /></svg>
+                ) : (
+                    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 13V3.5M3.5 8 8 3.5 12.5 8" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                )}
+            </button>
+            {inputError
+                ? <p id="chat-input-error" className="chat__error" role="alert">{inputError}</p>
+                : <QuotaLine quota={quota} locked={locked} />}
+        </form>
+    )
 
     return (
         <div
             ref={rootRef}
-            className={`chat chat--${phase}`}
+            className={`chat chat--${phase} ${empty ? 'is-home' : 'is-thread'}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="chat-title"
             onAnimationEnd={onAnimationEnd}
         >
             <div className="chat__bar">
-                <span className="chat__mark">Ask<span className="chat__mark-name"> <span aria-hidden="true">·</span> <span translate="no">Gaurav Kumar Yadav</span></span></span>
+                <p className="chat__mark">
+                    <span className="chat__dot" aria-hidden="true" />
+                    <span className="chat__mark-name">Ask</span>
+                    <span className="chat__mark-note">Answers from Gaurav’s own site and projects</span>
+                </p>
                 <div className="chat__bar-actions">
                     {!empty ? (
                         <button type="button" className="chat-text-btn" onClick={newChat}>New chat</button>
@@ -702,40 +773,43 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
 
             <div ref={scrollRef} className="chat__scroll" onScroll={onScroll}>
                 <div ref={colRef} className="chat__col">
-                    <header className="chat__head">
-                        <h2 id="chat-title" ref={headingRef} tabIndex={-1} className="chat__greeting">Ask about Gaurav’s work.</h2>
-                        <p className="chat__lede">
-                            Answers come only from Gaurav’s own material: this site and his public projects.
-                            Questions are stored for 180 days to improve the answers.
-                        </p>
-                    </header>
-
                     {empty ? (
-                        <ol className="chat-starters" aria-label="Questions to start with">
-                            {STARTERS.map((starter, i) => (
-                                <li key={starter}>
-                                    <button type="button" className="chat-starter" disabled={locked} onClick={() => ask(starter)}>
-                                        <span className="chat-starter__n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                                        <span className="chat-starter__text">{starter}</span>
-                                        <span className="chat-starter__go" aria-hidden="true">→</span>
-                                    </button>
-                                </li>
-                            ))}
-                        </ol>
+                        <section className="chat-home">
+                            <h2 id="chat-title" ref={headingRef} tabIndex={-1} className="chat-home__title">
+                                What would you like to know about Gaurav’s work?
+                            </h2>
+                            {composer}
+                            <ul className="chat-suggest" aria-label="Suggested questions">
+                                {STARTERS.map((starter) => (
+                                    <li key={starter}>
+                                        <button type="button" className="chat-suggest__item" disabled={locked} onClick={() => askFromStart(starter)}>
+                                            {starter}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="chat-home__note">
+                                Answers come only from Gaurav’s own material: this site and his public projects.
+                                Questions are stored for 180 days to improve the answers.
+                            </p>
+                        </section>
                     ) : (
-                        <ol className="chat-thread" aria-label="Conversation">
-                            {thread.map((turn) => (
-                                <Turn
-                                    key={turn.id}
-                                    turn={turn}
-                                    isLast={turn.id === lastId}
-                                    onAsk={ask}
-                                    onRetry={retry}
-                                    onNavigate={onNavigate}
-                                    locked={locked}
-                                />
-                            ))}
-                        </ol>
+                        <>
+                            <h2 id="chat-title" ref={headingRef} tabIndex={-1} className="sr-only">Conversation about Gaurav’s work</h2>
+                            <ol className="chat-thread" aria-label="Conversation">
+                                {thread.map((turn) => (
+                                    <Turn
+                                        key={turn.id}
+                                        turn={turn}
+                                        isLast={turn.id === lastId}
+                                        onAsk={ask}
+                                        onRetry={retry}
+                                        onNavigate={onNavigate}
+                                        locked={locked}
+                                    />
+                                ))}
+                            </ol>
+                        </>
                     )}
 
                     {locked ? <LimitNotice until={lockedUntil} now={now} scope={quota.scope} onNavigate={onNavigate} /> : null}
@@ -748,39 +822,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                 </button>
             ) : null}
 
-            <form className="chat__composer" onSubmit={submit}>
-                <label htmlFor="chat-input" className="sr-only">Your question about Gaurav</label>
-                <textarea
-                    id="chat-input"
-                    ref={inputRef}
-                    className="chat__input"
-                    rows={1}
-                    value={draft}
-                    name="question"
-                    autoComplete="off"
-                    placeholder={locked ? `You can ask again at ${timeFormat(new Date(lockedUntil).toISOString())}` : 'Ask about a project, the journey, skills or services…'}
-                    disabled={locked}
-                    maxLength={MAX_CHARS + 50}
-                    aria-describedby={inputError ? 'chat-input-error' : undefined}
-                    aria-invalid={inputError ? true : undefined}
-                    onChange={(event) => {
-                        setDraft(event.target.value)
-                        if (inputError && event.target.value.length <= MAX_CHARS) setInputError('')
-                    }}
-                    onKeyDown={onKeyDown}
-                />
-                {draft.length >= COUNTER_FROM ? (
-                    <span className={`chat__count ${draft.length > MAX_CHARS ? 'is-over' : ''}`} aria-hidden="true">
-                        {draft.length}/{MAX_CHARS}
-                    </span>
-                ) : null}
-                <button type="submit" className="chat__send" disabled={locked && !streaming}>
-                    {streaming ? 'Stop' : 'Ask'}
-                </button>
-                {inputError
-                    ? <p id="chat-input-error" className="chat__error" role="alert">{inputError}</p>
-                    : <QuotaLine quota={quota} locked={locked} />}
-            </form>
+            {empty ? null : composer}
 
             <div className="sr-only" aria-live="polite" aria-atomic="true">{announce}</div>
         </div>

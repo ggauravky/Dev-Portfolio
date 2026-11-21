@@ -237,3 +237,14 @@ Fixed replies in `lib/chat/intents.js` and `lib/chat/handler.js`, sent with no m
 | 1 | A second question while one is still being answered | "Still answering your previous question. Try again in a moment." | |
 | 2 | Under an answer whose details didn't all match a source | "Some details here couldn’t be matched to Gaurav’s sources, so check the linked pages." | ⚠ |
 | 3 | Under an answer cut short by a provider failure | Button "Try again" (after the existing "(The answer was cut short. Please ask again.)") | |
+
+## Chat: redesign copy (2026-11-21, D-114)
+
+| # | Where | Copy | ⚠ confirm |
+|---|---|---|---|
+| 1 | Dock trigger (desktop / phone) | "Ask about my work" / "Ask" | |
+| 2 | Start screen heading | "What would you like to know about Gaurav’s work?" | |
+| 3 | Ask box placeholder (start / thread) | "Ask about a project, his skills, hiring…" / "Ask a follow-up…" | |
+| 4 | Top bar note | "Answers from Gaurav’s own site and projects" | |
+| 5 | Follow-up label | "Ask next" | |
+| 6 | Send button label (idle / streaming) | "Ask" / "Stop answering" | |
