@@ -42,6 +42,49 @@ export const CASE_STUDY_COUNT = RANKED_PROJECTS.filter(isCaseStudy).length
 export const PROJECTS_LEDE =
     'AI/ML and web development projects, built with Python, React, Node.js and the MERN stack. Ranked, with the case studies first.'
 
+/**
+ * One plain sentence per case study (unslop audit H-4/P-3, COPY_REVIEW ⚠): each
+ * restates facts already in that project's description/solution, without the
+ * "production-ready / high-performance" openers, so it can show unclamped.
+ */
+export const PROJECT_SUMMARIES = {
+    'kanoon-mate': 'Reads legal notices, summons and FIR copies through OCR and explains them in plain Hindi and English with Gemini, mapped to BNS sections.',
+    insightaudio: 'Turns YouTube links and local recordings into summaries, task lists and a searchable RAG memory, self-hosted in Python.',
+    'rag-ai-teaching-assistant': 'Answers questions about a video course from its own lectures, citing the video and the MM:SS timestamp.',
+    'smart-lms': 'A course platform with Gemini search, Google sign-in and Razorpay checkout for students and instructors.',
+    smartmess: 'A hostel mess app for menus, one-click attendance, meal ratings and tracked complaints, with an admin dashboard.',
+    'real-time-chat-app': 'Socket.IO chat with JWT sessions in HTTP-only cookies, online status and Cloudinary image uploads.',
+}
+
+/**
+ * Title → parts, marking hyphenated words ("Kanoon-Mate", "Real-Time") so the
+ * row can keep them on one line: a break at the hyphen ("Kanoon- / Mate") at
+ * 390px reads as a layout accident.
+ */
+export const titleParts = (title) =>
+    title.split(/(\S+-\S+)/).filter(Boolean).map((text) => ({ text, keep: /\S-\S/.test(text) }))
+
+export const projectSummary = (project) => PROJECT_SUMMARIES[project.slug] || project.description
+
+/**
+ * Horizontal focus of the arch frontispiece crop, per project (unslop audit
+ * C-1). The screenshots are full desktop captures, so a centred tall crop often
+ * lands on half a headline ("our / s Food"); these point it at product UI.
+ * Presentation only; projects not listed stay centred.
+ */
+export const FRONTIS_FOCUS = {
+    'aireel-studio': '100%',
+    buildmyteam: '85%',
+    dishdash: '85%',
+    'kanoon-mate': '100%',
+    shopease: '80%',
+    smartmess: '92%',
+    'spotify-clone': '95%',
+    truecert: '90%',
+}
+
+export const frontisFocus = (project) => FRONTIS_FOCUS[project.slug] || '50%'
+
 /** "No. 03 of 26 · Case study" — shared with the static route shell. */
 export const caseKicker = (project) =>
     `No. ${pad2(RANK_BY_SLUG.get(project.slug))} of ${RANKED_PROJECTS.length}${isCaseStudy(project) ? ' · Case study' : ''}`

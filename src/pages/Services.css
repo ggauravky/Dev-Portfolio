@@ -21,9 +21,22 @@
 
 .sv-features {
   margin: var(--space-2) 0 0;
-  padding-left: 1.1em;
+  padding-left: 0;
   color: rgb(var(--muted));
   line-height: var(--leading-body);
+}
+
+/* Text on the summary's left edge; a quiet dash hangs in the gutter (V-3). */
+.sv-features li { position: relative; }
+.sv-features li::before {
+  content: '–';
+  position: absolute;
+  left: calc(var(--space-2) * -1);
+  color: rgb(var(--rule));
+}
+/* Narrow screens have no gutter for the dash: indent the list instead. */
+@media (max-width: 767px) {
+  .sv-features { padding-left: var(--space-2); }
 }
 
 .sv-links {

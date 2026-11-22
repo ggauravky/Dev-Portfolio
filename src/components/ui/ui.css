@@ -226,7 +226,7 @@
   display: block;
   width: 100%;
   height: 56px;
-  padding: 22px 40px 6px 14px;
+  padding: 24px 40px 8px 16px; /* on the 8 scale (unslop audit X-7) */
   border: 1px solid rgb(var(--rule));
   border-radius: var(--radius-control);
   background: rgb(var(--ink));
@@ -237,7 +237,7 @@
 .field--multiline .field__control {
   height: auto;
   min-height: 136px;
-  padding-top: 28px;
+  padding-top: 24px;
   resize: vertical;
 }
 
@@ -253,7 +253,7 @@
 
 .field__label {
   position: absolute;
-  left: 15px;
+  left: 17px; /* the control's 16px padding + 1px border */
   top: 18px;
   color: rgb(var(--muted));
   font: 400 15px/20px var(--font-sans);

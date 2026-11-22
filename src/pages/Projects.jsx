@@ -28,6 +28,8 @@ import {
     isCaseStudy,
     pad2,
     previewSrc,
+    projectSummary,
+    titleParts,
     projectType,
 } from '../lib/projects'
 import { useFinePointer, useReducedMotion } from '../lib/motion'
@@ -40,6 +42,7 @@ import {
     preloadCaseStudy,
 } from '../lib/viewTransition'
 import Reveal from '../components/Reveal'
+import FilterDisclosure from '../components/FilterDisclosure'
 import LineMask from '../components/LineMask'
 import HoverPreview from '../components/ui/HoverPreview'
 import { Button, Input, TextLink } from '../components/ui'
@@ -91,8 +94,8 @@ function ProjectRow({ project, compact, onEnter, onFocusRow, onBlurRow, onActiva
             >
                 <span className="pj-row__no" aria-hidden="true">{pad2(RANK_BY_SLUG.get(project.slug))}</span>
                 <span className="pj-row__body">
-                    <span ref={titleRef} className="pj-row__title">{project.title}</span>
-                    {compact ? null : <span className="pj-row__desc">{project.description}</span>}
+                    <span ref={titleRef} className="pj-row__title">{titleParts(project.title).map((part, k) => (part.keep ? <span key={k} className="nowrap">{part.text}</span> : part.text))}</span>
+                    {compact ? null : <span className="pj-row__desc">{projectSummary(project)}</span>}
                 </span>
                 <span className="pj-row__meta">
                     <span>{projectType(project)}</span>
@@ -239,6 +242,8 @@ function Projects() {
         </ol>
     )
 
+    const filtered = category !== 'All' || q !== ''
+    const activeSummary = [category === 'All' ? '' : category, q ? `“${query.trim()}”` : ''].filter(Boolean).join(', ')
     const where = category === 'All' ? '' : ` in ${category}`
     const status = visible.length === projectsData.length
         ? `${visible.length} projects`
@@ -260,6 +265,7 @@ function Projects() {
 
             <div className="pj-body page-wrap page-grid">
                 <div className="page-main">
+                    <FilterDisclosure label="Filter and search" summary={activeSummary} defaultOpen={filtered || sort !== 'rank'}>
                     <form className="pj-controls" role="search" aria-label="Filter projects" onSubmit={(event) => event.preventDefault()}>
                         <fieldset className="pj-seg">
                             <legend className="pj-seg__legend">Show</legend>
@@ -280,7 +286,8 @@ function Projects() {
                             </div>
                         </fieldset>
 
-                        <fieldset className="pj-seg">
+                        {/* Order is secondary: a paper underline, so the fold has one lime mark (DESIGN.md scarcity, P-2). */}
+                        <fieldset className="pj-seg pj-seg--quiet">
                             <legend className="pj-seg__legend">Order</legend>
                             <div className="pj-seg__options">
                                 {SORTS.map((s) => (
@@ -309,8 +316,10 @@ function Projects() {
                             spellCheck={false}
                         />
                     </form>
+                    </FilterDisclosure>
 
-                    <p className="pj-status" role="status" aria-live="polite">{status}</p>
+                    {/* Only shown once a filter or search narrows the list; the rail already says 26 (P-1). */}
+                    <p className={`pj-status ${filtered ? '' : 'sr-only'}`} role="status" aria-live="polite">{status}</p>
 
                     {visible.length === 0 ? (
                         <div className="pj-empty">

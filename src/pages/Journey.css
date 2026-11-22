@@ -17,6 +17,24 @@
   border-top: 1px solid rgb(var(--rule));
 }
 
+/* The legend is screen-reader only (J-1), so the chips start on the content
+   column instead of in a second label column. */
+.jr-filter .jr-seg { display: block; }
+/* Where the rail is a side column (1024+, page.css), put its label on the
+   chips' first line, below the 24px hairline padding. */
+@media (min-width: 1024px) {
+  .jr-filter > .page-rail { padding-top: calc(14px + var(--space-3)); }
+}
+
+/* Phones: the disclosure row carries the hairline (FilterDisclosure, J-5). */
+@media (max-width: 767px) {
+  .jr-filter .pj-seg { padding-top: var(--space-1); border-top: 0; }
+  .jr-filter > .page-rail { display: none; } /* the row already says "Filter by category" */
+  /* The section's own bottom rule closes the row, so no second hairline 48px below it. */
+  .jr-filter { padding-bottom: var(--space-2); }
+  .jr-filter .filter-disclosure__toggle { border-bottom-color: transparent; }
+}
+
 .jr-count {
   font-variant-numeric: tabular-nums;
   margin-top: var(--space-2);

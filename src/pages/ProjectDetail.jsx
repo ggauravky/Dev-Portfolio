@@ -23,10 +23,12 @@ import {
     RANKED_PROJECTS,
     RANK_BY_SLUG,
     caseKicker,
+    frontisFocus,
     hasRealImage,
     hasUrl,
     ownRole,
     pad2,
+    projectSummary,
     projectType,
     splitLead,
     splitPipeline,
@@ -82,29 +84,38 @@ function Architecture({ text }) {
 
 Architecture.propTypes = { text: PropTypes.string.isRequired }
 
-function LeadList({ items, ordered = false }) {
-    const List = ordered ? 'ol' : 'ul'
+const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/**
+ * Numbered decisions/lessons. One row recipe per list (unslop audit C-2/C-3):
+ * when every item has a "Lead — detail" shape, leads are paper and details
+ * muted (capitalised); when only some do, every item is one plain paper
+ * sentence, so no row looks like it lost its title.
+ */
+function LeadList({ items }) {
+    const parts = items.map(splitLead)
+    const allLed = parts.every((part) => part.lead)
     return (
-        <List className="case-list">
-            {items.map((item, i) => {
-                const { lead, rest } = splitLead(item)
-                return (
-                    <li key={item} className="case-list__item">
-                        {ordered ? <span className="case-list__no" aria-hidden="true">{pad2(i + 1)}</span> : null}
+        <ol className="case-list">
+            {items.map((item, i) => (
+                <li key={item} className="case-list__item">
+                    <span className="case-list__no" aria-hidden="true">{pad2(i + 1)}</span>
+                    {allLed ? (
                         <p>
-                            {lead ? <><strong className="case-list__lead">{lead}</strong>{' '}</> : null}
-                            {rest}
+                            <strong className="case-list__lead">{parts[i].lead}</strong>{' '}
+                            {capitalise(parts[i].rest)}
                         </p>
-                    </li>
-                )
-            })}
-        </List>
+                    ) : (
+                        <p className="case-list__plain">{capitalise(item)}</p>
+                    )}
+                </li>
+            ))}
+        </ol>
     )
 }
 
 LeadList.propTypes = {
     items: PropTypes.arrayOf(PropTypes.string).isRequired,
-    ordered: PropTypes.bool,
 }
 
 function NotFound() {
@@ -164,7 +175,7 @@ function ProjectDetail() {
         },
         project.solution && { id: 'what-it-does', title: 'What it does', body: <p className="case-prose">{project.solution}</p> },
         project.architecture && { id: 'architecture', title: 'Architecture', body: <Architecture text={project.architecture} /> },
-        project.keyDecisions?.length && { id: 'decisions', title: 'Key decisions', body: <LeadList items={project.keyDecisions} ordered /> },
+        project.keyDecisions?.length && { id: 'decisions', title: 'Key decisions', body: <LeadList items={project.keyDecisions} /> },
         project.lessonsLearned?.length && { id: 'learned', title: 'What I learned', body: <LeadList items={project.lessonsLearned} /> },
         screens.length && {
             id: 'screens',
@@ -209,7 +220,7 @@ function ProjectDetail() {
                     {/* This header is also painted pre-JS by scripts/route-shells.js; keep them in step. */}
                     <p className="case-kicker">{caseKicker(project)}</p>
                     <h1 className="case-title" data-vt-ready="">{project.title}</h1>
-                    <p className="case-lede">{project.description}</p>
+                    <p className="case-lede">{projectSummary(project)}</p>
                     {demo || source ? (
                         <div className="case-actions">
                             {demo ? <Button href={demo} external arrow="external">Live demo</Button> : null}
@@ -231,6 +242,7 @@ function ProjectDetail() {
                                 responsiveWidths={FRONTIS_WIDTHS}
                                 sizes="(min-width: 1024px) 280px, 240px"
                                 className="case-frontis__img"
+                                style={{ '--focus-x': frontisFocus(project) }}
                             />
                         </Arch>
                     </figure>

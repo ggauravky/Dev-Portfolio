@@ -16,3 +16,9 @@ export const STARTERS = [
     'Why should I hire Gaurav?', // the hiring summaries built from the knowledge base (D-112)
     'Is he available for internships or work?', // knowledge base: faq q015
 ]
+
+// The chat start screen lists four of these as a ruled list (unslop audit X-1,
+// D-115): the projects overview, one case study, work history and
+// availability. Kept here so a reorder above is seen next to it; the full list
+// still feeds the follow-up offers in lib/chat/intents.js.
+export const HOME_STARTERS = [1, 2, 3, 7].map((i) => STARTERS[i]).filter(Boolean)

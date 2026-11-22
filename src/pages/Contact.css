@@ -141,28 +141,11 @@
 
 .ct-note { margin-top: 0; }
 
-/* ── Elsewhere: a muted icon that takes the platform colour on link hover/focus ── */
+/* ── Elsewhere: the platform name is the label; no icon column, no brand
+   colours (unslop audit K-2, D-121). ── */
 .ct-row__label {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-}
-
-.ct-row__icon {
-  display: inline-flex;
-  flex: none;
-  color: rgb(var(--muted));
-}
-
-.ct-row__svg {
-  width: 16px;
-  height: 16px;
-}
-
-.ct-row:has(.text-link:focus-visible) .ct-row__icon { color: var(--brand); }
-
-@media (hover: hover) {
-  .ct-row:has(.text-link:hover) .ct-row__icon { color: var(--brand); }
 }
 
 /* WhatsApp leads: label and note in paper, not muted. */

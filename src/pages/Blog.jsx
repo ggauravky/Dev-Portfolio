@@ -16,7 +16,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import useSEO from '../hooks/useSEO'
 import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
-import { STATIC_HEADS } from '../lib/pageHeads'
+import { BLOG_CONTROLS_FROM, STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
 import { Button, Input } from '../components/ui'
 import { categories, getPublishedBlogArchive } from '../data/blogsData'
@@ -91,6 +91,13 @@ function Blog() {
     const counts = useMemo(() => Object.fromEntries(categories.map((c) => [
         c, c === 'All' ? publishedBlogs.length : publishedBlogs.filter((b) => b.category === c).length,
     ])), [publishedBlogs])
+    // A category with no notes is a dead control (B-1).
+    const shownCategories = categories.filter((c) => c === 'All' || counts[c] > 0)
+    // A shared filtered link still shows its controls, so it can be cleared, and
+    // they stay for the visit: they never vanish when "All" or an empty search
+    // makes the list unfiltered again.
+    const [arrivedFiltered] = useState(() => category !== 'All' || query.trim() !== '')
+    const showControls = publishedBlogs.length >= BLOG_CONTROLS_FROM || arrivedFiltered
 
     useSEO({
         ...SEO,
@@ -119,13 +126,14 @@ function Blog() {
         <main className="pg blog">
             <PageHead head={STATIC_HEADS['/blog']} />
 
+            {showControls ? (
             <section className="bl-controls page-wrap page-grid" aria-label="Browse engineering notes">
                 <p className="page-rail" aria-hidden="true">Filter</p>
                 <div className="page-main">
                     <fieldset className="pj-seg">
                         <legend className="pj-seg__legend">Category</legend>
                         <div className="pj-seg__options">
-                            {categories.map((c) => (
+                            {shownCategories.map((c) => (
                                 <label key={c} className="pj-seg__option">
                                     <input
                                         type="radio"
@@ -151,6 +159,7 @@ function Blog() {
                     </p>
                 </div>
             </section>
+            ) : null}
 
             <PageSection id="archive" index={1} title="Archive">
                 {filtered.length ? (

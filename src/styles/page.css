@@ -570,3 +570,43 @@ details[open] > summary .pg-toggle::after { transform: rotate(0deg); }
 .eb-details { margin-top: var(--space-5); color: rgb(var(--muted)); font: 400 13px/var(--leading-body) var(--font-mono); }
 .eb-details summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 .eb-details pre { max-height: 256px; overflow: auto; padding: var(--space-2); border: 1px solid rgb(var(--rule)); border-radius: var(--radius-control); background: rgb(var(--ink-raised)); white-space: pre-wrap; }
+
+/* === Filter disclosure (FilterDisclosure.jsx, D-116) ======================
+   Phones: one hairline row ("Filter and search  +") above the index; the
+   controls open under it. 768px and up: no toggle, controls always shown. */
+.filter-disclosure__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--space-1) 0;
+  border-top: 1px solid rgb(var(--rule));
+  border-bottom: 1px solid rgb(var(--rule));
+  color: rgb(var(--paper));
+  font: 400 15px/1.4 var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.filter-disclosure__toggle[aria-expanded='true'] { border-bottom-color: transparent; }
+.filter-disclosure__summary { color: rgb(var(--muted)); }
+.filter-disclosure__sign { color: rgb(var(--muted)); font-size: 20px; line-height: 1; }
+@media (hover: hover) {
+  .filter-disclosure__toggle:hover .filter-disclosure__sign { color: rgb(var(--paper)); }
+}
+.filter-disclosure__toggle:focus-visible { outline-offset: 2px; }
+
+@media (max-width: 767px) {
+  .filter-disclosure__panel[data-open='false'] { display: none; }
+}
+@media (min-width: 768px) {
+  .filter-disclosure__toggle { display: none; }
+}
+
+/* A secondary segment (e.g. sort order): the current option is marked with a
+   paper underline, so a page keeps one lime mark at rest (DESIGN.md scarcity). */
+.pj-seg--quiet .pj-seg__option > span:first-of-type::after { background: rgb(var(--paper)); }
+
+/* Keeps a hyphenated word whole (titleParts in src/lib/projects.js). */
+.nowrap { white-space: nowrap; }

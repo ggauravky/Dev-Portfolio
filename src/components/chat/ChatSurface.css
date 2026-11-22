@@ -121,7 +121,8 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   min-height: 100%;
   padding-bottom: 96px;
 }
-.chat-home { display: flex; flex-direction: column; align-items: center; text-align: center; }
+/* Left-aligned like every Monograph page (unslop audit X-1); never a centred stack. */
+.chat-home { display: flex; flex-direction: column; align-items: stretch; text-align: left; }
 .chat-home__title {
   max-width: 18ch;
   margin: 0 0 32px;
@@ -131,28 +132,33 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 }
 .chat-home__title:focus { outline: none; } /* a programmatic start point, not a control */
 .chat-suggest {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
   max-width: 640px;
-  margin: 24px 0 0;
+  margin: 32px 0 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid rgb(var(--rule));
 }
+.chat-suggest li { border-bottom: 1px solid rgb(var(--rule)); }
+/* Same row recipe as "Ask next" below an answer: a hairline list, not chips. */
 .chat-suggest__item {
-  min-height: 40px;
-  padding: 9px 14px;
-  border: 1px solid rgb(var(--rule));
-  border-radius: var(--radius-dialog);
-  color: rgb(var(--paper) / 0.86);
-  font: 400 14px / 1.35 var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 8px;
+  color: rgb(var(--paper) / 0.9);
+  font: 400 15px / 1.45 var(--font-sans);
   text-align: left;
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
+.chat-suggest__item::after { content: '→'; color: rgb(var(--muted)); transition: transform var(--dur-fast) var(--ease-out); }
 .chat-suggest__item:hover,
-.chat-suggest__item:focus-visible { border-color: rgb(var(--muted) / 0.6); background: rgb(var(--ink-raised)); color: rgb(var(--paper)); }
+.chat-suggest__item:focus-visible { background: rgb(var(--ink-raised)); color: rgb(var(--paper)); }
+.chat-suggest__item:hover::after,
+.chat-suggest__item:focus-visible::after { transform: translate3d(4px, 0, 0); }
 .chat-home__note {
   max-width: 52ch;
   margin: 32px 0 0;
@@ -255,9 +261,9 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 20px;
+  margin-top: 24px;
 }
-.chat-sources { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.chat-sources { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; margin: 0; padding: 0; list-style: none; }
 .chat-sources .chat-link {
   display: inline-flex;
   align-items: center;
@@ -284,7 +290,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   display: block;
   width: 100%;
   min-height: 48px;
-  padding: 13px 8px;
+  padding: 12px 8px;
   color: rgb(var(--paper) / 0.9);
   font: 400 15px / 1.45 var(--font-sans);
   text-align: left;
@@ -294,16 +300,16 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 .chat-next__item:hover,
 .chat-next__item:focus-visible { background: rgb(var(--ink-raised)); color: rgb(var(--paper)); }
 
-/* === The ask box (the dock's pill shape, D-104) === */
+/* === The ask box: a 4px control like every input (unslop audit X-2, supersedes D-104's pill) === */
 .chat__composer {
   position: relative;
   display: flex;
   align-items: flex-end;
   gap: 8px;
   width: 100%;
-  padding: 6px 6px 6px 20px;
+  padding: 4px 4px 4px 16px;
   border: 1px solid rgb(var(--rule));
-  border-radius: 28px; /* design-allow: the ask box is the dock pill */
+  border-radius: var(--radius-control);
   background: rgb(var(--ink-raised));
   text-align: left;
   transform: translate3d(0, var(--glide, 0px), 0);
@@ -312,7 +318,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 /* Focus is the hairline turning accent (the ⌘K precedent, D-024). */
 .chat__composer:focus-within { border-color: rgb(var(--accent)); }
 .chat__composer--home { max-width: 640px; }
-.chat__composer--home .chat__input { min-height: 48px; padding: 14px 0; font-size: 17px; line-height: 20px; }
+.chat__composer--home .chat__input { min-height: 48px; padding: 12px 0; font-size: 17px; line-height: 20px; }
 /* Centred with offsets and auto margins: the transform is kept for the glide. */
 .chat__composer--dock {
   position: absolute;
@@ -345,7 +351,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 .chat__count { align-self: center; color: rgb(var(--muted)); font: 400 12px/1 var(--font-sans); font-variant-numeric: tabular-nums; }
 .chat__count.is-over { color: rgb(var(--paper)); }
 
-/* Send: a round button with an arrow; Stop while an answer streams. */
+/* Send: a square control with an arrow (radius matches the ask box); Stop while an answer streams. */
 .chat__send {
   display: inline-flex;
   flex: 0 0 auto;
@@ -353,7 +359,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 22px; /* design-allow: button pill inside the ask box */
+  border-radius: var(--radius-control);
   background: rgb(var(--paper));
   color: rgb(var(--ink));
   cursor: pointer;
@@ -365,8 +371,8 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 .chat__error,
 .chat__quota {
   position: absolute;
-  left: 20px;
-  right: 20px;
+  left: 16px;
+  right: 16px;
   bottom: calc(100% + 8px);
   margin: 0;
   color: rgb(var(--paper));
@@ -411,7 +417,7 @@ html.chat-open .dock-cluster { transform: translate3d(-50%, 8px, 0); }
 
 /* === Limit reached: a section at the end of the thread === */
 .chat-lock {
-  margin-top: 40px;
+  margin-top: 48px;
   padding-top: 32px;
   border-top: 1px solid rgb(var(--rule));
   text-align: left;

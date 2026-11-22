@@ -8,6 +8,16 @@
 // page only loads the data it already uses (Contact never loads journeyData).
 // Copy: existing facts only, logged in docs/COPY_REVIEW.md § P5.
 
+import { formatAmount, formatPriceLabel } from './format.js'
+
+/**
+ * /blog shows its category filter and search from this many published notes
+ * (unslop audit B-2). Below it the archive is short enough to read whole, and
+ * the static route shell paints the rows too, so the first title is not a
+ * late LCP. Shared by src/pages/Blog.jsx and scripts/route-shells.js.
+ */
+export const BLOG_CONTROLS_FROM = 6
+
 export const STATIC_HEADS = {
     '/about': {
         rail: ['Lucknow', 'BCA, 2024 to present'],
@@ -43,14 +53,14 @@ export const journeyHead = (entries) => {
 }
 
 export const servicesHead = (services) => ({
-    rail: [`${services.length} services`, `From INR ${Math.min(...services.map((s) => s.amount))}`],
+    rail: [`${services.length} services`, `From INR ${formatAmount(Math.min(...services.map((s) => s.amount)))}`],
     title: 'Services',
     lede: 'Frontend, backend, full-stack and AI or data science work, done remotely. The price is fixed before you pay, and the server verifies every payment.',
 })
 
 /** One per service page (/frontend-development, …). */
 export const serviceHead = (service) => ({
-    rail: [service.category, service.priceLabel],
+    rail: [service.category, formatPriceLabel(service.priceLabel)],
     title: service.title,
     lede: service.summary,
 })
