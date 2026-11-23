@@ -436,6 +436,191 @@ Owner's brief: review the code and fix errors; redesign the chat as a simple pil
 - **UI:** `ChatTrigger.jsx`, `Dock.css`, `ChatSurface.jsx`, `ChatSurface.css` rewritten: centred start screen, the ask box glides to the bottom, question bubble, plain answer, source chips, "Ask next" rows, pill ask box with a round send/stop button.
 - **QA:** headless 1440 and 390: focus lands in the ask box, glide runs and ends at 0, no horizontal scroll, no console errors; list bullets on chips and rows fixed; `check:design --all` 0.
 
+## Unslop polish: Home + chat + dock (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-115)
+Second-opinion audit with the `unslop` skill: `docs/UNSLOP_AUDIT.md` (audited `main` at `c2f1e79`). Owner approved every FIX, the Home copy ASKs (H-4, H-5), and "Ask as a segment inside the dock pill" for X-3. Page 1 of 7.
+- **Home:** HeroLive's first label is "Local time", so "Lucknow, India" isn't shown twice in the fold (H-1, `HeroLive.jsx` + `index.html` shell). The hero's third action ("Contact") is gone, leaving one primary and one secondary (H-2). Selected work shows a one-sentence `projectSummary()` per case study (`src/lib/projects.js` `PROJECT_SUMMARIES`; `projectsData.js` untouched), unclamped (H-4). The contact lede is new copy (H-5). Skills and Journey rows use `--text-body` 17 instead of 18 (H-6).
+- **Chat start screen:** left-aligned. Four starters as a hairline list with `→` (the "Ask next" row recipe) instead of a centred chip cloud (X-1; `HOME_STARTERS`, and the full `STARTERS` still feed `lib/chat/intents.js`). The ask box and send button use `--radius-control` (X-2, supersedes D-104's pill). Placeholder is "Ask about a project or skill" (X-4). Off-scale spacing is on the 8 scale (X-6).
+- **Dock:** "Ask" is a segment inside the one dock pill after a hairline (X-3). Hover opens the menu from the page trigger only, so Ask is reachable without opening it, and the open menu lists Ask as a tool. The first-visit scale pulse and magnetic pull on the trigger are removed. Dock gaps/padding are on the scale (X-7).
+- **Not done here (later pages):** `ui.css` field padding (Contact/Blog), the Projects clamp (P-3).
+- **Gates:** `npm run build` ✓ · `test:blog` 14/14 ✓ · `test:chat` 99/99 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓. Playwright: hovering Ask leaves the menu closed, hovering the trigger opens it with Ask listed, no page errors at 1440/390.
+- **Mobile Lighthouse, Home** (Lighthouse 12 via npx, Chromium 1248, local preview, alternating runs against a `git archive` build of `main` on :4174): `main` 83/84, this branch 84/87/84/83. A11y 100, SEO 100, BP 96 on both (the existing `errors-in-console`). No regression. These are lower than the P6 log (96–98) because the chat chunk shipped after P6 and the tool version differs, not because of this change.
+- **Screenshots:** `docs/audit/unslop/home/{before,after}-{1440,390}-{fold.png,full.jpg}`, `docs/audit/unslop/chat/after-*`.
+
+### Unslop Home self-critique ("would a stranger think this is AI-made?")
+1. **"— email or WhatsApp."** An em dash in short UI copy is a ChatGPT tell. Resolved: "…, by email or WhatsApp."
+2. **Truncated "production-ready…" blurbs** were the most generated-sounding text on the page. Resolved: plain one-sentence summaries from existing facts.
+3. **A centred chat start with a chip cloud is the ChatGPT screen.** Resolved: left-aligned title, ruled list, 4px box.
+4. **Two pills at the bottom read as a SaaS widget.** Resolved: one pill.
+5. **Still open, copy only (not approved yet):** the chat title "What would you like to know about Gaurav's work?" is a stock chatbot greeting. Suggest "Ask about Gaurav's work" (COPY_REVIEW ⚠). The hero lede repeating the name stays by decision (H-3).
+
+## Unslop polish: Projects (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-116)
+Page 2 of 7 (`docs/UNSLOP_AUDIT.md` P-1–P-4).
+- **P-1:** the "26 projects" status line is screen-reader only until a filter or search narrows the list ("7 of 26 projects in AI/ML"). The rail and the "All 26" count already say it, and the `role="status"` live region stays.
+- **P-2:** the Order segment (`.pj-seg--quiet`) marks the current option with a paper underline. Show keeps the lime one, so the fold has a single lime mark plus the dock dot (DESIGN.md scarcity).
+- **P-3:** case-study rows show `projectSummary()` (the same sentences as Home, COPY_REVIEW D-115), unclamped.
+- **P-4:** under 768px the controls sit behind one hairline row, "Filter and search +" (`src/components/FilterDisclosure.jsx`, styles in `page.css`). It starts closed unless the URL already filters, and shows the active filter in the row ("· AI/ML"). From 768px up there's no toggle. Journey reuses it (J-5).
+- **Found while checking:** at 390px "Kanoon-Mate" broke at its hyphen. `titleParts()` (`src/lib/projects.js`) keeps hyphenated words whole in Projects and Home rows.
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓. Playwright at 390: closed by default, opens on tap, filtered status visible, `?category=Python` opens it, no toggle at 1024. The only console errors are the absent local API and GitHub endpoints (same on `main`).
+- **Mobile Lighthouse `/projects`** (7 alternating runs each vs a `main` build): `main` median 88, branch median 88, LCP 2.1–2.2 s on both. A11y 100, SEO 100, BP 96 on both. No regression.
+- **Screenshots:** `docs/audit/unslop/projects/{before,after}-{1440,390}-*`.
+
+### Unslop Projects self-critique
+1. **A control panel as the first thing on a phone** is the template look. Resolved: one row, the index first.
+2. **Three "26"s** read as generated filler. Resolved: two remain, both doing a job (rail fact, filter count).
+3. **Clamped "production-ready…" blurbs.** Resolved (P-3).
+4. **"Kanoon- / Mate" break** looked accidental. Resolved.
+5. **Still there, by data:** the "More projects" list includes clones ("Spotify Clone", "LinkedIn Clone") and a "Glass-Morphism Calculator". That's content, not styling. Consider pruning or renaming in `projectsData.js` (owner's call; not changed).
+
+## Unslop polish: case study (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-117)
+Page 3 of 7 (`docs/UNSLOP_AUDIT.md` C-1–C-3), checked on `/projects/smartmess` and across all 25 case studies with an image.
+- **C-1, wider than audited:** every frontispiece is a full desktop capture, so the tall arch crop showed the browser tab bar and the Windows taskbar, and often half a headline ("our / s Food", "d your next / peat."). The image now scales 1.16 (a transform), biased upward to trim the chrome. `FRONTIS_FOCUS` in `src/lib/projects.js` points 8 projects' horizontal crop at product UI (SmartMess phone, DishDash photo, ShopEase photo, TrueCert snapshot list…). Contact sheets: `docs/audit/unslop/case-study/{before,after}-frontis-all.png`.
+- **C-2:** `LeadList` uses one row recipe per list. If every item is "Lead — detail", leads are paper and details muted. If only some are (116 of 208 items in the data have no lead), every item is one plain paper sentence. Both lists use the same number column ("What I learned" was an unnumbered list with a left rule).
+- **C-3:** details are capitalised at render; the data is untouched.
+- **Self-critique fix:** the six case-study ledes (and their static route shells, `scripts/route-shells.js`) use the approved `projectSummary()` instead of the "Comprehensive… / production-ready…" description. Other projects keep their description.
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓.
+- **Mobile Lighthouse `/projects/smartmess`** (5 alternating runs each vs `main`): `main` median 84, branch 83, LCP 2.7–3.2 s on both, CLS 0. A11y 100, BP 96, SEO 100. No regression.
+
+### Unslop case-study self-critique
+1. **Browser chrome and an OS taskbar in the hero image** read as an unedited screen grab. Resolved by the scale trim.
+2. **Half-headline crops.** Resolved for 8 projects. **Still open:** Kanoon-Mate and AIReel Studio screenshots are almost all headline, so no crop avoids cut words. A product-UI screenshot for each would fix it (owner to supply).
+3. **Rows that "lost" their title.** Resolved (C-2).
+4. **Hype lede.** Resolved for the 6 case studies.
+5. **The project's own screenshot shows its own slop** (pill badge, green gradient headline in SmartMess). Real artefact; kept (C-4).
+
+## Unslop polish: Journey (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-118)
+Page 4 of 7 (`docs/UNSLOP_AUDIT.md` J-1, J-2, J-3, J-5; J-4 "merge single-entry categories" is an ASK the owner hasn't answered, so it's not done).
+- **J-1:** one label for one control. The rail says "Category" (aligned to the chips' first line) and the inline legend is screen-reader only, so the chips start on the content column.
+- **J-2:** "25 of 25 entries" is screen-reader only until a category is picked ("6 of 25 entries").
+- **J-3:** `shortDateLabel()` (`src/lib/dates.js`, display only) gives one format: abbreviated months, en-dash ranges, the year once for same-year ranges, and a no-break space before the dash so a wrapped range breaks after it ("Jun 1 – Jul 15, 2026", "Sep 7, 2026 – Present"). Home's Journey rows use it too. Data and JSON-LD keep the original strings.
+- **J-5:** `FilterDisclosure` ("Filter by category +") under 768px, as on Projects. The mobile rail is hidden there (the row names it), and the section's own rule closes the row (no double hairline).
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓. Playwright at 390: closed by default, Hackathons → "6 of 25 entries" with "· Hackathons" in the row, `?category=Workshops` opens it, no page errors.
+- **Mobile Lighthouse `/journey`** (5 alternating runs each vs `main`): `main` median 83, branch 84, LCP 2.0–2.1 s, CLS 0. A11y 100, BP 96, SEO 100. No regression.
+
+### Unslop Journey self-critique
+1. **Two labels for one control, and a stray rule on mobile.** Resolved.
+2. **Four date formats on one list.** Resolved.
+3. **A control panel before the timeline on phones.** Resolved.
+4. **Still open (J-4, owner's call):** 10 categories for 25 entries, four of them with a single entry.
+5. **Still open, content:** entry titles mix Title Case and sentence style ("Uttar Pradesh State Lead" vs "Learning Beyond Code at Product Builder's Day"). That's data, not changed.
+
+## Unslop polish: Services (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-119)
+Page 5 of 7 (`docs/UNSLOP_AUDIT.md` V-1, V-3, V-4, V-5; V-2 "rewrite the service blurbs" is an ASK the owner hasn't answered, so it's not done).
+- **V-1:** `src/lib/format.js` (display only; the backend still sets every charged amount). Prices read "INR 1,499–1,999" instead of "INR 1499 - INR 1999", the rail reads "From INR 499", and number ranges in running text use an en dash ("3–5 days"). Used by `/services`, the service pages (`ServiceDetail.jsx` amount and delivery row) and their heads/rails (`pageHeads.js`, so the static route shells match). `seo.js` JSON-LD text is unchanged.
+- **V-3:** feature bullets start on the summary's left edge, with a `--rule` dash hanging in the gutter (indented under 768px, where there's no gutter).
+- **V-4:** the hero has two actions (Book a service, Ask first). "Support my work" moves to section 03.
+- **V-5:** "Check the work first" now leads with View projects (primary), then GitHub, Book a service (link) and Support my work (muted).
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓ · backend `npm test` 198/198 ✓ (no backend change; run because prices are involved). Measured alignment: 1440 list text = summary x (529), dash 16px left; 390 dash at the text edge (16), text at 32.
+- **Mobile Lighthouse `/services`** (5 alternating runs each vs `main`): `main` median 87, branch 88, LCP 2.0–2.5 s, CLS 0. A11y 100, BP 96, SEO 100. No regression.
+
+### Unslop Services self-critique
+1. **"INR 1499 - INR 1999"** looked like unformatted placeholder data. Resolved.
+2. **Three hero actions, and a closing CTA that contradicted its heading.** Resolved.
+3. **Bullets indented off the column.** Resolved.
+4. **Still open, the biggest tell left on this page (V-2, owner's call):** the four service blurbs ("Modern, responsive frontend experiences with clean component architecture…", "Reliable backend systems…", "End-to-end development…", "Applied guidance…") are stock generated copy. A suggested rewrite from each service's own bullets is in UNSLOP_AUDIT V-2.
+
+## Unslop polish: Blog + MCP article (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-120)
+Page 6 of 7 (`docs/UNSLOP_AUDIT.md` B-1, B-2, B-3; B-4, the "Uber … Works" title grammar, is an ASK the owner hasn't answered, so it's not done).
+- **B-1:** categories with no published notes are hidden ("How I Built It 0" is gone).
+- **B-2:** the category filter and search show only from `BLOG_CONTROLS_FROM` (6, in `src/lib/pageHeads.js`) published notes, or when the URL already filters. With 2 notes the archive comes straight after the header.
+- **B-2 knock-on, fixed:** with the controls gone, the first article title became the mobile LCP and painted only after React (LCP +0.1–0.3 s). `scripts/route-shells.js` now paints the `/blog` archive rows pre-JS while there are no controls (same helper and markup as `Blog.jsx`). After: branch median 89 vs `main` 86, LCP 2.7–2.9 s vs 2.9–3.2 s, CLS 0.
+- **B-3, MCP diagrams** (`public/images/blogs/mcp/*.svg`; originals in the audit sheet `docs/audit/unslop/blog-post/diagrams-before-after.png`). Each now:
+  - uses Geist, embedded as a data-URI `@font-face` (an `<img>` SVG can't load site fonts), with no Inter/Arial; about 43 KB each, lazy-loaded below the fold;
+  - uses weights 400/500;
+  - has sentence-case labels ("HTTP POST" kept: protocol name) and no letter-spacing;
+  - has no dot/grid backgrounds;
+  - has no lime: side bars removed, box outlines → `#4C4A46`, lines/icons/labels → `#9C978C`, the lime "Result" fill → raised surface with paper text. These are static, non-interactive diagrams, so lime has no job there (DESIGN.md "Where lime is allowed").
+- **B-3, cover** (`public/images/blogs/mcp/cover.png`, also the OG image, still 1600×900): redrawn from `docs/audit/unslop/blog/mcp-cover-source.html` with the site's Fraunces/Geist. It's the same idea (AI application → MCP → GitHub / Database / Local files) with hairline boxes, no lime, no smiley icon, and no baked-in headline (the article H1 sits right above it). 35.8 KB → 47 KB.
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓.
+- **Mobile Lighthouse:** `/blog` as above. `/blog/what-is-mcp`, 5 alternating runs each: `main` median 86, branch 86, LCP 2.4–2.7 s on both, CLS 0. A11y 100, BP 96, SEO 100.
+
+### Unslop Blog self-critique
+1. **The MCP cover and diagrams were the most AI-generated-looking thing on the site** (Inter, 700–750 weights, caps tracking, lime washes, a smiley for GitHub). Resolved.
+2. **A filter panel for two posts, with a dead "0" category.** Resolved.
+3. **Text baked into the cover.** Resolved (diagram labels only).
+4. **Still open, content (owner's call):**
+   - B-4: the "…Apps like Uber, Lyft Works at Scale" title grammar.
+   - The MCP subtitle's em dash ("workflows — explained simply").
+   - The Uber excerpt's "Learn how…" marketing tone.
+
+## Unslop polish: Contact + form fields (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-121)
+Page 7 of 7 (`docs/UNSLOP_AUDIT.md` K-2, plus the shared field spacing from X-7; K-1 "drop the filler notes" is an ASK the owner hasn't answered, so it's not done).
+- **K-2:** the Elsewhere rows lose their 16px icon column. Those icons also took each platform's brand colour on hover (green, blue, orange…), against both DESIGN.md's lime-only rule and unslop's "icons take the text colour". The platform name is now the label, and WhatsApp stays the lead row in paper. Removed: the lucide/`GithubIcon` imports in `Contact.jsx` and the `.ct-row__icon/__svg` and `--brand` CSS. (`src/utils/radialConfig` is no longer imported anywhere; it's left in place as a follow-up.)
+- **X-7, `ui.css` fields** (Contact form, Blog newsletter, Projects search): padding `24px 40px 8px 16px` (was 22/40/6/14), multiline top `24px` (was 28), and the label left at 17px to match. Measured: floated label bottom 24px, text top 25px, both 17px from the left edge. Screenshot: `docs/audit/unslop/contact/after-fields-filled.png`.
+- **Gates:** build ✓ · `test:blog` 14/14 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓.
+- **Mobile Lighthouse `/contact`** (5 alternating runs each vs `main`): `main` median 85, branch 86, LCP 2.0–2.5 s, CLS 0. A11y 100, BP 96, SEO 100.
+
+### Unslop Contact self-critique
+1. **A brand-coloured icon on every row** is the link-in-bio template. Resolved.
+2. **Off-scale field padding.** Resolved.
+3. **Still open (K-1, owner's call):** nine rows each carry a one-line note, and most are filler ("Professional updates and experience", "Behind the scenes", "Thoughts, updates and tech notes").
+
+### Unslop pass: open items for the owner
+- **ASKs not yet answered:**
+  - J-4: merge single-entry Journey categories.
+  - V-2: rewrite the four service blurbs.
+  - B-4: fix the "…Lyft Works at Scale" title.
+  - K-1: drop the filler notes on Contact.
+- **Copy waiting for ⚠ confirmation:** COPY_REVIEW rows 1–18, including the suggested chat title (row 11).
+- **Content outside this pass:**
+  - Kanoon-Mate / AIReel screenshots are headline-only.
+  - Clone projects in "More projects".
+  - Mixed title case in Journey.
+- **Docs:** CLAUDE.md:54 and DESIGN.md:140 still name the old lime hex (UNSLOP_AUDIT S-1–S-4).
+- **Housekeeping:**
+  - The full-page `.jpg` screenshots under `docs/audit/unslop/` aren't covered by `.gitignore` (PNGs are).
+  - `public/sitemap.xml` was regenerated by the build.
+  - `src/utils/radialConfig` is unused.
+
+## Unslop polish: review pass before commit (2026-11-23, branch `fix/unslop-polish`, uncommitted)
+Full read of the diff (34 files), plus runtime checks on pages the per-page passes didn't screenshot.
+- **Fixed:**
+  1. Blog controls vanished when a filtered visitor clicked "All" or emptied the search. They now stay for the visit (`useState` on arrival).
+  2. The `/blog` shell painted the unfiltered rows on `?category=` / `?q=` links. It now paints header-only there, so no swap or shift.
+  3. `HOME_STARTERS` was declared between imports and picked by index far from the list. It moved into `starters.js` next to `STARTERS`.
+  4. The Journey rail's extra top padding applied from 768px, but the rail is a side column only from 1024px, so at 900px "Category" floated above the hairline. It's now scoped to 1024+.
+  5. Projects sorted by Title (flat list) sat 24px under search. Both sort modes now have 48px.
+  6. A shadowed `i` in the Home/Projects title `map`.
+  7. The no-break space in `dates.js` was a literal invisible character; it's now ` `.
+- **Checked, no change needed:**
+  - The open dock still fits at 1024px with the extra "Ask" item (943px wide, 41px margins).
+  - Touch: tapping Ask opens the chat without the menu; the menu's Ask item opens the chat too.
+  - Keyboard: Tab order is pages → Ask → Search → Resume, Esc closes, and focus returns to the trigger, the same pattern as Search.
+  - `LazyImage` adds no transform, so it can't clash with the frontispiece scale.
+  - The shared field padding is fine on `/booknow` and `/support`.
+- **Gates after the fixes:** build ✓ · `test:blog` 14/14 ✓ · `test:chat` 99/99 ✓ · `check:design --all` 0 ✓ · `git diff --check` ✓ · no page errors.
+- **Left as follow-ups:**
+  - `src/utils/radialConfig` is now unused.
+  - The full-page `.jpg` screenshots (18 MB folder) aren't covered by `.gitignore`.
+  - `public/sitemap.xml` was regenerated by the build.
+
+## Launch video (2026-11-23, branch `fix/unslop-polish`, uncommitted, D-122)
+A separate Remotion project, `launch-video/` (own `package.json`, nothing imported by the site), composited from real recordings of the built site. The owner approved the structure and the 7 s opening draft first.
+- **Output:** `launch-video/out/launch-16x9.mp4` (1920×1080) and `launch-9x16.mp4` (1080×1920), 28 s, 60 fps, silent.
+- **Beats:**
+  1. The name's weight axis under the cursor (hook).
+  2. The live panel; the IST clock changes minute on screen.
+  3. The Projects hover preview and the click into SmartMess.
+  4. Ask, with the answer streaming.
+  5. The Journey spine and the sticky year.
+  6. End card: name, site, GitHub/LinkedIn, availability, QR code.
+- **Left out on purpose:**
+  - The two-script name (D-034).
+  - The arch as a portrait (removed in D-074; it appears only on the case study).
+  - A chat "theme transition" (the site is dark-only).
+- **Capture:** `scripts/launch-video/record.mjs`, desktop 1440×810 and phone 390×844, both at density 3. It saves element boxes and time marks to `launch-video/src/captures/*.json`; `src/script.ts` derives every cut and camera rect from them.
+- **Self-critique (reasons to scroll past), fixed:**
+  1. In the first render, frame 0 was still. The cursor now starts inside "Gaurav".
+  2. The top wordmark and the paragraph were cut at the frame edges. The camera now stays inside bounds.
+  3. In 9:16, beat 2 was a still phone screen. A real thumb scroll now brings the live panel up as the clock ticks.
+  4. Typing the question took 3.5 s. The chat's own starter row is clicked instead, so Ask is 7 s and the video is 28 s, not 30.
+  5. The 9:16 projects caption claimed a title carry that reads as a crossfade on a phone. It now states the ranked index instead.
+  6. In 16:9, the answer was too small to read. The camera now frames the thread.
+- **Gates:** `npm run lint` (eslint, tsc, `check:tokens`) ✓ · `npm run check:qr` decodes `https://ggauravky.vercel.app` in both ratios ✓.
+- **Open:**
+  - The chat answer is the live model's wording at recording time; re-check it after any re-record.
+  - The click transition into the case study is real-time and lasts about 0.3 s.
+  - `npm audit` in `launch-video/` reports moderate issues in the Remotion starter's dev dependencies.
+
 ## Next step
 - Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.

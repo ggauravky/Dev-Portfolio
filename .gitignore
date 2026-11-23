@@ -67,3 +67,8 @@ public/images/journey/*-1200.avif
 
 # Redesign audit screenshots: only WebP fold shots are committed (docs/DECISIONS.md D-005)
 docs/audit/**/*.png
+
+# Launch video: recorded clips and renders are re-creatable (scripts/launch-video/record.mjs,
+# launch-video/); the Remotion source and src/captures/*.json are committed.
+scripts/launch-video/out/
+launch-video/public/clips/
