@@ -16,7 +16,8 @@ import useSEO from '../hooks/useSEO'
 import { staticSeo } from '../lib/seo'
 import { getFeaturedBlogs } from '../data/blogsData'
 import { projectsData } from '../data/projectsData'
-import { RANKED_PROJECTS } from '../lib/projects'
+import { RANKED_PROJECTS, projectSummary, titleParts } from '../lib/projects'
+import { shortDateLabel } from '../lib/dates'
 import { journeyData } from '../data/journeyData'
 import { siteStatus } from '../data/siteStatus'
 import Reveal from '../components/Reveal'
@@ -105,7 +106,6 @@ function Home() {
                         <div className="home-hero__actions">
                             <Button to="/projects" arrow>View projects</Button>
                             <Button to="/services" variant="secondary">Book a service</Button>
-                            <TextLink to="/contact" className="home-hero__contact">Contact</TextLink>
                         </div>
                     </div>
                 </div>
@@ -164,8 +164,8 @@ function Home() {
                             <Link to={`/projects/${project.slug}`} className="work-row" data-cursor="View">
                                 <span className="work-row__no" aria-hidden="true">{pad(i + 1)}</span>
                                 <span className="work-row__body">
-                                    <span className="work-row__title">{project.title}</span>
-                                    <span className="work-row__desc">{project.description}</span>
+                                    <span className="work-row__title">{titleParts(project.title).map((part, k) => (part.keep ? <span key={k} className="nowrap">{part.text}</span> : part.text))}</span>
+                                    <span className="work-row__desc">{projectSummary(project)}</span>
                                 </span>
                                 <span className="work-row__meta">
                                     <span>{project.categories.join(' / ')}</span>
@@ -234,7 +234,7 @@ function Home() {
                 <ol className="journey-list">
                     {LATEST_JOURNEY.map((item) => (
                         <li key={item.id} className="journey-row">
-                            <span className="journey-row__date">{item.dateLabel}</span>
+                            <span className="journey-row__date">{shortDateLabel(item.dateLabel)}</span>
                             <span className="journey-row__title">{item.title}</span>
                             <span className="journey-row__org">{item.organization} · {item.category}</span>
                         </li>
@@ -245,7 +245,7 @@ function Home() {
             {/* Contact */}
             <Section id="contact" index={CONTACT_INDEX} title="Contact">
                 <p className="home-contact__lede">
-                    Based in Lucknow, Uttar Pradesh, India. Have a project in mind? Tell me about it.
+                    Based in Lucknow, Uttar Pradesh, India. Internships, freelance projects and collaborations, by email or WhatsApp.
                 </p>
                 <div className="home-contact__actions">
                     <Button to="/contact" arrow>Get in touch</Button>

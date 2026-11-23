@@ -18,7 +18,6 @@
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import PropTypes from 'prop-types'
-import { AtSign, BookOpen, BriefcaseBusiness, Camera, ChartColumn, FileDown, MessageCircle, SquareCode } from 'lucide-react'
 import useSEO from '../hooks/useSEO'
 import { staticSeo } from '../lib/seo'
 import PageHead from '../components/page/PageHead'
@@ -28,7 +27,6 @@ import { Button, Input, Textarea, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
 import { validateEmail, validateRequired } from '../lib/validate'
 import { useFinePointer } from '../lib/motion'
-import { GithubIcon } from '../utils/radialConfig'
 import './Contact.css'
 
 const SEO = staticSeo('/contact')
@@ -61,16 +59,16 @@ const PREFILLS = new Set(INTENTS.map((intent) => intent.subject))
 const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent || '')
 
 // WhatsApp leads: it's the fastest way to reach me. Same platforms, same links.
-// `brand` is each platform's one colour, shown on the icon only on hover/focus.
+// No icons or brand colours: the platform name is the label (K-2, D-121).
 const PLATFORMS = [
-    { label: 'WhatsApp', href: 'https://wa.me/918542036499', handle: '+91 8542036499', note: 'The fastest way to reach me', icon: MessageCircle, brand: '#25D366', lead: true },
-    { label: 'GitHub', href: siteStatus.links.github, handle: '@ggauravky', note: 'Code, projects and open source', icon: GithubIcon, brand: '#f0f6fc' },
-    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/gauravky/', handle: '@gauravky', note: 'Professional updates and experience', icon: BriefcaseBusiness, brand: '#0A66C2' },
-    { label: 'LeetCode', href: 'https://leetcode.com/u/gauravky/', handle: '@gauravky', note: 'Problem solving and DSA', icon: SquareCode, brand: '#FFA116' },
-    { label: 'Kaggle', href: 'https://www.kaggle.com/kgauravky', handle: '@kgauravky', note: 'ML notebooks and data experiments', icon: ChartColumn, brand: '#20BEFF' },
-    { label: 'GeeksforGeeks', href: 'https://www.geeksforgeeks.org/profile/gauravky', handle: '@gauravky', note: 'DSA notes and practice', icon: BookOpen, brand: '#2F8D46' },
-    { label: 'X', href: 'https://x.com/xgauravky', handle: '@xgauravky', note: 'Thoughts, updates and tech notes', icon: AtSign, brand: '#f0f6fc' },
-    { label: 'Instagram', href: 'https://www.instagram.com/the_gau_rav/', handle: '@the_gau_rav', note: 'Behind the scenes', icon: Camera, brand: '#E4405F' },
+    { label: 'WhatsApp', href: 'https://wa.me/918542036499', handle: '+91 8542036499', note: 'The fastest way to reach me', lead: true },
+    { label: 'GitHub', href: siteStatus.links.github, handle: '@ggauravky', note: 'Code, projects and open source' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/gauravky/', handle: '@gauravky', note: 'Professional updates and experience' },
+    { label: 'LeetCode', href: 'https://leetcode.com/u/gauravky/', handle: '@gauravky', note: 'Problem solving and DSA' },
+    { label: 'Kaggle', href: 'https://www.kaggle.com/kgauravky', handle: '@kgauravky', note: 'ML notebooks and data experiments' },
+    { label: 'GeeksforGeeks', href: 'https://www.geeksforgeeks.org/profile/gauravky', handle: '@gauravky', note: 'DSA notes and practice' },
+    { label: 'X', href: 'https://x.com/xgauravky', handle: '@xgauravky', note: 'Thoughts, updates and tech notes' },
+    { label: 'Instagram', href: 'https://www.instagram.com/the_gau_rav/', handle: '@the_gau_rav', note: 'Behind the scenes' },
 ]
 
 /** Arrow, spinner and check share one fixed slot; only one shows at a time. */
@@ -350,23 +348,17 @@ function Contact() {
 
             <PageSection id="elsewhere" index={2} title="Elsewhere">
                 <ul className="pg-rows ct-rows">
-                    {PLATFORMS.map(({ label, href, handle, note, icon: Icon, brand, lead }) => (
-                        <li key={label} className={`pg-row ct-row${lead ? ' ct-row--lead' : ''}`} style={{ '--brand': brand }}>
-                            <p className="pg-row__label ct-row__label">
-                                <span className="ct-row__icon" aria-hidden="true"><Icon className="ct-row__svg" strokeWidth={1.6} /></span>
-                                {label}
-                            </p>
+                    {PLATFORMS.map(({ label, href, handle, note, lead }) => (
+                        <li key={label} className={`pg-row ct-row${lead ? ' ct-row--lead' : ''}`}>
+                            <p className="pg-row__label ct-row__label">{label}</p>
                             <div className="pg-row__body">
                                 <TextLink href={href} external translate="no">{handle}</TextLink>
                                 <p className="pg-row__meta ct-note">{note}</p>
                             </div>
                         </li>
                     ))}
-                    <li className="pg-row ct-row" style={{ '--brand': 'rgb(var(--paper))' }}>
-                        <p className="pg-row__label ct-row__label">
-                            <span className="ct-row__icon" aria-hidden="true"><FileDown className="ct-row__svg" strokeWidth={1.6} /></span>
-                            Resume
-                        </p>
+                    <li className="pg-row ct-row">
+                        <p className="pg-row__label ct-row__label">Resume</p>
                         <div className="pg-row__body">
                             <TextLink href={siteStatus.resumeUrl} external aria-label="resume.pdf (PDF, opens in a new tab)">resume.pdf</TextLink>
                             <p className="pg-row__meta ct-note">Experience, skills and education in one PDF</p>

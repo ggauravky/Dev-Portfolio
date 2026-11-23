@@ -6,7 +6,7 @@
  * no blur. Accent marks only the current page and the availability dot.
  */
 
-/* The dock and the chat trigger ("Ask") sit together, centred at the bottom. */
+/* The dock (with its Ask segment), centred at the bottom. */
 .dock-cluster {
   position: fixed;
   left: 50%;
@@ -22,50 +22,36 @@
   transition: opacity var(--dur-fast) var(--ease-out);
 }
 
-/* === Chat trigger: a second pill that reads like a search box (D-114) === */
-.chat-trigger {
+/* === Ask: a segment inside the idle pill, after a hairline (D-115) === */
+.dock-ask {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  min-width: 64px;
-  height: 54px; /* the dock pill's outer height: 44 + 2×4 padding + 2×1 border */
-  padding: 0 22px 0 18px;
-  border: 1px solid rgb(var(--rule));
-  border-radius: 27px; /* design-allow: dock pill */
-  background: rgb(var(--ink-raised));
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px 0 12px;
+  border-radius: 22px; /* design-allow: dock pill (an item inside it, like .dock-item) */
   color: rgb(var(--muted));
   font: 400 14px/1 var(--font-sans);
   white-space: nowrap;
   cursor: pointer;
-  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
-.chat-trigger__icon { flex: 0 0 auto; color: rgb(var(--paper)); }
-.chat-trigger__short { display: none; color: rgb(var(--paper)); }
-.chat-trigger:hover,
-.chat-trigger:focus-visible { border-color: rgb(var(--muted) / 0.7); color: rgb(var(--paper)); }
-/* Narrow screens: the dock needs the room, so the trigger is just "Ask". */
-@media (max-width: 767px) {
-  .chat-trigger { gap: 8px; padding: 0 18px 0 16px; }
-  .chat-trigger__long { display: none; }
-  .chat-trigger__short { display: inline; }
+.dock-ask::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: -2px;
+  width: 1px;
+  background: rgb(var(--rule));
 }
+.dock-ask__icon { flex: 0 0 auto; color: rgb(var(--paper)); }
+.dock-ask:hover,
+.dock-ask:focus-visible { background: rgb(var(--paper) / 0.06); color: rgb(var(--paper)); }
+.dock-ask:focus-visible { outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) {
-  .chat-trigger { transition: none; }
-}
-.chat-trigger.is-hinting { animation: chat-hint var(--dur-slow) var(--ease-out) 1; }
-@keyframes chat-hint {
-  0% { transform: scale(1); }
-  45% { transform: scale(1.06); }
-  100% { transform: scale(1); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .chat-trigger.is-hinting { animation: none; }
-}
-/* While the full menu is open there is no room beside it (it stacks on small
-   screens and nearly fills 1024–1279px), so the trigger steps aside. */
-@media (max-width: 1279px) {
-  .dock-cluster.has-open-dock .chat-trigger { display: none; }
+  .dock-ask { transition: none; }
 }
 
 .dock-panel {
@@ -83,10 +69,10 @@
 .dock-trigger {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 44px;
   height: 44px;
-  padding: 0 16px 0 10px;
+  padding: 0 16px 0 12px;
   border-radius: 22px; /* design-allow: dock pill */
   color: rgb(var(--paper));
   font: 400 13px/1 var(--font-mono);
@@ -97,7 +83,7 @@
 .dock-trigger:hover { background: rgb(var(--paper) / 0.06); }
 .dock-trigger:focus-visible { outline-offset: -2px; }
 
-.dock-trigger__label { display: inline-flex; align-items: baseline; gap: 6px; }
+.dock-trigger__label { display: inline-flex; align-items: baseline; gap: 4px; }
 .dock-trigger__index { color: rgb(var(--muted)); }
 .dock-trigger__slash { color: rgb(var(--muted) / 0.6); }
 .dock-trigger__close { color: rgb(var(--muted)); font-family: var(--font-sans); font-size: 14px; }
@@ -128,7 +114,7 @@
 .dock-menu { display: flex; align-items: center; gap: 4px; }
 .dock-menu__pages,
 .dock-menu__tools { display: flex; align-items: center; gap: 2px; list-style: none; }
-.dock-menu__tools { padding-left: 6px; margin-left: 2px; border-left: 1px solid rgb(var(--rule)); }
+.dock-menu__tools { padding-left: 8px; margin-left: 2px; border-left: 1px solid rgb(var(--rule)); }
 
 .dock-menu__cell { position: relative; }
 
@@ -137,7 +123,7 @@
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   height: 44px;
   padding: 0 12px;
   border-radius: 22px; /* design-allow: dock pill */
@@ -165,7 +151,7 @@
   background: rgb(var(--accent));
 }
 
-.dock-item__label { display: inline-flex; align-items: baseline; gap: 6px; }
+.dock-item__label { display: inline-flex; align-items: baseline; gap: 4px; }
 .dock-item__index { display: none; color: rgb(var(--muted)); font: 400 11px/1 var(--font-mono); }
 
 /* Sliding highlight shared across items (framer layoutId). */

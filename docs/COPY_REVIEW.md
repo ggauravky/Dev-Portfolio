@@ -248,3 +248,25 @@ Fixed replies in `lib/chat/intents.js` and `lib/chat/handler.js`, sent with no m
 | 4 | Top bar note | "Answers from Gaurav’s own site and projects" | |
 | 5 | Follow-up label | "Ask next" | |
 | 6 | Send button label (idle / streaming) | "Ask" / "Stop answering" | |
+
+## Unslop polish: Home + chat (2026-11-23, D-115)
+| # | Where | Was | Now | Source | ⚠ confirm |
+|---|---|---|---|---|---|
+| 1 | Home contact lede (`Home.jsx`) | "…Have a project in mind? Tell me about it." | "Based in Lucknow, Uttar Pradesh, India. Internships, freelance projects and collaborations, by email or WhatsApp." | `/contact` hero + WhatsApp row | ⚠ |
+| 2 | HeroLive first label | "Lucknow, India" | "Local time" | footer label | ⚠ |
+| 3 | Selected work: Kanoon-Mate | description (clamped) | "Reads legal notices, summons and FIR copies through OCR and explains them in plain Hindi and English with Gemini, mapped to BNS sections." | `projectsData` description + solution | ⚠ |
+| 4 | Selected work: InsightAudio | description (clamped) | "Turns YouTube links and local recordings into summaries, task lists and a searchable RAG memory, self-hosted in Python." | description + solution | ⚠ |
+| 5 | Selected work: RAG Teaching Assistant | description (clamped) | "Answers questions about a video course from its own lectures, citing the video and the MM:SS timestamp." | description | ⚠ |
+| 6 | Selected work: Smart LMS | description (clamped) | "A course platform with Gemini search, Google sign-in and Razorpay checkout for students and instructors." | description + solution | ⚠ |
+| 7 | Selected work: SmartMess | description (clamped) | "A hostel mess app for menus, one-click attendance, meal ratings and tracked complaints, with an admin dashboard." | description + solution | ⚠ |
+| 8 | Selected work: Real-Time Chat App | description (clamped) | "Socket.IO chat with JWT sessions in HTTP-only cookies, online status and Cloudinary image uploads." | description + solution | ⚠ |
+| 9 | Chat placeholder (start) | "Ask about a project, his skills, hiring…" | "Ask about a project or skill" | — | ⚠ |
+| 10 | Dock chat trigger | "Ask about my work" / "Ask" | "Ask" (icon + word, every width) | — | ⚠ |
+| 11 | Chat start title (**suggested, not applied**) | "What would you like to know about Gaurav's work?" | "Ask about Gaurav's work" | — | ⚠ owner to decide |
+| 12 | Projects mobile filter row (D-116) | — | "Filter and search" (+ "· <active filter>") | — | ⚠ |
+| 13 | Projects case-study rows | description (clamped) | the six summaries in rows 3–8 | — | (same as 3–8) |
+| 14 | Case-study lede, 6 case studies (D-117) | `description` | the six summaries in rows 3–8 | — | (same as 3–8) |
+| 15 | Journey mobile filter row (D-118) | rail "Filter" + legend "Category" | "Filter by category" (+ "· <category>"); desktop rail "Category" | — | ⚠ |
+| 16 | Services close (D-119) | Book a service (primary) · Projects · GitHub | View projects (primary) · GitHub · Book a service · Support my work | existing labels | ⚠ |
+| 17 | MCP cover diagram (D-120) | cover with "Engineering notes / Protocol 01", "One protocol", "Open standard" | labels only: "AI application / The host and its MCP client", "MCP", "GitHub / Issues, code and pull requests", "Database / Queries and structured data", "Local files / Documents on your machine" | old cover + article | ⚠ |
+| 18 | MCP diagram labels (D-120) | ALL-CAPS labels | sentence case ("MCP architecture", "Inside the host", "Server features", "Example", "Same computer", "Network connection", "Illustrative flow", "User question", "Result") | same words | ⚠ |

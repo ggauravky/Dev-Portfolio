@@ -25,7 +25,9 @@ import PageHead from '../components/page/PageHead'
 import { journeyHead } from '../lib/pageHeads'
 import { useFinePointer, useReducedMotion } from '../lib/motion'
 import { previewSrc } from '../lib/projects'
+import { shortDateLabel } from '../lib/dates'
 import Reveal from '../components/Reveal'
+import FilterDisclosure from '../components/FilterDisclosure'
 import LineMask from '../components/LineMask'
 import HoverPreview, { preloadPreviewImages } from '../components/ui/HoverPreview'
 import { TextLink } from '../components/ui'
@@ -111,7 +113,7 @@ function Entry({ item, open, onToggle, preview }) {
             <span className="jr-node" aria-hidden="true">
                 {isNow(item) ? <span className="pg-dot" /> : null}
             </span>
-            <p className="pg-row__label jr-entry__date">{item.dateLabel}</p>
+            <p className="pg-row__label jr-entry__date">{shortDateLabel(item.dateLabel)}</p>
             <div className="jr-entry__body">
                 <h3 className="jr-entry__heading">
                     <button
@@ -423,10 +425,12 @@ function Journey() {
             <PageHead head={HEAD} />
 
             <section className="jr-filter page-wrap page-grid" aria-label="Filter the journey">
-                <p className="page-rail" aria-hidden="true">Filter</p>
+                {/* One label for one control (J-1): the rail names it; the legend stays for screen readers. */}
+                <p className="page-rail" aria-hidden="true">Category</p>
                 <div className="page-main">
-                    <fieldset className="pj-seg">
-                        <legend className="pj-seg__legend">Category</legend>
+                    <FilterDisclosure label="Filter by category" summary={category === 'All' ? '' : category} defaultOpen={category !== 'All'}>
+                    <fieldset className="pj-seg jr-seg">
+                        <legend className="pj-seg__legend sr-only">Category</legend>
                         <div className="pj-seg__options">
                             {CATEGORIES.map((c) => (
                                 <label key={c} className="pj-seg__option">
@@ -443,7 +447,9 @@ function Journey() {
                             ))}
                         </div>
                     </fieldset>
-                    <p className="jr-count" role="status">{shownCount} of {journeyData.length} entries</p>
+                    </FilterDisclosure>
+                    {/* Shown only once filtered; the header rail already says 25 entries (J-2). */}
+                    <p className={`jr-count ${category === 'All' ? 'sr-only' : ''}`} role="status">{shownCount} of {journeyData.length} entries</p>
                 </div>
             </section>
 

@@ -18,6 +18,7 @@ import PageSection from '../components/page/PageSection'
 import { Button, TextLink } from '../components/ui'
 import { servicesData } from '../data/servicesData'
 import { siteStatus } from '../data/siteStatus'
+import { displayRanges, formatPriceLabel } from '../lib/format'
 import './Services.css'
 
 const SEO = staticSeo('/services')
@@ -94,7 +95,6 @@ function Services() {
                 <div className="pg-actions">
                     <Button to={BOOK_DEFAULT} arrow>Book a service</Button>
                     <TextLink to="/contact">Ask first</TextLink>
-                    <TextLink to="/support" tone="muted">Support my work</TextLink>
                 </div>
             </PageHead>
 
@@ -102,14 +102,14 @@ function Services() {
                 <ul className="pg-rows">
                     {servicesData.map((service) => (
                         <li key={service.slug} className="pg-row sv-row">
-                            <p className="pg-row__label sv-price">{service.priceLabel}</p>
+                            <p className="pg-row__label sv-price">{formatPriceLabel(service.priceLabel)}</p>
                             <div className="pg-row__body">
                                 <h3 className="pg-row__title">{service.title}</h3>
                                 <p className="sv-summary">{service.summary}</p>
                                 <ul className="sv-features">
                                     {service.features.map((f) => <li key={f}>{f}</li>)}
                                 </ul>
-                                <p className="pg-row__meta">{service.timeline}</p>
+                                <p className="pg-row__meta">{displayRanges(service.timeline)}</p>
                                 <p className="sv-links">
                                     <TextLink to={service.path}>Details<span className="sr-only">: {service.title}</span></TextLink>
                                     <TextLink to={`/booknow?service=${service.slug}`}>Book<span className="sr-only">: {service.title}</span></TextLink>
@@ -139,11 +139,13 @@ function Services() {
                 </dl>
             </PageSection>
 
+            {/* The title says "look first", so the work leads and booking follows (V-5). */}
             <PageSection id="start" index={3} title="Check the work first">
                 <div className="pg-actions sv-close">
-                    <Button to={BOOK_DEFAULT} arrow>Book a service</Button>
-                    <TextLink to="/projects">Projects</TextLink>
+                    <Button to="/projects" arrow>View projects</Button>
                     <TextLink href={siteStatus.links.github} external>GitHub</TextLink>
+                    <TextLink to={BOOK_DEFAULT}>Book a service</TextLink>
+                    <TextLink to="/support" tone="muted">Support my work</TextLink>
                 </div>
             </PageSection>
         </main>

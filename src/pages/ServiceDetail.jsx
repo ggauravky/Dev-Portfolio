@@ -21,6 +21,7 @@ import PageSection from '../components/page/PageSection'
 import { Button, TextLink } from '../components/ui'
 import { getServiceBySlug } from '../data/servicesData'
 import { serviceHead } from '../lib/pageHeads'
+import { displayRanges, formatPriceLabel } from '../lib/format'
 import './Services.css'
 
 function ScopeRow({ label, items }) {
@@ -72,12 +73,12 @@ function ServiceDetail({ forcedSlug = '' }) {
                     <ScopeRow label="Features" items={service.features} />
                     <ScopeRow label="You provide" items={service.youProvide} />
                     <ScopeRow label="Results" items={service.expectedResults} />
-                    <ScopeRow label="Delivery" items={[service.deliveryWindow || service.timeline, service.supportLevel].filter(Boolean)} />
+                    <ScopeRow label="Delivery" items={[displayRanges(service.deliveryWindow || service.timeline), service.supportLevel].filter(Boolean)} />
                 </ul>
             </PageSection>
 
             <PageSection id="pricing" index={2} title="Pricing">
-                <p className="sv-amount">{service.priceLabel}</p>
+                <p className="sv-amount">{formatPriceLabel(service.priceLabel)}</p>
                 <p className="pg-intro sv-amount__note">Razorpay checkout. The server sets the price and verifies the payment before the booking is confirmed.</p>
                 {service.pricingFaq?.length ? (
                     <div className="sv-faq">

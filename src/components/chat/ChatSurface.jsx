@@ -16,7 +16,7 @@ import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { prefersReducedMotion } from '../../lib/motion'
-import { STARTERS } from './starters'
+import { HOME_STARTERS } from './starters'
 import { streamChat } from './chatStream'
 import { clearThread, getSessionId, interrupted, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
 import { answerPlainText, parseAnswer, safeHref } from './answerFormat'
@@ -712,7 +712,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                 autoComplete="off"
                 placeholder={locked
                     ? `You can ask again at ${timeFormat(new Date(lockedUntil).toISOString())}`
-                    : empty ? 'Ask about a project, his skills, hiring…' : 'Ask a follow-up…'}
+                    : empty ? 'Ask about a project or skill' : 'Ask a follow-up…'}
                 disabled={locked}
                 maxLength={MAX_CHARS + 50}
                 aria-describedby={inputError ? 'chat-input-error' : undefined}
@@ -780,7 +780,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                             </h2>
                             {composer}
                             <ul className="chat-suggest" aria-label="Suggested questions">
-                                {STARTERS.map((starter) => (
+                                {HOME_STARTERS.map((starter) => (
                                     <li key={starter}>
                                         <button type="button" className="chat-suggest__item" disabled={locked} onClick={() => askFromStart(starter)}>
                                             {starter}

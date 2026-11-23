@@ -27,7 +27,7 @@ function HeroLive() {
         >
             <dl className="hero-live__list">
                 <div className="hero-live__row">
-                    <dt>Lucknow, India</dt>
+                    <dt>Local time</dt>
                     <dd>
                         <time dateTime={now.toISOString()}>{timeFormat.format(now)} IST</time>
                     </dd>

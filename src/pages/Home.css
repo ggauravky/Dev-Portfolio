@@ -120,12 +120,6 @@
   margin-top: var(--space-4);
 }
 
-.home-hero__contact {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-
 /* Desktop: a two-column title page. The name and its lede/actions hold the
    left text column; the live panel answers the name from the right, its last
    line on the name's last line, so the width the portrait held is used, not
@@ -318,10 +312,6 @@
 }
 
 .work-row__desc {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   max-width: 60ch;
   color: rgb(var(--muted));
   font-size: 15px;
@@ -390,7 +380,7 @@
 .skills-list dd {
   margin: 0;
   color: rgb(var(--paper));
-  font-size: 18px;
+  font-size: var(--text-body);
   line-height: 1.5;
 }
 
@@ -451,7 +441,7 @@
 
 .journey-row__title {
   color: rgb(var(--paper));
-  font-size: 18px;
+  font-size: var(--text-body);
   line-height: 1.4;
 }
 

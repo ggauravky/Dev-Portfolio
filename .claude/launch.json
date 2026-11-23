@@ -30,6 +30,21 @@
         "scripts/chat-dev-server.mjs"
       ],
       "port": 8787
+    },
+    {
+      "name": "remotion-studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "launch-video",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "3000",
+        "--no-open"
+      ],
+      "port": 3000
     }
   ]
 }

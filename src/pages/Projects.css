@@ -56,6 +56,11 @@
   border-top: 1px solid rgb(var(--rule));
 }
 
+/* Phones: the disclosure row carries the hairline, so the open form doesn't repeat it. */
+@media (max-width: 767px) {
+  .pj-controls { padding-top: var(--space-1); padding-bottom: var(--space-2); border-top: 0; }
+}
+
 
 .pj-search {
   max-width: 440px;
@@ -75,6 +80,11 @@
 }
 
 .pj-status + .pj-group { margin-top: var(--space-3); }
+/* Unfiltered, the count line is screen-reader only (P-1): keep the gap the visible line used to make. */
+@media (min-width: 768px) {
+  .pj-status.sr-only + .pj-group,
+  .pj-status.sr-only + .pj-list { margin-top: var(--space-5); }
+}
 
 .pj-group__title {
   margin: 0 0 var(--space-2);
@@ -153,10 +163,6 @@
 }
 
 .pj-row__desc {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   max-width: 60ch;
   color: rgb(var(--muted));
   font-size: 15px;

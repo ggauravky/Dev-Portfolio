@@ -18,6 +18,7 @@ import { useMagnetic } from '../../hooks/useMagnetic'
 import { siteStatus, isAvailable } from '../../data/siteStatus'
 import { SPRING } from '../../lib/motion'
 import ChatTrigger from '../chat/ChatTrigger'
+import { CHAT_ENABLED, openChat, prefetchChat } from '../chat/chatEvents'
 import './Dock.css'
 
 // If the chunk fails, the dock still works: it just doesn't morph.
@@ -227,6 +228,8 @@ function Dock() {
         }, 180)
     }
     const onFocusIn = (event) => {
+        // The Ask segment lives in the idle pill but never opens the menu.
+        if (event.target.closest?.('.dock-ask')) return
         if (!suppressRef.current && event.target.matches?.(':focus-visible')) setFocusOpen(true)
     }
     const onFocusOut = (event) => {
@@ -259,7 +262,6 @@ function Dock() {
                 ref={rootRef}
                 aria-label="Main"
                 className={`dock ${open ? 'is-open' : ''}`}
-                onPointerEnter={onPointerEnter}
                 onPointerLeave={onPointerLeave}
                 onFocus={onFocusIn}
                 onBlur={onFocusOut}
@@ -279,6 +281,7 @@ function Dock() {
                         aria-controls="dock-menu"
                         aria-label={open ? 'Close menu' : `Open menu. Current page: ${page.name}`}
                         onClick={onTrigger}
+                        onPointerEnter={onPointerEnter}
                     >
                         <ProgressRing />
                         {open ? (
@@ -297,10 +300,15 @@ function Dock() {
                         ) : null}
                     </button>
 
+                    {/* Hover opens the menu from the page trigger only (above), so the
+                        Ask segment beside it can be reached without opening it. */}
+                    {!open ? <ChatTrigger /> : null}
+
                     {open ? (
                         <div
                             id="dock-menu"
                             className="dock-menu"
+                            onPointerEnter={onPointerEnter}
                             onPointerLeave={() => setHovered(null)}
                         >
                             <ul className="dock-menu__pages">
@@ -325,6 +333,26 @@ function Dock() {
                                 })}
                             </ul>
                             <ul className="dock-menu__tools">
+                                {CHAT_ENABLED ? (
+                                    <li className="dock-menu__cell">
+                                        {indicatorKey === 'ask' ? (
+                                            <HoverIndicator />
+                                        ) : null}
+                                        <DockItem
+                                            label="Ask the site assistant about Gaurav"
+                                            onSelect={() => {
+                                                closeToTrigger()
+                                                openChat()
+                                            }}
+                                            onHover={() => {
+                                                prefetchChat()
+                                                setHovered('ask')
+                                            }}
+                                        >
+                                            Ask
+                                        </DockItem>
+                                    </li>
+                                ) : null}
                                 <li className="dock-menu__cell">
                                     {indicatorKey === 'search' ? (
                                         <HoverIndicator />
@@ -360,8 +388,6 @@ function Dock() {
                     ) : null}
                 </m.div>
             </nav>
-            {/* A sibling, not a menu item: hovering it must not open the dock. */}
-            <ChatTrigger />
             </div>
         </LazyMotion>
     )

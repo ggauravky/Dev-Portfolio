@@ -21,12 +21,13 @@ import {
     caseKicker,
     hasRealImage,
     hasUrl,
+    projectSummary,
 } from '../src/lib/projects.js'
-import { STATIC_HEADS, journeyHead, serviceHead, servicesHead, skillsHead } from '../src/lib/pageHeads.js'
+import { BLOG_CONTROLS_FROM, STATIC_HEADS, journeyHead, serviceHead, servicesHead, skillsHead } from '../src/lib/pageHeads.js'
 import { journeyData } from '../src/data/journeyData.js'
 import { servicesData } from '../src/data/servicesData.js'
 import { skillGroups } from '../src/data/skillsData.js'
-import { getPublicBlogs } from '../src/data/blogsData.js'
+import { getPublicBlogs, getPublishedBlogArchive } from '../src/data/blogsData.js'
 
 const esc = (s) => String(s)
     .replace(/&/g, '&amp;')
@@ -79,7 +80,7 @@ function caseHeader(project) {
         + '<div class="case-head__main">'
         + `<p class="case-kicker">${esc(caseKicker(project))}</p>`
         + `<h1 class="case-title">${esc(project.title)}</h1>`
-        + `<p class="case-lede">${esc(project.description)}</p>`
+        + `<p class="case-lede">${esc(projectSummary(project))}</p>`
         + actions
         + `</div>${frontis}</header></main>`
 }
@@ -90,6 +91,26 @@ function pageHeader(head) {
         + `<p class="page-rail pg-head__rail">${head.rail.map((r) => `<span>${esc(r)}</span>`).join('')}</p>`
         + `<div class="page-main"><h1 class="pg-h1">${esc(head.title)}</h1>`
         + `<p class="pg-lede">${esc(head.lede)}</p></div></header></main>`
+}
+
+// src/pages/Blog.jsx: the header and, while there are no filter controls
+// (fewer than BLOG_CONTROLS_FROM notes), the archive rows, so the first title
+// (the mobile LCP once the controls are gone) paints before any JS.
+function blogIndex() {
+    const notes = getPublishedBlogArchive()
+    const header = pageHeader(STATIC_HEADS['/blog']).replace('<main class="pg">', '<main class="pg blog">')
+    if (notes.length >= BLOG_CONTROLS_FROM) return header
+    const rows = notes.map((blog) => '<li class="pg-row bl-row"><p class="pg-row__label">'
+        + `<time datetime="${esc(blog.publishedDate)}">${esc(blog.date)}</time></p>`
+        + '<div class="pg-row__body"><h3 class="pg-row__title">'
+        + `<a class="bl-row__link" href="/blog/${esc(blog.slug)}">${esc(blog.title)}</a></h3>`
+        + (blog.excerpt ? `<p class="bl-row__excerpt">${esc(blog.excerpt)}</p>` : '')
+        + `<p class="pg-row__meta">${esc(blog.category)} · ${esc(blog.readTime)}</p></div></li>`).join('')
+    const archive = '<section id="archive" class="pg-section" aria-labelledby="archive-title">'
+        + '<div class="page-wrap page-grid"><p class="page-rail" aria-hidden="true">01</p>'
+        + '<div class="page-main"><h2 id="archive-title" class="pg-h2">Archive</h2>'
+        + `<ol class="pg-rows">${rows}</ol></div></div></section>`
+    return header.replace('</main>', `${archive}</main>`)
 }
 
 // src/pages/BlogPost.jsx header + cover, for published/preview posts.
@@ -118,6 +139,9 @@ function articleHeader(blog) {
 function shellScript() {
     const shells = {
         index: projectsHeader(),
+        // /blog?category=… or ?q=…: the page shows its controls and a filtered
+        // list, so the shell paints only the header (no unfiltered rows to swap).
+        blogHead: pageHeader(STATIC_HEADS['/blog']).replace('<main class="pg">', '<main class="pg blog">'),
         cases: Object.fromEntries(RANKED_PROJECTS.map((p) => [p.slug, caseHeader(p)])),
         pages: Object.fromEntries([
             ...Object.entries(STATIC_HEADS).map(([path, head]) => [path, pageHeader(head)]),
@@ -125,6 +149,7 @@ function shellScript() {
             ['/journey', pageHeader(journeyHead(journeyData))],
             ['/services', pageHeader(servicesHead(servicesData))],
             ...servicesData.map((service) => [service.path, pageHeader(serviceHead(service))]),
+            ['/blog', blogIndex()],
             ...getPublicBlogs().map((blog) => [`/blog/${blog.slug}`, articleHeader(blog)]),
         ]),
     }
@@ -134,6 +159,7 @@ function shellScript() {
         + 'var p=location.pathname.replace(/\\/+$/,"");'
         + `var S=${data};`
         + 'var h=p==="/projects"?S.index:(p.indexOf("/projects/")===0?S.cases[p.slice(10)]:S.pages[p]);'
+        + 'if(p==="/blog"&&/[?&](category|q)=/.test(location.search))h=S.blogHead;'
         + 'if(!h)return;'
         + 'document.getElementById("root").insertAdjacentHTML("beforeend",'
         + '"<div class=\\"App\\" id=\\"route-shell\\"><div style=\\"padding-top:var(--chrome-h)\\">"+h+"</div></div>")'
