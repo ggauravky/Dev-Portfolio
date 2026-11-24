@@ -27,7 +27,11 @@ import { Button, Input, Textarea, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
 import { validateEmail, validateRequired } from '../lib/validate'
 import { useFinePointer } from '../lib/motion'
-import './Contact.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import contactCss from './Contact.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('contact-css', contactCss)
 
 const SEO = staticSeo('/contact')
 

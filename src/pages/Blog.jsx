@@ -22,6 +22,11 @@ import { Button, Input } from '../components/ui'
 import { categories, getPublishedBlogArchive } from '../data/blogsData'
 import { validateEmail } from '../lib/validate'
 import './Blog.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import blogPageCss from './Blog.page.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('blog-page-css', blogPageCss)
 
 const SEO = staticSeo('/blog')
 

@@ -11,13 +11,9 @@ import { Command } from 'cmdk'
 // cssCodeSplit is off (D-046): a plain import would put this CSS in the one
 // render-blocking stylesheet. It ships with this on-intent chunk instead (D-126).
 import paletteCss from './CommandPalette.css?inline'
+import injectStyle from '../lib/injectStyle'
 
-if (typeof document !== 'undefined' && !document.getElementById('command-palette-css')) {
-    const style = document.createElement('style')
-    style.id = 'command-palette-css'
-    style.textContent = paletteCss
-    document.head.appendChild(style)
-}
+injectStyle('command-palette-css', paletteCss)
 import {
     Search, X, Folder, Globe, Briefcase, Share2, Zap,
     Copy, Check, Clock, FileText, Code2, Terminal, ArrowRight

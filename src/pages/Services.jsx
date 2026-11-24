@@ -19,7 +19,11 @@ import { Button, TextLink } from '../components/ui'
 import { servicesData } from '../data/servicesData'
 import { siteStatus } from '../data/siteStatus'
 import { displayRanges, formatPriceLabel } from '../lib/format'
-import './Services.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import servicesCss from './Services.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('services-css', servicesCss)
 
 const SEO = staticSeo('/services')
 

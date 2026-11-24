@@ -1,0 +1,3 @@
+# Inline <script> bodies are hashed into the CSP in vercel.json (D-124, D-127).
+# Keep HTML on LF everywhere so a Windows checkout builds the same bytes Vercel serves.
+*.html text eol=lf

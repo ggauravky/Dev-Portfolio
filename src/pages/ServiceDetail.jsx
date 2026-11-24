@@ -22,7 +22,11 @@ import { Button, TextLink } from '../components/ui'
 import { getServiceBySlug } from '../data/servicesData'
 import { serviceHead } from '../lib/pageHeads'
 import { displayRanges, formatPriceLabel } from '../lib/format'
-import './Services.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import servicesCss from './Services.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('services-css', servicesCss)
 
 function ScopeRow({ label, items }) {
     if (!items?.length) return null

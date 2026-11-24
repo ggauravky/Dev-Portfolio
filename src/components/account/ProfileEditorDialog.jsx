@@ -5,7 +5,11 @@ import toast from 'react-hot-toast'
 import useAuth from '../../hooks/useAuth'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { Button, Input, Textarea } from '../ui'
-import '../../styles/activity.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import activityCss from '../../styles/activity.css?inline'
+import injectStyle from '../../lib/injectStyle'
+
+injectStyle('activity-css', activityCss)
 
 const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_FILE_SIZE = 5 * 1024 * 1024

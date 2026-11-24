@@ -3,7 +3,11 @@ import PropTypes from 'prop-types'
 import { X } from 'lucide-react'
 import { Button } from '../ui'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
-import '../../styles/activity.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import activityCss from '../../styles/activity.css?inline'
+import injectStyle from '../../lib/injectStyle'
+
+injectStyle('activity-css', activityCss)
 
 const Detail = ({ label, value }) => value ? (
     <div className="ac-dl__row">

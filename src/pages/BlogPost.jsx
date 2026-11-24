@@ -28,6 +28,11 @@ import ReadingProgress from '../components/blog/ReadingProgress'
 import { Button, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
 import './BlogPost.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import blogPostPageCss from './BlogPost.page.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('blogpost-page-css', blogPostPageCss)
 
 function BlogPost() {
     const { slug } = useParams()
