@@ -42,14 +42,32 @@ for (const file of htmlFiles) {
 }
 const wanted = [...hashes].sort()
 
-const vercelText = readFileSync(vercelPath, 'utf8')
-const cspKey = /"key": "Content-Security-Policy(?:-Report-Only)?",\s*"value": "([^"]*)"/
-const cspMatch = vercelText.match(cspKey)
-if (!cspMatch) {
+// Read the policy by parsing the JSON, never by matching its text layout.
+const CSP_KEYS = new Set(['content-security-policy', 'content-security-policy-report-only'])
+let vercelText = ''
+let policy = null
+try {
+    vercelText = readFileSync(vercelPath, 'utf8')
+    const config = JSON.parse(vercelText)
+    for (const block of config.headers || []) {
+        const header = (block.headers || []).find((h) => CSP_KEYS.has(String(h.key).toLowerCase()))
+        if (header) { policy = String(header.value); break }
+    }
+} catch {
+    policy = null
+}
+
+if (policy === null) {
+    // Vercel reads vercel.json (headers included) before the build and the file
+    // the build command sees does not keep them, so this check cannot run there
+    // (D-129). GitHub CI (`npm run build`, ci.yml) and local builds enforce it.
+    if (process.env.VERCEL) {
+        console.log('csp-hashes: skipped on Vercel (vercel.json headers are not visible to the build; CI enforces this check)')
+        process.exit(0)
+    }
     console.error('csp-hashes: no Content-Security-Policy header in vercel.json')
     process.exit(1)
 }
-const policy = cspMatch[1]
 const scriptSrc = policy.match(/script-src ([^;]*)/)
 const current = (scriptSrc?.[1].match(/'sha256-[^']+'/g) || []).sort()
 
@@ -64,7 +82,13 @@ if (process.argv.includes('--write')) {
     const [self, ...rest] = sources
     const nextScriptSrc = ['script-src', self, ...wanted, ...rest].join(' ')
     const nextPolicy = policy.replace(/script-src [^;]*/, nextScriptSrc)
-    writeFileSync(vercelPath, vercelText.replace(policy, nextPolicy))
+    // Swap only the JSON string, so the file keeps its formatting.
+    const before = JSON.stringify(policy)
+    if (!vercelText.includes(before)) {
+        console.error('csp-hashes: could not locate the policy string in vercel.json to rewrite it')
+        process.exit(1)
+    }
+    writeFileSync(vercelPath, vercelText.replace(before, JSON.stringify(nextPolicy)))
     console.log(`csp-hashes: wrote ${wanted.length} hash(es) to vercel.json`)
     process.exit(0)
 }
