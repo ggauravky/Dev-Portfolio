@@ -24,7 +24,7 @@ const stack = []
  * focus to whatever was focused when it opened (or `returnFocusTo`).
  * Used by the mobile drawer, the ⌘K palette and the sign-in dialog.
  */
-export function useFocusTrap(containerRef, active, { onEscape, initialFocusRef, returnFocusTo } = {}) {
+export function useFocusTrap(containerRef, active, { onEscape, initialFocusRef, returnFocusTo, deferFocus = false } = {}) {
     // Latest callbacks without re-running the effect on every render.
     const onEscapeRef = useRef(onEscape)
     onEscapeRef.current = onEscape
@@ -37,8 +37,14 @@ export function useFocusTrap(containerRef, active, { onEscape, initialFocusRef, 
         const opener = returnFocusTo || (document.activeElement instanceof HTMLElement ? document.activeElement : null)
         const focusables = () => [...container.querySelectorAll(FOCUSABLE)].filter(isVisible)
 
-        const target = initialFocusRef?.current || focusables()[0]
-        target?.focus({ preventScroll: true })
+        // `deferFocus`: move focus in the next frame, once the open/close style
+        // change has been rendered, so focus() doesn't force a synchronous style
+        // recalc inside the click (the dock, D-132).
+        const run = (fn) => (deferFocus ? requestAnimationFrame(fn) : fn())
+        run(() => {
+            const target = initialFocusRef?.current || focusables()[0]
+            target?.focus({ preventScroll: true })
+        })
 
         const handleKeyDown = (event) => {
             if (stack.at(-1) !== container) return
@@ -74,9 +80,14 @@ export function useFocusTrap(containerRef, active, { onEscape, initialFocusRef, 
         return () => {
             document.removeEventListener('keydown', handleKeyDown)
             stack.splice(stack.lastIndexOf(container), 1)
-            if (opener?.isConnected) opener.focus({ preventScroll: true })
+            run(() => {
+                // Deferred: don't steal focus that moved on meanwhile (e.g. to a new page).
+                const now = document.activeElement
+                if (deferFocus && now && now !== document.body && !container.contains(now)) return
+                if (opener?.isConnected) opener.focus({ preventScroll: true })
+            })
         }
-    }, [active, containerRef, initialFocusRef, returnFocusTo])
+    }, [active, containerRef, initialFocusRef, returnFocusTo, deferFocus])
 }
 
 export default useFocusTrap

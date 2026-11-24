@@ -3,6 +3,15 @@
 Branch: `redesign/v2` (from `main`). Plan: `docs/PLAN.md`. Decisions: `docs/DECISIONS.md`.
 Update this file at the end of every session.
 
+## Dock motion fix (2026-11-25, branch `fix/dock-motion`, D-132): built, uncommitted, awaiting the owner's review
+- **Diagnosis:** hover re-rendered the dock through React state on every item. framer's `layout`/`layoutId` FLIP ran on the main thread and rewrote border radii every frame. The magnetic pull wrote `translate` on every pointer move. On mobile (4× CPU) each tap blocked the main thread for 105–253 ms. The first open had no morph while the lazy `domMax` chunk loaded. The dock is unrelated to the `LineMask` reflow.
+- **Rebuild:** `Dock.jsx`/`Dock.css` are now compositor-only (transform and opacity). The menu is always mounted and `inert` when shut. The desktop skin is caps + a scaled middle, the mobile sheet rises, and the three-piece highlight is moved by CSS custom properties. Geometry is read in a ResizeObserver. A 60/180 ms hover intent guards fast passes. `useFocusTrap` gains `deferFocus`. The dock no longer uses framer-motion, and `src/lib/framerFeatures.js` is deleted.
+- **Token:** `DOCK_BOUNCE` (`motion.js`) / `--ease-dock` + `--dur-dock` (`.dock-cluster` only): a 380 ms `linear()` spring from Jake Archibald's generator (mass 1, stiffness 260, damping 22), with a cubic-bezier fallback. It is documented in DESIGN.md "Motion tokens" as the one exception.
+- **Results:** `docs/audit/dock-motion/` (before/after MP4s + README table). Desktop sweep: 0–1 React commits (was 21–22), 0 dropped frames. Mobile close: longest task 15–114 ms (was 148–252). `boot` 68 → 34 KB gzip.
+- **Gates:** `npm run build` ✓ (CSP hashes match), `test:blog` 14/14 ✓, `test:chat` 99/99 ✓, `check:design --all` 0 hits ✓, `git diff --check` ✓. Enforced CSP, applied locally from `vercel.json`: 0 violations at 1280 and 390 px. Functional/a11y checks ✓: nav landmark, `aria-current`, Enter → trap on Close, 12× Tab stays in, Esc returns focus to the trigger, item → `#main-content`, Search → palette → back to the trigger, 44 px targets, sheet inside the viewport, reduced motion = 0 transitions.
+- **Lighthouse (mobile, local, median of 3, before → after):** Home perf 84 → 85 (TBT 591 → 495 ms), Projects 95 → 95. A11y 100, BP 96, SEO 100 unchanged.
+- **Open:** the first open in a fresh profile spends about 75 ms on the GPU thread compiling shaders (5–6 dropped frames). Keyboard focus on the trigger no longer auto-opens the menu (Enter/click does). `MotionConfig` in `App.jsx` is now framer's only use.
+
 ## Current state (2026-11-13)
 **P6 — Polish & QA is built, uncommitted, awaiting the owner's review. With it the redesign is complete** (P5 `b1c745b` is committed).
 - Every route is on v2: Privacy/Terms/Refund share `LegalPage` (D-066); Updates, BookNow, Support, PaymentSuccess and My activity (+ both account dialogs) are rebuilt on the page primitives, logic untouched (D-070); offline page, error boundary and network banner too (D-073).

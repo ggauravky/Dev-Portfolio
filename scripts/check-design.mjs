@@ -38,7 +38,6 @@ const FINISHED = [
   'src/pages/_Kit.jsx',
   // P2 — System
   'src/lib/motion.js',
-  'src/lib/framerFeatures.js',
   'src/data/siteStatus.js',
   'src/hooks/useMagnetic.js',
   'src/components/Reveal.jsx',

@@ -13,7 +13,7 @@ The goal is an ownable design language, not generic effects. Rules:
 **S1 Bottom pill dock** (replaces the top navbar)
 - Fixed at bottom-centre, and always a pill.
 - **Idle:** a compact pill showing the page index and name (e.g. "03 / Projects"), a small scroll-progress ring and the availability dot.
-- **Hover, focus or tap:** it morphs (width/height spring, shared `layoutId` highlight) into the full menu: Home, About, Projects, Journey, Skills, Services, Blog, Contact, plus ⌘/Ctrl+K and Resume. Magnetic hover and a sliding active indicator.
+- **Hover, click, tap or Enter:** it morphs into the full menu: Home, About, Projects, Journey, Skills, Services, Blog, Contact, plus ⌘/Ctrl+K and Resume. It has a sliding hover/current highlight. *Revised in D-132:* the morph is compositor-only. On desktop the menu's skin is two caps that translate plus a middle that scales on X, so corners and text never stretch. Below 1024px the sheet rises from the pill. The highlight is the same three-piece pill, moved by CSS custom properties, so hover never re-renders React. Both ease their transform with the dock-only overshoot token `DOCK_BOUNCE`. There is no magnetic pull on dock items and no framer-motion.
 - **Mobile:** thumb-reachable, `env(safe-area-inset-bottom)`, targets ≥ 44px.
 - **Accessibility:** a `nav` landmark, `aria-current`, a focus trap while expanded (reuse `src/hooks/useFocusTrap.js`), and Esc closes it.
 - **Top chrome:** only a tiny fixed wordmark and a Resume link, with `mix-blend-mode: difference`.
@@ -111,6 +111,7 @@ Lime is currency: every use must mean "live", "current", or "this is interactive
   - A focus-visible ring, loading and disabled states, and an arrow icon that nudges on hover.
 - **Inputs:** floating labels, an animated focus line, inline validation and a success state.
 - **Motion tokens in one file, `src/lib/motion.js`:** durations **160 / 280 / 520 ms**, easing **`cubic-bezier(.22,1,.36,1)`**, and spring presets. Animate transform and opacity only, and honour `prefers-reduced-motion` everywhere.
+  - **The one deliberate exception: `DOCK_BOUNCE` (D-132), used only by the S1 dock.** It is a 380 ms spring with a slight overshoot (peak 1.053). It is a CSS `linear()` curve from Jake Archibald's linear() easing generator (spring preset: mass 1, stiffness 260, damping 22, velocity 0; simplify 0.0017, round 3), with a `cubic-bezier(.3,1.25,.6,1)` fallback where `linear()` isn't supported. In CSS it is `--ease-dock` / `--dur-dock`, declared on `.dock-cluster` only, so no other selector can reach it. It bounces transforms only. Opacity keeps `--ease-out`, and reduced motion makes every dock change instant.
 - **Preloader:** first visit only (`sessionStorage`), ≤ 1.4 s, the name and a counter, skippable, and disabled for reduced motion.
 - **Route transitions:** a clip-path wipe carrying the wordmark.
 - **⌘/Ctrl+K:** restyled, with real actions: jump to a page, copy email, open the resume, open GitHub and LinkedIn. There is no theme toggle (dark-only, D-028).
@@ -131,7 +132,7 @@ Lime is currency: every use must mean "live", "current", or "this is interactive
 - **S6 animates `font-variation-settings`, which is not transform or opacity.** This is the one documented exception: hero name only, fine pointers only, rAF-throttled, started after LCP, and off for reduced motion.
 - **The hero heading is the LCP element**, so it paints statically on the first frame and is never animated in. Line-mask reveals apply to below-fold headings only.
 - **The preloader can cost LCP and Speed Index**, because Lighthouse is always a first visit. The page renders underneath, and the overlay animates only opacity and transform. If mobile Performance misses its target, shorten the preloader to ≤ 800 ms or drop it. There is no special-casing for Lighthouse.
-- **The dock morph needs framer `layout`/`layoutId`.** The idle dock is plain CSS, and `LazyMotion` `domMax` features load asynchronously on first interaction so the entry chunk stays lean.
+- ~~**The dock morph needs framer `layout`/`layoutId`.**~~ *Superseded by D-132:* the dock is plain CSS transforms and opacity, and the `domMax` chunk is gone.
 - **The route clip-path wipe** is a single overlay element and runs ≤ 520 ms. **View Transitions** are progressive enhancement only.
 
 Three directions, not three colorways: each differs in base (dark / dark / light), type voice (serif / grotesk / soft serif), grid logic, how projects are shown, and what the one accent is *for*.
