@@ -640,6 +640,11 @@ A separate Remotion project, `launch-video/` (own `package.json`, nothing import
 - Report-Only CSP in production: walked every route, ⌘K, chat (answered), GitHub stat and the sign-in dialog (GIS button iframe rendered). One violation: Umami's `cloud.umami.is/script.js` (fixed in D-130). Not tested: completing a Google sign-in (needs the owner's account) and a Razorpay checkout (needs a signed-in order; never a live payment).
 - Found: `/` served none of the security headers (D-130).
 
+## CSP enforced (2026-11-24, branch `fix/csp-enforce`, uncommitted, D-131)
+- After #38 the Report-Only policy was clean in production (headers verified on `/`, `/about`, a blog post, `/api/github-activity` and a 404). The header is now enforced, with `upgrade-insecure-requests` added.
+- Local check under enforcement: 20 routes direct-loaded with no refusals; ⌘K, chat, the GIS button and a Razorpay test-mode checkout load. Once deployed: sign in with Google and run one Razorpay test-mode checkout on production.
+- Gates: `npm run build` ✓ (csp-hashes ✓), `test:blog` ✓, `git diff --check` ✓.
+
 ## Next step
 - Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
