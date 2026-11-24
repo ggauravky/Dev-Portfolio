@@ -4,10 +4,22 @@
  *
  * S1 dock. Always a pill (radius = half the idle height). Hairline, no shadow,
  * no blur. Accent marks only the current page and the availability dot.
+ *
+ * Motion is compositor-only (D-132): transform and opacity, nothing else. The
+ * open menu is always mounted; `.dock.is-open` flips it. --dock-d / --dock-sm
+ * (pill-to-menu geometry) and --hx / --hy / --hw (highlight box) are unitless
+ * numbers written by Dock.jsx from a ResizeObserver and on hover.
  */
 
 /* The dock (with its Ask segment), centred at the bottom. */
 .dock-cluster {
+  /* DOCK ONLY — the system's one overshoot (D-132; mirrors DOCK_BOUNCE in
+     src/lib/motion.js). Transforms only; opacity keeps --ease-out. */
+  --dur-dock: 380ms;
+  --ease-dock: cubic-bezier(.3, 1.25, .6, 1);
+  --dock-d: 0;
+  --dock-sm: 1;
+
   position: fixed;
   left: 50%;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -17,9 +29,35 @@
   gap: 8px;
   transform: translateX(-50%);
 }
+@supports (transition-timing-function: linear(0, 1)) {
+  .dock-cluster {
+    /* Jake Archibald's linear() generator, spring: mass 1, stiffness 260, damping 22. */
+    --ease-dock: linear(0, 0.007, 0.028 2.3%, 0.113, 0.225 7.6%, 0.602 15.4%, 0.71, 0.799, 0.873, 0.934, 0.98 28.1%, 1.015 30.9%, 1.033, 1.045 35.2%, 1.051, 1.053 40.3%, 1.047 45.2%, 1.013 59.1%, 1.002 67.1%, 0.997 78%, 0.999);
+  }
+}
 
 .dock {
+  position: relative;
   transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+/* === Idle pill === */
+.dock-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgb(var(--rule));
+  border-radius: 26px; /* design-allow: dock pill */
+  background: rgb(var(--ink-raised));
+  color: rgb(var(--paper));
+  /* Closing: comes back once the skin has nearly shrunk onto it. */
+  transition: opacity var(--dur-fast) var(--ease-out) var(--dur-fast);
+}
+.dock.is-open .dock-pill {
+  opacity: 0;
+  pointer-events: none;
+  transition-delay: 0s;
 }
 
 /* === Ask: a segment inside the idle pill, after a hairline (D-115) === */
@@ -50,22 +88,8 @@
 .dock-ask:hover,
 .dock-ask:focus-visible { background: rgb(var(--paper) / 0.06); color: rgb(var(--paper)); }
 .dock-ask:focus-visible { outline-offset: -2px; }
-@media (prefers-reduced-motion: reduce) {
-  .dock-ask { transition: none; }
-}
 
-.dock-panel {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid rgb(var(--rule));
-  border-radius: 26px; /* design-allow: dock pill */
-  background: rgb(var(--ink-raised));
-  color: rgb(var(--paper));
-}
-
-/* === Trigger (the idle pill) === */
+/* === Trigger (the idle pill's page button) and the menu's Close === */
 .dock-trigger {
   display: inline-flex;
   align-items: center;
@@ -86,7 +110,7 @@
 .dock-trigger__label { display: inline-flex; align-items: baseline; gap: 4px; }
 .dock-trigger__index { color: rgb(var(--muted)); }
 .dock-trigger__slash { color: rgb(var(--muted) / 0.6); }
-.dock-trigger__close { color: rgb(var(--muted)); font-family: var(--font-sans); font-size: 14px; }
+.dock-close .dock-trigger__label { color: rgb(var(--muted)); font-family: var(--font-sans); font-size: 14px; }
 
 .dock-ring {
   width: 20px;
@@ -106,17 +130,91 @@
   width: 8px;
   height: 8px;
   flex-shrink: 0;
-  border-radius: 50%; /* design-allow: status dot */
+  border-radius: 4px; /* design-allow: status dot */
   background: rgb(var(--accent));
 }
 
-/* === Expanded menu === */
-.dock-menu { display: flex; align-items: center; gap: 4px; }
+/* === Expanded menu: always mounted, centred over the pill === */
+.dock-menu {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: max-content;
+  translate: -50% 0;
+  /* Hidden with opacity (plus `inert` from Dock.jsx), not visibility, so its
+     layer is painted ahead of time and the first open doesn't rasterise
+     mid-gesture. Closing: it stays until the skin has landed on the pill. */
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+  transition: opacity 0s linear var(--dur-dock);
+}
+.dock.is-open .dock-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.dock-menu__frame { position: relative; }
+
+/* Skin: the menu's background and hairline in three pieces. The caps translate
+   and the middle scales on X only, so the 26px corners and the 1px border never
+   distort. Closed, it sits exactly on the pill. */
+.dock-skin { position: absolute; inset: 0; pointer-events: none; }
+.dock-skin__l,
+.dock-skin__m,
+.dock-skin__r {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 1px solid rgb(var(--rule));
+  background: rgb(var(--ink-raised));
+  will-change: transform;
+  transition: transform var(--dur-dock) var(--ease-dock);
+}
+.dock-skin__l {
+  left: 0;
+  width: 26px;
+  border-right: 0;
+  border-radius: 26px 0 0 26px; /* design-allow: dock pill */
+}
+.dock-skin__r {
+  right: 0;
+  width: 26px;
+  border-left: 0;
+  border-radius: 0 26px 26px 0; /* design-allow: dock pill */
+}
+/* The middle tucks 1px under each cap so no seam shows mid-morph. */
+.dock-skin__m {
+  left: 25px;
+  right: 25px;
+  border-right: 0;
+  border-left: 0;
+}
+.dock:not(.is-open) .dock-skin__l { transform: translateX(calc(var(--dock-d) * 1px)); }
+.dock:not(.is-open) .dock-skin__r { transform: translateX(calc(var(--dock-d) * -1px)); }
+.dock:not(.is-open) .dock-skin__m { transform: scaleX(var(--dock-sm)); }
+
+.dock-menu__body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px; /* 4px + the skin's 1px hairline: the same box as the pill */
+  color: rgb(var(--paper));
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out);
+}
+.dock.is-open .dock-menu__body {
+  opacity: 1;
+  transition-duration: var(--dur-fast);
+  transition-delay: 80ms;
+}
+
+.dock-menu__lists { position: relative; display: flex; align-items: center; gap: 4px; }
 .dock-menu__pages,
 .dock-menu__tools { display: flex; align-items: center; gap: 2px; list-style: none; }
 .dock-menu__tools { padding-left: 8px; margin-left: 2px; border-left: 1px solid rgb(var(--rule)); }
-
-.dock-menu__cell { position: relative; }
 
 .dock-item {
   position: relative;
@@ -131,6 +229,7 @@
   font: 400 14px/1 var(--font-sans);
   white-space: nowrap;
   text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
 .dock-item:hover,
@@ -147,21 +246,50 @@
   width: 4px;
   height: 4px;
   margin-left: -2px;
-  border-radius: 50%; /* design-allow: status dot */
+  border-radius: 2px; /* design-allow: status dot */
   background: rgb(var(--accent));
 }
 
 .dock-item__label { display: inline-flex; align-items: baseline; gap: 4px; }
 .dock-item__index { display: none; color: rgb(var(--muted)); font: 400 11px/1 var(--font-mono); }
 
-/* Sliding highlight shared across items (framer layoutId). */
-.dock-item__hover {
+/* Sliding highlight: one pill in three opaque pieces (no alpha seams), moved by
+   --hx/--hy/--hw. It rests on the current page and follows hover and focus. */
+.dock-hl {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   z-index: 0;
-  border-radius: 22px; /* design-allow: dock pill */
-  background: rgb(var(--paper) / 0.07);
   pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+.dock-menu__lists.has-hl .dock-hl { opacity: 1; }
+.dock-hl__l,
+.dock-hl__m,
+.dock-hl__r {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 44px;
+  background: color-mix(in srgb, rgb(var(--paper)) 7%, rgb(var(--ink-raised)));
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform var(--dur-dock) var(--ease-dock);
+}
+.dock-hl__l {
+  width: 22px;
+  border-radius: 22px 0 0 22px; /* design-allow: dock pill */
+  transform: translate(calc(var(--hx, 0) * 1px), calc(var(--hy, 0) * 1px));
+}
+.dock-hl__r {
+  width: 22px;
+  border-radius: 0 22px 22px 0; /* design-allow: dock pill */
+  transform: translate(calc((var(--hx, 0) + var(--hw, 44) - 22) * 1px), calc(var(--hy, 0) * 1px));
+}
+.dock-hl__m {
+  width: 1px;
+  transform: translate(calc((var(--hx, 0) + 21) * 1px), calc(var(--hy, 0) * 1px)) scaleX(calc(var(--hw, 44) - 42));
 }
 
 .dock-kbd {
@@ -172,16 +300,40 @@
   font: 400 11px/1 var(--font-mono);
 }
 
-/* === Below 1024px: the menu stacks above the trigger, thumb-reachable === */
+/* === Below 1024px: a sheet above the trigger, thumb-reachable. It rises from
+   the pill (translate + uniform scale) instead of stretching. === */
 @media (max-width: 1023px) {
-  .dock.is-open .dock-panel {
+  .dock-menu { width: min(calc(100vw - 32px), 400px); }
+  .dock-menu__frame {
+    opacity: 0;
+    transform: translateY(8px) scale(.92);
+    transform-origin: 50% 100%;
+    will-change: transform, opacity;
+    transition: transform var(--dur-dock) var(--ease-dock), opacity var(--dur-fast) var(--ease-out);
+  }
+  .dock.is-open .dock-menu__frame { opacity: 1; transform: none; }
+  .dock-skin__l,
+  .dock-skin__r { display: none; }
+  .dock:not(.is-open) .dock-skin__m,
+  .dock-skin__m {
+    left: 0;
+    right: 0;
+    border: 1px solid rgb(var(--rule));
+    border-radius: 26px; /* design-allow: dock pill */
+    transform: none;
+    transition: none;
+  }
+  .dock-menu__body,
+  .dock.is-open .dock-menu__body {
     flex-direction: column-reverse;
     align-items: stretch;
-    width: min(calc(100vw - 32px), 400px);
-    padding: 8px;
+    gap: 8px;
+    padding: 9px;
+    opacity: 1;
+    transition: none;
   }
-  .dock.is-open .dock-trigger { justify-content: center; height: 44px; }
-  .dock-menu { flex-direction: column; align-items: stretch; gap: 8px; }
+  .dock-close { justify-content: center; }
+  .dock-menu__lists { flex-direction: column; align-items: stretch; gap: 8px; }
   .dock-menu__pages {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -205,10 +357,8 @@
   .dock-menu__pages { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* Menu fade-in is CSS so the menu is never stuck invisible if framer's
-   features fail to load. */
-.dock-menu { animation: dock-menu-in var(--dur-fast) var(--ease-out) 60ms both; }
-@keyframes dock-menu-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Reduced motion: every dock state change is instant. */
+@media (prefers-reduced-motion: reduce) {
+  .dock-cluster,
+  .dock-cluster * { transition: none !important; }
 }

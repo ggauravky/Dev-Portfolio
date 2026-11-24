@@ -4,40 +4,24 @@
 // S1 — bottom pill dock (DESIGN.md "Signature layer"). Replaces B's top navbar
 // and drawer.
 // - Idle: a compact pill — scroll-progress ring, "03 / Projects", availability dot.
-// - Hover (mouse), keyboard focus or tap: morphs into the full menu. A tap/click
-//   or Enter "pins" it open with a focus trap; Esc closes and returns focus.
-// - The morph and the sliding indicator use framer `layout`/`layoutId`, with the
-//   features loaded asynchronously so the idle dock costs no framer runtime.
+// - Mouse hover on the page trigger opens the full menu; a click, tap or Enter
+//   pins it open with a focus trap; Esc or Close shuts it and returns focus.
+// - Compositor-only motion (D-132): the open menu is always mounted and only its
+//   transforms and opacity change. On desktop its skin is three pieces (two caps
+//   that translate, a middle that scales on X), so the pill grows into the menu
+//   without stretching its corners or text. Below 1024px the sheet rises from the
+//   pill. The hover highlight is the same three-piece shape, moved by CSS custom
+//   properties: hovering never re-renders React. Geometry is read once per resize
+//   in a ResizeObserver callback (layout is already clean there), never per hover.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { LazyMotion, m } from 'framer-motion'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
-import { useMagnetic } from '../../hooks/useMagnetic'
 import { siteStatus, isAvailable } from '../../data/siteStatus'
-import { SPRING } from '../../lib/motion'
 import ChatTrigger from '../chat/ChatTrigger'
 import { CHAT_ENABLED, openChat, prefetchChat } from '../chat/chatEvents'
 import './Dock.css'
-
-// The dock only uses layout/layoutId, which needs domMax (framer exports no
-// layout-only bundle). It is ~78 KB, so it waits for the visitor's first
-// interaction instead of loading at first paint (D-125). Until then the dock is
-// plain CSS and fully usable; it just doesn't morph. If the chunk fails, same.
-const FIRST_INTENT_EVENTS = ['pointerover', 'pointerdown', 'keydown', 'touchstart', 'scroll', 'focusin']
-const firstIntent = () => new Promise((resolve) => {
-    if (typeof window === 'undefined') return
-    const done = () => {
-        FIRST_INTENT_EVENTS.forEach((type) => window.removeEventListener(type, done, true))
-        resolve()
-    }
-    FIRST_INTENT_EVENTS.forEach((type) => window.addEventListener(type, done, { capture: true, passive: true }))
-})
-const loadFeatures = () => firstIntent()
-    .then(() => import('../../lib/framerFeatures'))
-    .then((mod) => mod.default)
-    .catch(() => ({}))
 
 export const DOCK_PAGES = [
     { path: '/', name: 'Home' },
@@ -83,6 +67,11 @@ const SHORTCUT_LABEL = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.te
 
 const openPalette = () => window.dispatchEvent(new CustomEvent('open-command-palette'))
 
+// Hover intent: a pointer crossing the pill on its way elsewhere doesn't open it,
+// and a short exit gap doesn't close it.
+const OPEN_DELAY = 60
+const CLOSE_DELAY = 180
+
 // Scroll-progress ring: one passive listener, writes the stroke directly (no
 // React state per frame).
 function ProgressRing() {
@@ -120,19 +109,10 @@ function ProgressRing() {
     )
 }
 
-// The sliding hover/current highlight; one shared layoutId so it glides between cells.
-function HoverIndicator() {
-    return <m.span layoutId="dock-hover" className="dock-item__hover" transition={SPRING.snappy} aria-hidden="true" />
-}
-
-function DockItem({ to, href, external, current, onSelect, onHover, children, label }) {
-    const ref = useRef(null)
-    useMagnetic(ref, { max: 4, strength: 0.2 })
+function DockItem({ id, to, href, external, current, onSelect, children, label }) {
     const shared = {
-        ref,
         className: 'dock-item',
-        onPointerEnter: onHover,
-        onFocus: onHover,
+        'data-dock-key': id,
         onClick: onSelect,
         'aria-label': label,
     }
@@ -151,12 +131,12 @@ function DockItem({ to, href, external, current, onSelect, onHover, children, la
 }
 
 DockItem.propTypes = {
+    id: PropTypes.string.isRequired,
     to: PropTypes.string,
     href: PropTypes.string,
     external: PropTypes.bool,
     current: PropTypes.bool,
     onSelect: PropTypes.func,
-    onHover: PropTypes.func,
     children: PropTypes.node,
     label: PropTypes.string,
 }
@@ -167,45 +147,124 @@ function Dock() {
     const available = isAvailable()
 
     const [hoverOpen, setHoverOpen] = useState(false)
-    const [focusOpen, setFocusOpen] = useState(false)
     const [pinned, setPinned] = useState(false)
-    const [hovered, setHovered] = useState(null)
-    const open = hoverOpen || focusOpen || pinned
+    const open = hoverOpen || pinned
 
-    const rootRef = useRef(null)
-    const panelRef = useRef(null)
+    const clusterRef = useRef(null)
+    const pillRef = useRef(null)
+    const menuRef = useRef(null)
+    const listsRef = useRef(null)
     const triggerRef = useRef(null)
+    const closeRef = useRef(null)
     const suppressRef = useRef(false)
-    const leaveTimer = useRef(0)
+    const openTimer = useRef(0)
+    const closeTimer = useRef(0)
+    // Highlight geometry: dock key -> { x, y, w } relative to the lists box.
+    const geometry = useRef(new Map())
+    const hl = useRef({ key: null, pending: null, frame: 0 })
 
-    const closeAll = useCallback(() => {
-        setPinned(false)
-        setHoverOpen(false)
-        setFocusOpen(false)
-        setHovered(null)
+    const currentKey = DOCK_PAGES.find((item) => isCurrentPath(pathname, item.path))?.path ?? null
+    const currentKeyRef = useRef(currentKey)
+    currentKeyRef.current = currentKey
+
+    // --- Hover highlight: CSS custom properties, one write per frame at most ---
+    const applyHighlight = useCallback(() => {
+        const state = hl.current
+        state.frame = 0
+        const lists = listsRef.current
+        if (!lists || state.pending === state.key) return
+        const box = state.pending ? geometry.current.get(state.pending) : null
+        state.key = box ? state.pending : null
+        if (box) {
+            lists.style.setProperty('--hx', String(box.x))
+            lists.style.setProperty('--hy', String(box.y))
+            lists.style.setProperty('--hw', String(box.w))
+        }
+        lists.classList.toggle('has-hl', Boolean(box))
     }, [])
 
-    const closeToTrigger = useCallback(() => {
+    const moveHighlight = useCallback((key) => {
+        const state = hl.current
+        state.pending = key
+        if (!state.frame) state.frame = requestAnimationFrame(applyHighlight)
+    }, [applyHighlight])
+
+    // --- Geometry: measured after layout, never on hover ---
+    useEffect(() => {
+        const cluster = clusterRef.current
+        const pill = pillRef.current
+        const menu = menuRef.current
+        const lists = listsRef.current
+        if (!cluster || !pill || !menu || !lists || typeof ResizeObserver === 'undefined') return undefined
+        const measure = () => {
+            // Reads first (layout is clean inside a ResizeObserver callback)...
+            const pillW = pill.offsetWidth
+            const menuW = menu.offsetWidth
+            const inset = 25 // .dock-skin__m left/right: the caps' width less the 1px tuck
+            const boxes = new Map()
+            lists.querySelectorAll('[data-dock-key]').forEach((el) => {
+                boxes.set(el.dataset.dockKey, { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth })
+            })
+            // ...then writes.
+            geometry.current = boxes
+            cluster.style.setProperty('--dock-d', String(Math.max(0, (menuW - pillW) / 2)))
+            cluster.style.setProperty('--dock-sm', String(Math.max(0.01, (pillW - 2 * inset) / Math.max(1, menuW - 2 * inset))))
+            hl.current.key = undefined // force a re-apply with the new geometry
+            moveHighlight(hl.current.pending ?? currentKeyRef.current)
+        }
+        const ro = new ResizeObserver(measure)
+        ro.observe(pill)
+        ro.observe(menu)
+        ro.observe(lists)
+        return () => ro.disconnect()
+    }, [moveHighlight])
+
+    // The highlight rests on the current page (instantly while the menu is shut).
+    useEffect(() => {
+        if (!open) moveHighlight(currentKey)
+    }, [open, currentKey, moveHighlight])
+
+    useEffect(() => () => {
+        window.clearTimeout(openTimer.current)
+        window.clearTimeout(closeTimer.current)
+        cancelAnimationFrame(hl.current.frame)
+    }, [])
+
+    // --- Open / close ---
+    const closeAll = useCallback(() => {
+        window.clearTimeout(openTimer.current)
+        window.clearTimeout(closeTimer.current)
+        setPinned(false)
+        setHoverOpen(false)
+    }, [])
+
+    // Focus moves in the next frame, once the close has rendered: the pill is no
+    // longer inert, and focus() doesn't force a style recalc inside the click.
+    // `then` runs after it (the palette and chat return focus to the trigger).
+    const closeToTrigger = useCallback((then) => {
         suppressRef.current = true
         closeAll()
-        triggerRef.current?.focus({ preventScroll: true })
+        requestAnimationFrame(() => {
+            triggerRef.current?.focus({ preventScroll: true })
+            if (typeof then === 'function') then()
+        })
     }, [closeAll])
 
     // After choosing a page, keyboard focus starts at the new page's content
-    // instead of dropping to <body> when the menu unmounts.
+    // instead of staying in the closed menu.
     const selectPage = useCallback(() => {
         closeAll()
         requestAnimationFrame(() => document.getElementById('main-content')?.focus({ preventScroll: true }))
     }, [closeAll])
 
-    useFocusTrap(panelRef, pinned, { onEscape: closeToTrigger, returnFocusTo: triggerRef.current })
+    useFocusTrap(menuRef, pinned, { onEscape: closeToTrigger, initialFocusRef: closeRef, returnFocusTo: triggerRef.current, deferFocus: true })
 
     // Close on navigation.
     useEffect(() => {
         closeAll()
     }, [pathname, closeAll])
 
-    // Esc also closes a hover/focus-opened dock.
+    // Esc also closes a hover-opened dock.
     useEffect(() => {
         if (!open || pinned) return undefined
         const onKey = (event) => {
@@ -219,193 +278,168 @@ function Dock() {
     useEffect(() => {
         if (!pinned) return undefined
         const onDown = (event) => {
-            if (!rootRef.current?.contains(event.target)) closeAll()
+            if (!clusterRef.current?.contains(event.target)) closeAll()
         }
         document.addEventListener('pointerdown', onDown)
         return () => document.removeEventListener('pointerdown', onDown)
     }, [pinned, closeAll])
 
-    useEffect(() => () => window.clearTimeout(leaveTimer.current), [])
-
-    const onPointerEnter = (event) => {
-        if (event.pointerType !== 'mouse') return
-        window.clearTimeout(leaveTimer.current)
-        if (!suppressRef.current) setHoverOpen(true)
+    const onTriggerEnter = (event) => {
+        if (event.pointerType !== 'mouse' || suppressRef.current) return
+        window.clearTimeout(closeTimer.current)
+        window.clearTimeout(openTimer.current)
+        openTimer.current = window.setTimeout(() => setHoverOpen(true), OPEN_DELAY)
     }
-    const onPointerLeave = (event) => {
+    const onMenuEnter = (event) => {
+        if (event.pointerType === 'mouse') window.clearTimeout(closeTimer.current)
+    }
+    const onClusterLeave = (event) => {
         if (event.pointerType !== 'mouse') return
         suppressRef.current = false
-        leaveTimer.current = window.setTimeout(() => {
-            setHoverOpen(false)
-            setHovered(null)
-        }, 180)
+        window.clearTimeout(openTimer.current)
+        window.clearTimeout(closeTimer.current)
+        closeTimer.current = window.setTimeout(() => setHoverOpen(false), CLOSE_DELAY)
     }
-    const onFocusIn = (event) => {
-        // The Ask segment lives in the idle pill but never opens the menu.
-        if (event.target.closest?.('.dock-ask')) return
-        if (!suppressRef.current && event.target.matches?.(':focus-visible')) setFocusOpen(true)
-    }
-    const onFocusOut = (event) => {
-        const next = event.relatedTarget
-        if (next && rootRef.current?.contains(next)) return
-        suppressRef.current = false
-        setFocusOpen(false)
-        // A click on the dock's own padding blurs to null; the outside-pointer
-        // handler owns closing a pinned dock in that case.
-        if (next) setPinned(false)
-    }
-    // Click/tap/Enter pins the dock open (focus trap); on a pinned dock it closes.
-    // A dock already opened by hover or keyboard focus gets pinned, not closed.
+    // Click/tap/Enter on the trigger pins the dock open; the trap moves focus to Close.
     const onTrigger = () => {
-        if (pinned) {
-            suppressRef.current = true
-            closeAll()
-        } else {
-            setPinned(true)
-        }
+        window.clearTimeout(openTimer.current)
+        setPinned(true)
     }
+
+    // Delegated hover/focus over the items: move the highlight, prefetch on intent.
+    const onItemIntent = (event) => {
+        const key = event.target.closest?.('[data-dock-key]')?.dataset.dockKey
+        if (!key) return
+        moveHighlight(key)
+        if (key === 'ask') prefetchChat()
+        if (key === 'search') window.dispatchEvent(new CustomEvent('prefetch-command-palette'))
+    }
+    const onListsLeave = () => moveHighlight(currentKeyRef.current)
 
     const statusLabel = available ? siteStatus.availability?.label || 'Available' : null
-    const indicatorKey = hovered ?? (open ? pathname : null)
 
     return (
-        <LazyMotion features={loadFeatures} strict>
-            <div className={`dock-cluster ${open ? 'has-open-dock' : ''}`}>
-            <nav
-                ref={rootRef}
-                aria-label="Main"
-                className={`dock ${open ? 'is-open' : ''}`}
-                onPointerLeave={onPointerLeave}
-                onFocus={onFocusIn}
-                onBlur={onFocusOut}
-            >
-                <m.div
-                    ref={panelRef}
-                    layout
-                    transition={SPRING.snappy}
-                    style={{ borderRadius: 26 }}
-                    className="dock-panel"
-                >
+        <div ref={clusterRef} className="dock-cluster" onPointerLeave={onClusterLeave}>
+            <nav aria-label="Main" className={`dock ${open ? 'is-open' : ''}`}>
+                <div ref={pillRef} className="dock-pill" inert={open ? '' : undefined}>
                     <button
                         ref={triggerRef}
                         type="button"
                         className="dock-trigger"
                         aria-expanded={open}
                         aria-controls="dock-menu"
-                        aria-label={open ? 'Close menu' : `Open menu. Current page: ${page.name}`}
+                        aria-label={`Open menu. Current page: ${page.name}`}
                         onClick={onTrigger}
-                        onPointerEnter={onPointerEnter}
+                        onPointerEnter={onTriggerEnter}
                     >
                         <ProgressRing />
-                        {open ? (
-                            <span className="dock-trigger__label dock-trigger__close" aria-hidden="true">Close</span>
-                        ) : (
-                            <m.span layout="position" className="dock-trigger__label" aria-hidden="true">
-                                <span className="dock-trigger__index">{page.index}</span>
-                                <span className="dock-trigger__slash">/</span>
-                                <span>{page.name}</span>
-                            </m.span>
-                        )}
-                        {available && !open ? (
+                        <span className="dock-trigger__label" aria-hidden="true">
+                            <span className="dock-trigger__index">{page.index}</span>
+                            <span className="dock-trigger__slash">/</span>
+                            <span>{page.name}</span>
+                        </span>
+                        {available ? (
                             <span className="dock-status" title={statusLabel}>
                                 <span className="sr-only">{statusLabel}</span>
                             </span>
                         ) : null}
                     </button>
-
                     {/* Hover opens the menu from the page trigger only (above), so the
                         Ask segment beside it can be reached without opening it. */}
-                    {!open ? <ChatTrigger /> : null}
+                    <ChatTrigger />
+                </div>
 
-                    {open ? (
-                        <div
-                            id="dock-menu"
-                            className="dock-menu"
-                            onPointerEnter={onPointerEnter}
-                            onPointerLeave={() => setHovered(null)}
-                        >
-                            <ul className="dock-menu__pages">
-                                {DOCK_PAGES.map((item, i) => {
-                                    const current = isCurrentPath(pathname, item.path)
-                                    return (
-                                        <li key={item.path} className="dock-menu__cell">
-                                            {indicatorKey === item.path || (indicatorKey === pathname && current) ? (
-                                                <HoverIndicator />
-                                            ) : null}
+                <div
+                    ref={menuRef}
+                    id="dock-menu"
+                    className="dock-menu"
+                    inert={open ? undefined : ''}
+                    onPointerEnter={onMenuEnter}
+                >
+                    <div className="dock-menu__frame">
+                        <span className="dock-skin" aria-hidden="true">
+                            <span className="dock-skin__l" />
+                            <span className="dock-skin__m" />
+                            <span className="dock-skin__r" />
+                        </span>
+                        <div className="dock-menu__body">
+                            <button
+                                ref={closeRef}
+                                type="button"
+                                className="dock-trigger dock-close"
+                                aria-label="Close menu"
+                                onClick={closeToTrigger}
+                            >
+                                <ProgressRing />
+                                <span className="dock-trigger__label" aria-hidden="true">Close</span>
+                            </button>
+                            <div
+                                ref={listsRef}
+                                className="dock-menu__lists"
+                                onPointerOver={onItemIntent}
+                                onFocus={onItemIntent}
+                                onPointerLeave={onListsLeave}
+                            >
+                                <span className="dock-hl" aria-hidden="true">
+                                    <span className="dock-hl__l" />
+                                    <span className="dock-hl__m" />
+                                    <span className="dock-hl__r" />
+                                </span>
+                                <ul className="dock-menu__pages">
+                                    {DOCK_PAGES.map((item, i) => (
+                                        <li key={item.path}>
                                             <DockItem
+                                                id={item.path}
                                                 to={item.path}
-                                                current={current}
+                                                current={isCurrentPath(pathname, item.path)}
                                                 onSelect={selectPage}
-                                                onHover={() => setHovered(item.path)}
                                             >
                                                 <span className="dock-item__index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                                                 {item.name}
                                             </DockItem>
                                         </li>
-                                    )
-                                })}
-                            </ul>
-                            <ul className="dock-menu__tools">
-                                {CHAT_ENABLED ? (
-                                    <li className="dock-menu__cell">
-                                        {indicatorKey === 'ask' ? (
-                                            <HoverIndicator />
-                                        ) : null}
+                                    ))}
+                                </ul>
+                                <ul className="dock-menu__tools">
+                                    {CHAT_ENABLED ? (
+                                        <li>
+                                            <DockItem
+                                                id="ask"
+                                                label="Ask the site assistant about Gaurav"
+                                                onSelect={() => closeToTrigger(openChat)}
+                                            >
+                                                Ask
+                                            </DockItem>
+                                        </li>
+                                    ) : null}
+                                    <li>
                                         <DockItem
-                                            label="Ask the site assistant about Gaurav"
-                                            onSelect={() => {
-                                                closeToTrigger()
-                                                openChat()
-                                            }}
-                                            onHover={() => {
-                                                prefetchChat()
-                                                setHovered('ask')
-                                            }}
+                                            id="search"
+                                            label={`Search the site (${SHORTCUT_LABEL})`}
+                                            // Focus parks on the trigger first, so the palette returns it there.
+                                            onSelect={() => closeToTrigger(openPalette)}
                                         >
-                                            Ask
+                                            Search <kbd className="dock-kbd">{SHORTCUT_LABEL}</kbd>
                                         </DockItem>
                                     </li>
-                                ) : null}
-                                <li className="dock-menu__cell">
-                                    {indicatorKey === 'search' ? (
-                                        <HoverIndicator />
-                                    ) : null}
-                                    <DockItem
-                                        label={`Search the site (${SHORTCUT_LABEL})`}
-                                        onSelect={() => {
-                                            // Park focus on the trigger so the palette returns it there.
-                                            closeToTrigger()
-                                            openPalette()
-                                        }}
-                                        onHover={() => {
-                                            setHovered('search')
-                                            window.dispatchEvent(new CustomEvent('prefetch-command-palette'))
-                                        }}
-                                    >
-                                        Search <kbd className="dock-kbd">{SHORTCUT_LABEL}</kbd>
-                                    </DockItem>
-                                </li>
-                                <li className="dock-menu__cell">
-                                    {indicatorKey === 'resume' ? (
-                                        <HoverIndicator />
-                                    ) : null}
-                                    <DockItem
-                                        href={siteStatus.resumeUrl}
-                                        external
-                                        label="Resume (PDF, opens in a new tab)"
-                                        onSelect={closeAll}
-                                        onHover={() => setHovered('resume')}
-                                    >
-                                        Resume <span aria-hidden="true">↗</span>
-                                    </DockItem>
-                                </li>
-                            </ul>
+                                    <li>
+                                        <DockItem
+                                            id="resume"
+                                            href={siteStatus.resumeUrl}
+                                            external
+                                            label="Resume (PDF, opens in a new tab)"
+                                            onSelect={closeAll}
+                                        >
+                                            Resume <span aria-hidden="true">↗</span>
+                                        </DockItem>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                    ) : null}
-                </m.div>
+                    </div>
+                </div>
             </nav>
-            </div>
-        </LazyMotion>
+        </div>
     )
 }
 
