@@ -621,6 +621,17 @@ A separate Remotion project, `launch-video/` (own `package.json`, nothing import
   - The click transition into the case study is real-time and lasts about 0.3 s.
   - `npm audit` in `launch-video/` reports moderate issues in the Remotion starter's dev dependencies.
 
+## Performance and security pass (2026-11-24, branch `fix/perf-security-pass`, uncommitted, D-123–D-126)
+- **Baseline (PSI mobile, production, 2026-11-24 18:30):** Perf 100, BP 96, max critical path latency 11,094 ms (`/health` 6,088 ms, `/auth/me` 11,094 ms `ERR_TIMED_OUT`). Unused JS 163 KiB (framerFeatures 66, CommandPalette 50), forced reflow vendor 60 ms + LineMask 53 ms, unused CSS 17 KiB.
+- **Local measurement:** `dist/` served by a static server that applies `vercel.json` headers and gzip, built with the production `VITE_API_URL`; Lighthouse 13 mobile, median of 3. Render rejects the localhost origin (CORS), so the local critical path never shows a cold start; the backend-request count is the local proxy for it. No Vercel preview yet (needs the owner's OK to push).
+- Fix 1 (D-123): backend requests on `/` 2 → 0, BP 96 → 100, local critical path 1,007 → 725 ms.
+- Fix 2 (D-124): CSP Report-Only; 0 violations Report-Only and enforced locally. LH13 scores the CSP/COOP/XFO items as informative, so BP does not move.
+- Fix 3 (D-125): first-load JS 1,279 → 834 KB (uncompressed); neither chunk loads without interaction. ⌘K and the dock morph verified in the browser.
+- Fix 4 (D-126): LineMask reflow 48 → 0 ms; total forced reflow 60 → ~40 ms (one layout, by design). Stylesheet 103.2 → 100.9 KB.
+- **Not verified here:** real Google sign-in and a real Razorpay test order (need the deployed origin, which Render's CORS and Google's client config allow); `/api/chat` answers (the production function rejects localhost, 403). Do these on the Vercel preview with Report-Only before flipping to enforced.
+- Keep-warm: not added. See the owner report for the trade-off.
+- Gates: `npm run build` ✓ (incl. `csp-hashes`), `test:blog` 14/14 ✓, `test:chat` 99/99 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. Backend unchanged.
+
 ## Next step
 - Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
@@ -680,6 +691,7 @@ A separate Remotion project, `launch-video/` (own `package.json`, nothing import
 | **Chat P-chat-3 `/`** branch vs main, mobile median of 5 | 82 vs 83 | 100 | 96 | 100 | 2.2 s vs 2.1 s | 632 vs 591 ms |
 | **Chat P-chat-3 `/projects`** branch vs main | 88 vs 86 | 100 | 96 | 100 | 2.2 s vs 2.1 s | 379 vs 487 ms |
 | **Chat P-chat-3 `/contact`** branch vs main | 85 vs 86 | 100 | 96 | 100 | 2.2 s vs 2.2 s | 528 vs 474 ms |
+| **Perf/security pass `/`** local, branch vs main (median of 3) | 96 vs 96 | – | 100 vs 96 | – | 1.1 s vs 1.1 s | 230 vs 220 ms |
 
 ¹ Runs 1–2 were CPU-contended (TBT > 2 s, Perf 36) so 5 more were taken; runs: 36, 36, 54, 55, 55, 47, 53, 56. Render-blocking savings fell 751 → 300 ms and CLS 0.023 → 0.002. FCP is still ≈ 4.3 s, set by the JS-rendered splash/hero (fixed in C/D1/E, not fonts).
 ² Runs 62, 64, 65; FCP 4.2 s, CLS 0.004. Gain is mostly the nav dropping framer-motion `layoutId` and the scroll listener. Desktop after B: 97 (LCP 1.0 s).

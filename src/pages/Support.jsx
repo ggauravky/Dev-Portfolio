@@ -29,7 +29,7 @@ const HEAD = {
 
 function Support() {
     const navigate = useNavigate()
-    const { user, isAuthenticated, isLoading, openAuthDialog, refreshSession } = useAuth()
+    const { user, isAuthenticated, isLoading, openAuthDialog, refreshSession } = useAuth({ requireSession: true })
     const checkoutLock = useRef(false)
     const [form, setForm] = useState({ name: '', phone: '', message: '', amount: '199' })
     const [isSubmitting, setIsSubmitting] = useState(false)

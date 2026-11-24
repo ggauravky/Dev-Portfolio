@@ -8,7 +8,16 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Command } from 'cmdk'
-import './CommandPalette.css'
+// cssCodeSplit is off (D-046): a plain import would put this CSS in the one
+// render-blocking stylesheet. It ships with this on-intent chunk instead (D-126).
+import paletteCss from './CommandPalette.css?inline'
+
+if (typeof document !== 'undefined' && !document.getElementById('command-palette-css')) {
+    const style = document.createElement('style')
+    style.id = 'command-palette-css'
+    style.textContent = paletteCss
+    document.head.appendChild(style)
+}
 import {
     Search, X, Folder, Globe, Briefcase, Share2, Zap,
     Copy, Check, Clock, FileText, Code2, Terminal, ArrowRight

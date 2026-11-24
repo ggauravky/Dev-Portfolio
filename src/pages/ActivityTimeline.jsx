@@ -217,7 +217,7 @@ const LoadingState = () => (
 )
 
 function ActivityTimeline() {
-    const { user, isLoading, isAuthenticated, openAuthDialog } = useAuth()
+    const { user, isLoading, isAuthenticated, openAuthDialog } = useAuth({ requireSession: true })
     const [searchParams, setSearchParams] = useSearchParams()
     const [timeline, setTimeline] = useState([])
     const [blogSupports, setBlogSupports] = useState([])

@@ -37,7 +37,7 @@ const getMinBookDate = () => {
 function BookNow() {
     const navigate = useNavigate()
     const [params] = useSearchParams()
-    const { user, isAuthenticated, isLoading, openAuthDialog, refreshSession } = useAuth()
+    const { user, isAuthenticated, isLoading, openAuthDialog, refreshSession } = useAuth({ requireSession: true })
     const requestedService = params.get('service')
     const selectedService = getServiceBySlug(requestedService) || servicesData[0]
     const minDate = useMemo(getMinBookDate, [])

@@ -25,7 +25,7 @@ export const pingBackend = async () => {
         
         // Silent ping to health endpoint with timeout
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 4000) // 4 s: never hold a request open for a cold start
         
         const response = await fetch(`${API_URL}/health`, {
             method: 'GET',

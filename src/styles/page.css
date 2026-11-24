@@ -164,8 +164,7 @@
   margin-top: var(--space-4);
 }
 
-.pg-actions .text-link,
-.pg-more .text-link {
+.pg-actions .text-link {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -196,8 +195,7 @@
   text-wrap: balance;
 }
 
-.pg-intro,
-.pg-prose p {
+.pg-intro {
   max-width: 62ch;
   color: rgb(var(--muted));
   font-size: var(--text-body);
@@ -205,13 +203,6 @@
 }
 
 .pg-intro { margin: calc(var(--space-2) * -1) 0 var(--space-4); }
-.pg-prose p { color: rgb(var(--paper)); }
-.pg-prose p + p { margin-top: var(--space-2); }
-
-.pg-more {
-  margin-top: var(--space-4);
-  font-size: 15px;
-}
 
 /* Hairline rows: a mono label column and a body column. */
 .pg-rows {

@@ -12,12 +12,16 @@ import {
 } from '../services/auth'
 import { disableGoogleAutoSelect } from '../services/googleIdentity'
 import { trackEvent } from '../utils/analytics'
+import { hasSessionHint, setSessionHint } from '../utils/sessionHint'
+
+const BACKGROUND_TIMEOUT_MS = 3500
+const BACKGROUND_RETRY_MS = 8000
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const [authDialog, setAuthDialog] = useState({
         isOpen: false,
         reason: 'navbar',
@@ -36,31 +40,80 @@ export function AuthProvider({ children }) {
         return controller
     }, [])
 
-    const refreshSession = useCallback(async () => {
+    // D-123: /api/auth/me is not on the first-paint path. Pages render logged-out
+    // and upgrade on success. Gated pages ask for the check (useAuth({ requireSession })),
+    // everything else only checks at idle time when this browser has signed in before.
+    const [sessionResolved, setSessionResolved] = useState(false)
+    const sessionPromiseRef = useRef(null)
+
+    const refreshSession = useCallback(async ({ timeoutMs, background = false } = {}) => {
         const controller = replaceActiveRequestController()
+        if (!background) setIsLoading(true)
+        let definitive = false
 
         try {
-            const data = await fetchCurrentSession({ signal: controller.signal })
+            const data = await fetchCurrentSession({ signal: controller.signal, timeoutMs })
             if (activeRequestControllerRef.current !== controller) return null
 
             const nextUser = data.user || null
+            definitive = true
             setUser(nextUser)
+            setSessionHint(Boolean(nextUser))
             return nextUser
         } catch (error) {
             if (error?.name !== 'AbortError' && activeRequestControllerRef.current === controller) {
-                setUser(null)
+                // A 401/403 is a real answer; a timeout or cold backend is not.
+                if (error?.status === 401 || error?.status === 403) {
+                    definitive = true
+                    setUser(null)
+                    setSessionHint(false)
+                }
             }
             return null
         } finally {
             if (activeRequestControllerRef.current === controller) {
                 activeRequestControllerRef.current = null
+                // A foreground check always resolves, so gated pages never hang.
+                if (definitive || !background) setSessionResolved(true)
                 setIsLoading(false)
             }
         }
     }, [replaceActiveRequestController])
 
+    // One shared foreground check for gated pages and the auth dialog.
+    const ensureSession = useCallback(() => {
+        if (sessionResolved) return Promise.resolve(user)
+        if (!sessionPromiseRef.current) {
+            sessionPromiseRef.current = refreshSession().finally(() => {
+                sessionPromiseRef.current = null
+            })
+        }
+        return sessionPromiseRef.current
+    }, [refreshSession, sessionResolved, user])
+
+    // Idle background check, only for browsers that signed in before.
     useEffect(() => {
-        void refreshSession()
+        if (!hasSessionHint()) return undefined
+        let cancelled = false
+        let retryTimer = 0
+        const run = async (attempt) => {
+            if (cancelled || sessionPromiseRef.current || authenticationInFlightRef.current) return
+            const nextUser = await refreshSession({ timeoutMs: BACKGROUND_TIMEOUT_MS, background: true })
+            // A cold Render instance takes 6–11 s; try once more after it has woken.
+            if (!cancelled && !nextUser && attempt === 0 && hasSessionHint()) {
+                retryTimer = window.setTimeout(() => run(1), BACKGROUND_RETRY_MS)
+            }
+        }
+        const start = () => run(0)
+        const idleId = 'requestIdleCallback' in window
+            ? window.requestIdleCallback(start, { timeout: 3000 })
+            : window.setTimeout(start, 1500)
+        return () => {
+            cancelled = true
+            window.clearTimeout(retryTimer)
+            if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleId)
+            window.clearTimeout(idleId)
+        }
     }, [refreshSession])
 
     useEffect(() => () => activeRequestControllerRef.current?.abort(), [])
@@ -80,6 +133,8 @@ export function AuthProvider({ children }) {
             if (!nextUser) throw new Error('Google Sign-In returned an empty user session.')
 
             setUser(nextUser)
+            setSessionHint(true)
+            setSessionResolved(true)
             void trackEvent('google_login_success', {
                 provider: 'google',
                 is_new_user: Boolean(data?.authMessage?.isNewUser),
@@ -106,6 +161,22 @@ export function AuthProvider({ children }) {
             return
         }
 
+        // A returning visitor whose idle check has not landed yet: ask the
+        // backend first instead of showing a sign-in they do not need.
+        if (!sessionResolved && hasSessionHint()) {
+            const openerElement = document.activeElement instanceof HTMLElement ? document.activeElement : null
+            void ensureSession().then((existingUser) => {
+                if (existingUser) {
+                    Promise.resolve(onSuccess?.(existingUser)).catch(() => undefined)
+                    return
+                }
+                onAuthSuccessRef.current = typeof onSuccess === 'function' ? onSuccess : null
+                setAuthDialogError('')
+                setAuthDialog({ isOpen: true, reason, openerElement })
+            })
+            return
+        }
+
         onAuthSuccessRef.current = typeof onSuccess === 'function' ? onSuccess : null
         setAuthDialogError('')
         setAuthDialog({
@@ -113,7 +184,7 @@ export function AuthProvider({ children }) {
             reason,
             openerElement: document.activeElement instanceof HTMLElement ? document.activeElement : null,
         })
-    }, [user])
+    }, [ensureSession, sessionResolved, user])
 
     const handleGoogleCredential = useCallback(async (response) => {
         if (authenticationInFlightRef.current) return
@@ -154,6 +225,8 @@ export function AuthProvider({ children }) {
         const controller = replaceActiveRequestController()
         setIsLoading(true)
         setUser(null)
+        setSessionHint(false)
+        setSessionResolved(true)
         closeAuthDialog()
         disableGoogleAutoSelect()
 
@@ -225,6 +298,8 @@ export function AuthProvider({ children }) {
             user,
             isLoading,
             isAuthenticated: Boolean(user),
+            sessionResolved,
+            ensureSession,
             openAuthDialog,
             closeAuthDialog,
             signIn,
@@ -237,6 +312,8 @@ export function AuthProvider({ children }) {
         [
             user,
             isLoading,
+            sessionResolved,
+            ensureSession,
             openAuthDialog,
             closeAuthDialog,
             signIn,

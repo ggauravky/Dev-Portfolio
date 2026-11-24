@@ -81,12 +81,41 @@ function arm() {
 // freeze a row mid-animation.
 const ROW_SELECTOR = 'main :is(.pg-row, .pj-row, .work-row, .note-row, .journey-row, .jr-entry)'
 
-function freezeOnScreenRows() {
+// Every Reveal mounted in one React commit is settled together in a microtask
+// (after the commit's layout effects, still before paint): all rect reads
+// first, then all data-attribute writes, so a page pays one layout instead of
+// one forced reflow per element (PSI "Forced reflow", D-126).
+const mountQueue = new Set()
+let mountScheduled = false
+
+function settleMounted() {
+    mountScheduled = false
+    const els = [...mountQueue]
+    mountQueue.clear()
+    if (!els.length) return
+    const isArmed = arm()
     const limit = window.innerHeight
-    document.querySelectorAll(ROW_SELECTOR).forEach((row) => {
-        if ('revealSeen' in row.dataset) return
+
+    // Reads.
+    const rows = isArmed
+        ? [...document.querySelectorAll(ROW_SELECTOR)].filter((row) => !('revealSeen' in row.dataset))
+        : []
+    const rowOnScreen = rows.map((row) => row.getBoundingClientRect().top < limit)
+    const elOnScreen = els.map((el) => !isArmed || el.getBoundingClientRect().top < limit)
+
+    // Writes.
+    rows.forEach((row, i) => {
         row.dataset.revealSeen = ''
-        if (row.getBoundingClientRect().top < limit) row.dataset.revealStatic = ''
+        if (rowOnScreen[i]) row.dataset.revealStatic = ''
+    })
+    els.forEach((el, i) => {
+        if (elOnScreen[i]) {
+            el.dataset.revealed = ''
+            el.dataset.revealStatic = ''
+            return
+        }
+        pending.add(el)
+        observer.observe(el)
     })
 }
 
@@ -96,16 +125,13 @@ function Reveal({ as = 'div', delay = 0, className = '', style, children, ...res
     useLayoutEffect(() => {
         const el = ref.current
         if (!el) return undefined
-        const armed = arm()
-        if (armed) freezeOnScreenRows()
-        if (!armed || el.getBoundingClientRect().top < window.innerHeight) {
-            el.dataset.revealed = ''
-            el.dataset.revealStatic = ''
-            return undefined
+        mountQueue.add(el)
+        if (!mountScheduled) {
+            mountScheduled = true
+            queueMicrotask(settleMounted)
         }
-        pending.add(el)
-        observer.observe(el)
         return () => {
+            mountQueue.delete(el)
             pending.delete(el)
             observer?.unobserve(el)
         }

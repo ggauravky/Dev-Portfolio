@@ -22,8 +22,3 @@
   opacity: 1;
   transition: opacity var(--dur-base) var(--ease-out);
 }
-
-/* Placeholder behind an unloaded image: the hairline tone, no shimmer (v2). */
-.lazy-image-skeleton {
-  background: rgb(var(--ink-raised));
-}
