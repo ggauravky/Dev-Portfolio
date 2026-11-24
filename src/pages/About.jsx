@@ -17,7 +17,11 @@ import { STATIC_HEADS } from '../lib/pageHeads'
 import PageSection from '../components/page/PageSection'
 import { Button, TextLink } from '../components/ui'
 import { siteStatus } from '../data/siteStatus'
-import './About.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import aboutCss from './About.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('about-css', aboutCss)
 
 const SEO = staticSeo('/about')
 

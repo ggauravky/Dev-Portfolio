@@ -33,6 +33,11 @@ import HoverPreview, { preloadPreviewImages } from '../components/ui/HoverPrevie
 import { TextLink } from '../components/ui'
 import { journeyData } from '../data/journeyData'
 import './Journey.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import journeyPageCss from './Journey.page.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('journey-page-css', journeyPageCss)
 
 const SEO = staticSeo('/journey')
 

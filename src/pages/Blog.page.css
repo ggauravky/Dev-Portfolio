@@ -1,0 +1,50 @@
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+/* Page-only rules split from Blog.css (D-128): they ship inside this page's lazy
+   chunk via ?inline instead of the one render-blocking stylesheet (D-046). */
+
+/* Blog index (P5) on the shared .pg-* primitives (src/styles/page.css). */
+
+.bl-controls {
+  padding-block: 0 var(--space-5);
+}
+
+/*
+ * Copyright (c) 2026 Gaurav Kumar Yadav. All Rights Reserved.
+ * Source: https://github.com/ggauravky/Dev-Portfolio
+ */
+
+.bl-controls .pj-seg {
+  padding-top: var(--space-3);
+  border-top: 1px solid rgb(var(--rule));
+}
+
+.bl-search {
+  max-width: 440px;
+  margin-top: var(--space-2);
+}
+
+.bl-empty {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  color: rgb(var(--muted));
+}
+
+.bl-news {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: 560px;
+}
+
+.bl-news__field { flex: 1 1 260px; }
+
+.bl-news__done {
+  color: rgb(var(--paper));
+  font-size: 20px;
+}

@@ -3,22 +3,6 @@
  * Source: https://github.com/ggauravky/Dev-Portfolio
  */
 
-/* Blog index (P5) on the shared .pg-* primitives (src/styles/page.css). */
-
-.bl-controls {
-  padding-block: 0 var(--space-5);
-}
-
-.bl-controls .pj-seg {
-  padding-top: var(--space-3);
-  border-top: 1px solid rgb(var(--rule));
-}
-
-.bl-search {
-  max-width: 440px;
-  margin-top: var(--space-2);
-}
-
 .bl-row__link {
   color: inherit;
   text-decoration-line: underline;
@@ -43,26 +27,4 @@
   margin-top: var(--space-1);
   color: rgb(var(--paper));
   line-height: var(--leading-body);
-}
-
-.bl-empty {
-  display: grid;
-  justify-items: start;
-  gap: var(--space-2);
-  color: rgb(var(--muted));
-}
-
-.bl-news {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: var(--space-2);
-  max-width: 560px;
-}
-
-.bl-news__field { flex: 1 1 260px; }
-
-.bl-news__done {
-  color: rgb(var(--paper));
-  font-size: 20px;
 }

@@ -14,7 +14,11 @@ import { trackEvent } from '../utils/analytics'
 import PageHead from '../components/page/PageHead'
 import PageSection from '../components/page/PageSection'
 import { Button, Input, Textarea, TextLink } from '../components/ui'
-import '../styles/checkout.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import checkoutCss from '../styles/checkout.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('checkout-css', checkoutCss)
 
 const SEO = staticSeo('/support')
 

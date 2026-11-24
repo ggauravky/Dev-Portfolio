@@ -34,7 +34,10 @@ for (const file of htmlFiles) {
     const html = readFileSync(file, 'utf8')
     for (const match of html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)) {
         if (/type=["']?application\/(ld\+)?json/i.test(match[1])) continue
-        hashes.add(`'sha256-${createHash('sha256').update(match[2]).digest('base64')}'`)
+        // Hash the LF form: Vercel and CI build on Linux from LF blobs, so a Windows
+        // CRLF checkout must never produce the hash that ships (D-127).
+        const body = match[2].replace(/\r\n/g, '\n')
+        hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`)
     }
 }
 const wanted = [...hashes].sort()

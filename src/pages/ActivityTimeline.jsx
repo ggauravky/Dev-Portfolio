@@ -12,7 +12,11 @@ import { trackEvent } from '../utils/analytics'
 import ProfileEditorDialog from '../components/account/ProfileEditorDialog'
 import PaymentDetailsDialog from '../components/account/PaymentDetailsDialog'
 import { Button, TextLink } from '../components/ui'
-import '../styles/activity.css'
+// Page-only CSS ships with this chunk, not the global stylesheet (D-128).
+import activityCss from '../styles/activity.css?inline'
+import injectStyle from '../lib/injectStyle'
+
+injectStyle('activity-css', activityCss)
 
 const SEO = staticSeo('/my-activity')
 
