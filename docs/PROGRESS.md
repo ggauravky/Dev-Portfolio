@@ -632,6 +632,14 @@ A separate Remotion project, `launch-video/` (own `package.json`, nothing import
 - Keep-warm: not added. See the owner report for the trade-off.
 - Gates: `npm run build` ✓ (incl. `csp-hashes`), `test:blog` 14/14 ✓, `test:chat` 99/99 ✓, `check:design --all` 0 ✓, `git diff --check` ✓. Backend unchanged.
 
+## Production verification (2026-11-24, after #35–#37, D-127–D-130)
+- PSI on https://ggauravky.vercel.app/, three runs; FCP, LCP and TBT are medians, the other figures come from the first run. Baseline is the owner's PSI from before #35.
+- Mobile: Perf 100 → 100, BP 96 → 100, max critical path latency 11,094 → 3,476 ms (Render calls gone; the path now ends on same-origin chunks and `/api/*`), FCP/LCP 0.9 → 0.9 s, TBT 70 → 7 ms, CLS 0 → 0. Unused JS 163 → 53 KiB (framerFeatures and CommandPalette no longer load), unused CSS 17 → 11 KiB, forced-reflow insight no longer listed on mobile.
+- Desktop: BP 96 → 100, max critical path latency 3,414 ms (no desktop baseline figure), FCP/LCP 0.2 → 0.2 s (242 ms median), TBT 30 → 9 ms, CLS 0.004 → 0.004.
+- JS chunks that PSI flagged on load: framerFeatures 78.0 + CommandPalette 71.2 + boot 67.9 + vendor 60.3 = 277.3 KiB → boot 68.4 + vendor 59.3 = 127.7 KiB.
+- Report-Only CSP in production: walked every route, ⌘K, chat (answered), GitHub stat and the sign-in dialog (GIS button iframe rendered). One violation: Umami's `cloud.umami.is/script.js` (fixed in D-130). Not tested: completing a Google sign-in (needs the owner's account) and a Razorpay checkout (needs a signed-in order; never a live payment).
+- Found: `/` served none of the security headers (D-130).
+
 ## Next step
 - Chat (D-113): owner reviews `fix/chat-reliability`, approves the commit, then checks a Vercel preview: the visitor cookie is set, limits and the busy note work across instances, and Atlas has `chat_locks` with its TTL index.
 - Chat (D-109): owner reviews the knowledge-base answers and the ⚠ rows in `docs/COPY_REVIEW.md` § "Chat: knowledge base, limits and starters", approves the commit; after any edit to `lib/chat/knowledge-base.json`, run `npm run chat:index`.
