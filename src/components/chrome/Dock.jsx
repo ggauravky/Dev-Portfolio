@@ -10,9 +10,12 @@
 //   transforms and opacity change. On desktop its skin is three pieces (two caps
 //   that translate, a middle that scales on X), so the pill grows into the menu
 //   without stretching its corners or text. Below 1024px the sheet rises from the
-//   pill. The hover highlight is the same three-piece shape, moved by CSS custom
-//   properties: hovering never re-renders React. Geometry is read once per resize
-//   in a ResizeObserver callback (layout is already clean there), never per hover.
+//   pill. The hover highlight is one element slid by CSS custom properties
+//   (translate + scaleX, CSS transition): hovering never re-renders React.
+//   Geometry is read once per resize in a ResizeObserver callback (layout is
+//   already clean there), never per hover or per frame. It uses offset* rather
+//   than getBoundingClientRect because the closed mobile sheet is scaled, and
+//   offsets ignore transforms.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -205,7 +208,10 @@ function Dock() {
             lists.querySelectorAll('[data-dock-key]').forEach((el) => {
                 boxes.set(el.dataset.dockKey, { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth })
             })
-            // ...then writes.
+            // ...then writes. The highlight's base width is the median item width,
+            // so its scaleX stays near 1 (exactly 1 in the equal-width mobile grid).
+            const widths = [...boxes.values()].map((b) => b.w).sort((a, b) => a - b)
+            if (widths.length) lists.style.setProperty('--hb', String(widths[Math.floor(widths.length / 2)]))
             geometry.current = boxes
             cluster.style.setProperty('--dock-d', String(Math.max(0, (menuW - pillW) / 2)))
             cluster.style.setProperty('--dock-sm', String(Math.max(0.01, (pillW - 2 * inset) / Math.max(1, menuW - 2 * inset))))
@@ -380,11 +386,7 @@ function Dock() {
                                 onFocus={onItemIntent}
                                 onPointerLeave={onListsLeave}
                             >
-                                <span className="dock-hl" aria-hidden="true">
-                                    <span className="dock-hl__l" />
-                                    <span className="dock-hl__m" />
-                                    <span className="dock-hl__r" />
-                                </span>
+                                <span className="dock-hl" aria-hidden="true" />
                                 <ul className="dock-menu__pages">
                                     {DOCK_PAGES.map((item, i) => (
                                         <li key={item.path}>

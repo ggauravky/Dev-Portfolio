@@ -36,16 +36,17 @@ export const SPRING = {
  * tokens"). The S1 dock's morph and hover highlight ease their transform with it,
  * never their opacity, which keeps EASE_CSS. Nothing else may use it.
  * Generated with Jake Archibald's linear() easing generator
- * (linear-easing-generator.netlify.app), "Spring" preset: mass 1, stiffness 260,
- * damping 22, velocity 0 (damping ratio 0.68, peak 1.053); simplify 0.0017,
- * round 3. The tool's settle time is 667 ms; the dock plays it in 380 ms, tuned by
- * eye. Browsers without `linear()` get a slight-overshoot cubic-bezier.
+ * (linear-easing-generator.netlify.app), "Spring" preset: mass 1, stiffness 400,
+ * damping 28, velocity 0 (damping ratio 0.7, peak 1.046 at 33%, settled by 57%);
+ * simplify 0.0017, round 3. The tool rounds its settle time to 667 ms; the dock
+ * plays the curve in 320 ms (peak ~105 ms in), tuned by eye. Browsers without
+ * `linear()` get a slight-overshoot cubic-bezier.
  * CSS mirrors this as --ease-dock / --dur-dock, scoped to `.dock-cluster` in
  * src/components/chrome/Dock.css so no other selector can reach it.
  */
 export const DOCK_BOUNCE = {
-    duration: 380,
-    linear: 'linear(0, 0.007, 0.028 2.3%, 0.113, 0.225 7.6%, 0.602 15.4%, 0.71, 0.799, 0.873, 0.934, 0.98 28.1%, 1.015 30.9%, 1.033, 1.045 35.2%, 1.051, 1.053 40.3%, 1.047 45.2%, 1.013 59.1%, 1.002 67.1%, 0.997 78%, 0.999)',
+    duration: 320,
+    linear: 'linear(0, 0.007, 0.027 1.8%, 0.11 4%, 0.599 12.5%, 0.71, 0.801, 0.878, 0.938 21.2%, 0.984, 1.017 26.1%, 1.03, 1.039, 1.045 31.2%, 1.046 33.3%, 1.041 37.2%, 1.011 49%, 1 57%, 0.998 65.8%, 1)',
     fallback: 'cubic-bezier(.3,1.25,.6,1)',
 }
 

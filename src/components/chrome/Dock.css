@@ -15,7 +15,7 @@
 .dock-cluster {
   /* DOCK ONLY — the system's one overshoot (D-132; mirrors DOCK_BOUNCE in
      src/lib/motion.js). Transforms only; opacity keeps --ease-out. */
-  --dur-dock: 380ms;
+  --dur-dock: 320ms;
   --ease-dock: cubic-bezier(.3, 1.25, .6, 1);
   --dock-d: 0;
   --dock-sm: 1;
@@ -31,8 +31,8 @@
 }
 @supports (transition-timing-function: linear(0, 1)) {
   .dock-cluster {
-    /* Jake Archibald's linear() generator, spring: mass 1, stiffness 260, damping 22. */
-    --ease-dock: linear(0, 0.007, 0.028 2.3%, 0.113, 0.225 7.6%, 0.602 15.4%, 0.71, 0.799, 0.873, 0.934, 0.98 28.1%, 1.015 30.9%, 1.033, 1.045 35.2%, 1.051, 1.053 40.3%, 1.047 45.2%, 1.013 59.1%, 1.002 67.1%, 0.997 78%, 0.999);
+    /* Jake Archibald's linear() generator, spring: mass 1, stiffness 400, damping 28. */
+    --ease-dock: linear(0, 0.007, 0.027 1.8%, 0.11 4%, 0.599 12.5%, 0.71, 0.801, 0.878, 0.938 21.2%, 0.984, 1.017 26.1%, 1.03, 1.039, 1.045 31.2%, 1.046 33.3%, 1.041 37.2%, 1.011 49%, 1 57%, 0.998 65.8%, 1);
   }
 }
 
@@ -73,7 +73,6 @@
   font: 400 14px/1 var(--font-sans);
   white-space: nowrap;
   cursor: pointer;
-  transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
 }
 .dock-ask::before {
   content: '';
@@ -229,7 +228,7 @@
   font: 400 14px/1 var(--font-sans);
   white-space: nowrap;
   text-decoration: none;
-  transition: color var(--dur-fast) var(--ease-out);
+  /* No colour transition: only transform and opacity animate (D-132). */
 }
 
 .dock-item:hover,
@@ -253,44 +252,28 @@
 .dock-item__label { display: inline-flex; align-items: baseline; gap: 4px; }
 .dock-item__index { display: none; color: rgb(var(--muted)); font: 400 11px/1 var(--font-mono); }
 
-/* Sliding highlight: one pill in three opaque pieces (no alpha seams), moved by
-   --hx/--hy/--hw. It rests on the current page and follows hover and focus. */
+/* Sliding highlight: ONE element. It rests on the current page and follows hover
+   and focus by transform only: translate to the item's offset and scaleX to its
+   width. Its own width is a fixed base (--hb, the median item width, set per
+   resize, never animated), so the scale stays near 1 on desktop and is exactly 1
+   in the mobile grid, keeping the corner rounding close to round. */
 .dock-hl {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 0;
+  width: calc(var(--hb, 72) * 1px);
+  height: 44px;
+  border-radius: 22px; /* design-allow: dock pill */
+  background: rgb(var(--paper) / 0.07);
   pointer-events: none;
   opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-out);
+  transform-origin: 0 0;
+  transform: translate(calc(var(--hx, 0) * 1px), calc(var(--hy, 0) * 1px)) scaleX(calc(var(--hw, 72) / var(--hb, 72)));
+  will-change: transform;
+  transition: transform var(--dur-dock) var(--ease-dock), opacity var(--dur-fast) var(--ease-out);
 }
 .dock-menu__lists.has-hl .dock-hl { opacity: 1; }
-.dock-hl__l,
-.dock-hl__m,
-.dock-hl__r {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 44px;
-  background: color-mix(in srgb, rgb(var(--paper)) 7%, rgb(var(--ink-raised)));
-  transform-origin: 0 0;
-  will-change: transform;
-  transition: transform var(--dur-dock) var(--ease-dock);
-}
-.dock-hl__l {
-  width: 22px;
-  border-radius: 22px 0 0 22px; /* design-allow: dock pill */
-  transform: translate(calc(var(--hx, 0) * 1px), calc(var(--hy, 0) * 1px));
-}
-.dock-hl__r {
-  width: 22px;
-  border-radius: 0 22px 22px 0; /* design-allow: dock pill */
-  transform: translate(calc((var(--hx, 0) + var(--hw, 44) - 22) * 1px), calc(var(--hy, 0) * 1px));
-}
-.dock-hl__m {
-  width: 1px;
-  transform: translate(calc((var(--hx, 0) + 21) * 1px), calc(var(--hy, 0) * 1px)) scaleX(calc(var(--hw, 44) - 42));
-}
 
 .dock-kbd {
   padding: 2px 4px;
