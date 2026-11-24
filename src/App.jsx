@@ -144,6 +144,28 @@ function ScrollManager() {
     return null
 }
 
+// D-123: wake the Render backend only on routes that call it, at idle time,
+// so a cold instance (6–11 s) never sits on the first-paint path elsewhere.
+const BACKEND_ROUTES = /^\/(contact|booknow|support|payment-success|my-activity|my-supports|blog\/?$)/
+function BackendWarmup() {
+    const { pathname } = useLocation()
+    const warmedRef = useRef(false)
+
+    useEffect(() => {
+        if (warmedRef.current || !BACKEND_ROUTES.test(pathname)) return undefined
+        warmedRef.current = true
+        const ping = () => { void pingBackend() }
+        if ('requestIdleCallback' in window) {
+            const id = window.requestIdleCallback(ping, { timeout: 2000 })
+            return () => window.cancelIdleCallback(id)
+        }
+        const timer = window.setTimeout(ping, 1000)
+        return () => window.clearTimeout(timer)
+    }, [pathname])
+
+    return null
+}
+
 function AnalyticsRouteTracker() {
     const { pathname, search } = useLocation()
     const lastRouteRef = useRef('')
@@ -230,7 +252,7 @@ function AppRoutes() {
 function App() {
     const [isPaletteOpen, setIsPaletteOpen] = useState(false)
     // The palette (and its search index over every data file) is a lazy chunk:
-    // mounted on first open, prefetched once the browser is idle (D-056).
+    // mounted on first open, prefetched on intent (D-056, D-125).
     const [paletteMounted, setPaletteMounted] = useState(false)
 
     // ⌘/Ctrl+K toggles; the dock and other components open it with an event.
@@ -268,19 +290,29 @@ function App() {
     }, [])
     const closeChat = useCallback(() => setChat((c) => ({ ...c, open: false, question: '' })), [])
 
+    // Prefetch on intent, not at idle (D-125): holding ⌘/Ctrl (the K follows)
+    // or hovering the dock's Search item. The keydown above still opens it on
+    // the first ⌘K even if the chunk has not arrived; Suspense covers the gap.
     useEffect(() => {
-        const prefetch = () => { loadCommandPalette().catch(() => {}) }
-        if ('requestIdleCallback' in window) {
-            const id = window.requestIdleCallback(prefetch, { timeout: 4000 })
-            return () => window.cancelIdleCallback(id)
+        let fetched = false
+        const prefetch = () => {
+            if (fetched) return
+            fetched = true
+            loadCommandPalette().catch(() => { fetched = false })
         }
-        const timer = window.setTimeout(prefetch, 3000)
-        return () => window.clearTimeout(timer)
+        const onKeyDown = (e) => {
+            if (e.key === 'Meta' || e.key === 'Control') prefetch()
+        }
+        window.addEventListener('keydown', onKeyDown, { passive: true })
+        window.addEventListener('prefetch-command-palette', prefetch)
+        return () => {
+            window.removeEventListener('keydown', onKeyDown)
+            window.removeEventListener('prefetch-command-palette', prefetch)
+        }
     }, [])
 
-    // Ping backend & initialize analytics silently in the background
+    // Initialize analytics silently in the background
     useEffect(() => {
-        pingBackend()
         initializeAnalytics()
     }, [])
 
@@ -291,6 +323,7 @@ function App() {
                 <MotionConfig reducedMotion="user">
                 <ScrollManager />
                 <AnalyticsRouteTracker />
+                <BackendWarmup />
                 {paletteMounted ? (
                     <Suspense fallback={null}>
                         <CommandPalette isOpen={isPaletteOpen} onClose={() => setIsPaletteOpen(false)} />

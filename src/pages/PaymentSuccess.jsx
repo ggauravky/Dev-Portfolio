@@ -21,7 +21,7 @@ const formatDate = (value) => {
 
 function PaymentSuccess() {
     const { transactionId = '' } = useParams()
-    const { isAuthenticated, isLoading } = useAuth()
+    const { isAuthenticated, isLoading } = useAuth({ requireSession: true })
     const [transaction, setTransaction] = useState(null)
     const [pageError, setPageError] = useState('')
     const [isFetching, setIsFetching] = useState(true)

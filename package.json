@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "vite",
         "generate:image-variants": "node scripts/generate-image-variants.js",
-        "build": "node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && node scripts/build-chat-index.mjs --check && vite build",
+        "build": "node scripts/generate-image-variants.js && node scripts/generate-sitemap.js && node scripts/build-chat-index.mjs --check && vite build && node scripts/csp-hashes.mjs",
+    "build:csp": "vite build && node scripts/csp-hashes.mjs --write",
         "preview": "vite preview",
         "sitemap": "node scripts/generate-sitemap.js",
         "test:blog": "node --test scripts/blog-data.test.mjs",

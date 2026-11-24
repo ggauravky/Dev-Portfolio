@@ -20,9 +20,9 @@ const parseJsonSafe = async (response) => {
     }
 }
 
-const requestAuthApi = async (endpoint, options = {}) => {
+const requestAuthApi = async (endpoint, { timeoutMs = AUTH_REQUEST_TIMEOUT_MS, ...options } = {}) => {
     const controller = new AbortController()
-    const timeoutId = globalThis.setTimeout(() => controller.abort('timeout'), AUTH_REQUEST_TIMEOUT_MS)
+    const timeoutId = globalThis.setTimeout(() => controller.abort('timeout'), timeoutMs)
     const externalSignal = options.signal
     const abortFromExternalSignal = () => controller.abort(externalSignal.reason)
 

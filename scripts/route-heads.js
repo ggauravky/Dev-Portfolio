@@ -44,6 +44,11 @@ const meta = (attr, key, content) => (content == null || content === ''
     ? ''
     : `    <meta ${attr}="${key}" content="${esc(content)}" />\n`)
 
+// Same origin as the dns-prefetch in index.html; keep the route list in step
+// with BackendWarmup in src/App.jsx.
+const API_ORIGIN = 'https://dev-portfolio-ojfs.onrender.com'
+const BACKEND_ROUTE = /^\/(contact|booknow|support|payment-success|my-activity|my-supports|blog(\/[^/]+)?)\/?$/ // blog posts load support-status
+
 /** The head block for one route, wrapped in markers so the build can swap it. */
 export function renderHead(seo) {
     const url = absoluteUrl(seo.path)
@@ -58,6 +63,12 @@ export function renderHead(seo) {
         + meta('name', 'description', seo.description)
         + meta('name', 'robots', robotsContent(seo.noindex))
         + `    <link rel="canonical" href="${esc(url)}" />\n`
+        // Only routes that call the Render API on load get a preconnect (D-126);
+        // elsewhere it would be an unused connection. Two pools: credentialed
+        // (/api/auth/me) and anonymous CORS (/health, forms).
+        + (BACKEND_ROUTE.test(seo.path)
+            ? `    <link rel="preconnect" href="${API_ORIGIN}" />\n    <link rel="preconnect" href="${API_ORIGIN}" crossorigin />\n`
+            : '')
         + (MARKDOWN_ALTERNATE_PATHS.includes(seo.path)
             ? `    <link rel="alternate" type="text/markdown" href="${MARKDOWN_ALTERNATE_HREF}" title="Gaurav Kumar Yadav, full knowledge base" />\n`
             : '')

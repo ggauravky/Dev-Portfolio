@@ -15,6 +15,48 @@ import PropTypes from 'prop-types'
 // Line 4 and beyond share line 3's delay: 280 ms + 3 × 80 ms = 520 ms total.
 const MAX_LINE = 3
 
+// Every LineMask on a page is measured in one frame: all offsetTop reads first,
+// then all --line writes, so the page pays one layout instead of one forced
+// reflow per word (PSI "Forced reflow", D-126).
+const pending = new Set()
+const mounted = new Set()
+let frame = 0
+let fontsHooked = false
+function flush() {
+    frame = 0
+    const els = [...pending]
+    pending.clear()
+    const plans = els.map((el) => {
+        const words = [...el.querySelectorAll('.line-mask__word')]
+        let line = -1
+        let lastTop = null
+        const lines = words.map((word) => {
+            const top = word.offsetTop
+            if (lastTop === null || top > lastTop + 2) {
+                line += 1
+                lastTop = top
+            }
+            return String(Math.min(line, MAX_LINE))
+        })
+        return { words, lines }
+    })
+    // document.fonts.ready forces a style update in Chromium, so it is read once
+    // here (layout is already clean) rather than once per heading in the commit.
+    if (!fontsHooked && document.fonts) {
+        fontsHooked = true
+        document.fonts.ready.then(() => mounted.forEach(scheduleMeasure))
+    }
+    for (const { words, lines } of plans) {
+        words.forEach((word, i) => {
+            if (word.style.getPropertyValue('--line') !== lines[i]) word.style.setProperty('--line', lines[i])
+        })
+    }
+}
+function scheduleMeasure(el) {
+    pending.add(el)
+    if (!frame) frame = requestAnimationFrame(flush)
+}
+
 function LineMask({ text }) {
     const ref = useRef(null)
     const str = typeof text === 'string' || typeof text === 'number' ? String(text) : null
@@ -22,25 +64,16 @@ function LineMask({ text }) {
     useLayoutEffect(() => {
         const el = ref.current
         if (!el || str === null) return undefined
-        const measure = () => {
-            let line = -1
-            let lastTop = null
-            el.querySelectorAll('.line-mask__word').forEach((word) => {
-                const top = word.offsetTop
-                if (lastTop === null || top > lastTop + 2) {
-                    line += 1
-                    lastTop = top
-                }
-                word.style.setProperty('--line', String(Math.min(line, MAX_LINE)))
-            })
-        }
+        // Line delays only matter once the heading reveals (below the fold), so
+        // measuring in the next frame never shows a word on the wrong delay.
+        const measure = () => scheduleMeasure(el)
+        mounted.add(el)
         measure()
-        let alive = true
-        document.fonts?.ready.then(() => { if (alive) measure() })
         const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
         ro?.observe(el)
         return () => {
-            alive = false
+            mounted.delete(el)
+            pending.delete(el)
             ro?.disconnect()
         }
     }, [str])

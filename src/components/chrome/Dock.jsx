@@ -21,8 +21,21 @@ import ChatTrigger from '../chat/ChatTrigger'
 import { CHAT_ENABLED, openChat, prefetchChat } from '../chat/chatEvents'
 import './Dock.css'
 
-// If the chunk fails, the dock still works: it just doesn't morph.
-const loadFeatures = () => import('../../lib/framerFeatures')
+// The dock only uses layout/layoutId, which needs domMax (framer exports no
+// layout-only bundle). It is ~78 KB, so it waits for the visitor's first
+// interaction instead of loading at first paint (D-125). Until then the dock is
+// plain CSS and fully usable; it just doesn't morph. If the chunk fails, same.
+const FIRST_INTENT_EVENTS = ['pointerover', 'pointerdown', 'keydown', 'touchstart', 'scroll', 'focusin']
+const firstIntent = () => new Promise((resolve) => {
+    if (typeof window === 'undefined') return
+    const done = () => {
+        FIRST_INTENT_EVENTS.forEach((type) => window.removeEventListener(type, done, true))
+        resolve()
+    }
+    FIRST_INTENT_EVENTS.forEach((type) => window.addEventListener(type, done, { capture: true, passive: true }))
+})
+const loadFeatures = () => firstIntent()
+    .then(() => import('../../lib/framerFeatures'))
     .then((mod) => mod.default)
     .catch(() => ({}))
 
@@ -364,7 +377,10 @@ function Dock() {
                                             closeToTrigger()
                                             openPalette()
                                         }}
-                                        onHover={() => setHovered('search')}
+                                        onHover={() => {
+                                            setHovered('search')
+                                            window.dispatchEvent(new CustomEvent('prefetch-command-palette'))
+                                        }}
                                     >
                                         Search <kbd className="dock-kbd">{SHORTCUT_LABEL}</kbd>
                                     </DockItem>
