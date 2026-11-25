@@ -206,7 +206,15 @@ function Dock() {
             const inset = 25 // .dock-skin__m left/right: the caps' width less the 1px tuck
             const boxes = new Map()
             lists.querySelectorAll('[data-dock-key]').forEach((el) => {
-                boxes.set(el.dataset.dockKey, { x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth })
+                // Sum offsets up to the lists box: the staggered <li> wrappers carry a
+                // transform, which makes them the item's offsetParent while it is set.
+                let x = 0
+                let y = 0
+                for (let node = el; node && node !== lists; node = node.offsetParent) {
+                    x += node.offsetLeft
+                    y += node.offsetTop
+                }
+                boxes.set(el.dataset.dockKey, { x, y, w: el.offsetWidth })
             })
             // ...then writes. The highlight's base width is the median item width,
             // so its scaleX stays near 1 (exactly 1 in the equal-width mobile grid).
@@ -373,6 +381,7 @@ function Dock() {
                                 ref={closeRef}
                                 type="button"
                                 className="dock-trigger dock-close"
+                                style={{ '--i': 0 }}
                                 aria-label="Close menu"
                                 onClick={closeToTrigger}
                             >
@@ -389,7 +398,7 @@ function Dock() {
                                 <span className="dock-hl" aria-hidden="true" />
                                 <ul className="dock-menu__pages">
                                     {DOCK_PAGES.map((item, i) => (
-                                        <li key={item.path}>
+                                        <li key={item.path} style={{ '--i': i + 1 }}>
                                             <DockItem
                                                 id={item.path}
                                                 to={item.path}
@@ -404,7 +413,7 @@ function Dock() {
                                 </ul>
                                 <ul className="dock-menu__tools">
                                     {CHAT_ENABLED ? (
-                                        <li>
+                                        <li style={{ '--i': DOCK_PAGES.length + 1 }}>
                                             <DockItem
                                                 id="ask"
                                                 label="Ask the site assistant about Gaurav"
@@ -414,7 +423,7 @@ function Dock() {
                                             </DockItem>
                                         </li>
                                     ) : null}
-                                    <li>
+                                    <li style={{ '--i': DOCK_PAGES.length + (CHAT_ENABLED ? 2 : 1) }}>
                                         <DockItem
                                             id="search"
                                             label={`Search the site (${SHORTCUT_LABEL})`}
@@ -424,7 +433,7 @@ function Dock() {
                                             Search <kbd className="dock-kbd">{SHORTCUT_LABEL}</kbd>
                                         </DockItem>
                                     </li>
-                                    <li>
+                                    <li style={{ '--i': DOCK_PAGES.length + (CHAT_ENABLED ? 3 : 2) }}>
                                         <DockItem
                                             id="resume"
                                             href={siteStatus.resumeUrl}

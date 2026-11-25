@@ -21,7 +21,7 @@ export const EASE_CSS = 'cubic-bezier(.22,1,.36,1)'
 /**
  * Spring presets. framer-motion objects plus the same numbers for the tiny
  * rAF spring below (stiffness / damping / mass).
- * - snappy: active indicators (the dock uses DOCK_BOUNCE in CSS instead)
+ * - snappy: active indicators (the dock uses DOCK_MOTION in CSS instead)
  * - soft: hover previews, followers
  * - magnetic: buttons / cursor pull, settles fast with a little give
  */
@@ -31,23 +31,30 @@ export const SPRING = {
     magnetic: { type: 'spring', stiffness: 340, damping: 22, mass: 0.6 },
 }
 
+/** Mirrors a cubic-bezier through the centre point: an ease-out becomes its ease-in. */
+const mirrorBezier = ([x1, y1, x2, y2]) => [1 - x2, 1 - y2, 1 - x1, 1 - y1]
+const bezierCss = (b) => `cubic-bezier(${b.join(',')})`
+const DOCK_EASE_OUT = [0.16, 1, 0.3, 1]
+
 /**
- * DOCK ONLY: the one deliberate overshoot in the system (D-132, DESIGN.md "Motion
- * tokens"). The S1 dock's morph and hover highlight ease their transform with it,
- * never their opacity, which keeps EASE_CSS. Nothing else may use it.
- * Generated with Jake Archibald's linear() easing generator
- * (linear-easing-generator.netlify.app), "Spring" preset: mass 1, stiffness 400,
- * damping 28, velocity 0 (damping ratio 0.7, peak 1.046 at 33%, settled by 57%);
- * simplify 0.0017, round 3. The tool rounds its settle time to 667 ms; the dock
- * plays the curve in 320 ms (peak ~105 ms in), tuned by eye. Browsers without
- * `linear()` get a slight-overshoot cubic-bezier.
- * CSS mirrors this as --ease-dock / --dur-dock, scoped to `.dock-cluster` in
- * src/components/chrome/Dock.css so no other selector can reach it.
+ * DOCK ONLY: the system's one dock-specific motion token (D-132, DESIGN.md
+ * "Motion tokens"). Nothing else may use it.
+ * One curve, defined once: an expo-like ease-out for opening (fast start, long
+ * gentle settle) and its exact mirror, an ease-in, for closing (accelerates away).
+ * Opening is slower than the global tokens on purpose so it reads as one
+ * continuous motion; the menu items follow 24 ms apart. The sliding hover
+ * indicator uses the same ease-out (no overshoot) at 320 ms.
+ * CSS mirrors this as --ease-dock-out/-in, --dur-dock-open/-close/-item/-slide
+ * and --dock-stagger, scoped to `.dock-cluster` in src/components/chrome/Dock.css.
  */
-export const DOCK_BOUNCE = {
-    duration: 320,
-    linear: 'linear(0, 0.007, 0.027 1.8%, 0.11 4%, 0.599 12.5%, 0.71, 0.801, 0.878, 0.938 21.2%, 0.984, 1.017 26.1%, 1.03, 1.039, 1.045 31.2%, 1.046 33.3%, 1.041 37.2%, 1.011 49%, 1 57%, 0.998 65.8%, 1)',
-    fallback: 'cubic-bezier(.3,1.25,.6,1)',
+export const DOCK_MOTION = {
+    easeOut: bezierCss(DOCK_EASE_OUT), // cubic-bezier(0.16,1,0.3,1)
+    easeIn: bezierCss(mirrorBezier(DOCK_EASE_OUT)), // cubic-bezier(0.7,0,0.84,0)
+    open: 560,
+    close: 440,
+    item: 360,
+    slide: 320,
+    stagger: 24,
 }
 
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)'

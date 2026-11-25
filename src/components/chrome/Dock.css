@@ -13,10 +13,17 @@
 
 /* The dock (with its Ask segment), centred at the bottom. */
 .dock-cluster {
-  /* DOCK ONLY — the system's one overshoot (D-132; mirrors DOCK_BOUNCE in
-     src/lib/motion.js). Transforms only; opacity keeps --ease-out. */
-  --dur-dock: 320ms;
-  --ease-dock: cubic-bezier(.3, 1.25, .6, 1);
+  /* DOCK ONLY: the system's one dock-specific motion token (D-132; mirrors
+     DOCK_MOTION in src/lib/motion.js). One curve: an expo-like ease-out for
+     opening (fast start, long settle) and its exact mirror, an ease-in, for
+     closing (accelerates away). Declared here so no other selector can reach it. */
+  --ease-dock-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-dock-in: cubic-bezier(.7, 0, .84, 0);
+  --dur-dock-open: 560ms;
+  --dur-dock-close: 440ms;
+  --dur-dock-item: 360ms;
+  --dur-dock-slide: 320ms;
+  --dock-stagger: 24ms;
   --dock-d: 0;
   --dock-sm: 1;
 
@@ -29,13 +36,6 @@
   gap: 8px;
   transform: translateX(-50%);
 }
-@supports (transition-timing-function: linear(0, 1)) {
-  .dock-cluster {
-    /* Jake Archibald's linear() generator, spring: mass 1, stiffness 400, damping 28. */
-    --ease-dock: linear(0, 0.007, 0.027 1.8%, 0.11 4%, 0.599 12.5%, 0.71, 0.801, 0.878, 0.938 21.2%, 0.984, 1.017 26.1%, 1.03, 1.039, 1.045 31.2%, 1.046 33.3%, 1.041 37.2%, 1.011 49%, 1 57%, 0.998 65.8%, 1);
-  }
-}
-
 .dock {
   position: relative;
   transition: opacity var(--dur-fast) var(--ease-out);
@@ -51,13 +51,16 @@
   border-radius: 26px; /* design-allow: dock pill */
   background: rgb(var(--ink-raised));
   color: rgb(var(--paper));
-  /* Closing: comes back once the skin has nearly shrunk onto it. */
-  transition: opacity var(--dur-fast) var(--ease-out) var(--dur-fast);
+  /* Above the menu, so its label dissolves over the growing skin instead of
+     being cut off by it. Closing: it fades back in over the skin's last stretch. */
+  position: relative;
+  z-index: 1;
+  transition: opacity 240ms var(--ease-dock-out) calc(var(--dur-dock-close) - 240ms);
 }
 .dock.is-open .dock-pill {
   opacity: 0;
   pointer-events: none;
-  transition-delay: 0s;
+  transition: opacity 240ms var(--ease-dock-out);
 }
 
 /* === Ask: a segment inside the idle pill, after a hairline (D-115) === */
@@ -146,7 +149,7 @@
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
-  transition: opacity 0s linear var(--dur-dock);
+  transition: opacity 0s linear var(--dur-dock-close);
 }
 .dock.is-open .dock-menu {
   opacity: 1;
@@ -169,7 +172,14 @@
   border: 1px solid rgb(var(--rule));
   background: rgb(var(--ink-raised));
   will-change: transform;
-  transition: transform var(--dur-dock) var(--ease-dock);
+  /* Closing (the state the transition lands in): ease-in, accelerating away. */
+  transition: transform var(--dur-dock-close) var(--ease-dock-in);
+}
+.dock.is-open .dock-skin__l,
+.dock.is-open .dock-skin__m,
+.dock.is-open .dock-skin__r {
+  /* Opening: ease-out, a fast start and a long settle. */
+  transition: transform var(--dur-dock-open) var(--ease-dock-out);
 }
 .dock-skin__l {
   left: 0;
@@ -202,12 +212,28 @@
   padding: 5px; /* 4px + the skin's 1px hairline: the same box as the pill */
   color: rgb(var(--paper));
   opacity: 0;
-  transition: opacity 120ms var(--ease-out);
+  /* Closing: the content goes first, together, then the skin collapses. */
+  transition: opacity 200ms var(--ease-dock-in);
 }
 .dock.is-open .dock-menu__body {
   opacity: 1;
-  transition-duration: var(--dur-fast);
-  transition-delay: 80ms;
+  transition: opacity var(--dur-dock-item) var(--ease-dock-out) 60ms;
+}
+
+/* Opening stagger: Close, then each item, --dock-stagger apart (--i is set in
+   Dock.jsx). A short rise plus a fade; closing drops them all together. */
+.dock-menu__body > .dock-close,
+.dock-menu__lists li {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms var(--ease-dock-in), transform 200ms var(--ease-dock-in);
+}
+.dock.is-open .dock-menu__body > .dock-close,
+.dock.is-open .dock-menu__lists li {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-dock-item) var(--ease-dock-out), transform var(--dur-dock-item) var(--ease-dock-out);
+  transition-delay: calc(60ms + var(--i, 0) * var(--dock-stagger));
 }
 
 .dock-menu__lists { position: relative; display: flex; align-items: center; gap: 4px; }
@@ -271,9 +297,13 @@
   transform-origin: 0 0;
   transform: translate(calc(var(--hx, 0) * 1px), calc(var(--hy, 0) * 1px)) scaleX(calc(var(--hw, 72) / var(--hb, 72)));
   will-change: transform;
-  transition: transform var(--dur-dock) var(--ease-dock), opacity var(--dur-fast) var(--ease-out);
+  /* Slides on the dock's ease-out (no overshoot), fades with the menu content. */
+  transition: transform var(--dur-dock-slide) var(--ease-dock-out), opacity 200ms var(--ease-dock-in);
 }
-.dock-menu__lists.has-hl .dock-hl { opacity: 1; }
+.dock.is-open .dock-menu__lists.has-hl .dock-hl {
+  opacity: 1;
+  transition: transform var(--dur-dock-slide) var(--ease-dock-out), opacity var(--dur-dock-item) var(--ease-dock-out) 60ms;
+}
 
 .dock-kbd {
   padding: 2px 4px;
@@ -292,12 +322,18 @@
     transform: translateY(8px) scale(.92);
     transform-origin: 50% 100%;
     will-change: transform, opacity;
-    transition: transform var(--dur-dock) var(--ease-dock), opacity var(--dur-fast) var(--ease-out);
+    /* Closing: sinks back into the pill, accelerating, and fades late. */
+    transition: transform var(--dur-dock-close) var(--ease-dock-in), opacity var(--dur-dock-close) var(--ease-dock-in);
   }
-  .dock.is-open .dock-menu__frame { opacity: 1; transform: none; }
+  .dock.is-open .dock-menu__frame {
+    opacity: 1;
+    transform: none;
+    transition: transform var(--dur-dock-open) var(--ease-dock-out), opacity var(--dur-dock-item) var(--ease-dock-out);
+  }
   .dock-skin__l,
   .dock-skin__r { display: none; }
   .dock:not(.is-open) .dock-skin__m,
+  .dock.is-open .dock-skin__m,
   .dock-skin__m {
     left: 0;
     right: 0;
