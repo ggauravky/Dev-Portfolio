@@ -186,7 +186,13 @@ test('visitor cookie: signed with its issue time, tamper-proof, server-expired, 
     const res = fakeRes()
     const migrated = visitorFor({ headers: { cookie: `${VISITOR_COOKIE}=${signVisitorV1('c'.repeat(32), SALT)}` } }, res, { salt: SALT, production: true, now: t })
     assert.deepEqual([migrated.id, migrated.isNew, migrated.young], ['c'.repeat(32), false, false])
-    assert.match(res.headers['set-cookie'], /^chat_vid=v2\.c{32}\.\d+\.[\w-]+; Path=\/api\/chat; Max-Age=\d+; HttpOnly; SameSite=Strict; Secure$/)
+    // The cookie is returned, not set: it is sent only once the request is admitted (D-136).
+    assert.equal(res.headers['set-cookie'], undefined)
+    assert.match(migrated.cookie, /^chat_vid=v2\.c{32}\.\d+\.[\w-]+; Path=\/api\/chat; Max-Age=\d+; HttpOnly; SameSite=Strict; Secure$/)
+    // Past the v1 window a kept v1 cookie is a new visitor: it can't be replayed forever.
+    const late = visitorFor({ headers: { cookie: `${VISITOR_COOKIE}=${signVisitorV1('c'.repeat(32), SALT)}` } }, fakeRes(), { salt: SALT, production: true, now: Date.UTC(2027, 0, 5) })
+    assert.equal(late.isNew, true)
+    assert.notEqual(late.id, 'c'.repeat(32))
     // A forged cookie is replaced by a fresh server-made id.
     const forged = visitorFor({ headers: { cookie: `${VISITOR_COOKIE}=v2.${'d'.repeat(32)}.${issued}.forged` } }, fakeRes(), { salt: SALT, production: true, now: t })
     assert.equal(forged.isNew, true)

@@ -24,7 +24,7 @@ function Privacy() {
     return (
         <LegalPage
             title="Privacy policy"
-            updated="February 23, 2026"
+            updated="November 27, 2026"
             lede="What this site collects, why, who else handles it, and how to have it removed."
         >
             <LegalSection title="Introduction">
@@ -69,6 +69,19 @@ function Privacy() {
                 <p className="lg-note">Please avoid uploading sensitive personal, confidential, or regulated information to AI tools.</p>
             </LegalSection>
 
+            <LegalSection title="Site assistant (Ask)">
+                <p>The Ask assistant answers questions about my work from this site&apos;s own content. Here is what it handles and keeps.</p>
+                <ul>
+                    <li><strong>Anonymous visitor cookie:</strong> The first time you open or use the assistant, your browser gets a cookie named <code>chat_vid</code>. It holds a random ID, signed so it can&apos;t be forged, is not readable by page scripts (HttpOnly), and lasts 30 days. It is used to apply fair-use limits across all your chats and to keep each conversation&apos;s history available only to the browser that started it. It isn&apos;t linked to your name and isn&apos;t used for advertising.</li>
+                    <li><strong>Network identifier:</strong> To limit abuse and keep the service fair on shared networks, your IP address (for IPv6, its network prefix) is turned into a keyed hash. The assistant doesn&apos;t store the raw IP address. A keyed hash can still identify a network to someone who holds the key, so treat it as pseudonymous, not anonymous.</li>
+                    <li><strong>What is stored:</strong> Your questions (email addresses and phone numbers are replaced with placeholders, on a best-effort basis) and the assistant&apos;s answers, with technical details such as the sources used, response time, which AI provider answered and whether the answer was cached. Conversations are stored in MongoDB Atlas and deleted automatically after 180 days. Usage counters expire within about a day; cached general answers within 24 hours.</li>
+                    <li><strong>Conversation memory:</strong> Within one conversation, the assistant reads its earlier messages to understand follow-ups, recall what you asked and summarise the conversation. &quot;New chat&quot; starts a new conversation for the assistant; it does not delete the earlier one from the server. Clearing this site&apos;s data in your browser removes the visible chat and the cookie from your browser only.</li>
+                    <li><strong>AI providers:</strong> To write answers, your question, relevant excerpts of this site&apos;s content and, for follow-ups, earlier messages of the same conversation are sent to Groq and to Google&apos;s Gemini API (Google also creates search embeddings of questions).</li>
+                    <li><strong>Who can see it:</strong> I can review stored conversations and usage statistics in a private admin panel, to operate the assistant, keep it secure and improve its answers.</li>
+                </ul>
+                <p className="lg-note">Please don&apos;t share sensitive personal information in the chat. To ask for a conversation to be deleted, email me with the approximate date and wording, since conversations aren&apos;t linked to names.</p>
+            </LegalSection>
+
             <LegalSection title="Data security">
                 <p>I implement appropriate security measures to protect your personal information:</p>
                 <ul>
@@ -95,6 +108,8 @@ function Privacy() {
                     <li><strong>Google Analytics:</strong> Website analytics (read their <Ext href="https://policies.google.com/privacy" />)</li>
                     <li><strong>MongoDB Atlas:</strong> Database storage (read their <Ext href="https://www.mongodb.com/legal/privacy-policy" />)</li>
                     <li><strong>Cloudinary:</strong> Secure image storage and delivery for AI image uploads (read their <Ext href="https://cloudinary.com/privacy" />)</li>
+                    <li><strong>Groq:</strong> Generates answers for the site assistant (read their <Ext href="https://groq.com/privacy-policy/" />)</li>
+                    <li><strong>Google Gemini API:</strong> Generates answers and search embeddings for the site assistant (read their <Ext href="https://policies.google.com/privacy" />)</li>
                 </ul>
             </LegalSection>
 

@@ -44,8 +44,8 @@
       "all_contributions_not_claimed_as_fully_enumerated": true,
       "source_urls_and_limitations_present": true
     },
-    "updated_on": "2026-11-26",
-    "update_notes": "Admin Panel record refreshed from its public repository (2026-11-26); aliases added."
+    "updated_on": "2026-11-27",
+    "update_notes": "Admin Panel record refreshed from its public repository (2026-11-26); aliases added. Public resume added as an owner-reported record; internship employer corrected to Codec Technologies (2026-11-27)."
   },
   "identity": {
     "full_name": "Gaurav Kumar Yadav",
@@ -205,18 +205,19 @@
       ]
     },
     {
-      "organization": "CodSoft",
-      "role": "Web Development Intern",
+      "organization": "Codec Technologies",
+      "role": "MERN Stack Developer Intern",
       "start": "2025-07",
       "end": "2025-08",
-      "status": "past",
+      "status": "past_verified_public_website",
       "areas": [
         "Web-development practice",
         "Frontend implementation"
       ],
       "evidence": [
         "prior user-provided professional history"
-      ]
+      ],
+      "public_safe_summary": "MERN stack internship: React, Node.js, Express and MongoDB feature modules and REST APIs. The site lists it as July 20 to August 19, 2025; his resume lists Jul to Sep 2025."
     },
     {
       "organization": "Borgen Project",
@@ -269,9 +270,9 @@
     ],
     "achievement_claims": [
       {
-        "claim": "Runner-up in two hackathons",
+        "claim": "Runner-up finish in hackathons (the resume says 1 runner-up finish in 4 hackathons; an earlier report said two)",
         "status": "user_reported",
-        "note": "Do not name specific competitions as runner-up without corroboration."
+        "note": "Owner-reported; sources disagree on the number. Do not name specific competitions as runner-up without corroboration."
       },
       {
         "claim": "More than 400 days of coding consistency/streak",
@@ -4206,7 +4207,7 @@
         "Gaurav internship",
         "Work experience"
       ],
-      "answer": "He has described experience as a Full Stack Developer Intern at AshokSoft Technologies and earlier web-development internship experience, including CodSoft. His public portfolio and GitHub provide evidence of the engineering areas he works in; a recruiter should confirm current appointment details directly.",
+      "answer": "He has described experience as a Full Stack Developer Intern at AshokSoft Technologies and an earlier MERN stack internship at Codec Technologies. His public portfolio and GitHub provide evidence of the engineering areas he works in; a recruiter should confirm current appointment details directly.",
       "category": "experience",
       "priority": "high",
       "confidence": "grounded",
@@ -7994,7 +7995,7 @@
         "Gaurav internship",
         "Work experience"
       ],
-      "text": "Question: Where has Gaurav worked? Alternate questions: Gaurav internship Work experience Answer: He has described experience as a Full Stack Developer Intern at AshokSoft Technologies and earlier web-development internship experience, including CodSoft. His public portfolio and GitHub provide evidence of the engineering areas he works in; a recruiter should confirm current appointment details directly.",
+      "text": "Question: Where has Gaurav worked? Alternate questions: Gaurav internship Work experience Answer: He has described experience as a Full Stack Developer Intern at AshokSoft Technologies and an earlier MERN stack internship at Codec Technologies. His public portfolio and GitHub provide evidence of the engineering areas he works in; a recruiter should confirm current appointment details directly.",
       "status": "grounded",
       "source_urls": [
         "https://github.com/ggauravky/Dev-Portfolio"
@@ -9293,5 +9294,46 @@
       ],
       "limitations": "Embedded contribution visualizations can use cached snapshots."
     }
-  ]
+  ],
+  "resume": {
+    "source": "https://ggauravky.vercel.app/resume.pdf",
+    "read_on": "2026-11-27",
+    "status": "owner_reported_public_resume",
+    "headline": "Full-Stack Web Developer",
+    "summary": "Full-stack developer specialising in MERN and Next.js applications with React, TypeScript/JavaScript, Node.js, Express.js, MongoDB and PostgreSQL; internship experience building end-to-end web features and REST APIs.",
+    "experience": [
+      "Full Stack Intern, Ashoksoft Technologies, remote, Aug 2026 to present (a 4-month remote internship): full-stack features, API integrations, testing and debugging.",
+      "MERN Stack Developer Intern, Codec Technologies India, hybrid, Jul 2025 to Sep 2025: reports shipping React/Node/Express/MongoDB feature modules that reduced manual data entry by 30%, and building and testing 10+ REST APIs."
+    ],
+    "skills": {
+      "languages": "Python, TypeScript, JavaScript (ES6+), Java, C, SQL",
+      "web": "React.js, Next.js, Node.js, Express.js, Flask, Prisma, Tailwind CSS, HTML5, CSS3, Chakra UI",
+      "databases": "MongoDB, PostgreSQL, MySQL, Redis, Firebase, Supabase",
+      "data_ml": "Pandas, NumPy, scikit-learn, Matplotlib, Seaborn, data cleaning, feature engineering",
+      "tools": "Git, GitHub, Docker, AWS, Google Cloud, Postman, Jupyter, Google Colab",
+      "concepts": "Data structures and algorithms, OOP, REST APIs, JWT auth, WebSockets, CI/CD"
+    },
+    "projects_listed": [
+      "Spotify Clone (Jun to Aug 2026)",
+      "InstaX (Jan 2026)",
+      "Real-Time Chat Application (Nov to Dec 2025)"
+    ],
+    "education": [
+      "Babu Banarasi Das University, Lucknow: Bachelor of Computer Applications (BCA), Sep 2024 to Sep 2027, CGPA 8.6/10.",
+      "IIT Mandi: Minor degree in AI and Data Science, Sep 2024 to Sep 2027, CGPA 9.0/10."
+    ],
+    "achievements": [
+      "Samarth 2.0 industrial trainee: technical exposure across 5+ institutions (including CSIR-CDRI, AKTU Labs and CCS Airport), with a certificate of completion and a letter of recommendation.",
+      "Participated in 4 hackathons (3 offline, 1 online), with 1 runner-up finish.",
+      "Contributed to 5+ open-source or collaborative projects through GitHub pull requests.",
+      "Solved 250+ LeetCode problems; a 350+ day coding streak; 3K+ GitHub contributions."
+    ],
+    "differences_from_site": [
+      "BCA end date: the site Journey says March 2027; the resume says Sep 2027.",
+      "Codec Technologies internship end: the site says August 19, 2025; the resume says Sep 2025.",
+      "Hackathon results: an earlier owner report said runner-up in two hackathons; the resume says 1 runner-up finish in 4 hackathons.",
+      "Coding streak: the knowledge base records 400+ days (2026-11); the resume, which is older, says 350+ days."
+    ],
+    "accuracy_note": "These are Gaurav's own statements on his public resume. Counts such as LeetCode problems, streaks, contributions, CGPA and the 30% figure are owner-reported and not independently verified; say so when using them."
+  }
 }

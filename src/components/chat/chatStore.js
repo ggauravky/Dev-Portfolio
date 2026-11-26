@@ -105,6 +105,23 @@ export function writeQuota(value) {
     try { sharedStorage()?.setItem(QUOTA_KEY, JSON.stringify(value || {})) } catch { /* ignore */ }
 }
 
+/**
+ * A quota from the server, on this browser's clock (D-136): its times are
+ * shifted by the difference between the server's clock (`serverNow`) and this
+ * one, `until` is set when nothing is left (from `retryAt`, the time every
+ * spent limit allows another message), and `seen` orders updates.
+ */
+export function fromServer(quota, localNow = Date.now()) {
+    if (!quota || typeof quota.left !== 'number') return null
+    const serverNow = Date.parse(quota.serverNow || '') || localNow
+    const shift = (iso) => (iso ? new Date(Date.parse(iso) + (localNow - serverNow)).toISOString() : iso)
+    const out = { ...quota, resetAt: shift(quota.resetAt), retryAt: shift(quota.retryAt), dayResetAt: shift(quota.dayResetAt), seen: serverNow }
+    return out.left > 0 ? { ...out, until: null } : { ...out, until: out.retryAt || out.resetAt }
+}
+
+/** Keep the newer of two quotas (by server time): a late, older reply never overwrites a newer one. */
+export const newerQuota = (current, next) => (!next ? current : !current?.seen || (next.seen || 0) >= current.seen ? next : current)
+
 /** Call `fn` when another tab records a new quota. Returns an unsubscribe function. */
 export function onQuotaChange(fn) {
     if (typeof window === 'undefined') return () => {}

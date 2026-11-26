@@ -18,7 +18,7 @@ import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { prefersReducedMotion } from '../../lib/motion'
 import { HOME_STARTERS } from './starters'
 import { fetchQuota, streamChat } from './chatStream'
-import { clearThread, getSessionId, interrupted, onQuotaChange, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
+import { clearThread, fromServer, getSessionId, interrupted, newerQuota, onQuotaChange, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
 import { answerPlainText, parseAnswer, parseInline, safeHref } from './answerFormat'
 // cssCodeSplit is off (D-046), so a plain import would put this CSS in the one
 // render-blocking stylesheet on every page. It ships with this lazy chunk instead.
@@ -572,17 +572,25 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     // The server is the authority (D-134): opening the chat asks it what is
     // left (spending nothing), and other tabs' updates are mirrored here.
     useEffect(() => { writeQuota(quota) }, [quota])
-    useEffect(() => onQuotaChange((value) => { setQuota(value); setNow(Date.now()) }), [])
+    // Updates are ordered by server time, so a late reply (another tab, a slow
+    // status call) never replaces a newer state (D-136).
+    const applyServerQuota = useCallback((server) => {
+        const next = fromServer(server)
+        if (!next) return
+        setQuota((current) => newerQuota(current, next))
+        setNow(Date.now())
+    }, [])
+    useEffect(() => onQuotaChange((value) => { setQuota((current) => newerQuota(current, value)); setNow(Date.now()) }), [])
+    // Opening the chat asks the server what is left (and, for a browser
+    // without a cookie yet, gets its one identity): the first question waits
+    // for this, so tabs opened together don't each start with a different id.
+    const statusRef = useRef(null)
     useEffect(() => {
         if (!open) return undefined
         const controller = new AbortController()
-        fetchQuota({ sessionId: getSessionId(), signal: controller.signal }).then((server) => {
-            if (!server || typeof server.left !== 'number') return
-            setQuota(server.left > 0 ? server : { ...server, until: server.resetAt })
-            setNow(Date.now())
-        })
+        statusRef.current = fetchQuota({ sessionId: getSessionId(), signal: controller.signal }).then(applyServerQuota)
         return () => controller.abort()
-    }, [open])
+    }, [open, applyServerQuota])
     useEffect(() => {
         if (!lockedUntil || lockedUntil <= Date.now()) return undefined
         const timer = window.setInterval(() => {
@@ -625,6 +633,8 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
         abortRef.current = controller
         let answer = ''
         try {
+            // The opening status call (identity and allowance) first, briefly.
+            if (statusRef.current) await Promise.race([statusRef.current, new Promise((r) => { setTimeout(r, 2500) })])
             await streamChat({
                 sessionId: getSessionId(),
                 question: q,
@@ -636,11 +646,8 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                 onDone: ({ sources, followUps, quota: left, citations, unverified, cut, interrupted: why }) => {
                     update(id, { status: 'done', sources, followUps, citations, unverified, cut, interrupted: why })
                     setAnnounce(why ? `${answer} (The answer was cut short.)` : answer)
-                    if (left && typeof left.left === 'number') {
-                        // The last question of the window: lock now, not after a refused one.
-                        setQuota(left.left > 0 ? left : { ...left, until: left.resetAt })
-                        setNow(Date.now())
-                    }
+                    // The last question of a window locks now, not after a refused one.
+                    if (left && typeof left.left === 'number') applyServerQuota(left)
                 },
                 onBusy: () => {
                     update(id, { status: 'error', error: 'BUSY' })
@@ -665,7 +672,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
             abortRef.current = null
             if (!touchFirst) requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }))
         }
-    }, [thread, touchFirst, quota.until])
+    }, [thread, touchFirst, quota.until, applyServerQuota])
 
     // A question passed in (⌘K, a deep link) is asked once the surface is up.
     // The guard resets on close, so the same question can be passed in again,

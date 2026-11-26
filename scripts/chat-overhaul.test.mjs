@@ -92,7 +92,7 @@ test('bug 2: "How good is Gaurav at LeetCode?" is an evaluation with the evidenc
     const b = browser()
     await b.ask('How good is Gaurav at LeetCode?')
     assert.match(b.last(), /balanced, evidence-based assessment/)
-    assert.match(b.last(), /only profile links are listed; no verified problem counts, ratings or contest results/)
+    assert.match(b.last(), /his resume reports 250\+ LeetCode problems solved \(owner-reported, not independently verified\); no ratings or contest results/)
     assert.match(b.last(), /leetcode\.com\/u\/gauravky/, 'the profile link is supporting evidence')
     for (const q of ['How active is he on GitHub?', 'Is he good at CodeChef?', 'How strong is his LinkedIn?']) assert.equal(contactPlatform(q), null, q)
 })
@@ -173,7 +173,7 @@ test('bug 7: project counts are computed and distinguish listed, recorded and co
     const b = browser()
     const { text } = await b.ask('How many projects has he completed?')
     assert.equal(b.sent.length, 0, 'computed in code, no model')
-    assert.match(text, new RegExp(`Listed on the Projects page:\\*\\* ${data.projects.length}\\b`))
+    assert.match(text, new RegExp(`^\\*\\*${data.projects.length}\\*\\* projects are listed on the Portfolio's Projects page\\.`))
     assert.match(text, new RegExp(`Project records the assistant knows:\\*\\* ${data.kb.projects.length}\\b`))
     assert.match(text, /no verified count of \*completed\* projects/)
     assert.match(text, /repositories aren't the same as projects/)
@@ -210,7 +210,7 @@ test('bug 11: recall and summaries read this conversation\'s own stored turns', 
     const first = await b.ask('What was my first question?')
     assert.equal(first.text, 'Your first question in this conversation was “Tell me about TaskNexus.”')
     const ago = await b.ask('What did you tell me three messages ago?')
-    assert.match(ago.text, /^3 messages ago you asked “What is InstaX built with\?”, and I answered:/)
+    assert.match(ago.text, /^3 questions ago you asked “What is InstaX built with\?”, and I answered:/)
     const calls = b.sent.length
     await b.ask('Summarize everything we chatted about today.')
     assert.equal(b.sent.length, calls + 1, 'one bounded model call for the summary')
@@ -225,7 +225,7 @@ test('bug 12: "MongoDB but not React" is filtered in code: none, with why and wh
     const b = browser()
     const { text } = await b.ask('Which projects use MongoDB but do not use React?')
     assert.equal(b.sent.length, 0)
-    assert.match(text, /^None of the \d+ project records match: projects that use MongoDB and don't use React \(or Next\.js\)\./)
+    assert.match(text, /^None of the \d+ project records match \(projects whose recorded stack includes MongoDB and whose recorded stack doesn't list React \(Next\.js\)\)\./)
     assert.match(text, /TaskNexus/, 'TaskNexus is named as excluded (it uses React)')
     assert.match(text, /can't be checked either way/)
     const records = corpus.records.projects
@@ -238,7 +238,8 @@ test('bug 12: "MongoDB but not React" is filtered in code: none, with why and wh
 test('bug 13: resume gaps and interview questions get grounded evidence, not a refusal', async () => {
     const resume = browser()
     await resume.ask('What evidence is missing from his resume?')
-    assert.match(resume.last(), /not the resume document itself[\s\S]*cannot be checked here/)
+    assert.match(resume.last(), /title="Resume \(owner-reported\)"[\s\S]*Where the resume and the site differ/)
+    assert.match(resume.last(), /its layout and design are not visible here/)
     const interview = browser()
     await interview.ask('What questions should I ask him in an interview?')
     assert.match(interview.last(), /Suggest 6–8 specific technical interview questions/)
@@ -330,12 +331,12 @@ test('structured: technology aliases, AND/OR/NOT, collaborative, latest entries 
     assert.equal(validateQuery({ kind: 'filter', none: ['drop table'] }), false)
 })
 
-test('structured: a model explaining a result can\'t add projects (checked before display)', async () => {
+test('structured: a Hindi filter is described in code, never by a model', async () => {
     const b = browser({ reply: () => 'InstaX और ConnectifyX PostgreSQL का उपयोग करते हैं, और TaskNexus भी।' })
     const { text } = await b.ask('कौन से प्रोजेक्ट्स PostgreSQL use करते हैं?')
-    assert.equal(b.sent.length, 1)
-    assert.doesNotMatch(text, /TaskNexus भी/, 'an invented entry is replaced by the exact result')
-    assert.match(text, /InstaX/)
+    assert.equal(b.sent.length, 0, 'no model call for an exact answer, in any language')
+    assert.doesNotMatch(text, /TaskNexus/)
+    assert.match(text, /प्रोजेक्ट रिकॉर्ड में से \*\*2\*\* मेल खाते हैं[\s\S]*InstaX/)
     assert.deepEqual(namesOutsideResult('InstaX and TaskNexus', ['InstaX'], index.names), ['tasknexus'])
 })
 
