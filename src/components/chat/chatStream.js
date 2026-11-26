@@ -33,7 +33,12 @@ export async function streamChat({ sessionId, question, signal, onDelta, onDone,
         const body = await readJson(res)
         const code = body?.error?.code || `HTTP_${res.status}`
         if (res.status === 429 && code === 'BUSY') return onBusy?.()
-        if (res.status === 429) return onLimit?.(body?.retryAt || new Date(Date.now() + 60 * 1000).toISOString(), body?.scope || 'window')
+        if (res.status === 429) {
+            // Retry-After (seconds) is relative, so this browser's clock can't skew it.
+            const after = Number(res.headers?.get?.('retry-after'))
+            const retryAt = Number.isFinite(after) && after > 0 ? new Date(Date.now() + after * 1000).toISOString() : body?.retryAt || new Date(Date.now() + 60 * 1000).toISOString()
+            return onLimit?.(retryAt, body?.scope || 'window')
+        }
         const error = new Error(code)
         error.code = code
         error.retryAt = body?.retryAt || null
