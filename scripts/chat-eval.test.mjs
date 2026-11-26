@@ -22,7 +22,7 @@ import { COMPLEX_MAX_CHARS, COMPLEX_MAX_CHUNKS, gatherEvidence, planQuestion } f
 const load = (name) => JSON.parse(readFileSync(new URL(`./chat-eval/${name}.json`, import.meta.url), 'utf8'))
 const corpus = buildCorpus(await loadSiteData())
 const faqKeys = corpus.chunks.filter((c) => c.faq).flatMap((c) => [c.faq.question, ...c.faq.alternates].map((text) => ({ chunkId: c.id, text })))
-const index = prepareIndex({ chunks: corpus.chunks, aliases: corpus.aliases, faqKeys, profiles: corpus.profiles })
+const index = prepareIndex({ chunks: corpus.chunks, aliases: corpus.aliases, faqKeys, profiles: corpus.profiles, records: corpus.records })
 const SMALL_TALK = new Set(['greeting', 'farewell', 'thanks', 'ack', 'laughter', 'howareyou', 'identity', 'more', 'negative'])
 
 function report(name, results) {

@@ -17,9 +17,9 @@ import PropTypes from 'prop-types'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { prefersReducedMotion } from '../../lib/motion'
 import { HOME_STARTERS } from './starters'
-import { streamChat } from './chatStream'
-import { clearThread, getSessionId, interrupted, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
-import { answerPlainText, parseAnswer, safeHref } from './answerFormat'
+import { fetchQuota, streamChat } from './chatStream'
+import { clearThread, getSessionId, interrupted, onQuotaChange, readQuota, readThread, resetSession, writeQuota, writeThread } from './chatStore'
+import { answerPlainText, parseAnswer, parseInline, safeHref } from './answerFormat'
 // cssCodeSplit is off (D-046), so a plain import would put this CSS in the one
 // render-blocking stylesheet on every page. It ships with this lazy chunk instead.
 import chatCss from './ChatSurface.css?inline'
@@ -33,7 +33,6 @@ if (typeof document !== 'undefined' && !document.getElementById('chat-surface-cs
 
 const MAX_CHARS = 500
 const COUNTER_FROM = 400
-const HISTORY_TURNS = 2
 
 const newId = () => Math.random().toString(36).slice(2, 10)
 
@@ -50,7 +49,8 @@ const ERRORS = {
     EMPTY_QUESTION: 'Type a question first.',
     NETWORK: "The assistant couldn't be reached. Check your connection and try again.",
     DEFAULT: 'Something went wrong on the assistant’s side. Please try again.',
-    BUSY: 'Still answering your previous question. Try again in a moment.',
+    BUSY: 'Still answering your previous question (maybe in another tab). Try again in a moment.',
+    UNAVAILABLE: 'The assistant is temporarily unavailable. Please try again in a minute.',
 }
 
 /** Map a failed request to an ERRORS key: a known server code, a fetch failure, or the default. */
@@ -100,12 +100,32 @@ function Inline({ parts, onNavigate, citations, settled }) {
     })
 }
 
-/** Paragraphs, lists, bold names and safe links (answerFormat.js); no innerHTML. */
+/** Paragraphs, lists, headings, tables, bold names and safe links (answerFormat.js); no innerHTML. */
 function AnswerText({ text, onNavigate, citations, settled }) {
     const blocks = useMemo(() => parseAnswer(text), [text])
     const inline = (parts) => <Inline parts={parts} onNavigate={onNavigate} citations={citations} settled={settled} />
     return blocks.map((block, i) => {
         if (block.type === 'p') return <p key={i}>{inline(block.inline)}</p>
+        if (block.type === 'heading') {
+            const Heading = block.level >= 4 ? 'h5' : 'h4'
+            return <Heading key={i} className="chat-h">{inline(block.inline)}</Heading>
+        }
+        if (block.type === 'table') {
+            return (
+                <div key={i} className="chat-table-wrap" role="region" aria-label="Table" tabIndex={0}>
+                    <table className="chat-table">
+                        <thead><tr>{block.head.map((cell, j) => <th key={j} scope="col">{inline(parseInline(cell))}</th>)}</tr></thead>
+                        <tbody>
+                            {block.rows.map((row, r) => (
+                                <tr key={r}>{row.map((cell, j) => (j === 0
+                                    ? <th key={j} scope="row">{inline(parseInline(cell))}</th>
+                                    : <td key={j}>{inline(parseInline(cell))}</td>))}</tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )
+        }
         const List = block.type === 'ol' ? 'ol' : 'ul'
         return (
             <List key={i}>
@@ -178,9 +198,10 @@ function TurnBody({ turn, isLast, onRetry, onNavigate, reveal }) {
             ) : null}
             {turn.status === 'streaming' || !reveal.done ? <span className="chat-caret" aria-hidden="true" /> : null}
             {turn.status === 'stopped' ? <p className="chat-note">Stopped.</p> : null}
-            {turn.status === 'done' && turn.cut && isLast ? (
+            {turn.status === 'done' && turn.cut ? (
                 <p className="chat-note">
-                    <button type="button" className="chat-inline-btn" onClick={() => onRetry(turn)}>Try again</button>
+                    {turn.interrupted === 'length' ? 'This answer reached its length limit, so it may be incomplete.' : 'This answer was cut short.'}{' '}
+                    {isLast ? <button type="button" className="chat-inline-btn" onClick={() => onRetry(turn)}>Try again</button> : null}
                 </p>
             ) : null}
         </>
@@ -297,18 +318,32 @@ const countdown = (ms) => {
     return h ? `${h}:${pad(m)}:${pad(total % 60)}` : `${m}:${pad(total % 60)}`
 }
 
+// The allowance belongs to this browser, not to one chat (D-134): New chat doesn't reset it.
+const LOCK_TITLES = {
+    day: 'That’s all for today',
+    window: 'Time for a short pause',
+    minute: 'Time for a short pause',
+    network: 'Busy on your network',
+    service: 'Back shortly',
+}
+const LOCK_TEXTS = {
+    day: 'You’ve used today’s questions. The allowance is shared by all your chats in this browser and resets at midnight UTC.',
+    window: 'You’ve asked a lot of questions in a few minutes, across your chats.',
+    minute: 'That was a quick burst of questions, across your chats.',
+    network: 'Many questions are coming from your network right now.',
+    service: 'The assistant is temporarily unavailable.',
+}
+
 /** Shown at the end of the thread while the composer is locked by a limit. */
 function LimitNotice({ until, now, scope, onNavigate }) {
     const at = timeFormat(new Date(until).toISOString())
     return (
         <section className="chat-lock" aria-labelledby="chat-lock-title">
             <h3 id="chat-lock-title" className="chat-lock__title" tabIndex={-1}>
-                {scope === 'day' ? 'That’s all for today' : 'Time for a short pause'}
+                {LOCK_TITLES[scope] || LOCK_TITLES.window}
             </h3>
             <p className="chat-lock__text">
-                {scope === 'day'
-                    ? 'This chat has reached today’s question limit.'
-                    : 'You’ve asked a lot of questions in a few minutes.'}
+                {LOCK_TEXTS[scope] || LOCK_TEXTS.window}
                 {' '}You can ask again at {at}.
             </p>
             <p className="chat-lock__time" aria-hidden="true">
@@ -334,23 +369,27 @@ LimitNotice.propTypes = {
     onNavigate: PropTypes.func.isRequired,
 }
 
-const QUOTA_FROM = 5 // the meter shows once this many questions or fewer are left
+const QUOTA_FROM = 10 // the meter shows once this many of today's questions or fewer are left
 
-/** "3 questions left" with a hairline meter, once few are left. */
+/**
+ * "8 questions left today, shared across your chats" with a hairline meter,
+ * once few are left. The numbers come from the server (D-134); this only shows them.
+ */
 function QuotaLine({ quota, locked }) {
-    if (locked || typeof quota.left !== 'number' || quota.left > QUOTA_FROM || !quota.limit) return null
-    // The window reset while the chat stayed open: the count is old news.
-    if (quota.resetAt && Date.parse(quota.resetAt) <= Date.now()) return null
-    const share = Math.max(0, Math.min(1, quota.left / quota.limit))
-    const when = quota.resetAt ? timeFormat(quota.resetAt) : ''
+    const left = typeof quota.dayLeft === 'number' ? quota.dayLeft : quota.left
+    const limit = quota.dayLimit || quota.limit
+    const resetAt = quota.dayResetAt || quota.resetAt
+    if (locked || typeof left !== 'number' || left > QUOTA_FROM || !limit) return null
+    // The day reset while the chat stayed open: the count is old news.
+    if (resetAt && Date.parse(resetAt) <= Date.now()) return null
+    const share = Math.max(0, Math.min(1, left / limit))
     return (
         <p className="chat__quota">
             <span className="chat__quota-meter" aria-hidden="true">
                 <span style={{ transform: `scaleX(${share})` }} />
             </span>
             <span>
-                {quota.left === 1 ? '1 question left' : `${quota.left} questions left`}
-                {when ? `${quota.scope === 'day' ? ' today' : ''}, more at ${when}` : ''}
+                {left === 1 ? '1 question left today' : `${left} questions left today`}, shared across your chats
             </span>
         </p>
     )
@@ -530,7 +569,20 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
     }, [locked])
 
     // ── limits: remember what is left; while locked, count down each second ──
+    // The server is the authority (D-134): opening the chat asks it what is
+    // left (spending nothing), and other tabs' updates are mirrored here.
     useEffect(() => { writeQuota(quota) }, [quota])
+    useEffect(() => onQuotaChange((value) => { setQuota(value); setNow(Date.now()) }), [])
+    useEffect(() => {
+        if (!open) return undefined
+        const controller = new AbortController()
+        fetchQuota({ sessionId: getSessionId(), signal: controller.signal }).then((server) => {
+            if (!server || typeof server.left !== 'number') return
+            setQuota(server.left > 0 ? server : { ...server, until: server.resetAt })
+            setNow(Date.now())
+        })
+        return () => controller.abort()
+    }, [open])
     useEffect(() => {
         if (!lockedUntil || lockedUntil <= Date.now()) return undefined
         const timer = window.setInterval(() => {
@@ -565,7 +617,6 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
         stickRef.current = true
 
         const id = newId()
-        const history = thread.filter((t) => t.status === 'done' && t.id !== replaceId).slice(-HISTORY_TURNS).map((t) => t.q)
         const turn = { id, q, a: '', status: 'streaming', sources: [], followUps: [] }
         setThread((turns) => [...turns.filter((t) => t.id !== replaceId), turn])
         setAnnounce('')
@@ -577,15 +628,14 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
             await streamChat({
                 sessionId: getSessionId(),
                 question: q,
-                history,
                 signal: controller.signal,
                 onDelta: (text) => {
                     answer += text
                     update(id, (t) => ({ a: t.a + text }))
                 },
-                onDone: ({ sources, followUps, quota: left, citations, unverified, cut }) => {
-                    update(id, { status: 'done', sources, followUps, citations, unverified, cut })
-                    setAnnounce(answer)
+                onDone: ({ sources, followUps, quota: left, citations, unverified, cut, interrupted: why }) => {
+                    update(id, { status: 'done', sources, followUps, citations, unverified, cut, interrupted: why })
+                    setAnnounce(why ? `${answer} (The answer was cut short.)` : answer)
                     if (left && typeof left.left === 'number') {
                         // The last question of the window: lock now, not after a refused one.
                         setQuota(left.left > 0 ? left : { ...left, until: left.resetAt })
@@ -790,7 +840,7 @@ function ChatSurface({ open, question, onClose, returnFocusTo }) {
                             </ul>
                             <p className="chat-home__note">
                                 Answers come only from Gaurav’s own material: this site and his public projects.
-                                Questions are stored for 180 days to improve the answers.
+                                Questions and answers are stored for 180 days, to remember this conversation and to improve the answers.
                             </p>
                         </section>
                     ) : (
