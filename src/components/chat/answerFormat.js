@@ -80,20 +80,28 @@ export function parseInline(text) {
 
 const BULLET = /^\s*[-*•]\s+/
 const NUMBER = /^\s*\d{1,2}[.)]\s+/
+const HEADING = /^\s*(#{1,6})\s+(.+?)\s*#*\s*$/
+const TABLE_ROW = /^\s*\|.*\|\s*$/
+const TABLE_RULE = /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/
+const cells = (line) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim())
 
 /**
- * Answer text → blocks: { type: 'p', inline } | { type: 'ul'|'ol', items: [inline] }.
- * While an answer streams, an unclosed "**" is dropped so it never flashes.
+ * Answer text → blocks (D-134):
+ *   { type: 'p', inline } | { type: 'ul'|'ol', items: [inline] }
+ *   { type: 'heading', level, inline }   (### headings in long answers)
+ *   { type: 'table', head: [text], rows: [[text]] }   (cells parsed inline when rendered)
+ * While an answer streams, an unclosed "**" is dropped so it never flashes,
+ * and a table shows once its header rule has arrived.
  */
 export function parseAnswer(text) {
     let source = String(text || '').replace(/\r\n?/g, '\n')
         .replace(/^```[^\n]*$/gm, '')
-        .replace(/^#{1,6}\s+/gm, '')
     if ((source.match(/\*\*/g) || []).length % 2) source = source.replace(/\*\*(?![\s\S]*\*\*)/, '')
     const blocks = []
     for (const chunk of source.split(/\n{2,}/)) {
         let paragraph = []
         let list = null
+        let table = null
         const flushParagraph = () => {
             if (paragraph.length) blocks.push({ type: 'p', inline: parseInline(paragraph.join(' ')) })
             paragraph = []
@@ -102,8 +110,40 @@ export function parseAnswer(text) {
             if (list) blocks.push(list)
             list = null
         }
-        for (const line of chunk.split('\n')) {
+        const flushTable = () => {
+            if (!table) return
+            // A pipe line without a header rule is just text.
+            if (table.length >= 2 && TABLE_RULE.test(table[1])) {
+                const head = cells(table[0])
+                const rows = table.slice(2).map(cells).map((row) => head.map((_, i) => row[i] ?? ''))
+                blocks.push({ type: 'table', head, rows })
+            } else {
+                paragraph.push(...table.map((l) => l.trim()))
+                flushParagraph()
+            }
+            table = null
+        }
+        const lines = chunk.split('\n')
+        const final = chunk === source.split(/\n{2,}/).at(-1)
+        for (const [n, line] of lines.entries()) {
             if (!line.trim()) continue
+            // A table row still arriving (the answer streams): held until it closes.
+            if (final && n === lines.length - 1 && /^\s*\|/.test(line) && !TABLE_ROW.test(line)) continue
+            if (TABLE_ROW.test(line) || (table && TABLE_RULE.test(line))) {
+                flushParagraph()
+                flushList()
+                table = table || []
+                table.push(line)
+                continue
+            }
+            flushTable()
+            const heading = line.match(HEADING)
+            if (heading) {
+                flushParagraph()
+                flushList()
+                blocks.push({ type: 'heading', level: Math.min(4, Math.max(3, heading[1].length)), inline: parseInline(heading[2]) })
+                continue
+            }
             const kind = BULLET.test(line) ? 'ul' : NUMBER.test(line) ? 'ol' : null
             if (kind) {
                 flushParagraph()
@@ -120,15 +160,21 @@ export function parseAnswer(text) {
                 paragraph.push(line.trim())
             }
         }
+        flushTable()
         flushParagraph()
         flushList()
     }
     return blocks
 }
 
+const plain = (inline) => inline.filter((part) => part.t !== 'cite').map((part) => part.v).join('')
+const plainCell = (cell) => plain(parseInline(cell))
+
 /** The answer as plain text (for Copy): markup removed, links kept as text. */
 export const answerPlainText = (text) => parseAnswer(text)
-    .map((block) => (block.type === 'p'
-        ? block.inline.filter((part) => part.t !== 'cite').map((part) => part.v).join('')
-        : block.items.map((item, i) => `${block.type === 'ol' ? `${i + 1}.` : '-'} ${item.filter((part) => part.t !== 'cite').map((part) => part.v).join('')}`).join('\n')))
+    .map((block) => {
+        if (block.type === 'p' || block.type === 'heading') return plain(block.inline)
+        if (block.type === 'table') return [block.head, ...block.rows].map((row) => row.map(plainCell).join(' | ')).join('\n')
+        return block.items.map((item, i) => `${block.type === 'ol' ? `${i + 1}.` : '-'} ${plain(item)}`).join('\n')
+    })
     .join('\n\n')

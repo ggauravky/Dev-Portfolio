@@ -43,7 +43,9 @@
       "implemented_vs_planned_labels_present": true,
       "all_contributions_not_claimed_as_fully_enumerated": true,
       "source_urls_and_limitations_present": true
-    }
+    },
+    "updated_on": "2026-11-26",
+    "update_notes": "Admin Panel record refreshed from its public repository (2026-11-26); aliases added."
   },
   "identity": {
     "full_name": "Gaurav Kumar Yadav",
@@ -2042,43 +2044,58 @@
     {
       "id": "dev-portfolio-admin-panel",
       "name": "Dev Portfolio Admin Panel",
-      "aliases": [],
+      "aliases": [
+        "Admin Portal",
+        "Admin Panel",
+        "Portfolio Admin",
+        "Portfolio Admin Panel",
+        "Dev Portfolio Admin",
+        "Portfolio dashboard"
+      ],
       "category": "Administration / full-stack",
-      "summary": "An operational dashboard for portfolio contact messages, newsletter subscribers and backend data.",
-      "problem": "Direct database queries are an awkward way to manage routine messages and subscribers.",
-      "product_idea_and_motivation": "Provide a secure, searchable administration surface for real portfolio operations.",
+      "summary": "The private operations dashboard for the portfolio: contact messages, newsletter subscribers, registered users, payments and bookings (read-only), blog engagement, system health and the portfolio chatbot’s conversations and analytics, behind protected administrator sessions.",
+      "problem": "Managing portfolio data directly in the database is slow and error-prone, and the portfolio’s payments, bookings and chatbot needed a safe place to be reviewed.",
+      "product_idea_and_motivation": "One secure, searchable administration surface for the real operations of the portfolio, built in phases and reading the portfolio’s own data instead of copying it.",
       "target_users": [
         "Portfolio owner",
-        "Authorized operators"
+        "Authorized administrators"
       ],
       "technology_stack": [
         "React",
+        "Vite",
+        "React Router",
+        "Tailwind CSS",
         "Node.js",
         "Express",
         "MongoDB",
-        "JWT",
-        "Tailwind CSS"
+        "Server-managed administrator sessions"
       ],
       "implemented_or_documented_features": [
-        "Protected JWT login",
-        "Contact message list and CRUD",
-        "Newsletter subscriber management",
-        "Filtering, sorting and search",
-        "Dashboard analytics"
+        "Dashboard analytics: real-time statistics, contact and subscription counts, quick metrics",
+        "Contact inbox: search, filters, sorting, read/unread status and bulk actions",
+        "Newsletter subscribers: details, verification status, subscription dates and export",
+        "Financial control centre: read-only Razorpay transactions, bookings, receipts, webhook events and reconciliation, with a seven-day snapshot",
+        "Business operations: registered users, blog engagement, recorded user activity, administrator audit and sessions, and system health",
+        "AI intelligence: read-only views of the portfolio chatbot’s conversations, analytics, knowledge sources and operational quotas (it never calls an AI provider itself)",
+        "Protected admin routes with revocable, server-managed administrator sessions and role-based access",
+        "Monograph design system shared with the portfolio, and documented release verification gates"
       ],
       "user_workflow": [
-        "Owner authenticates.",
-        "Reviews new messages and subscriber records.",
-        "Searches, filters, updates or deletes permitted entries."
+        "An administrator signs in.",
+        "Reviews messages, subscribers, users, payments and chatbot activity.",
+        "Searches, filters and updates permitted records; financial and chatbot data are read-only."
       ],
       "architecture": {
-        "source_level": "Described in project public portfolio case study and/or repository README; inspect source for exact endpoints, data model and current runtime."
+        "frontend": "React + Vite single-page app with React Router and Tailwind CSS, hosted on Vercel.",
+        "backend": "Node.js + Express API (hosted on Render) that reads the portfolio’s MongoDB data; chatbot data is read from its own database through a separate read-only connection.",
+        "documentation": "The repository documents its work as phases (backend, authentication, AI intelligence, financial control, business operations, design system, workspace and release runbook)."
       },
       "engineering_lessons_and_tradeoffs": [
-        "Keep administrative routes protected and separate from visitor UI.",
-        "Make analytics out of source data rather than invented estimates."
+        "Keep administrative routes protected and separate from the visitor-facing site.",
+        "Read operational data where it lives (read-only for payments and chatbot data) instead of duplicating it.",
+        "Make analytics from source data rather than invented estimates."
       ],
-      "current_status": "public_repository_documented",
+      "current_status": "public_repository_and_live_deployment_documented_owner_reports_complete",
       "planned_or_future_features": [],
       "source_urls": [
         "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
@@ -2086,7 +2103,7 @@
       ],
       "github_url": "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
       "live_demo_url": "https://ggauravkyadmin.vercel.app",
-      "status_and_accuracy_notes": [],
+      "status_and_accuracy_notes": "Checked against the public repository on 2026-11-26 (latest commit 2026-11-25). The owner reports the Admin Panel as completed after an extensive overhaul (2026-11-26). The live site requires an administrator sign-in, so it is not publicly usable. No usage numbers are published.",
       "collaborators": []
     },
     {
@@ -5061,6 +5078,23 @@
         "https://github.com/ggauravky"
       ],
       "last_reviewed": "2026-11-20"
+    },
+    {
+      "id": "q069",
+      "question": "Has the Admin Portal been completed?",
+      "alternate_phrasings": [
+        "Is the Admin Panel finished?",
+        "What is the status of the Portfolio Admin Panel?",
+        "What does the Admin Portal do?"
+      ],
+      "answer": "Yes, according to Gaurav: he reports the Dev Portfolio Admin Panel (the Admin Portal) as complete after an extensive overhaul in November 2026. Its public repository documents a dashboard, contact inbox, newsletter subscribers, read-only payments and bookings, business operations, system health and read-only views of this chatbot’s conversations and analytics, behind protected administrator sessions. It is deployed, but only administrators can sign in, and no usage numbers are published.",
+      "category": "projects",
+      "priority": "medium",
+      "confidence": "user_reported",
+      "sources": [
+        "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
+        "https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel"
+      ]
     }
   ],
   "chatbot_policy": {
@@ -5772,16 +5806,21 @@
       "title": "Dev Portfolio Admin Panel — Overview",
       "keywords": [
         "Dev Portfolio Admin Panel",
-        "Administration / full-stack",
+        "Admin Portal",
+        "Admin Panel",
+        "Portfolio Admin",
+        "Portfolio dashboard",
         "React",
+        "Vite",
         "Node.js",
         "Express",
         "MongoDB",
-        "JWT",
-        "Tailwind CSS"
+        "Tailwind CSS",
+        "Razorpay",
+        "chatbot analytics"
       ],
-      "text": "name: Dev Portfolio Admin Panel other_names: summary: An operational dashboard for portfolio contact messages, newsletter subscribers and backend data. problem: Direct database queries are an awkward way to manage routine messages and subscribers. idea: Provide a secure, searchable administration surface for real portfolio operations. users: Portfolio owner Authorized operators",
-      "status": "public_repository_documented",
+      "text": "name: Dev Portfolio Admin Panel other_names: Admin Portal, Admin Panel, Portfolio Admin, Portfolio Admin Panel, Dev Portfolio Admin, Portfolio dashboard summary: The private operations dashboard for the portfolio: contact messages, newsletter subscribers, registered users, payments and bookings (read-only), blog engagement, system health and the portfolio chatbot’s conversations and analytics, behind protected administrator sessions. problem: Managing portfolio data directly in the database is slow and error-prone, and the portfolio’s payments, bookings and chatbot needed a safe place to be reviewed. idea: One secure, searchable administration surface for the real operations of the portfolio, built in phases and reading the portfolio’s own data instead of copying it. status: completed according to the owner (2026-11-26); public repository and a live, sign-in-only deployment (https://ggauravkyadmin.vercel.app) are documented.",
+      "status": "public_repository_and_live_deployment_documented_owner_reports_complete",
       "source_urls": [
         "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
         "https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel"
@@ -5795,16 +5834,21 @@
       "title": "Dev Portfolio Admin Panel — Implementation",
       "keywords": [
         "Dev Portfolio Admin Panel",
-        "Administration / full-stack",
+        "Admin Portal",
+        "Admin Panel",
+        "Portfolio Admin",
+        "Portfolio dashboard",
         "React",
+        "Vite",
         "Node.js",
         "Express",
         "MongoDB",
-        "JWT",
-        "Tailwind CSS"
+        "Tailwind CSS",
+        "Razorpay",
+        "chatbot analytics"
       ],
-      "text": "name: Dev Portfolio Admin Panel technology_stack: React Node.js Express MongoDB JWT Tailwind CSS features: Protected JWT login Contact message list and CRUD Newsletter subscriber management Filtering, sorting and search Dashboard analytics workflow: Owner authenticates. Reviews new messages and subscriber records. Searches, filters, updates or deletes permitted entries. architecture: source_level: Described in project public portfolio case study and/or repository README; inspect source for exact endpoints, data model and current runtime.",
-      "status": "public_repository_documented",
+      "text": "name: Dev Portfolio Admin Panel technology_stack: React, Vite, React Router, Tailwind CSS, Node.js, Express, MongoDB, Server-managed administrator sessions features: Dashboard analytics: real-time statistics, contact and subscription counts, quick metrics; Contact inbox: search, filters, sorting, read/unread status and bulk actions; Newsletter subscribers: details, verification status, subscription dates and export; Financial control centre: read-only Razorpay transactions, bookings, receipts, webhook events and reconciliation, with a seven-day snapshot; Business operations: registered users, blog engagement, recorded user activity, administrator audit and sessions, and system health; AI intelligence: read-only views of the portfolio chatbot’s conversations, analytics, knowledge sources and operational quotas (it never calls an AI provider itself); Protected admin routes with revocable, server-managed administrator sessions and role-based access; Monograph design system shared with the portfolio, and documented release verification gates. architecture: React + Vite single-page app with React Router and Tailwind CSS, hosted on Vercel. Node.js + Express API (hosted on Render) that reads the portfolio’s MongoDB data; chatbot data is read from its own database through a separate read-only connection. workflow: An administrator signs in. Reviews messages, subscribers, users, payments and chatbot activity. Searches, filters and updates permitted records; financial and chatbot data are read-only.",
+      "status": "public_repository_and_live_deployment_documented_owner_reports_complete",
       "source_urls": [
         "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
         "https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel"
@@ -5818,16 +5862,21 @@
       "title": "Dev Portfolio Admin Panel — History Roadmap",
       "keywords": [
         "Dev Portfolio Admin Panel",
-        "Administration / full-stack",
+        "Admin Portal",
+        "Admin Panel",
+        "Portfolio Admin",
+        "Portfolio dashboard",
         "React",
+        "Vite",
         "Node.js",
         "Express",
         "MongoDB",
-        "JWT",
-        "Tailwind CSS"
+        "Tailwind CSS",
+        "Razorpay",
+        "chatbot analytics"
       ],
-      "text": "name: Dev Portfolio Admin Panel lessons: Keep administrative routes protected and separate from visitor UI. Make analytics out of source data rather than invented estimates. status: public_repository_documented roadmap: caveats:",
-      "status": "public_repository_documented",
+      "text": "name: Dev Portfolio Admin Panel lessons: Keep administrative routes protected and separate from the visitor-facing site. Read operational data where it lives (read-only for payments and chatbot data) instead of duplicating it. Make analytics from source data rather than invented estimates. history: The repository documents its work as phases (backend, authentication, AI intelligence, financial control, business operations, design system, workspace and release runbook). status: Checked against the public repository on 2026-11-26 (latest commit 2026-11-25). The owner reports the Admin Panel as completed after an extensive overhaul (2026-11-26). The live site requires an administrator sign-in, so it is not publicly usable. No usage numbers are published. roadmap: none published.",
+      "status": "public_repository_and_live_deployment_documented_owner_reports_complete",
       "source_urls": [
         "https://github.com/ggauravky/Dev-Portfolio-Admin-Panel",
         "https://ggauravky.vercel.app/projects/dev-portfolio-admin-panel"

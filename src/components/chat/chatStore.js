@@ -39,7 +39,10 @@ export function getSessionId() {
     }
 }
 
-/** "New chat": a fresh id, so the server's memory of the conversation starts over too. */
+/**
+ * "New chat": a fresh id, so the server's memory of the conversation starts
+ * over too. It is only a conversation id: the allowance stays the visitor's.
+ */
 export function resetSession() {
     memorySession = null
     try { storage()?.removeItem(SESSION_KEY) } catch { /* ignore */ }
@@ -73,17 +76,25 @@ export const clearThread = () => {
     try { storage()?.removeItem(THREAD_KEY) } catch { /* ignore */ }
 }
 
+// The allowance belongs to the browser, not the tab (D-134): the last quota the
+// server reported is shared across tabs through localStorage, so every tab
+// shows the same lock. It is only a display: the server enforces the limits,
+// and the chat asks it again (op: "status") whenever it opens.
+const sharedStorage = () => {
+    try { return window.localStorage } catch { return null }
+}
+
 /**
- * What the visitor has left ({ left, limit, resetAt }) and, once a limit is
- * hit, until when the composer is locked ({ until, scope }). Kept per tab so a
- * reload still shows the lock; the server enforces it either way.
+ * What the visitor has left ({ left, limit, scope, resetAt, dayLeft, dayLimit,
+ * dayResetAt }) and, once a limit is hit, until when the composer is locked
+ * ({ until, scope }).
  */
 export function readQuota() {
     try {
-        const value = JSON.parse(storage()?.getItem(QUOTA_KEY) || 'null')
+        const value = JSON.parse(sharedStorage()?.getItem(QUOTA_KEY) || 'null')
         if (!value || typeof value !== 'object') return {}
         // A window that has already reset (or a lock that has ended) says nothing now.
-        const ends = Date.parse(value.until || value.resetAt || '') || 0
+        const ends = Date.parse(value.until || value.dayResetAt || value.resetAt || '') || 0
         return ends > Date.now() ? value : {}
     } catch {
         return {}
@@ -91,5 +102,13 @@ export function readQuota() {
 }
 
 export function writeQuota(value) {
-    try { storage()?.setItem(QUOTA_KEY, JSON.stringify(value || {})) } catch { /* ignore */ }
+    try { sharedStorage()?.setItem(QUOTA_KEY, JSON.stringify(value || {})) } catch { /* ignore */ }
+}
+
+/** Call `fn` when another tab records a new quota. Returns an unsubscribe function. */
+export function onQuotaChange(fn) {
+    if (typeof window === 'undefined') return () => {}
+    const listener = (event) => { if (event.key === QUOTA_KEY) fn(readQuota()) }
+    window.addEventListener('storage', listener)
+    return () => window.removeEventListener('storage', listener)
 }

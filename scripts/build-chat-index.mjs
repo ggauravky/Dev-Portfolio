@@ -49,15 +49,21 @@ if (problems.length) {
     console.error(`[chat:index] lib/chat/knowledge-base.json has ${problems.length} problem(s):\n  ${problems.slice(0, 20).join('\n  ')}`)
     process.exit(1)
 }
-const { chunks, aliases, profiles } = buildCorpus(data)
+const { chunks, aliases, profiles, records } = buildCorpus(data)
 const faqKeys = faqKeysOf(chunks)
+// Structured records must be usable (D-134): a build that lost them would make
+// counts and filters silently wrong, so it fails instead.
+if (!records?.projects?.length || records.projects.some((p) => !p.group || !p.name || !Array.isArray(p.tags))) {
+    console.error('[chat:index] structured project records are missing or malformed.')
+    process.exit(1)
+}
 
 const previous = readIndex()
 const reusable = previous.model === EMBED_MODEL && previous.dim === EMBED_DIM && previous.enc === ENC
 const oldChunks = new Map((previous.chunks || []).map((c) => [c.id, c]))
 const oldKeys = new Map((previous.faqKeys || []).map((k) => [k.hash, k]))
 // Everything the runtime reads: chunk texts, FAQ keys, project names, profiles.
-const version = corpusVersion({ chunks, faqKeys, aliases, profiles })
+const version = corpusVersion({ chunks, faqKeys, aliases, profiles, records })
 
 if (check) {
     const stale = chunks.filter((c) => oldChunks.get(c.id)?.hash !== c.hash).length
@@ -107,6 +113,7 @@ const output = {
     builtAt: new Date().toISOString(),
     aliases,
     profiles,
+    records,
     chunks: chunks.map((c) => ({ ...c, vec: fresh.get(`c:${c.id}`) || reuseChunk(c) })),
     faqKeys: faqKeys.map((k) => ({ ...k, vec: fresh.get(`k:${k.hash}`) || reuseKey(k) })),
 }

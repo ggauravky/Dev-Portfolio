@@ -15,7 +15,7 @@
         "check:design": "node scripts/check-design.mjs",
         "chat:index": "node scripts/build-chat-index.mjs",
         "chat:dev": "node scripts/chat-dev-server.mjs",
-        "test:chat": "node --test scripts/chat.test.mjs scripts/chat-eval.test.mjs scripts/chat-reliability.test.mjs"
+        "test:chat": "node --test scripts/chat.test.mjs scripts/chat-eval.test.mjs scripts/chat-reliability.test.mjs scripts/chat-overhaul.test.mjs"
     },
     "dependencies": {
         "cmdk": "^1.1.1",
